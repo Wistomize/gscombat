@@ -1,0 +1,12 @@
+{
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "description": "Project B damage analyzer foundation",
+  "miniprogramRoot": "dist/",
+  "projectname": "project-b-mini",
+  "setting": {
+    "es6": false,
+    "minified": false,
+    "postcss": false
+  }
+}

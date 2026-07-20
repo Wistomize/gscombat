@@ -1,0 +1,26 @@
+{
+  "name": "@project-b/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3100",
+    "start": "next start --port 3100",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@project-b/calculator": "workspace:*",
+    "@project-b/content": "workspace:*",
+    "next": "16.2.10",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  }
+}

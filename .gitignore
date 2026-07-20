@@ -1,0 +1,13 @@
+node_modules/
+.turbo/
+.next/
+dist/
+coverage/
+.DS_Store
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+apps/mini/.temp/
+apps/mini/.cache/
+apps/mini/.swc/

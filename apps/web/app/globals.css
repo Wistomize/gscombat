@@ -1,0 +1,353 @@
+:root {
+  --amber: #e9ad49;
+  --amber-soft: #f7d99c;
+  --ink: #090d17;
+  --line: rgba(238, 228, 202, 0.16);
+  --muted: #9da4af;
+  --paper: #eee4ca;
+  --violet: #8f72dc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ink);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    var(--ink);
+  background-size: 52px 52px;
+  color: var(--paper);
+  font-family: "Avenir Next", "PingFang SC", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+main {
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 0 clamp(24px, 5vw, 80px);
+  position: relative;
+}
+
+.ambient {
+  border: 1px solid rgba(143, 114, 220, 0.2);
+  border-radius: 50%;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ambient::after {
+  border: 1px dashed rgba(233, 173, 73, 0.22);
+  border-radius: inherit;
+  content: "";
+  inset: 12%;
+  position: absolute;
+}
+
+.ambientOne {
+  height: 640px;
+  right: -270px;
+  top: 70px;
+  width: 640px;
+}
+
+.ambientTwo {
+  bottom: -200px;
+  height: 410px;
+  left: -210px;
+  width: 410px;
+}
+
+.masthead {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  height: 84px;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.wordmark,
+.releaseState {
+  align-items: center;
+  display: flex;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.wordmarkGlyph {
+  align-items: center;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  display: inline-flex;
+  font-family: Georgia, serif;
+  font-size: 20px;
+  height: 38px;
+  justify-content: center;
+  margin-right: 14px;
+  transform: rotate(45deg);
+  width: 38px;
+}
+
+.wordmarkGlyph::first-letter {
+  transform: rotate(-45deg);
+}
+
+.releaseState {
+  color: var(--muted);
+}
+
+.pulse {
+  animation: breathe 2.4s ease-in-out infinite;
+  background: var(--amber);
+  border-radius: 50%;
+  box-shadow: 0 0 14px var(--amber);
+  height: 7px;
+  margin-right: 12px;
+  width: 7px;
+}
+
+.hero {
+  max-width: 1050px;
+  padding: clamp(80px, 12vw, 150px) 0 72px;
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow,
+.sectionHeading,
+.resultLabel,
+.damageReadout small,
+footer {
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+}
+
+h1 {
+  font-family: "Songti SC", "Noto Serif CJK SC", Georgia, serif;
+  font-size: clamp(52px, 8.4vw, 118px);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+  margin: 28px 0 32px;
+}
+
+h1 em {
+  color: var(--amber-soft);
+  font-style: normal;
+}
+
+.heroCopy {
+  color: #b9bec6;
+  font-size: clamp(16px, 1.7vw, 21px);
+  line-height: 1.8;
+  margin: 0;
+  max-width: 700px;
+}
+
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.heroMeta span,
+.dataBadge {
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  padding: 9px 13px;
+}
+
+.workbench {
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: minmax(280px, 0.75fr) minmax(460px, 1.25fr);
+  position: relative;
+  z-index: 1;
+}
+
+.pipelinePanel,
+.resultPanel {
+  padding: 38px 0;
+}
+
+.pipelinePanel {
+  border-right: 1px solid var(--line);
+  padding-right: clamp(28px, 4vw, 64px);
+}
+
+.resultPanel {
+  padding-left: clamp(28px, 5vw, 76px);
+}
+
+.sectionHeading,
+.resultTopline,
+.intervention,
+footer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.stageList {
+  list-style: none;
+  margin: 26px 0 0;
+  padding: 0;
+}
+
+.stageList li {
+  align-items: baseline;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 32px 70px 1fr;
+  padding: 17px 0;
+}
+
+.stageList li:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.stageList strong {
+  font-family: "Songti SC", serif;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.stageList span:last-child,
+.stageNumber {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.resultTopline h2 {
+  font-family: "Songti SC", serif;
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 500;
+  margin: 10px 0 0;
+}
+
+.dataBadge {
+  border-color: rgba(233, 173, 73, 0.35);
+  color: var(--amber);
+}
+
+.damageReadout {
+  border-bottom: 1px solid var(--line);
+  margin: 54px 0 30px;
+  padding-bottom: 28px;
+}
+
+.damageReadout > span {
+  color: var(--muted);
+  display: block;
+  font-size: 13px;
+}
+
+.damageReadout strong {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: clamp(62px, 8vw, 112px);
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  margin: 8px 0 12px;
+}
+
+.intervention {
+  background: rgba(238, 228, 202, 0.045);
+  border-left: 2px solid var(--violet);
+  padding: 20px 24px;
+}
+
+.intervention span {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+
+.gain {
+  text-align: right;
+}
+
+.gain strong {
+  color: var(--amber-soft);
+  font-family: Georgia, serif;
+  font-size: 28px;
+}
+
+.disclaimer {
+  color: #777f8c;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 22px 0 0;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  color: #626a76;
+  min-height: 90px;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+}
+
+@media (max-width: 800px) {
+  .releaseState {
+    display: none;
+  }
+
+  .hero {
+    padding-top: 80px;
+  }
+
+  .workbench {
+    display: block;
+  }
+
+  .pipelinePanel {
+    border-bottom: 1px solid var(--line);
+    border-right: 0;
+    padding-right: 0;
+  }
+
+  .resultPanel {
+    padding-left: 0;
+  }
+
+  .resultTopline {
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+  }
+}

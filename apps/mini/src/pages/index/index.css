@@ -1,0 +1,155 @@
+.page {
+  min-height: 100vh;
+  padding: 36px 32px 64px;
+}
+
+.topline,
+.cardHeader,
+.comparison {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.topline {
+  border-bottom: 1px solid rgba(238, 228, 202, 0.16);
+  padding-bottom: 28px;
+}
+
+.brand,
+.state,
+.eyebrow,
+.caption {
+  color: #e9ad49;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 4px;
+}
+
+.state {
+  color: #777f8c;
+  font-size: 18px;
+}
+
+.hero {
+  padding: 72px 0 56px;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 18px;
+}
+
+.title {
+  display: block;
+  font-family: "Songti SC", serif;
+  font-size: 66px;
+  line-height: 1.16;
+  margin-top: 26px;
+}
+
+.summary {
+  color: #9da4af;
+  display: block;
+  font-size: 26px;
+  line-height: 1.7;
+  margin-top: 28px;
+}
+
+.card {
+  background: rgba(238, 228, 202, 0.045);
+  border: 1px solid rgba(238, 228, 202, 0.16);
+  padding: 32px;
+}
+
+.caption {
+  display: block;
+  font-size: 16px;
+}
+
+.cardTitle {
+  display: block;
+  font-family: "Songti SC", serif;
+  font-size: 30px;
+  margin-top: 12px;
+}
+
+.badge {
+  border: 1px solid rgba(233, 173, 73, 0.4);
+  color: #e9ad49;
+  font-size: 18px;
+  padding: 12px 14px;
+}
+
+.readout {
+  border-bottom: 1px solid rgba(238, 228, 202, 0.16);
+  margin: 52px 0 28px;
+  padding-bottom: 30px;
+}
+
+.readoutLabel,
+.comparisonLabel {
+  color: #9da4af;
+  display: block;
+  font-size: 20px;
+}
+
+.damage {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: 94px;
+  letter-spacing: -4px;
+  line-height: 1;
+  margin-top: 12px;
+}
+
+.comparison {
+  border-left: 4px solid #8f72dc;
+  padding: 18px 22px;
+}
+
+.comparisonValue,
+.gainValue {
+  display: block;
+  font-size: 26px;
+  margin-top: 8px;
+}
+
+.gain {
+  text-align: right;
+}
+
+.gainValue {
+  color: #f7d99c;
+  font-family: Georgia, serif;
+  font-size: 34px;
+}
+
+.notice {
+  color: #68707d;
+  display: block;
+  font-size: 19px;
+  line-height: 1.6;
+  margin-top: 24px;
+}
+
+.stages {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 26px;
+}
+
+.stage {
+  border: 1px solid rgba(238, 228, 202, 0.12);
+  display: flex;
+  flex-direction: column;
+  font-size: 22px;
+  gap: 14px;
+  padding: 24px;
+}
+
+.stage text:first-child {
+  color: #777f8c;
+  font-size: 18px;
+}
