@@ -115,6 +115,51 @@ export const nicoleCombatCoverage: CharacterCombatCoverage = {
   ],
   actionEffects: [
     {
+      activation: "automatic",
+      id: "nicole.burst.pilgrimage_of_the_heavenly_path.arcane_projection.coordinated_damage",
+      label: "圣言默示·天路历程 · 奥迹造影协同攻击",
+      source: { characterId: "Nicole", kind: "character" },
+      target: "additionalDamageEvent",
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 0 },
+        element: "recipient_native",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        recipientFinalAttackFlatDamageMultiplier: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "burst",
+            id: "arcane-projection-damage",
+            parameterIndex: 1,
+            source: "talent",
+            talentSlot: "burst"
+          }
+        },
+        scalingStat: "attack"
+      }
+    },
+    {
+      activation: "automatic",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "nicole.locked_passive.light_from_darkness.hexerei_arcane_projection.source_attack_addition",
+      label: "魔女的前夜礼·光自暗来 · 魔导角色奥迹造影追加尼可300%攻击力伤害",
+      source: { characterId: "Nicole", kind: "character" },
+      target: "additionalDamageEvent",
+      targetFilter: { recipientHexereiRequired: true },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 0 },
+        element: "recipient_native",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        sourceFinalAttackFlatDamageMultiplier: { kind: "fixed", value: 3 }
+      }
+    },
+    {
       activation: "maximum_reachable",
       id: "nicole.skill.sacred_word_revelation.unseen_light.grace_of_kenosis.attack_bonus",
       label: "恩典 · 攻击力提升",
@@ -227,7 +272,7 @@ export const nicoleCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit and one initial Sacred Word Revelation area hit remain verified lower-level C0 attack-scaling Pyro catalyst actions from the pinned 6.7 Genshin Optimizer snapshot at commit 21c98eb60355160274a8c4cecfc5671e2151a073, but neither is selected as Nicole's display output. The selected support metrics calculate one Shield of Blazing Light delivered to the current active friendly recipient as total Attack × skill[1] plus skill[2], before that recipient's Shield Strength, and Grace of Kenosis's current Attack bonus as min(total Attack × skill[4], skill[5]); C3 adds three Skill levels to both. The shield's 250% Pyro-damage absorption branch, duration, Grace activation and duration, A1/A4 Guidance, constellations other than C3, direct damage, reactions, external effects, timing, and other character states remain outside these source-owned outputs.",
+    "The selected support metrics calculate Shield of Blazing Light and Grace of Kenosis. Pilgrimage of the Heavenly Path's Arcane Projection is a separate non-reacting coordinated event based on the recipient's final Attack; Light from Darkness adds Nicole's 300% final Attack for Hexerei recipients. Duration, trigger cooldown, A1/A4 Guidance, and other constellations remain outside the single-action snapshot.",
   label: nicoleDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

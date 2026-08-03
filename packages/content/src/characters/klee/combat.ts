@@ -92,12 +92,32 @@ export const kleeCombatCoverage: CharacterCombatCoverage = {
         }
       ],
       scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1, 2, 3],
+          defaultValue: 0,
+          id: "boom-badge-count",
+          label: "轰轰勋章数量",
+          maximumValue: 3,
+          minimumValue: 0
+        }
+      ],
       status: "verified",
       talentSlot: "normal",
       timeline: {
         damageEvents: [
           {
             at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "boom-badge-count",
+              values: [
+                { multiplier: 1, parameterValue: 0 },
+                { multiplier: 1.15, parameterValue: 1 },
+                { multiplier: 1.3, parameterValue: 2 },
+                { multiplier: 1.5, parameterValue: 3 }
+              ]
+            },
             damagePartId: "charged-attack",
             elementalApplication: { icd: { kind: "none" } },
             id: "charged-attack",
@@ -110,6 +130,17 @@ export const kleeCombatCoverage: CharacterCombatCoverage = {
   ],
   characterId: "Klee",
   actionEffects: [
+    {
+      actionParameterId: "boom-badge-count",
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "klee.locked_passive.spark_magic.three_boom_badges.original_damage_multiplier",
+      label: "魔女的前夜礼·火花魔法 · 3枚轰轰勋章使嘭嘭轰击造成原本150%伤害",
+      source: { characterId: "Klee", kind: "character" },
+      target: "actionParameter",
+      targetFilter: { actionIds: ["klee.normal.charged_attack.single_hit"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 3 }
+    },
     {
       activation: "active",
       id: "klee.constellation.1.chained_reactions.spark_triggered.attack_percent",
@@ -141,7 +172,7 @@ export const kleeCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit and one single bounce of Jumpy Dumpty are verified as baseline C0 attack-scaling Pyro hits. One unbuffed C0 charged-attack hit is also verified as Pyro attack-scaling damage. Its event has no application ICD and resolves as Pyro-on-Hydro Vaporize only when the selected target scenario supplies Hydro aura; without that aura it remains a Pyro hit. At C1, the selected self snapshot means its random firework already triggered: Klee gains 60% Attack for the following 12 seconds. The separate 120%-attack firework hit is not added to this charged-attack metric, and no trigger probability or timing is inferred. At C2, the separately selected target-debuff snapshot means a Jumpy Dumpty mine already exploded on the target: Defense is reduced by 23% for 10 seconds, never for the triggering mine explosion. The charged-attack metric otherwise intentionally excludes Pounding Surprise's Explosive Spark (its 50% increased charged damage and stamina effect), Sparkling Burst energy, Hexerei/Boom Badge states, burst state, other constellations, mines, remaining skill bounces, multi-target damage, and external infusions. No character-owned state or aura setup is implied.",
+    "The selected metric is one charged-attack hit with dynamic Vaporize from an explicit Hydro aura. Spark Magic now resolves the maximum three Boom Badges as an independent 150% original-damage multiplier under Hexerei: Secret Rite. C1 and C2 remain explicit snapshots; mines, remaining bounces, burst recurrence, timing, and other constellations remain unmodeled.",
   label: kleeDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

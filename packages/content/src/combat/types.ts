@@ -599,6 +599,8 @@ export interface CombatActionEffectTargetFilter {
   readonly actionIds?: readonly string[]
   /** Narrows an effect to actions owned by one or more current recipient characters. */
   readonly recipientCharacterIds?: readonly string[]
+  /** Requires the selected action's recipient to be a current Hexerei character. */
+  readonly recipientHexereiRequired?: true
   /** Excludes declared actions that cannot receive an otherwise matching current-action effect. */
   readonly excludedActionIds?: readonly string[]
   /** Requires the selected action's recipient build to be the same as, or different from, the effect source build. */
@@ -811,13 +813,18 @@ export interface CombatActionAdditionalDamageEvent {
   /** Overrides normal crit-rate expectation when the selected trigger guarantees this independent hit will crit. */
   readonly critPolicy?: "guaranteed"
   readonly coefficient: CombatActionEffectScalar
-  readonly element: Element
+  /** Uses the selected recipient's native element for character-owned coordinated attacks. */
+  readonly element: Element | "recipient_native"
   /** Probability that the trigger occurs for this one selected core action. */
   readonly expectedTriggerProbability: number | CombatActionEffectScalar
   readonly kind: "additional_damage_event"
   /** This event intentionally cannot inherit the triggering action's reaction declaration or application. */
   readonly reactionPolicy: "none"
   readonly scalingStat: ScalingStat
+  /** Adds a flat base-damage term derived from the selected recipient's final attack. */
+  readonly recipientFinalAttackFlatDamageMultiplier?: CombatActionEffectComputedScalar
+  /** Adds a flat base-damage term derived from the effect owner's final attack. */
+  readonly sourceFinalAttackFlatDamageMultiplier?: CombatActionEffectComputedScalar
 }
 
 /** A stat-scaled term added to the triggering hit before that hit's reaction and common damage multipliers. */
@@ -862,7 +869,7 @@ export interface CombatActionAdditionalDamageEventEffect extends CombatActionEff
   /** Explicit action-state requirements that make this active effect automatic. */
   readonly deterministicSnapshotActivation?: CombatActionEffectDeterministicSnapshotActivation
   /** A scenario-derived condition required before this effect can contribute to the selected action. */
-  readonly condition?: CombatActionEffectEnemyCountCondition
+  readonly condition?: CombatActionEffectCondition
   /** Active effects with different variants in the same group cannot contribute together. */
   readonly exclusivity?: CombatActionEffectExclusivity
   readonly id: string

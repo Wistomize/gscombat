@@ -44,8 +44,9 @@ export interface ResolvedAdditionalDamageEvent {
   readonly canCrit: CombatActionAdditionalDamageEvent["canCrit"]
   readonly critPolicy?: CombatActionAdditionalDamageEvent["critPolicy"]
   readonly coefficient: number
-  readonly element: CombatActionAdditionalDamageEvent["element"]
+  readonly element: Element
   readonly expectedTriggerProbability: number
+  readonly flatDamage?: number
   readonly id: string
   readonly label: string
   readonly reactionPolicy: CombatActionAdditionalDamageEvent["reactionPolicy"]
@@ -525,7 +526,7 @@ function resolveCombatActionEffectsForCandidates(
     .flatMap((effect) => resolveEligibleActionEffect(effect, input))
   assertExclusiveActionEffectsAreCompatible(eligibleEffects.map(({ effect }) => effect))
   const additionalDamageEvents = eligibleEffects.flatMap(({ effect, source }) =>
-    effect.target === "additionalDamageEvent" ? [resolveAdditionalDamageEvent(effect, source)] : []
+    effect.target === "additionalDamageEvent" ? [resolveAdditionalDamageEvent(effect, source, input)] : []
   )
   const matchedActionAdditiveDamageTerms = eligibleEffects.flatMap(({ effect, source }) =>
     effect.target === "matchedActionAdditiveDamageTerm" ? [resolveMatchedActionAdditiveDamageTerm(effect, source)] : []
@@ -1037,7 +1038,8 @@ function resolveFinalHpSourcedDamageBonuses(
 
 function resolveAdditionalDamageEvent(
   effect: Extract<CombatActionEffect, { readonly target: "additionalDamageEvent" }>,
-  source: CharacterBuild
+  source: CharacterBuild,
+  input: ResolveCombatActionEffectCandidatesInput
 ): ResolvedAdditionalDamageEvent {
   const event = effect.value
   const expectedTriggerProbability =
@@ -1051,12 +1053,33 @@ function resolveAdditionalDamageEvent(
   ) {
     throw new Error(`Additional damage event ${effect.id} must use a probability from zero to one`)
   }
+  const recipientMultiplier = event.recipientFinalAttackFlatDamageMultiplier
+  const sourceMultiplier = event.sourceFinalAttackFlatDamageMultiplier
+  const recipientFinalAttack = input.sourceFinalAttackByBuildId?.get(input.primary.buildId)
+  const sourceFinalAttack = input.sourceFinalAttackByBuildId?.get(source.buildId)
+  if (recipientMultiplier !== undefined && recipientFinalAttack === undefined) {
+    throw new Error(`Additional damage event ${effect.id} requires the recipient's final attack`)
+  }
+  if (sourceMultiplier !== undefined && sourceFinalAttack === undefined) {
+    throw new Error(`Additional damage event ${effect.id} requires the source's final attack`)
+  }
+  const flatDamage =
+    (recipientFinalAttack ?? 0) *
+      (recipientMultiplier === undefined ? 0 : resolveComputedEffectScalar(recipientMultiplier, effect.id, input, source)) +
+    (sourceFinalAttack ?? 0) *
+      (sourceMultiplier === undefined ? 0 : resolveComputedEffectScalar(sourceMultiplier, effect.id, input, source))
+  const usesRecipientNativeElement = event.element === "recipient_native"
+  const element = usesRecipientNativeElement ? input.primaryElement : event.element
+  if (element === undefined || (usesRecipientNativeElement && element === "physical")) {
+    throw new Error(`Additional damage event ${effect.id} requires the recipient's native elemental identity`)
+  }
   return {
     canCrit: event.canCrit,
     ...(event.critPolicy === undefined ? {} : { critPolicy: event.critPolicy }),
     coefficient: resolveEffectScalar(event.coefficient, source),
-    element: event.element,
+    element,
     expectedTriggerProbability,
+    ...(flatDamage === 0 ? {} : { flatDamage }),
     id: effect.id,
     label: effect.label,
     reactionPolicy: event.reactionPolicy,
@@ -1083,7 +1106,7 @@ function resolveExpectedAdditionalDamageEventCoefficient(
   effectId: string
 ): number {
   if (!event) throw new Error(`Missing resolved additional damage event ${effectId}`)
-  return event.coefficient * event.expectedTriggerProbability
+  return (event.coefficient + (event.flatDamage ?? 0)) * event.expectedTriggerProbability
 }
 
 function resolveMatchedActionAdditiveDamageTermCoefficient(

@@ -96,6 +96,44 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   characterId: "Fischl",
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "fischl.locked_passive.nocturnal_world_fantasia.after_overload.attack_percent",
+      label: "魔女的前夜礼·宵世幻奏 · 奥兹在场且触发超载后攻击力提升",
+      source: { characterId: "Fischl", kind: "character" },
+      target: "attackPercent",
+      value: { kind: "fixed", value: 0.225 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "fischl.locked_passive.nocturnal_world_fantasia.after_electro_charged.elemental_mastery",
+      label: "魔女的前夜礼·宵世幻奏 · 奥兹在场且触发感电或月感电后元素精通提升",
+      source: { characterId: "Fischl", kind: "character" },
+      target: "elementalMastery",
+      value: { kind: "fixed", value: 90 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "fischl.locked_passive.nocturnal_world_fantasia.c6.after_overload.extra_attack_percent",
+      label: "魔女的前夜礼·宵世幻奏 · C6奥兹协同攻击后超载攻击力额外提升",
+      source: { characterId: "Fischl", kind: "character", minimumSourceConstellation: 6 },
+      target: "attackPercent",
+      value: { kind: "fixed", value: 0.225 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "fischl.locked_passive.nocturnal_world_fantasia.c6.after_electro_charged.extra_elemental_mastery",
+      label: "魔女的前夜礼·宵世幻奏 · C6奥兹协同攻击后感电元素精通额外提升",
+      source: { characterId: "Fischl", kind: "character", minimumSourceConstellation: 6 },
+      target: "elementalMastery",
+      value: { kind: "fixed", value: 90 }
+    }
+  ],
   metrics: [
     {
       actionId: "fischl.skill.nightrider.oz.level_one_bolt",
@@ -109,7 +147,7 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit, one level-one Oz bolt, and one Midnight Phantasmagoria lightning are verified as baseline C0 attack-scaling damage. The selected Oz metric reuses one ordinary post-deployment Oz attack against a nearby target; Nightrider's Oz snapshot is taken at the Elemental Skill cast, and no reaction is predeclared. It excludes the summoning hit, later recurrence and duration, target selection, energy availability, and all other timing. A1, A4, C1, C2, C3, C4, C6, other constellations, external infusions, and reaction-trigger conditions are not included. The burst excludes Oz's later presence and attacks, traversal through enemies, C4 additional damage, constellations, reactions, timing, energy availability, and character states.",
+    "The selected metric is one ordinary post-deployment Oz attack. Nocturnal World Fantasia now contributes its Overloaded Attack and Electro-Charged/Lunar-Charged Elemental Mastery team snapshots under Hexerei: Secret Rite, including the C6 doubled values. Summoning damage, recurrence, target selection, timing, and other constellations remain unmodeled.",
   label: fischlDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

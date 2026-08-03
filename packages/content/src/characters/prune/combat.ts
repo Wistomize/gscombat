@@ -136,6 +136,26 @@ export const pruneCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "prune.locked_passive.demon_hunters_oath.reaction_triggered.self_attack_percent",
+      label: "魔女的前夜礼·寻魔之誓 · 受振铃鼓舞的魔导角色触发反应后自身攻击力",
+      source: { characterId: "Prune", kind: "character" },
+      target: "attackPercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.6 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "prune.locked_passive.demon_hunters_oath.swirl_triggered.hexerei_attack_percent",
+      label: "魔女的前夜礼·寻魔之誓 · 触发扩散的魔导角色自身攻击力",
+      source: { characterId: "Prune", kind: "character" },
+      target: "attackPercent",
+      targetFilter: { recipientHexereiRequired: true },
+      value: { kind: "fixed", value: 0.3 }
+    },
+    {
+      activation: "maximum_reachable",
       id: "prune.passive.resonant_ringing.all_damage_bonus",
       label: "振铃同心 · 振铃鼓舞全伤害加成",
       source: { characterId: "Prune", kind: "character", minimumSourceAscension: 4 },

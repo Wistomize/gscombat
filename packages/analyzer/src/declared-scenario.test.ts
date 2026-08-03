@@ -2704,7 +2704,7 @@ describe("declared direct scenario actions", () => {
   })
 
   it("uses half of Angelos Heptades' source-attack bonus for a selected Magic Secret off-field snapshot", () => {
-    const action = requireAction("xiangling.skill.guoba.single_flame_breath")
+    const action = requireAction("venti.skill.skyward_sonnet.press")
     const angelosHolder: CharacterBuild = {
       ...xianglingNationalBuiltinBuild,
       buildId: "test.mona.angelos-heptades.magic-secret.r1",
@@ -2715,27 +2715,27 @@ describe("declared direct scenario actions", () => {
     const currentOnFieldEffectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
     const magicSecretOffFieldEffectId =
       "weapon.angelos-heptades.magic-secret.after-shield.source-final-attack-to-off-field-magic-recipient-damage-bonus"
-    const hexereiTeammate = {
+    const magicRecipient = {
       ...xianglingNationalBuiltinBuild,
-      buildId: "test.venti.angelos-heptades.magic-secret",
+      buildId: "test.venti.angelos-heptades.magic-secret.recipient",
       characterId: "Venti"
     }
     const baseline = evaluateDeclaredDirectScenarioAction({
       action,
-      build: xianglingNationalBuiltinBuild,
+      build: magicRecipient,
       buffs: [],
       enemy,
       gameData,
-      teammates: [angelosHolder, hexereiTeammate]
+      teammates: [angelosHolder]
     })
     const snapshot = evaluateDeclaredDirectScenarioAction({
       action,
       activeEffectIds: [magicSecretOffFieldEffectId],
-      build: xianglingNationalBuiltinBuild,
+      build: magicRecipient,
       buffs: [],
       enemy,
       gameData,
-      teammates: [angelosHolder, hexereiTeammate]
+      teammates: [angelosHolder]
     })
     const effect = snapshot.appliedEffects.find((candidate) => candidate.id === magicSecretOffFieldEffectId)
     const coreStats = resolveCoreCombatStats(angelosHolder, gameData)
@@ -2750,11 +2750,11 @@ describe("declared direct scenario actions", () => {
       evaluateDeclaredDirectScenarioAction({
         action,
         activeEffectIds: [currentOnFieldEffectId, magicSecretOffFieldEffectId],
-        build: xianglingNationalBuiltinBuild,
+        build: magicRecipient,
         buffs: [],
         enemy,
         gameData,
-        teammates: [angelosHolder, hexereiTeammate]
+        teammates: [angelosHolder]
       })
     ).toThrow("Selected angelos-heptades-guiding-light-recipient-position effects cannot stack")
   })
@@ -2819,6 +2819,11 @@ describe("declared direct scenario actions", () => {
       buildId: "test.venti.angelos-heptades.cap",
       characterId: "Venti"
     }
+    const magicRecipient = {
+      ...xianglingNationalBuiltinBuild,
+      buildId: "test.venti.angelos-heptades.cap.recipient",
+      characterId: "Venti"
+    }
     const cappedSnapshot = evaluateDeclaredDirectScenarioAction({
       action: elementalAction,
       activeEffectIds: [effectId],
@@ -2838,13 +2843,13 @@ describe("declared direct scenario actions", () => {
       teammates: [r5Mona]
     })
     const magicSecretSnapshot = evaluateDeclaredDirectScenarioAction({
-      action: elementalAction,
+      action: requireAction("venti.skill.skyward_sonnet.press"),
       activeEffectIds: [magicSecretOffFieldEffectId],
-      build: xianglingNationalBuiltinBuild,
+      build: magicRecipient,
       buffs: [],
       enemy,
       gameData,
-      teammates: [r5Mona, hexereiTeammate]
+      teammates: [r5Mona]
     })
 
     expect(cappedSnapshot.appliedEffects.find((effect) => effect.id === effectId)?.value).toBeCloseTo(0.58)

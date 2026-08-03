@@ -174,6 +174,41 @@ export const razorCombatCoverage: CharacterCombatCoverage = {
   characterId: "Razor",
   actionEffects: [
     {
+      activation: "automatic",
+      id: "razor.locked_passive.surging_thunder.wolf_spirit.attack_additive_damage",
+      label: "魔女的前夜礼·苍雷奔涌 · 雷狼伤害追加雷泽70%攻击力",
+      source: { characterId: "Razor", kind: "character" },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: ["razor.burst.lightning_fang.wolf_spirit.fourth_hit"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 0.7 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "attack"
+      }
+    },
+    {
+      activation: "active",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "razor.locked_passive.surging_thunder.overflowing_electro_sigil.lightning_strike",
+      label: "魔女的前夜礼·苍雷奔涌 · 雷之印溢出时雷狼落雷（冷却已就绪）",
+      selectionMode: "optional",
+      source: { characterId: "Razor", kind: "character" },
+      target: "additionalDamageEvent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 1.5 },
+        element: "electro",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack"
+      }
+    },
+    {
       activation: "active",
       id: "razor.constellation.1.wolf_instinct.elemental_orb_or_particle.damage_bonus",
       label: "狼性 · C1 获取元素晶球或元素微粒后伤害提高（10%，8秒）",
@@ -213,7 +248,7 @@ export const razorCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One Claw and Thunder point-press hit, Lightning Fang's initial hit, and one uninfused normal first hit remain verified baseline C0 actions. The selected core action is exactly Razor's fourth normal hit while Lightning Fang is already active: Attack × auto[3], kept as Physical damage. The pinned 6.7 snapshot gives auto[3] as 136.048% Attack at Normal Talent Level 1 and 242.722% at Level 10. One same-hit Wolf Within companion strike is separately verified, but not selected: Attack × auto[3] × burst[1], where burst[1] is 24% at Burst Level 1 and 43.2% at Level 10. C1 can be selected as an explicit self current-action snapshot after Razor obtains an Elemental Orb or Particle: all of Razor's damage gains 10% damage bonus. At C2, a separately selected current-action snapshot means the target is already below 30% HP: Razor's attacks gain 10% Crit Rate. At C4, the separately selected target-debuff snapshot means Claw and Thunder's point-press already hit the target: Defense is reduced by 15% for 7 seconds, never for that triggering point-press hit. The selected metric does not aggregate the Physical normal hit with its separate Electro companion strike, infer a normal-attack chain, observe target HP, or preset a target aura or reaction. Lightning Fang duration, attack speed and resistance changes, Electro Sigils, passives, other constellations, external buffs, timing, and rotation behavior remain excluded.",
+    "The selected core action is Razor's fourth Physical normal hit while Lightning Fang is active; the Wolf Within strike remains a separate verified action. Surging Thunder adds 70% of Razor's Attack to the wolf strike, while its Hexerei Sigil-overflow lightning is an optional independent 150% Attack event. C1, C2, and C4 remain explicit snapshots; chain timing, Sigil generation, and rotation behavior are not inferred.",
   label: razorDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

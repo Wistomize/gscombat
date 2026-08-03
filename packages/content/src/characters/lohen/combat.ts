@@ -74,6 +74,18 @@ export const lohenCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   characterId: "Lohen",
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "lohen.locked_passive.unhealing_thorn.high_will_to_win.normal_charged_damage_bonus",
+      label: "魔女的前夜礼·不愈之刺 · 争胜不低于50%后普通攻击与重击伤害提升",
+      source: { characterId: "Lohen", kind: "character" },
+      target: "damageBonus",
+      targetFilter: { attackKinds: ["normal", "charged"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.4 }
+    }
+  ],
   metrics: [
     {
       actionId: "lohen.skill.bone_chilling_heart.single_hit",
@@ -87,7 +99,7 @@ export const lohenCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One C0 Cryo Bone-Chilling Heart hit is the selected no-reaction metric. Its current-action snapshot uses skill[16] times Attack, then multiplies the hit by 1 plus the selected consumed Will to Win times skill[17]; C0 permits 0, 20, 40, 60, 80, or 100 and defaults to 100. It assumes this special hit is currently available, but does not generate or consume Will to Win for subsequent actions, validate Joy or Guile states, model the stance, timing, burst, passives, constellations, reactions, or a rotation.",
+    "One Cryo Bone-Chilling Heart hit is the selected no-reaction metric and defaults to 100 Will to Win consumed. Unhealing Thorn contributes its 40% Normal and Charged Attack damage snapshot under Hexerei: Secret Rite. Will generation, stance timing, burst, constellations, reactions, and rotation behavior remain unmodeled.",
   label: lohenDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

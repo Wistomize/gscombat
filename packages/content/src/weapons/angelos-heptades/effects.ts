@@ -43,6 +43,7 @@ export const angelosHeptadesCombatActionEffects: readonly CombatActionEffect[] =
     label: "尘光七谕 · 魔导·秘仪下后台魔导角色的先导之光（50%伤害）",
     source: { holder: "party_member", kind: "weapon", weaponId: "AngelosHeptades" },
     target: "sourceFinalAttackToDamageBonus",
+    targetFilter: { recipientHexereiRequired: true },
     value: {
       kind: "source_final_attack",
       maximumValue: { kind: "refinement_table", values: ANGELOS_HEPTADES_MAGIC_SECRET_OFF_FIELD_DAMAGE_BONUS_MAXIMUM },

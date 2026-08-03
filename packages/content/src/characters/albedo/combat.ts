@@ -106,6 +106,33 @@ export const albedoCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "albedo.locked_passive.white_radiance_book.solar_isotoma.party_damage_bonus",
+      label: "魔女的前夜礼·白芒之书 · 阳华炼成后全队伤害提升",
+      source: { characterId: "Albedo", kind: "character" },
+      target: "sourceFinalDefenseToDamageBonus",
+      value: {
+        kind: "source_final_defense",
+        maximumValue: { kind: "fixed", value: 0.12 },
+        multiplier: { kind: "fixed", value: 0.00004 }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "albedo.locked_passive.white_radiance_book.quicksilver.hexerei_damage_bonus",
+      label: "魔女的前夜礼·白芒之书 · 瑰银炼成后魔导角色伤害提升",
+      source: { characterId: "Albedo", kind: "character" },
+      target: "sourceFinalDefenseToDamageBonus",
+      targetFilter: { recipientHexereiRequired: true },
+      value: {
+        kind: "source_final_defense",
+        maximumValue: { kind: "fixed", value: 0.3 },
+        multiplier: { kind: "fixed", value: 0.0001 }
+      }
+    },
+    {
+      activation: "maximum_reachable",
       id: "albedo.passive.homuncular_nature.elemental_mastery_buff",
       label: "瓶中人的天慧 · 队伍元素精通提升",
       source: { characterId: "Albedo", kind: "character", minimumSourceAscension: 4 },

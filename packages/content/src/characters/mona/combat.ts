@@ -85,6 +85,19 @@ export const monaCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "mona.locked_passive.true_origin_of_astral_steps.three_mercurial_radiance_stacks.vaporize_bonus",
+      label: "魔女的前夜礼·天步真原 · 3层水星天的辉光蒸发伤害提升",
+      source: { characterId: "Mona", kind: "character" },
+      target: "amplifyingReactionBonus",
+      targetFilter: {
+        amplifyingReactionKinds: ["vaporize_forward", "vaporize_reverse"],
+        recipientSourceRelation: "not_source"
+      },
+      value: { kind: "fixed", value: 0.15 }
+    },
+    {
+      activation: "maximum_reachable",
       id: "mona.burst.stellaris_phantasm.omen.damage_bonus",
       label: "星命定轨 · 星异伤害加成",
       source: { characterId: "Mona", kind: "character" },
@@ -138,7 +151,7 @@ export const monaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit and Mirror Reflection of Doom's Phantom tick remain verified lower-level C0 Hydro damage actions from the pinned 6.7 Genshin Optimizer snapshot at commit 21c98eb60355160274a8c4cecfc5671e2151a073, but neither is a selected support output. Stellaris Phantasm's Omen exposes its burst[6] corresponding damage bonus for any selected friendly recipient while the enemy remains affected; C3 adds three Burst levels. The metric does not convert that bonus into another character's damage. C4 can be selected as an explicit current-action snapshot after the user confirms the target is still affected by Omen: Mona and teammates gain 15% Crit Rate when attacking that target. It does not infer Omen application, the target, duration, timing, or a rotation. It excludes Illusory Bubble rupture, Omen duration and Hydro application, Phantom taunt/recurrence/end explosion, alternate-sprint Phantom behavior, Waterborne Destiny's Energy-Recharge-to-Hydro bonus, locked Hexerei states, external infusions, other constellations, and character states.",
+    "Stellaris Phantasm's Omen remains the selected support metric. True Origin of Astral Steps contributes the maximum three Mercurial Radiance stacks as 15% Vaporize reaction bonus to another party member under Hexerei: Secret Rite. Omen extension changes duration rather than the selected hit amount; Bubble rupture, timing, and other character states remain unmodeled.",
   label: monaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

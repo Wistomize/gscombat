@@ -63,6 +63,7 @@ import {
   listPublishedEquipmentCoverageClauses,
   type PublishedEquipmentCoverageClause
 } from "./equipment-coverage-ledger.js"
+import { isHexereiCharacter } from "./rules/hexerei.js"
 import { aThousandFloatingDreamsCombatActionEffects } from "./weapons/a-thousand-floating-dreams/effects.js"
 import { aquaSimulacraCombatActionEffects } from "./weapons/aqua-simulacra/effects.js"
 import { aquilaFavoniaCombatActionEffects } from "./weapons/aquila-favonia/effects.js"
@@ -588,6 +589,7 @@ export function isCombatActionEffectApplicable(
   if (!filter) return true
   if (filter.actionIds && !filter.actionIds.includes(action.id)) return false
   if (filter.recipientCharacterIds && !filter.recipientCharacterIds.includes(action.characterId)) return false
+  if (filter.recipientHexereiRequired && !isHexereiCharacter(action.characterId)) return false
   if (filter.excludedActionIds?.includes(action.id)) return false
   if (filter.recipientWeaponTypes && (!recipientWeaponType || !filter.recipientWeaponTypes.includes(recipientWeaponType))) {
     return false

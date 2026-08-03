@@ -2,6 +2,45 @@ import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { durinDefinition } from "./definition.js"
 
+const durinWhiteFlameResistanceElements = ["anemo", "dendro", "electro", "geo", "pyro"] as const
+const durinWhiteFlameResistanceElementLabels = {
+  anemo: "风",
+  dendro: "草",
+  electro: "雷",
+  geo: "岩",
+  pyro: "火"
+} as const
+
+function createDurinWhiteFlameResistanceEffects(
+  element: (typeof durinWhiteFlameResistanceElements)[number]
+): NonNullable<CharacterCombatCoverage["actionEffects"]> {
+  const baseEffectId = `durin.passive.light_spirit.white_flame_dragon.${element}_resistance_reduction`
+  const elementLabel = durinWhiteFlameResistanceElementLabels[element]
+  return [
+    {
+      activation: "active",
+      exclusivity: { group: "durin-light-spirit-manifestation", variant: "white-flame-dragon" },
+      id: baseEffectId,
+      label: `光灵遵神数显现 · 白焰之龙触发后的${elementLabel}元素抗性降低`,
+      source: { characterId: "Durin", kind: "character", minimumSourceAscension: 1 },
+      target: "enemyResistanceReduction",
+      targetFilter: { elements: [element] },
+      value: { kind: "fixed", value: 0.2 }
+    },
+    {
+      activation: "active",
+      condition: { kind: "hexerei_secret_rite" },
+      id: `durin.locked_passive.sublimation_hymn.white_flame_dragon.${element}_extra_resistance_reduction`,
+      label: `魔女的前夜礼·升华赞歌 · 白焰之龙${elementLabel}元素抗性额外降低`,
+      requiredActiveEffectIds: [baseEffectId],
+      source: { characterId: "Durin", kind: "character" },
+      target: "enemyResistanceReduction",
+      targetFilter: { elements: [element] },
+      value: { kind: "fixed", value: 0.15 }
+    }
+  ]
+}
+
 export const durinCombatCoverage: CharacterCombatCoverage = {
   actions: [
     {
@@ -66,6 +105,36 @@ export const durinCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   characterId: "Durin",
+  actionEffects: [
+    ...durinWhiteFlameResistanceElements.flatMap(createDurinWhiteFlameResistanceEffects),
+    {
+      activation: "active",
+      exclusivity: { group: "durin-light-spirit-manifestation", variant: "dark-decay-dragon" },
+      id: "durin.passive.light_spirit.dark_decay_dragon.vaporize_melt_bonus",
+      label: "光灵遵神数显现 · 黑蚀之龙蒸发与融化伤害提升",
+      source: { characterId: "Durin", kind: "character", minimumSourceAscension: 1 },
+      target: "amplifyingReactionBonus",
+      targetFilter: {
+        amplifyingReactionKinds: ["melt_forward", "vaporize_reverse"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.4 }
+    },
+    {
+      activation: "active",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "durin.locked_passive.sublimation_hymn.dark_decay_dragon.extra_vaporize_melt_bonus",
+      label: "魔女的前夜礼·升华赞歌 · 黑蚀之龙蒸发与融化伤害额外提升",
+      requiredActiveEffectIds: ["durin.passive.light_spirit.dark_decay_dragon.vaporize_melt_bonus"],
+      source: { characterId: "Durin", kind: "character" },
+      target: "amplifyingReactionBonus",
+      targetFilter: {
+        amplifyingReactionKinds: ["melt_forward", "vaporize_reverse"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.3 }
+    }
+  ],
   metrics: [
     {
       actionId: "durin.skill.binary_formula.purity_transformation",
@@ -79,7 +148,7 @@ export const durinCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit and one Binary Formula Purity transformation hit are locked to the pinned 6.7 game-data snapshot from Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073. The selected C0 metric is one Purity transformation hit against one target: Skill parameter skill[0], or 105.6% Attack at Talent Level 1 and 190.08% at Level 10. It declares no target aura, Vaporize, Melt, or other fixed reaction. The Darkness transformation sequence, both burst forms and dragon periodic damage, A1 reaction and resistance branches, A4 stacks, passives, all constellations including inferred C5 Skill levels, external infusions, timing, and character states remain unmodeled.",
+    "The selected metric is one Binary Formula Purity transformation hit. Light Spirit Manifestation's White-Flame resistance branches and Dark-Decay Vaporize/Melt bonus are explicit form snapshots; Sublimation Hymn adds the documented 75% numerical increase when Hexerei: Secret Rite is active. Burst sequences, dragon periodic damage, A4 stacks, constellations, timing, and rotation state remain unmodeled.",
   label: durinDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

@@ -53,6 +53,7 @@ import {
   listCombatActionEffects
 } from "./combat-action-effects.js"
 import { equipmentCoverageLedger } from "./equipment-coverage-ledger.js"
+import { HEXEREI_CHARACTER_IDS, HEXEREI_SECRET_RITE_MECHANISM_COVERAGE } from "./rules/hexerei.js"
 
 function requireAction(actionId: string) {
   const action = getCombatActionDefinition(actionId)
@@ -61,6 +62,40 @@ function requireAction(actionId: string) {
 }
 
 describe("combat action effects", () => {
+  it("keeps Hexerei Secret Rite composition and recipient scopes centralized", () => {
+    expect(HEXEREI_CHARACTER_IDS).toEqual([
+      "Albedo",
+      "Durin",
+      "Fischl",
+      "Klee",
+      "Lohen",
+      "Mona",
+      "Nicole",
+      "Prune",
+      "Razor",
+      "Sucrose",
+      "Varka",
+      "Venti"
+    ])
+    expect(HEXEREI_SECRET_RITE_MECHANISM_COVERAGE.map(({ characterId }) => characterId)).toEqual(
+      HEXEREI_CHARACTER_IDS
+    )
+    expect(HEXEREI_SECRET_RITE_MECHANISM_COVERAGE.find(({ characterId }) => characterId === "Varka")).toEqual({
+      characterId: "Varka",
+      impact: "timing_only"
+    })
+    const effects = listCombatActionEffects()
+    const hexereiRecipientEffects = effects.filter((effect) => effect.targetFilter?.recipientHexereiRequired)
+
+    expect(hexereiRecipientEffects.length).toBeGreaterThan(0)
+    expect(hexereiRecipientEffects.every((effect) => effect.condition?.kind === "hexerei_secret_rite")).toBe(true)
+    expect(
+      effects
+        .filter((effect) => effect.id.includes(".magic-secret."))
+        .every((effect) => effect.condition?.kind === "hexerei_secret_rite")
+    ).toBe(true)
+  })
+
   it("exports stack-snapshot constants from the three artifact module boundaries", () => {
     expect(VERMILLION_HEREAFTER_AFTER_HP_LOSS_ATTACK_PERCENT).toEqual([0.18, 0.28, 0.38, 0.48])
     expect(VOURUKASHAS_GLOW_SKILL_BURST_DAMAGE_BONUS_PER_DAMAGE_TAKEN_STACK).toBeCloseTo(0.08)
@@ -1502,7 +1537,7 @@ describe("combat action effects", () => {
   })
 
   it("declares Angelos Heptades' mutually exclusive current-on-field and Magic Secret snapshots", () => {
-    const pyronado = requireAction("xiangling.burst.pyronado.reverse_vaporize")
+    const ventiSkill = requireAction("venti.skill.skyward_sonnet.press")
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
     const currentOnFieldEffectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
     const magicSecretOffFieldEffectId =
@@ -1530,6 +1565,7 @@ describe("combat action effects", () => {
         label: "尘光七谕 · 魔导·秘仪下后台魔导角色的先导之光（50%伤害）",
         source: { holder: "party_member", kind: "weapon", weaponId: "AngelosHeptades" },
         target: "sourceFinalAttackToDamageBonus",
+        targetFilter: { recipientHexereiRequired: true },
         value: {
           kind: "source_final_attack",
           maximumValue: { kind: "refinement_table", values: [0.13, 0.17, 0.21, 0.25, 0.29] },
@@ -1537,7 +1573,7 @@ describe("combat action effects", () => {
         }
       }
     ])
-    expect(listActiveCombatActionEffectOptionsForAction(pyronado)).toEqual(
+    expect(listActiveCombatActionEffectOptionsForAction(ventiSkill)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: currentOnFieldEffectId }),
         expect.objectContaining({ id: magicSecretOffFieldEffectId })

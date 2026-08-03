@@ -1999,6 +1999,9 @@ function createAdditionalDamageRotationEvent(
     ...(resistanceReduction > 0 ? { resistanceReduction } : {}),
     scaling: {
       coefficient: event.coefficient * event.expectedTriggerProbability,
+      ...(event.flatDamage === undefined
+        ? {}
+        : { flatDamage: event.flatDamage * event.expectedTriggerProbability }),
       stat: event.scalingStat
     },
     statSnapshotTime,

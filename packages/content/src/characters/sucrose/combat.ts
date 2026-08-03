@@ -72,6 +72,25 @@ export const sucroseCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "sucrose.locked_passive.seven_cycle_theory.small_spirit.party_damage_bonus",
+      label: "魔女的前夜礼·七循之理 · 小型风灵召唤后全队伤害提升",
+      source: { characterId: "Sucrose", kind: "character" },
+      target: "damageBonus",
+      value: { kind: "fixed", value: 0.057143 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "sucrose.locked_passive.seven_cycle_theory.large_spirit.hexerei_damage_bonus",
+      label: "魔女的前夜礼·七循之理 · 大型风灵召唤后魔导角色伤害提升",
+      source: { characterId: "Sucrose", kind: "character" },
+      target: "damageBonus",
+      targetFilter: { recipientHexereiRequired: true },
+      value: { kind: "fixed", value: 0.071429 }
+    },
+    {
+      activation: "maximum_reachable",
       id: "sucrose.passive.catalyst_conversion.elemental_mastery_share",
       label: "触媒转换 · 对应元素队友元素精通提升",
       source: { characterId: "Sucrose", kind: "character", minimumSourceAscension: 1 },
@@ -190,7 +209,7 @@ export const sucroseCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "Astable Anemohypostasis Creation - 6308 remains a verified lower-level C0 Anemo damage action from the pinned 6.7 Genshin Optimizer snapshot at commit 21c98eb60355160274a8c4cecfc5671e2151a073, but is not a selected support output. Catalyst Conversion exposes its fixed passive1[0] 50 Elemental Mastery share for a non-Sucrose teammate whose element matches Sucrose's triggering Swirl. Mollis Favonius exposes passive2[0] × Sucrose's Elemental Mastery after her Skill or Burst hits an opponent, again for a non-Sucrose teammate. Each passive table resolves at its fixed level-one value. C6's Pyro, Hydro, Electro, and Cryo elemental-damage bonuses are four mutually exclusive explicit current-action snapshots after the Burst absorbs that element; they can affect any party recipient, including Sucrose. The selected metrics and snapshots do not infer the triggering Swirl or elemental absorption, timing, target eligibility, or rotations; they exclude the unselected skill and burst damage, locked Hexerei states, and other constellations.",
+    "Catalyst Conversion and Mollis Favonius remain the selected Elemental Mastery support outputs. Seven-Cycle Theory contributes 5.7143% party damage after a small spirit and another 7.1429% only to Hexerei recipients after a large spirit. C6 absorption remains explicit; timing, target eligibility, and rotations are not inferred.",
   label: sucroseDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

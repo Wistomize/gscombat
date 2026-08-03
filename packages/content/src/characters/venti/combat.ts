@@ -63,9 +63,91 @@ export const ventiCombatCoverage: CharacterCombatCoverage = {
       scalingStat: "attack",
       status: "verified",
       talentSlot: "skill"
+    },
+    {
+      characterId: "Venti",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "stormeye-continuous-damage",
+          id: "stormeye-continuous-damage",
+          snapshotChecks: [
+            { expectedCoefficient: 0.376, talentLevel: 1 },
+            { expectedCoefficient: 0.6768, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: ventiDefinition.element,
+      evaluator: "declared_direct",
+      id: "venti.burst.winds_grand_ode.stormeye.single_tick",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "burst",
+          id: "stormeye-continuous-damage",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "burst"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "hexerei-stormeye-strengthened",
+          label: "颂时风若强化暴风之眼",
+          maximumValue: 1,
+          minimumValue: 0
+        }
+      ],
+      status: "verified",
+      talentSlot: "burst",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "hexerei-stormeye-strengthened",
+              values: [
+                { multiplier: 1, parameterValue: 0 },
+                { multiplier: 1.35, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "stormeye-continuous-damage",
+            id: "stormeye-continuous-damage",
+            snapshot: "cast"
+          }
+        ],
+        duration: 1
+      }
     }
   ],
   actionEffects: [
+    {
+      actionParameterId: "hexerei-stormeye-strengthened",
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "venti.locked_passive.ode_to_time_winds.stormeye.original_damage_multiplier",
+      label: "魔女的前夜礼·颂时风若 · 暴风之眼造成原本135%伤害",
+      source: { characterId: "Venti", kind: "character" },
+      target: "actionParameter",
+      targetFilter: {
+        actionIds: ["venti.burst.winds_grand_ode.stormeye.single_tick"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 1 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "venti.locked_passive.ode_to_time_winds.after_swirl.current_character_damage_bonus",
+      label: "魔女的前夜礼·颂时风若 · 暴风之眼期间扩散后当前角色伤害提升",
+      source: { characterId: "Venti", kind: "character" },
+      target: "damageBonus",
+      value: { kind: "fixed", value: 0.5 }
+    },
     {
       activation: "active",
       id: "venti.skyward_sonnet.c2.anemo_resistance_shred",
@@ -154,10 +236,20 @@ export const ventiCombatCoverage: CharacterCombatCoverage = {
       sourceActionId: "venti.skill.skyward_sonnet.press",
       status: "verified",
       target: "enemy"
+    },
+    {
+      actionId: "venti.burst.winds_grand_ode.stormeye.single_tick",
+      characterId: "Venti",
+      id: "venti.burst.winds_grand_ode.stormeye.single_tick",
+      kind: "damage",
+      label: "风神之诗 / 暴风之眼单跳伤害",
+      sourceActionId: "venti.burst.winds_grand_ode.stormeye.single_tick",
+      status: "verified",
+      target: "enemy"
     }
   ],
   detail:
-    "Skyward Sonnet's press and hold damage are locked to the pinned 6.7 game-data snapshot from Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073. The selected C0 metric reuses one point-press Skyward Sonnet hit against one target: Skill parameter skill[0], or 276.0% Attack at Talent Level 1 and 496.8% at Level 10. It declares no target aura, elemental absorption, Swirl, or other fixed reaction. C2's base Anemo/Physical resistance reduction after a Skyward Sonnet hit, C4's self-only Anemo damage bonus after an Elemental Particle or Orb pickup, and C6's Stormeye Anemo/absorbed-element resistance reductions are explicit current-action snapshots. C2's additional airborne reduction, the hold hit and updraft, target count and launch state, Stormeye's base and absorbed multi-hit damage, A1 energy restoration, A4 energy refund, locked Hexerei states, external infusions, other constellations including inferred C5 Skill levels, timing, and character states remain unmodeled.",
+    "Skyward Sonnet press and one Stormeye tick are selected damage metrics. Ode to Time Winds contributes 50% current-character damage after Swirl and makes Venti's Stormeye deal 135% original damage under Hexerei: Secret Rite. Absorbed-element ticks, multi-hit duration, energy refunds, timing, and other constellations remain unmodeled.",
   label: ventiDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [
