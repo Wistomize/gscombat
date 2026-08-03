@@ -27,6 +27,7 @@ export const athameArtisCombatActionEffects: readonly CombatActionEffect[] = [
   },
   {
     activation: "active",
+    condition: { kind: "hexerei_secret_rite" },
     id: "weapon.athame-artis.magic-secret.after-burst-hit.self-extra-attack-percent",
     label: "黑蚀 · 魔导·秘仪下元素爆发命中后的装备者额外攻击力",
     source: { kind: "weapon", weaponId: "AthameArtis" },
@@ -44,6 +45,7 @@ export const athameArtisCombatActionEffects: readonly CombatActionEffect[] = [
   },
   {
     activation: "active",
+    condition: { kind: "hexerei_secret_rite" },
     id: "weapon.athame-artis.magic-secret.daylight-blade.other-current-character.extra-attack-percent",
     label: "黑蚀 · 魔导·秘仪下元素爆发命中后3秒内其他当前场上角色额外攻击力",
     source: { holder: "party_member", kind: "weapon", weaponId: "AthameArtis" },

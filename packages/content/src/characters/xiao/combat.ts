@@ -86,6 +86,7 @@ export const xiaoCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "bane-of-all-evil-damage-bonus",
           kind: "flat",
+          label: "元素爆发 · 靖妖傩舞",
           snapshotChecks: [
             { expectedCoefficient: 0.5845, talentLevel: 1 },
             { expectedCoefficient: 0.952, talentLevel: 10 }
@@ -95,6 +96,7 @@ export const xiaoCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a1-bane-damage-bonus-per-stage",
           kind: "flat",
+          label: "固有天赋 · 降魔·平妖大圣",
           minimumSourceAscension: 1,
           scenarioParameterMultiplier: {
             parameterId: "a1-bane-extra-stage-count",

@@ -339,12 +339,55 @@ export function listCharacterTalentLevelConstellationBonuses(
 
 /** Returns every explicitly declared action across the content coverage registry. */
 export function listCombatActions(): readonly CombatActionMetadata[] {
-  return characterCombatCoverageRegistry.flatMap((coverage) => coverage.actions)
+  const declaredActions = characterCombatCoverageRegistry.flatMap((coverage) => coverage.actions)
+  const declaredActionIds = new Set(declaredActions.map((action) => action.id))
+  const derivedActions = new Map<string, CombatActionMetadata>()
+  for (const action of declaredActions) {
+    const noReactionActionId = getNoReactionActionId(action, declaredActionIds)
+    if (!noReactionActionId || declaredActionIds.has(noReactionActionId) || derivedActions.has(noReactionActionId)) continue
+    const { amplifyingReaction: _amplifyingReaction, ...withoutReaction } = action
+    derivedActions.set(noReactionActionId, { ...withoutReaction, id: noReactionActionId })
+  }
+  return [...declaredActions, ...derivedActions.values()]
 }
 
 /** Returns every maintainer-selected, self-owned metric across the combat coverage registry. */
 export function listCombatMetrics(): readonly CombatMetricDefinition[] {
-  return characterCombatCoverageRegistry.flatMap((coverage) => coverage.metrics ?? [])
+  const declaredMetrics = characterCombatCoverageRegistry.flatMap((coverage) => coverage.metrics ?? [])
+  const declaredActions = characterCombatCoverageRegistry.flatMap((coverage) => coverage.actions)
+  const declaredActionIds = new Set(declaredActions.map((action) => action.id))
+  const actionById = new Map(declaredActions.map((action) => [action.id, action]))
+  const derivedMetrics = new Map<string, CombatMetricDefinition>()
+  for (const metric of declaredMetrics) {
+    if (metric.kind !== "damage") continue
+    const action = actionById.get(metric.actionId)
+    if (!action) continue
+    const noReactionActionId = getNoReactionActionId(action, declaredActionIds)
+    if (!noReactionActionId || derivedMetrics.has(noReactionActionId)) continue
+    derivedMetrics.set(noReactionActionId, {
+      ...metric,
+      actionId: noReactionActionId,
+      id: noReactionActionId,
+      label: getNoReactionMetricLabel(metric.label),
+      sourceActionId: noReactionActionId
+    })
+  }
+  return [...declaredMetrics, ...derivedMetrics.values()]
+}
+
+function getNoReactionActionId(
+  action: CombatActionMetadata,
+  declaredActionIds: ReadonlySet<string>
+): string | undefined {
+  if (action.element !== "pyro" || !action.amplifyingReaction) return undefined
+  const baseId = action.id.replace(/\.(hydro_aura_vaporize|cryo_aura_melt|reverse_vaporize)$/, "")
+  if (baseId === action.id) return `${action.id}.no_reaction`
+  return declaredActionIds.has(baseId) ? baseId : `${baseId}.no_reaction`
+}
+
+function getNoReactionMetricLabel(label: string): string {
+  const withoutReaction = label.replace(/\s*·?\s*(水底蒸发|冰底融化|蒸发|融化).*$/, "")
+  return `${withoutReaction} · 无反应`
 }
 
 /** Returns every self-owned metric selected for one character. */

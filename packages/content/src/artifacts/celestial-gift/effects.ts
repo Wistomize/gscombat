@@ -23,6 +23,7 @@ function createCelestialGiftElementDamageBonusEffect(
   const isMortalHymn = state === "mortal-hymn"
   return {
     activation: "active",
+    ...(isMortalHymn ? { condition: { kind: "hexerei_secret_rite" as const } } : {}),
     exclusivity: {
       group: `celestial-gift-4pc-${element}-damage-bonus`,
       variant: state

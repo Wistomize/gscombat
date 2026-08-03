@@ -21,6 +21,7 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
     },
     {
       activation: "active",
+      condition: { kind: "hexerei_secret_rite" },
       exclusivity: { group: "gest-of-the-mighty-wolf-howl-magic-secret", variant: `${stackCount}-stack` },
       id: `weapon.gest-of-the-mighty-wolf.magic-secret.${stackCount}-stack.crit-damage`,
       label: `狼的武功歌 · 魔导·秘仪下${stackCount}层狼嚎暴击伤害`,

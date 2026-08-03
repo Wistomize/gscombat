@@ -1371,8 +1371,9 @@ export const reviewedMultiScalingEvidenceRegistry = {
         },
         {
           coefficientParameterId: "masque-of-the-red-death-normal-attack-bond-life-increase",
+          coefficientMultiplierScenarioParameterId: "bond-of-life-percent",
           explanation:
-            "At the declared fixed 100% Bond of Life, the pinned infusion.normal_dmgInc auto[11] is a second Attack term of the same first normal hit.",
+            "The pinned infusion.normal_dmgInc auto[11] is multiplied by the declared pre-hit Bond of Life percentage for the same first normal hit.",
           groupId: "auto",
           parameterIndex: 11,
           snapshotChecks: [
@@ -1409,8 +1410,9 @@ export const reviewedMultiScalingEvidenceRegistry = {
         },
         {
           coefficientParameterId: "masque-of-the-red-death-normal-attack-bond-life-increase",
+          coefficientMultiplierScenarioParameterId: "bond-of-life-percent",
           explanation:
-            "At the declared fixed 100% Bond of Life, the pinned infusion.normal_dmgInc auto[11] is a second Attack term of the same first normal hit.",
+            "The pinned infusion.normal_dmgInc auto[11] is multiplied by the declared pre-hit Bond of Life percentage for the same first normal hit.",
           groupId: "auto",
           parameterIndex: 11,
           snapshotChecks: [

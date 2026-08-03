@@ -131,9 +131,10 @@ function isSelectablePrimaryAction(action: CombatActionMetadata, selectedDamageA
   return action.kind === "damage" && action.status === "verified" && selectedDamageActionIds.has(action.id)
 }
 
-function getPrimaryActionLabel(action: CombatActionMetadata): string {
+function getPrimaryActionLabel(action: CombatActionMetadata, metricLabel?: string): string {
   const friendlyLabel = friendlyPrimaryActionLabels[action.id]
   if (friendlyLabel) return friendlyLabel
+  if (metricLabel) return metricLabel
   const hitLabel = action.damageParts && action.damageParts.length > 1 ? "已验证基础多段伤害" : "已验证基础单段伤害"
   return `${genericActionPrefixes[action.talentSlot]} / ${hitLabel}`
 }
@@ -173,10 +174,10 @@ function cloneRecipientHpFractionRequirement(
   return { ...requirement }
 }
 
-function createPrimaryAction(action: CombatActionMetadata): CharacterPrimaryAction {
+function createPrimaryAction(action: CombatActionMetadata, metricLabel?: string): CharacterPrimaryAction {
   return {
     id: action.id,
-    label: getPrimaryActionLabel(action),
+    label: getPrimaryActionLabel(action, metricLabel),
     ...(action.scenarioParameters?.length
       ? { scenarioParameters: action.scenarioParameters.map(cloneScenarioParameter) }
       : {})
@@ -226,19 +227,27 @@ function createSupportMetric(
   }
 }
 
-function groupSelectableDamageActionsByCharacter(): ReadonlyMap<string, readonly CombatActionMetadata[]> {
-  const actionsByCharacter = new Map<string, CombatActionMetadata[]>()
+interface SelectableDamageAction {
+  readonly action: CombatActionMetadata
+  readonly metric: CombatDamageMetricDefinition
+}
+
+function groupSelectableDamageActionsByCharacter(): ReadonlyMap<string, readonly SelectableDamageAction[]> {
+  const actionsByCharacter = new Map<string, SelectableDamageAction[]>()
   const selectedDamageMetrics = listCombatMetrics().filter(
     (metric): metric is CombatDamageMetricDefinition => metric.kind === "damage" && metric.status === "verified"
   )
-  const selectedDamageActionIds = new Set(selectedDamageMetrics.map((metric) => metric.actionId))
+  const selectedDamageMetricsByActionId = new Map(selectedDamageMetrics.map((metric) => [metric.actionId, metric]))
+  const selectedDamageActionIds = new Set(selectedDamageMetricsByActionId.keys())
   for (const action of listCombatActions().filter((candidate) => isSelectablePrimaryAction(candidate, selectedDamageActionIds))) {
+    const metric = selectedDamageMetricsByActionId.get(action.id)
+    if (!metric) continue
     const characterActions = actionsByCharacter.get(action.characterId)
     if (characterActions) {
-      characterActions.push(action)
+      characterActions.push({ action, metric })
       continue
     }
-    actionsByCharacter.set(action.characterId, [action])
+    actionsByCharacter.set(action.characterId, [{ action, metric }])
   }
   return actionsByCharacter
 }
@@ -287,7 +296,7 @@ function createSupportedCharacters(): readonly CharacterCatalogEntry[] {
     const actions = actionsByCharacter.get(presentation.characterId)
     const supportMetrics = supportMetricsByCharacter.get(presentation.characterId) ?? []
     if (!actions && supportMetrics.length === 0) return []
-    const primaryActions = actions?.map(createPrimaryAction) ?? []
+    const primaryActions = actions?.map(({ action, metric }) => createPrimaryAction(action, metric.label)) ?? []
     return [
       {
         characterId: presentation.characterId,

@@ -1717,11 +1717,11 @@ const reviewedCoverageByEquipmentId = new Map<string, EquipmentCoverageEntry>([
           status: "implemented"
         },
         {
+          effectIds: ["weapon.crimson-moons-semblance.charged-hit.bond-of-life"],
           id: "weapon.crimson-moons-semblance.charged-hit.bond-generation",
           label: "赤月之形 · 重击命中后赋予生命之契",
-          reason: "生命之契在触发重击后才产生；当前模型只结算一个已选核心动作的既有快照。",
           source: weaponSource("CrimsonMoonsSemblance"),
-          status: "not_applicable"
+          status: "implemented"
         }
       ],
       equipmentId: "CrimsonMoonsSemblance",

@@ -1,5 +1,6 @@
 import {
   elementalResonanceDefinitions,
+  hasHexereiSecretRite,
   isMoonsignCharacter,
   resolveMoonsignLevel,
   type ElementalResonanceId,
@@ -12,6 +13,7 @@ import { resolveBuildElement } from "./build-variant.js"
 
 export interface ResolvedTeamState {
   readonly activeResonanceIds: readonly ElementalResonanceId[]
+  readonly hexereiSecretRite: boolean
   readonly moonsign: {
     readonly characterBuildIds: readonly string[]
     readonly characterCount: number
@@ -44,6 +46,7 @@ export function resolveTeamState(
   }
   return {
     activeResonanceIds,
+    hexereiSecretRite: hasHexereiSecretRite(party.map((build) => build.characterId)),
     moonsign: {
       characterBuildIds: moonsignBuilds.map((build) => build.buildId),
       characterCount: moonsignBuilds.length,

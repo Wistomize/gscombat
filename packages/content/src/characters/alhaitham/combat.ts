@@ -86,6 +86,7 @@ export const alhaithamCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-damage-bonus-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 谜林道破",
           maximumValueParameterId: "a4-maximum-damage-bonus",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.001, talentLevel: 1 }],

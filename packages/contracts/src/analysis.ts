@@ -34,6 +34,7 @@ const TeamStateSchema = Type.Object({
     Type.Literal("resonance.protective"),
     Type.Literal("resonance.pyro")
   ])),
+  hexereiSecretRite: Type.Boolean(),
   moonsign: Type.Object({
     characterBuildIds: Type.Array(Type.String({ minLength: 1, maxLength: 100 })),
     characterCount: Type.Integer({ minimum: 0, maximum: 4 }),
@@ -408,7 +409,12 @@ const RotationSummarySchema = Type.Object({
   events: Type.Array(RotationEventSummarySchema)
 })
 
-export const AnalysisRequestSchema = EvaluationScenarioSchema
+export const AnalysisRequestSchema = Type.Object({
+  ...EvaluationScenarioSchema.properties,
+  weaponComparisonRefinements: Type.Optional(
+    Type.Record(Type.String({ minLength: 1, maxLength: 100 }), Type.Integer({ minimum: 1, maximum: 5 }))
+  )
+})
 export type AnalysisRequest = Type.Static<typeof AnalysisRequestSchema>
 
 /** Returns the standardized refinement used by weapon counterfactual comparisons. */
@@ -432,6 +438,15 @@ export const AnalysisResponseSchema = Type.Object({
         weight: Type.Number()
       })
     ),
+    progressionGains: Type.Array(
+      Type.Object({
+        deltaDamage: Type.Number(),
+        gainRatio: Type.Number(),
+        id: Type.String(),
+        label: Type.String(),
+        weight: Type.Number()
+      })
+    ),
     totalEffectiveRolls: Type.Number(),
     weapons: Type.Array(
       Type.Object({
@@ -448,12 +463,14 @@ export const AnalysisResponseSchema = Type.Object({
   evaluation: Type.Object({
     appliedEffects: Type.Array(
       Type.Object({
+        actionParameterId: Type.Optional(Type.String({ minLength: 1, maxLength: 80 })),
         id: Type.String({ minLength: 1, maxLength: 160 }),
         label: Type.String({ minLength: 1, maxLength: 160 }),
         scalingStat: Type.Optional(ScalingStatSchema),
         sourceId: Type.String({ minLength: 1, maxLength: 100 }),
         target: Type.Union([
           Type.Literal("additionalDamageEvent"),
+          Type.Literal("actionParameter"),
           Type.Literal("attackPercent"),
           Type.Literal("baseDamageFlat"),
           Type.Literal("critDamage"),
@@ -508,6 +525,18 @@ export const AnalysisResponseSchema = Type.Object({
       energyRecharge: Type.Number(),
       flatAttack: Type.Number(),
       resistanceReduction: Type.Number(),
+      statContributions: Type.Array(
+        Type.Object({
+          label: Type.String(),
+          stage: Type.Union([
+            Type.Literal("attackPercent"),
+            Type.Literal("baseAttack"),
+            Type.Literal("damageBonus"),
+            Type.Literal("flatAttack")
+          ]),
+          value: Type.Number()
+        })
+      ),
       scalingTerms: Type.Optional(Type.Readonly(Type.Array(ScalingTermSchema))),
       talentMultiplier: Type.Union([Type.Number(), Type.Null()])
     })

@@ -97,6 +97,7 @@ export const nahidaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-tri-karma-damage-bonus-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 慧明缘觉智论",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.001, talentLevel: 1 }],
           sourceStat: "elementalMastery",
@@ -109,6 +110,7 @@ export const nahidaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-tri-karma-critical-rate-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 慧明缘觉智论",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.0003, talentLevel: 1 }],
           sourceStat: "elementalMastery",
@@ -213,6 +215,7 @@ export const nahidaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-tri-karma-damage-bonus-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 慧明缘觉智论",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.001, talentLevel: 1 }],
           sourceStat: "elementalMastery",
@@ -225,6 +228,7 @@ export const nahidaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-tri-karma-critical-rate-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 慧明缘觉智论",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.0003, talentLevel: 1 }],
           sourceStat: "elementalMastery",

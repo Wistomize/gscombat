@@ -84,6 +84,7 @@ export const emilieCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-burning-damage-bonus-per-1000-attack",
           kind: "source_stat",
+          label: "固有天赋 · 精馏",
           maximumValueParameterId: "a4-maximum-burning-damage-bonus",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.15, talentLevel: 1 }],

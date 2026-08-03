@@ -63,6 +63,7 @@ export const ganyuCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a1-undivided-heart-crit-rate-bonus",
           kind: "flat",
+          label: "固有天赋 · 唯此一心",
           minimumSourceAscension: 1,
           snapshotChecks: [{ expectedCoefficient: 0.2, talentLevel: 1 }],
           target: "critRate"
@@ -70,6 +71,7 @@ export const ganyuCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-harmony-between-heaven-and-earth-cryo-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 天地交泰",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.2, talentLevel: 1 }],
           target: "damageBonus"

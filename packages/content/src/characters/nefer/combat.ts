@@ -116,6 +116,7 @@ export const neferCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a1-veil-elemental-mastery-bonus",
           kind: "flat",
+          label: "固有天赋 · 月下的豪赌",
           minimumSourceAscension: 1,
           scenarioParameterMultiplier: {
             parameterId: "a1-veil-stack-count",

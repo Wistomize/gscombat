@@ -753,13 +753,18 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     },
     async (request) => {
       const evaluation = evaluateScenario(request.body, gameData)
-      const analysis = analyzeScenario(request.body, gameData)
-      const { scalingTerms, ...resolvedStats } = evaluation.stats
+      const analysis = analyzeScenario(request.body, gameData, {
+        ...(request.body.weaponComparisonRefinements === undefined
+          ? {}
+          : { weaponComparisonRefinements: request.body.weaponComparisonRefinements })
+      })
+      const { scalingTerms, statContributions, ...resolvedStats } = evaluation.stats
       return {
         analysis: {
           ...analysis,
           effectiveArtifacts: [...analysis.effectiveArtifacts],
           marginalSubstats: [...analysis.marginalSubstats],
+          progressionGains: [...analysis.progressionGains],
           weapons: [...analysis.weapons]
         },
         engineVersion: "scenario-1",
@@ -776,6 +781,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
           },
           teamState: {
             activeResonanceIds: [...evaluation.teamState.activeResonanceIds],
+            hexereiSecretRite: evaluation.teamState.hexereiSecretRite,
             moonsign: {
               characterBuildIds: [...evaluation.teamState.moonsign.characterBuildIds],
               characterCount: evaluation.teamState.moonsign.characterCount,
@@ -784,6 +790,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
           },
           stats: {
             ...resolvedStats,
+            statContributions: [...statContributions],
             ...(scalingTerms ? { scalingTerms: [...scalingTerms] } : {})
           }
         }

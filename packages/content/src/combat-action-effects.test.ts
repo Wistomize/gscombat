@@ -864,6 +864,7 @@ describe("combat action effects", () => {
     })
     expect(mortalHymnEffect).toEqual({
       activation: "active",
+      condition: { kind: "hexerei_secret_rite" },
       exclusivity: { group: "celestial-gift-4pc-pyro-damage-bonus", variant: "mortal-hymn" },
       id: mortalHymnEffectId,
       label:
@@ -1523,6 +1524,7 @@ describe("combat action effects", () => {
       },
       {
         activation: "active",
+        condition: { kind: "hexerei_secret_rite" },
         exclusivity: { group: "angelos-heptades-guiding-light-recipient-position", variant: "magic-secret-off-field" },
         id: magicSecretOffFieldEffectId,
         label: "尘光七谕 · 魔导·秘仪下后台魔导角色的先导之光（50%伤害）",

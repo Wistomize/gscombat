@@ -27,6 +27,14 @@ function withWeapon(weaponId: string, refinement = 1) {
   }
 }
 
+function withHexereiSecretRite(teammates: readonly typeof xianglingNationalBuiltinBuild[]) {
+  return [
+    ...teammates,
+    { ...withWeapon("TestNoWeapon"), buildId: "test.hexerei.mona", characterId: "Mona" },
+    { ...withWeapon("TestNoWeapon"), buildId: "test.hexerei.venti", characterId: "Venti" }
+  ]
+}
+
 function resolveEffects(actionId: string, setId: string, activeEffectIds: readonly string[] = []) {
   return resolveCombatActionEffects({
     action: requireAction(actionId),
@@ -45,6 +53,9 @@ function resolveWeaponEffects(
   activeEffectIds: readonly string[] = [],
   teammates: readonly typeof xianglingNationalBuiltinBuild[] = []
 ) {
+  const resolvedTeammates = activeEffectIds.some((effectId) => effectId.includes(".magic-secret."))
+    ? withHexereiSecretRite(teammates)
+    : teammates
   return resolveCombatActionEffects({
     action: requireAction(actionId),
     activeEffectIds,
@@ -52,7 +63,7 @@ function resolveWeaponEffects(
     enemyCount: 1,
     moonsignLevel: "ascendant_gleam",
     primary: withWeapon(weaponId),
-    teammates
+    teammates: resolvedTeammates
   })
 }
 
@@ -383,13 +394,18 @@ describe("current-action equipment effects", () => {
     const celestialGuidanceEffectId = "artifact.celestial-gift.4pc.celestial-guidance.pyro.damage-bonus"
     const mortalHymnEffectId = "artifact.celestial-gift.4pc.mortal-hymn.pyro.damage-bonus"
     const hydroEffectId = "artifact.celestial-gift.4pc.celestial-guidance.hydro.damage-bonus"
-    const teammate = { ...withArtifactSet("CelestialGift"), buildId: "test.celestial-gift" }
+    const teammate = {
+      ...withArtifactSet("CelestialGift"),
+      buildId: "test.celestial-gift",
+      characterId: "Mona"
+    }
+    const hexereiTeammate = { ...withWeapon("TestNoWeapon"), buildId: "test.celestial-gift.venti", characterId: "Venti" }
     const baseInput = {
       action: requireAction("xiangling.burst.pyronado.reverse_vaporize"),
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: withArtifactSet("TestNoArtifactSet"),
-      teammates: [teammate]
+      teammates: [teammate, hexereiTeammate]
     }
     const celestialGuidance = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [celestialGuidanceEffectId] })
     const mortalHymn = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [mortalHymnEffectId] })
@@ -1250,7 +1266,7 @@ describe("current-action equipment effects", () => {
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: withWeapon("TestNoWeapon"),
-      teammates: [athameR1Teammate]
+      teammates: withHexereiSecretRite([athameR1Teammate])
     })
     const r5TeammateAthame = resolveCombatActionEffects({
       action: requireAction("xiangling.normal.auto.first_hit"),
@@ -1258,7 +1274,7 @@ describe("current-action equipment effects", () => {
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: withWeapon("TestNoWeapon"),
-      teammates: [athameR5Teammate]
+      teammates: withHexereiSecretRite([athameR5Teammate])
     })
     const inactiveTeammateAthame = resolveCombatActionEffects({
       action: requireAction("xiangling.normal.auto.first_hit"),

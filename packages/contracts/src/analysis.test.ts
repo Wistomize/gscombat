@@ -5,6 +5,7 @@ import { AnalysisResponseSchema, getWeaponComparisonRefinement, type AnalysisRes
 
 const emptyTeamState = {
   activeResonanceIds: [],
+  hexereiSecretRite: false,
   moonsign: { characterBuildIds: [], characterCount: 0, level: "none" }
 } as const
 
@@ -23,6 +24,7 @@ describe("AnalysisResponseSchema", () => {
         baselineExpectedDamage: 1,
         effectiveArtifacts: [],
         marginalSubstats: [],
+        progressionGains: [],
         totalEffectiveRolls: 0,
         weapons: []
       },
@@ -133,6 +135,7 @@ describe("AnalysisResponseSchema", () => {
           energyRecharge: 0,
           flatAttack: 0,
           resistanceReduction: 0,
+          statContributions: [],
           talentMultiplier: 1
         }
       }
@@ -220,6 +223,7 @@ describe("AnalysisResponseSchema", () => {
           baselineExpectedDamage: 500,
           effectiveArtifacts: [],
           marginalSubstats: [],
+          progressionGains: [],
           totalEffectiveRolls: 0,
           weapons: []
         },
@@ -283,6 +287,7 @@ describe("AnalysisResponseSchema", () => {
             energyRecharge: 0,
             flatAttack: 0,
             resistanceReduction: 0,
+            statContributions: [],
             scalingTerms: [{ coefficient: 1, stat: "elementalMastery" }],
             talentMultiplier: null
           }
@@ -297,6 +302,7 @@ describe("AnalysisResponseSchema", () => {
         baselineExpectedDamage: 500,
         effectiveArtifacts: [],
         marginalSubstats: [],
+        progressionGains: [],
         totalEffectiveRolls: 0,
         weapons: []
       },
@@ -388,6 +394,7 @@ describe("AnalysisResponseSchema", () => {
           energyRecharge: 0,
           flatAttack: 0,
           resistanceReduction: 0,
+          statContributions: [],
           scalingTerms: [
             { coefficient: 1.564, stat: "attack" },
             {
@@ -437,6 +444,7 @@ describe("AnalysisResponseSchema", () => {
         baselineExpectedDamage: 1,
         effectiveArtifacts: [],
         marginalSubstats: [],
+        progressionGains: [],
         totalEffectiveRolls: 0,
         weapons: []
       },
@@ -538,6 +546,7 @@ describe("AnalysisResponseSchema", () => {
           energyRecharge: 0,
           flatAttack: 0,
           resistanceReduction: 0,
+          statContributions: [],
           talentMultiplier: 1
         }
       }
@@ -583,6 +592,7 @@ describe("AnalysisResponseSchema", () => {
         baselineExpectedDamage: 540,
         effectiveArtifacts: [],
         marginalSubstats: [],
+        progressionGains: [],
         totalEffectiveRolls: 0,
         weapons: []
       },
@@ -655,6 +665,7 @@ describe("AnalysisResponseSchema", () => {
           energyRecharge: 0,
           flatAttack: 0,
           resistanceReduction: 0,
+          statContributions: [],
           talentMultiplier: 1
         }
       }

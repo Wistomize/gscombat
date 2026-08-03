@@ -54,6 +54,7 @@ export const kamisatoAyakaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-senho-cryo-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 寒天宣命祝词",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.18, talentLevel: 1 }],
           target: "damageBonus"
@@ -100,6 +101,7 @@ export const kamisatoAyakaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-senho-cryo-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 寒天宣命祝词",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.18, talentLevel: 1 }],
           target: "damageBonus"

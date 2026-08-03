@@ -195,7 +195,7 @@
   border-bottom: 1px solid var(--border-light);
   display: grid;
   gap: 16px;
-  grid-template-columns: 28px 42px minmax(180px, 1fr) 120px 90px;
+  grid-template-columns: 28px 42px minmax(180px, 1fr) 82px 120px 90px;
   min-height: 56px;
 }
 
@@ -217,6 +217,24 @@
 .weaponRow > b {
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.weaponRefinement {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.weaponRefinement span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.weaponRefinement select {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  min-height: 32px;
+  padding: 0 6px;
 }
 
 .positive {
@@ -260,6 +278,14 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.gainGroupTitle {
+  border-top: 1px solid var(--border-light);
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 20px;
+  padding-top: 16px;
 }
 
 .effectiveReport {
@@ -819,14 +845,6 @@
     grid-template-columns: 280px minmax(0, 1fr);
   }
 
-  .artifactGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .artifactEditor:last-child {
-    grid-column: auto;
-  }
-
   .artifactMainGrid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -933,7 +951,7 @@
 
   .weaponRow {
     gap: 8px;
-    grid-template-columns: 22px 38px minmax(110px, 1fr) 72px;
+    grid-template-columns: 22px 38px minmax(110px, 1fr) 68px 62px;
   }
 
   .weaponRow > span:nth-last-child(2) {

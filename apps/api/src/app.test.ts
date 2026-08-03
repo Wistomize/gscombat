@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from "vitest"
-import { supportedWeapons } from "@gscombat/content"
+import { listCombatActions, listCombatMetrics, supportedWeapons } from "@gscombat/content"
 import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 
 import { buildApp, serializeCombatAction, serializeRotationEvent } from "./app.js"
@@ -161,6 +161,24 @@ describe("API", () => {
     })
   })
 
+  it("publishes concrete Pyro reaction labels together with a no-reaction metric", async () => {
+    const response = await app.inject({ method: "GET", url: "/v1/catalog" })
+
+    expect(response.statusCode).toBe(200)
+    const arlecchino = response.json().characters.find(
+      (character: { characterId: string }) => character.characterId === "Arlecchino"
+    )
+    const labels = arlecchino.primaryActions.map((action: { label: string }) => action.label)
+    expect(labels).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("无反应"),
+        expect.stringContaining("水底蒸发"),
+        expect.stringContaining("冰底融化")
+      ])
+    )
+    expect(labels).not.toContain("已验证基础单段伤害")
+  })
+
   it("exposes the complete combat coverage graph without relying on a character-by-character fixture list", async () => {
     const response = await app.inject({ method: "GET", url: "/v1/combat-coverage" })
 
@@ -258,17 +276,16 @@ describe("API", () => {
     }
     const expectedActions = [
       ...new Set(
-        coverage.characters.flatMap((character) =>
-          character.metrics
-            .filter((metric) => metric.kind === "damage" && metric.status === "verified")
-            .map((metric) => [character.characterId, metric.sourceActionId].join(":"))
-        )
+        listCombatMetrics()
+          .filter((metric) => metric.kind === "damage" && metric.status === "verified")
+          .map((metric) => [metric.characterId, metric.sourceActionId].join(":"))
       )
     ].sort()
     const catalogActions = catalog.characters
       .flatMap((character) => character.primaryActionIds.map((actionId) => [character.characterId, actionId].join(":")))
       .sort()
     const coverageByCharacterId = new Map(coverage.characters.map((character) => [character.characterId, character]))
+    const actionById = new Map(listCombatActions().map((action) => [action.id, action]))
 
     expect(catalogActions).toEqual(expectedActions)
     expect(new Set(catalog.characters.map((character) => character.characterId)).size).toBe(catalog.characters.length)
@@ -281,10 +298,13 @@ describe("API", () => {
       expect(character.primaryActionIds).toEqual(character.primaryActions.map((action) => action.id))
       expect(new Set(character.primaryActionIds).size).toBe(character.primaryActionIds.length)
       for (const action of character.primaryActions) {
-        const coverageAction = coverageCharacter?.actions.find((candidate) => candidate.id === action.id)
+        const registryAction = actionById.get(action.id)
 
         expect(action.label.trim()).not.toHaveLength(0)
-        expect(action.scenarioParameters).toEqual(coverageAction?.scenarioParameters)
+        const publicScenarioParameters = registryAction?.scenarioParameters?.map(
+          ({ minimumSourceConstellationByValue: _minimumSourceConstellationByValue, ...parameter }) => parameter
+        )
+        expect(action.scenarioParameters).toEqual(publicScenarioParameters)
       }
     }
   })
@@ -730,6 +750,85 @@ describe("API", () => {
     expect(automaticEvaluation.result.expectedDamage).toBeCloseTo(explicitEvaluation.result.expectedDamage)
   })
 
+  it("keeps Crimson Moon ahead of Disaster and Remorse for Arlecchino in a non-Hexerei team", async () => {
+    const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
+    const presetScenario = presetResponse.json().presets[0].scenario
+    const xiangling = presetScenario.teammates.find((build: { characterId: string }) => build.characterId === "Xiangling")
+    const bennett = presetScenario.teammates.find((build: { characterId: string }) => build.characterId === "Bennett")
+    const arlecchino = {
+      ...xiangling,
+      buildId: "test.arlecchino.crimson-moon-api",
+      characterId: "Arlecchino",
+      level: 80,
+      talents: { ...xiangling.talents, normal: 8 },
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "CrimsonMoonsSemblance" }
+    }
+    const zhongli = {
+      ...presetScenario.primary,
+      buildId: "test.zhongli.crimson-moon-api",
+      characterId: "Zhongli"
+    }
+    const basePayload = {
+      ...presetScenario,
+      conditions: {
+        actionParameters: { "bond-of-life-percent": 100 },
+        activeEffectIds: [],
+        enemyCount: 1,
+        equipmentEffectMode: "maximum_reachable"
+      },
+      externalBuffs: [],
+      primary: arlecchino,
+      targetActionId: "arlecchino.normal.masque_of_the_red_death.first_hit.full_bond.no_reaction",
+      teammates: [zhongli, bennett, xiangling]
+    }
+    const [defaultResponse, refinedResponse] = await Promise.all([
+      app.inject({ method: "POST", payload: basePayload, url: "/v1/analysis" }),
+      app.inject({
+        method: "POST",
+        payload: { ...basePayload, weaponComparisonRefinements: { CrimsonMoonsSemblance: 5 } },
+        url: "/v1/analysis"
+      })
+    ])
+
+    expect(defaultResponse.statusCode).toBe(200)
+    expect(refinedResponse.statusCode).toBe(200)
+    const body = defaultResponse.json()
+    const refinedBody = refinedResponse.json()
+    const crimsonMoon = body.analysis.weapons.find(
+      (weapon: { weaponId: string }) => weapon.weaponId === "CrimsonMoonsSemblance"
+    )
+    const disasterAndRemorse = body.analysis.weapons.find(
+      (weapon: { weaponId: string }) => weapon.weaponId === "DisasterAndRemorse"
+    )
+    expect(body.evaluation.teamState.hexereiSecretRite).toBe(false)
+    expect(body.evaluation.appliedEffects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          actionParameterId: "bond-of-life-percent",
+          id: "weapon.crimson-moons-semblance.charged-hit.bond-of-life",
+          target: "actionParameter",
+          value: 25
+        })
+      ])
+    )
+    const refinedCrimsonMoon = refinedBody.analysis.weapons.find(
+      (weapon: { weaponId: string }) => weapon.weaponId === "CrimsonMoonsSemblance"
+    )
+    expect(crimsonMoon).toMatchObject({ refinement: 1 })
+    expect(crimsonMoon.expectedDamage).toBeGreaterThan(disasterAndRemorse.expectedDamage)
+    expect(refinedCrimsonMoon).toMatchObject({ refinement: 5 })
+    expect(refinedCrimsonMoon.expectedDamage).toBeGreaterThan(crimsonMoon.expectedDamage)
+    expect(body.analysis.progressionGains.map((gain: { id: string }) => gain.id)).toEqual(
+      expect.arrayContaining(["talent.normal.9", "character-level.90", "character-level.95", "character-level.100"])
+    )
+    expect(body.evaluation.stats.statContributions.map((contribution: { label: string }) => contribution.label)).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("空之杯主词条 · 火元素伤害加成"),
+        "固有天赋 · 唯有厄月知晓"
+      ])
+    )
+  })
+
   it("keeps a partial-party Xiangling Burst analysis available while excluding full-party-energy weapon candidates", async () => {
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
@@ -1025,7 +1124,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary: {
             ...presetScenario.primary,
@@ -1087,7 +1186,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary,
           targetActionId: "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize",
@@ -1150,7 +1249,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary,
           targetActionId: "nilou.skill.dance_of_haftkarsvar.initial_hit",
@@ -1205,7 +1304,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary,
           targetActionId: "xiangling.skill.guoba.single_flame_breath",
@@ -1251,7 +1350,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary,
           targetActionId: "baizhu.skill.universal_diagnosis.gossamer_sprite.initial_hit",
@@ -1295,7 +1394,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary,
           targetActionId: "mualani.skill.surfshark_wavebreaker.sharkys_surging_bite.full_wave_momentum",
@@ -1340,7 +1439,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary,
           targetActionId: "xiangling.skill.guoba.single_flame_breath",
@@ -1393,7 +1492,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary: xiangling,
           targetActionId: "xiangling.skill.guoba.single_flame_breath",
@@ -1438,7 +1537,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary: xiangling,
           targetActionId: "xiangling.skill.guoba.single_flame_breath",
@@ -1488,7 +1587,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary: xiangling,
           targetActionId: "xiangling.skill.guoba.single_flame_breath",
@@ -1537,7 +1636,7 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary,
           targetActionId: "aloy.burst.prophecies_of_dawn.explosion",
@@ -2085,7 +2184,16 @@ describe("API", () => {
       ...bennett,
       artifacts: bennett.artifacts.map((artifact: { readonly setId: string }) => ({ ...artifact, setId: "CelestialGift" })),
       buildId: "test.celestial-gift-holder",
-      label: "天之美赐持有者"
+      characterId: "Klee",
+      label: "天之美赐持有者",
+      weapon: { ascension: 6, level: 90, refinement: 5, weaponId: "TheWidsith" }
+    }
+    const hexereiTeammate = {
+      ...bennett,
+      buildId: "test.celestial-gift-venti",
+      characterId: "Venti",
+      label: "魔导秘仪测试温迪",
+      weapon: { ascension: 6, level: 90, refinement: 5, weaponId: "TheStringless" }
     }
     const requestAnalysis = (activeEffectIds: readonly string[]) =>
       app.inject({
@@ -2096,7 +2204,7 @@ describe("API", () => {
           externalBuffs: [],
           primary: { ...xiangling, buildId: "test.xiangling.celestial-gift-api" },
           targetActionId: "xiangling.burst.pyronado.reverse_vaporize",
-          teammates: [celestialGiftHolder]
+          teammates: [celestialGiftHolder, hexereiTeammate]
         },
         url: "/v1/analysis"
       })

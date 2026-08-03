@@ -25,6 +25,7 @@ export const disasterAndRemorseCombatActionEffects: readonly CombatActionEffect[
   },
   {
     activation: "active",
+    condition: { kind: "hexerei_secret_rite" },
     id: "weapon.disaster-and-remorse.magic-secret.extra-normal-charged-damage-bonus",
     label: "灾悔 · 魔导·秘仪下无赦的额外普通攻击、重击伤害",
     source: { kind: "weapon", weaponId: "DisasterAndRemorse" },
@@ -34,6 +35,7 @@ export const disasterAndRemorseCombatActionEffects: readonly CombatActionEffect[
   },
   {
     activation: "active",
+    condition: { kind: "hexerei_secret_rite" },
     id: "weapon.disaster-and-remorse.magic-secret.extra-skill-burst-damage-bonus",
     label: "灾悔 · 魔导·秘仪下无愈的额外元素战技、元素爆发伤害",
     source: { kind: "weapon", weaponId: "DisasterAndRemorse" },

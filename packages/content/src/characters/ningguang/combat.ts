@@ -33,6 +33,7 @@ export const ningguangCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-trove-of-marvelous-treasures-geo-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 储之千日，用之一刻",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.12, talentLevel: 1 }],
           target: "damageBonus"
@@ -168,6 +169,7 @@ export const ningguangCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-trove-of-marvelous-treasures-geo-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 储之千日，用之一刻",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.12, talentLevel: 1 }],
           target: "damageBonus"

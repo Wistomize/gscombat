@@ -78,6 +78,7 @@ export const xingqiuCombatCoverage: CharacterCombatCoverage = {
         {
           fixedValue: 0.2,
           kind: "flat",
+          label: "固有天赋 · 虚实工笔",
           minimumSourceAscension: 4,
           target: "damageBonus"
         }
@@ -123,6 +124,7 @@ export const xingqiuCombatCoverage: CharacterCombatCoverage = {
         {
           fixedValue: 0.2,
           kind: "flat",
+          label: "固有天赋 · 虚实工笔",
           minimumSourceAscension: 4,
           target: "damageBonus"
         }

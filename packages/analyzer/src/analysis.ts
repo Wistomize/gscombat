@@ -1,6 +1,7 @@
 import {
   getCharacterBurstEnergyCost,
   getCombatActionDefinition,
+  hasHexereiSecretRite,
   isCombatActionEffectApplicable,
   listCombatActionEffects,
   supportedWeapons,
@@ -49,11 +50,24 @@ export interface WeaponComparisonResult {
   readonly weaponId: string
 }
 
+export interface ProgressionGainResult {
+  readonly deltaDamage: number
+  readonly gainRatio: number
+  readonly id: string
+  readonly label: string
+  readonly weight: number
+}
+
+export interface AnalyzeScenarioOptions {
+  readonly weaponComparisonRefinements?: Readonly<Record<string, number>>
+}
+
 export interface ScenarioAnalysis {
   /** Expected damage of the unchanged selected core action. */
   readonly baselineExpectedDamage: number
   readonly effectiveArtifacts: readonly EffectiveArtifactResult[]
   readonly marginalSubstats: readonly MarginalSubstatResult[]
+  readonly progressionGains: readonly ProgressionGainResult[]
   readonly totalEffectiveRolls: number
   readonly weapons: readonly WeaponComparisonResult[]
 }
@@ -199,6 +213,9 @@ function matchesEffectCondition(
   gameData: GameDataRepository
 ): boolean {
   if (!effect.condition) return true
+  if (effect.condition.kind === "hexerei_secret_rite") {
+    return hasHexereiSecretRite([scenario.primary, ...scenario.teammates].map((build) => build.characterId))
+  }
   if (effect.condition.kind === "moonsign_level") {
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
     const moonsignLevel = resolveTeamState(scenario.primary, scenario.teammates, gameData).moonsign.level
@@ -272,7 +289,8 @@ function canEvaluateCandidateWeapon(
 function analyzeWeapons(
   scenario: EvaluationScenario,
   gameData: GameDataRepository,
-  baselineExpectedDamage: number
+  baselineExpectedDamage: number,
+  refinementOverrides: Readonly<Record<string, number>>
 ): readonly WeaponComparisonResult[] {
   const primaryCharacter = gameData.getCharacter(scenario.primary.characterId)
   if (!primaryCharacter) throw new Error(`Missing primary character in game data: ${scenario.primary.characterId}`)
@@ -284,7 +302,7 @@ function analyzeWeapons(
         gameData.getWeaponStat(weapon.weaponId, "atk", 90, 6) !== undefined
     )
     .flatMap((weapon) => {
-      const refinement = getWeaponComparisonRefinement(weapon.rarity)
+      const refinement = refinementOverrides[weapon.weaponId] ?? getWeaponComparisonRefinement(weapon.rarity)
       const candidateActiveEffects = getCandidateActiveEffects(scenario, weapon.weaponId)
       if (!canEvaluateCandidateWeapon(scenario, weapon.weaponId, candidateActiveEffects.activeEffectIds, gameData)) return []
       const candidateScenario: EvaluationScenario = {
@@ -313,8 +331,69 @@ function analyzeWeapons(
     .sort((left, right) => right.expectedDamage - left.expectedDamage)
 }
 
+function analyzeProgressionGains(
+  scenario: EvaluationScenario,
+  gameData: GameDataRepository,
+  baselineExpectedDamage: number
+): readonly ProgressionGainResult[] {
+  const action = getCombatActionDefinition(scenario.targetActionId)
+  if (!action) return []
+  const interventions: { readonly id: string; readonly label: string; readonly scenario: EvaluationScenario }[] = []
+  const talentLabels = { burst: "元素爆发", normal: "普通攻击", skill: "元素战技" } as const
+  const talentSlots = new Set(
+    (action.parameterReferences ?? []).flatMap((reference) =>
+      reference.source === "talent" && reference.talentSlot !== "passive" ? [reference.talentSlot] : []
+    )
+  )
+  for (const talentSlot of talentSlots) {
+    const currentLevel = scenario.primary.talents[talentSlot]
+    if (currentLevel >= 10) continue
+    interventions.push({
+      id: `talent.${talentSlot}.${currentLevel + 1}`,
+      label: `${talentLabels[talentSlot]}提升至 ${currentLevel + 1} 级`,
+      scenario: {
+        ...scenario,
+        primary: {
+          ...scenario.primary,
+          talents: { ...scenario.primary.talents, [talentSlot]: currentLevel + 1 }
+        }
+      }
+    })
+  }
+  for (const targetLevel of [90, 95, 100] as const) {
+    if (scenario.primary.level >= targetLevel) continue
+    interventions.push({
+      id: `character-level.${targetLevel}`,
+      label: `角色等级提升至 ${targetLevel} 级`,
+      scenario: {
+        ...scenario,
+        primary: { ...scenario.primary, ascension: 6, level: targetLevel }
+      }
+    })
+  }
+  const rawResults = interventions.map((intervention) => {
+    const expectedDamage = evaluateScenario(intervention.scenario, gameData).actionExpectedDamage
+    const deltaDamage = expectedDamage - baselineExpectedDamage
+    return {
+      deltaDamage,
+      gainRatio: baselineExpectedDamage === 0 ? 0 : deltaDamage / baselineExpectedDamage,
+      id: intervention.id,
+      label: intervention.label
+    }
+  })
+  const bestGain = Math.max(...rawResults.map((result) => result.gainRatio), 0)
+  return rawResults.map((result) => ({
+    ...result,
+    weight: bestGain === 0 ? 0 : Math.max(result.gainRatio, 0) / bestGain
+  }))
+}
+
 /** Runs fixed-scenario counterfactual analysis for weapons and artifact substats. */
-export function analyzeScenario(scenario: EvaluationScenario, gameData: GameDataRepository): ScenarioAnalysis {
+export function analyzeScenario(
+  scenario: EvaluationScenario,
+  gameData: GameDataRepository,
+  options: AnalyzeScenarioOptions = {}
+): ScenarioAnalysis {
   const baselineExpectedDamage = evaluateScenario(scenario, gameData).actionExpectedDamage
   const averageRolls = getAverageRolls(gameData)
   const marginalSubstats = analyzeMarginalSubstats(scenario, gameData, baselineExpectedDamage, averageRolls)
@@ -323,7 +402,8 @@ export function analyzeScenario(scenario: EvaluationScenario, gameData: GameData
     baselineExpectedDamage,
     effectiveArtifacts,
     marginalSubstats,
+    progressionGains: analyzeProgressionGains(scenario, gameData, baselineExpectedDamage),
     totalEffectiveRolls: effectiveArtifacts.reduce((total, artifact) => total + artifact.effectiveRolls, 0),
-    weapons: analyzeWeapons(scenario, gameData, baselineExpectedDamage)
+    weapons: analyzeWeapons(scenario, gameData, baselineExpectedDamage, options.weaponComparisonRefinements ?? {})
   }
 }

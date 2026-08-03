@@ -99,6 +99,7 @@ export const huTaoCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-sanguine-rouge-pyro-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 血之灶火",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.33, talentLevel: 1 }],
           target: "damageBonus"
@@ -174,6 +175,7 @@ export const huTaoCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-sanguine-rouge-pyro-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 血之灶火",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.33, talentLevel: 1 }],
           target: "damageBonus"

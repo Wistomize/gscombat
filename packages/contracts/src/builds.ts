@@ -126,7 +126,7 @@ export const CharacterBuildSchema = Type.Object({
   constellation: Type.Integer({ minimum: 0, maximum: 6 }),
   gameDataVersion: Type.String({ minLength: 1, maxLength: 20 }),
   label: Type.String({ minLength: 1, maxLength: 80 }),
-  level: Type.Integer({ minimum: 1, maximum: 90 }),
+  level: Type.Integer({ minimum: 1, maximum: 100 }),
   source: BuildSourceSchema,
   talents: TalentLevelsSchema,
   variant: Type.Optional(TravelerVariantSchema),

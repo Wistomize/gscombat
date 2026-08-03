@@ -5,15 +5,18 @@ import { listCombatActions } from "./combat-registry.js"
 const expectedExplicitAttackKinds = {
   "amber.normal.sharpshooter.fully_charged.cryo_aura_melt": "charged",
   "amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize": "charged",
+  "amber.normal.sharpshooter.fully_charged.no_reaction": "charged",
   "arataki_itto.burst.royal_descent.arataki_kesagiri_chain_and_final": "charged",
   "ganyu.normal.frostflake_arrow.level_two.hit_and_bloom": "charged",
   "gaming.skill.bestial_ascent.plunging_attack_charmed_cloudstrider": "plunge",
   "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.cryo_aura_melt": "charged",
   "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize": "charged",
+  "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.no_reaction": "charged",
   "kaeya.normal.auto.first_hit": "normal",
   "klee.normal.charged_attack.single_hit": "charged",
   "lyney.normal.card_force_translocation.second_charge.prop_arrow.cryo_aura_melt": "charged",
   "lyney.normal.card_force_translocation.second_charge.prop_arrow.hydro_aura_vaporize": "charged",
+  "lyney.normal.card_force_translocation.second_charge.prop_arrow.no_reaction": "charged",
   "neuvillette.normal.charged_attack.equitable_judgment.single_tick": "charged",
   "ningguang.normal.charged_attack.with_star_jades": "charged",
   "sethos.normal.royal_reed_archery.shadowpiercing_shot": "charged",
@@ -23,7 +26,8 @@ const expectedExplicitAttackKinds = {
   "varesa.normal.fiery_passion.high_plunge.follow_up_strike": "plunge",
   "xiao.burst.bane_of_all_evil.high_plunge": "plunge",
   "yanfei.normal.charged_attack.three_scarlet_seals.cryo_aura_melt": "charged",
-  "yanfei.normal.charged_attack.three_scarlet_seals.hydro_aura_vaporize": "charged"
+  "yanfei.normal.charged_attack.three_scarlet_seals.hydro_aura_vaporize": "charged",
+  "yanfei.normal.charged_attack.three_scarlet_seals.no_reaction": "charged"
 } as const
 
 describe("combat action attack-kind metadata", () => {

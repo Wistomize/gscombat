@@ -2715,13 +2715,18 @@ describe("declared direct scenario actions", () => {
     const currentOnFieldEffectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
     const magicSecretOffFieldEffectId =
       "weapon.angelos-heptades.magic-secret.after-shield.source-final-attack-to-off-field-magic-recipient-damage-bonus"
+    const hexereiTeammate = {
+      ...xianglingNationalBuiltinBuild,
+      buildId: "test.venti.angelos-heptades.magic-secret",
+      characterId: "Venti"
+    }
     const baseline = evaluateDeclaredDirectScenarioAction({
       action,
       build: xianglingNationalBuiltinBuild,
       buffs: [],
       enemy,
       gameData,
-      teammates: [angelosHolder]
+      teammates: [angelosHolder, hexereiTeammate]
     })
     const snapshot = evaluateDeclaredDirectScenarioAction({
       action,
@@ -2730,7 +2735,7 @@ describe("declared direct scenario actions", () => {
       buffs: [],
       enemy,
       gameData,
-      teammates: [angelosHolder]
+      teammates: [angelosHolder, hexereiTeammate]
     })
     const effect = snapshot.appliedEffects.find((candidate) => candidate.id === magicSecretOffFieldEffectId)
     const coreStats = resolveCoreCombatStats(angelosHolder, gameData)
@@ -2749,7 +2754,7 @@ describe("declared direct scenario actions", () => {
         buffs: [],
         enemy,
         gameData,
-        teammates: [angelosHolder]
+        teammates: [angelosHolder, hexereiTeammate]
       })
     ).toThrow("Selected angelos-heptades-guiding-light-recipient-position effects cannot stack")
   })
@@ -2809,6 +2814,11 @@ describe("declared direct scenario actions", () => {
     })
     const r5Mona = createAngelosHolder("Mona", 5)
     const r1Lisa = createAngelosHolder("Lisa", 1)
+    const hexereiTeammate = {
+      ...xianglingNationalBuiltinBuild,
+      buildId: "test.venti.angelos-heptades.cap",
+      characterId: "Venti"
+    }
     const cappedSnapshot = evaluateDeclaredDirectScenarioAction({
       action: elementalAction,
       activeEffectIds: [effectId],
@@ -2816,7 +2826,7 @@ describe("declared direct scenario actions", () => {
       buffs: [],
       enemy,
       gameData,
-      teammates: [r5Mona]
+      teammates: [r5Mona, hexereiTeammate]
     })
     const physicalSnapshot = evaluateDeclaredDirectScenarioAction({
       action: physicalAction,
@@ -2834,7 +2844,7 @@ describe("declared direct scenario actions", () => {
       buffs: [],
       enemy,
       gameData,
-      teammates: [r5Mona]
+      teammates: [r5Mona, hexereiTeammate]
     })
 
     expect(cappedSnapshot.appliedEffects.find((effect) => effect.id === effectId)?.value).toBeCloseTo(0.58)

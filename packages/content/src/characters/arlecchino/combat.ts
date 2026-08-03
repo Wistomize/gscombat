@@ -82,6 +82,8 @@ export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
             },
             {
               coefficientParameterId: "masque-of-the-red-death-normal-attack-bond-life-increase",
+              coefficientMultiplierScenarioParameterId: "bond-of-life-percent",
+              coefficientMultiplierScenarioParameterScale: 0.01,
               snapshotChecks: [
                 { expectedCoefficient: 1.204, talentLevel: 1 },
                 { expectedCoefficient: 2.38, talentLevel: 10 }
@@ -98,6 +100,7 @@ export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "the-balemoon-alone-shall-know-pyro-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 唯有厄月知晓",
           snapshotChecks: [{ expectedCoefficient: 0.4, talentLevel: 1 }],
           target: "damageBonus"
         }
@@ -124,6 +127,15 @@ export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
           parameterIndex: 0,
           source: "talent",
           talentSlot: "passive"
+        }
+      ],
+      scenarioParameters: [
+        {
+          defaultValue: 100,
+          id: "bond-of-life-percent",
+          label: "命中前生命之契（生命值上限百分比）",
+          maximumValue: 200,
+          minimumValue: 0
         }
       ],
       status: "verified",
@@ -147,6 +159,8 @@ export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
             },
             {
               coefficientParameterId: "masque-of-the-red-death-normal-attack-bond-life-increase",
+              coefficientMultiplierScenarioParameterId: "bond-of-life-percent",
+              coefficientMultiplierScenarioParameterScale: 0.01,
               snapshotChecks: [
                 { expectedCoefficient: 1.204, talentLevel: 1 },
                 { expectedCoefficient: 2.38, talentLevel: 10 }
@@ -163,6 +177,7 @@ export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "the-balemoon-alone-shall-know-pyro-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 唯有厄月知晓",
           snapshotChecks: [{ expectedCoefficient: 0.4, talentLevel: 1 }],
           target: "damageBonus"
         }
@@ -189,6 +204,15 @@ export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
           parameterIndex: 0,
           source: "talent",
           talentSlot: "passive"
+        }
+      ],
+      scenarioParameters: [
+        {
+          defaultValue: 100,
+          id: "bond-of-life-percent",
+          label: "命中前生命之契（生命值上限百分比）",
+          maximumValue: 200,
+          minimumValue: 0
         }
       ],
       status: "verified",
@@ -219,7 +243,7 @@ export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One Balemoon Rising AoE hit and one All Is Ash Spike remain verified baseline C0 Pyro actions. The selected core hit is one first normal-attack hit while Masque of the Red Death is active and its pre-hit Bond of Life is fixed exactly at 100% of maximum HP: Attack × (auto[0] + auto[11]). The pinned 6.7 sheet defines the second term as the normal-attack increase coefficient times Attack times the current Bond of Life ratio, so a fixed 100% ratio resolves to auto[11] × Attack. It is 167.9004% Attack at Normal Attack Level 1 and 331.8961% at Level 10 before shared damage multipliers; the innate 40% Pyro bonus is included. Hydro-aura Vaporize and Cryo-aura Melt are mutually exclusive alternatives for this exact one hit, not a sequence. Bond of Life generation, consumption, all values other than the declared 100%, charged and plunging attacks, constellations, external effects, timing, and rotation behavior remain excluded.",
+    "One Balemoon Rising AoE hit and one All Is Ash Spike remain verified baseline C0 Pyro actions. The selected core hit is one first normal-attack hit while Masque of the Red Death is active: Attack × (auto[0] + auto[11] × pre-hit Bond of Life ratio). The pinned 6.7 sheet defines the second term as the normal-attack increase coefficient times Attack times the current Bond of Life ratio. The scenario defaults to 100%, while typed equipment effects such as Crimson Moon's Semblance may raise the bounded action-state value. The innate 40% Pyro bonus is included. No reaction, Hydro-aura Vaporize, and Cryo-aura Melt are mutually exclusive alternatives for this exact one hit, not a sequence. Bond consumption, charged and plunging attacks, timing, and rotation behavior remain excluded.",
   label: arlecchinoDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

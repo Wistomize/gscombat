@@ -648,7 +648,8 @@ label > span {
 .artifactGrid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  min-width: 1160px;
 }
 
 .artifactEditor {
@@ -657,8 +658,8 @@ label > span {
   padding: 14px;
 }
 
-.artifactEditor:last-child {
-  grid-column: 1 / -1;
+.artifactsSection {
+  overflow-x: auto;
 }
 
 .artifactTitle {

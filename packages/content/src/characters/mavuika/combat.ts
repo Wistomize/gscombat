@@ -99,6 +99,7 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-sunfell-slice-damage-bonus-per-fighting-spirit",
           kind: "flat",
+          label: "固有天赋 · 基扬戈兹",
           minimumSourceAscension: 4,
           scenarioParameterMultiplier: {
             base: 0,
@@ -181,6 +182,7 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-sunfell-slice-damage-bonus-per-fighting-spirit",
           kind: "flat",
+          label: "固有天赋 · 基扬戈兹",
           minimumSourceAscension: 4,
           scenarioParameterMultiplier: {
             base: 0,

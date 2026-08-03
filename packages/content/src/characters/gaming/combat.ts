@@ -25,6 +25,7 @@ export const gamingCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-charmed-cloudstrider-damage-bonus",
           kind: "flat",
+          label: "固有天赋 · 祥烟瑞气",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.2, talentLevel: 1 }],
           target: "damageBonus"

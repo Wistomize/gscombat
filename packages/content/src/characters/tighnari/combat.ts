@@ -54,6 +54,7 @@ export const tighnariCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-damage-bonus-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 诸叶辨通",
           maximumValueParameterId: "a4-maximum-damage-bonus",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.0006, talentLevel: 1 }],
@@ -111,6 +112,7 @@ export const tighnariCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-damage-bonus-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 诸叶辨通",
           maximumValueParameterId: "a4-maximum-damage-bonus",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.0006, talentLevel: 1 }],

@@ -42,7 +42,21 @@ const analysisResponse: AnalysisResponse = {
   analysis: {
     baselineExpectedDamage: traceResult.expectedDamage,
     effectiveArtifacts: [],
-    marginalSubstats: [],
+    marginalSubstats: [{
+      averageRoll: 0.033,
+      deltaDamage: 12.34,
+      gainRatio: 0.01234,
+      label: "暴击率",
+      stat: "crit_rate",
+      weight: 1
+    }],
+    progressionGains: [{
+      deltaDamage: 45.67,
+      gainRatio: 0.04567,
+      id: "talent.burst.10",
+      label: "元素爆发提升至 10 级",
+      weight: 1
+    }],
     totalEffectiveRolls: 0,
     weapons: [{
       expectedDamage: traceResult.expectedDamage,
@@ -88,6 +102,7 @@ const analysisResponse: AnalysisResponse = {
     },
     teamState: {
       activeResonanceIds: ["resonance.pyro"],
+      hexereiSecretRite: false,
       moonsign: {
         characterBuildIds: [raidenNationalBuiltinScenario.primary.buildId],
         characterCount: 2,
@@ -105,6 +120,13 @@ const analysisResponse: AnalysisResponse = {
       energyRecharge: 3.1,
       flatAttack: 1394.5,
       resistanceReduction: 0,
+      statContributions: [
+        { label: "角色基础攻击 · 雷电将军", stage: "baseAttack", value: 337 },
+        { label: "武器基础攻击 · 薙草之稻光", stage: "baseAttack", value: 608 },
+        { label: "时之沙主词条 · 攻击力%", stage: "attackPercent", value: 0.466 },
+        { label: "空之杯主词条 · 雷元素伤害加成", stage: "damageBonus", value: 0.466 },
+        { label: "固有天赋 · 殊胜之御体", stage: "damageBonus", value: 0.8 }
+      ],
       talentMultiplier: 2
     }
   }
@@ -349,6 +371,20 @@ describe("team-first workspace integration", () => {
       .map((summary) => summary.textContent)
     expect(disclosures).toContain("展开属性倍率")
     expect(disclosures).toContain("展开增伤来源")
+    expect(document.querySelector(".substatReport")?.textContent).toContain("+1.23%")
+    expect(document.querySelector(".substatReport")?.textContent).toContain("元素爆发提升至 10 级")
+    expect(document.querySelector(".substatReport")?.textContent).toContain("+4.57%")
+    expect(document.querySelector(".traceReport")?.textContent).toContain("时之沙主词条 · 攻击力%")
+    expect(document.querySelector(".traceReport")?.textContent).toContain("空之杯主词条 · 雷元素伤害加成")
+    const refinementSelect = document.querySelector<HTMLSelectElement>('select[aria-label="薙草之稻光精炼等级"]')
+    expect(refinementSelect?.querySelectorAll("option")).toHaveLength(5)
+    await changeSelect(refinementSelect, "5")
+    await flushAsyncWork()
+    const refinedRequest = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
+    const refinedPayload = JSON.parse(String(refinedRequest?.body)) as {
+      weaponComparisonRefinements: Record<string, number>
+    }
+    expect(refinedPayload.weaponComparisonRefinements).toEqual({ EngulfingLightning: 5 })
   })
 
   it("offers mutually exclusive Widsith themes and sends only the selected theme", async () => {

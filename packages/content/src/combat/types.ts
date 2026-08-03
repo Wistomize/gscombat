@@ -93,6 +93,8 @@ export interface CombatDamageScalingTerm {
   readonly coefficientMultiplierSnapshotChecks?: readonly CombatTalentCoefficientSnapshotCheck[]
   /** Multiplies this one stat term by a bounded action-owned integer such as a currently selected stack count. */
   readonly coefficientMultiplierScenarioParameterId?: string
+  /** Converts the integer scenario value into the ratio used by this coefficient, such as percent to decimal. */
+  readonly coefficientMultiplierScenarioParameterScale?: number
   readonly coefficientParameterId: string
   /** Keeps an ascension passive term out of the base damage until the source reaches the required ascension. */
   readonly minimumSourceAscension?: number
@@ -126,6 +128,8 @@ export type CombatActionIntrinsicEffectTarget = "critRate" | "damageBonus" | "el
 
 /** Shared source and gating fields for a bounded action-owned intrinsic effect. */
 interface CombatActionIntrinsicEffectBase {
+  /** Player-facing source name used by the auditable stat ledger. */
+  readonly label?: string
   /** Keeps an ascension passive out of the result until the source character reaches the required ascension. */
   readonly minimumSourceAscension?: number
   /** Applies one selected bounded action snapshot after the source value has been resolved. */
@@ -545,6 +549,8 @@ export type CombatActionEffectTarget =
   | "baseDamageFlat"
   | "matchedActionAdditiveDamageTerm"
   | "attackPercent"
+  /** Adds a bounded integer to one declared action snapshot parameter before its coefficient is resolved. */
+  | "actionParameter"
   | "flatAttack"
   | "critDamage"
   | "critRate"
@@ -658,8 +664,14 @@ export interface CombatActionEffectMoonsignLevelCondition {
   readonly minimum: "nascent_gleam" | "ascendant_gleam"
 }
 
+/** Requires at least two configured Hexerei characters in the party. */
+export interface CombatActionEffectHexereiSecretRiteCondition {
+  readonly kind: "hexerei_secret_rite"
+}
+
 export type CombatActionEffectCondition =
   | CombatActionEffectEnemyCountCondition
+  | CombatActionEffectHexereiSecretRiteCondition
   | CombatActionEffectMoonsignLevelCondition
   | CombatActionEffectTeamElementCountCondition
   | CombatActionEffectTeamElementSubsetCondition
@@ -829,6 +841,8 @@ interface CombatActionEffectActivation {
 
 /** A conventional numeric effect that contributes to one named stat stage. */
 export interface CombatActionStatEffect extends CombatActionEffectActivation {
+  /** Required when target is actionParameter. */
+  readonly actionParameterId?: string
   /** Explicit action-state requirements that make this active effect automatic. */
   readonly deterministicSnapshotActivation?: CombatActionEffectDeterministicSnapshotActivation
   /** A scenario-derived condition required before this effect can contribute to the selected action. */

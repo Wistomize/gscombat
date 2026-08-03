@@ -54,6 +54,7 @@ export const clorindeCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-lawful-remuneration-crit-rate-per-stack",
           kind: "flat",
+          label: "固有天赋 · 契令的酬偿",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.1, talentLevel: 1 }],
           target: "critRate",

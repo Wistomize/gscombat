@@ -29,6 +29,7 @@ import type {
   CombatDirectSpecialReactionConfig,
   MoonsignLevel
 } from "@gscombat/content"
+import { supportedCharacters, supportedWeapons } from "@gscombat/content"
 import type { ArtifactStat, CharacterBuild, EnemyConfig, ExternalBuff } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 
@@ -108,8 +109,15 @@ export interface ResolvedDeclaredScenarioStats {
   readonly energyRecharge: number
   readonly flatAttack: number
   readonly resistanceReduction: number
+  readonly statContributions: readonly ResolvedStatContribution[]
   readonly scalingTerms?: readonly DeclaredDirectActionScalingTermEvaluation[]
   readonly talentMultiplier: number | null
+}
+
+export interface ResolvedStatContribution {
+  readonly label: string
+  readonly stage: "attackPercent" | "baseAttack" | "damageBonus" | "flatAttack"
+  readonly value: number
 }
 
 /** Result of a verified content-declared, baseline direct action within a full scenario. */
@@ -179,6 +187,17 @@ const artifactDamageStatByElement: Readonly<Record<Element, ArtifactStat>> = {
   hydro: "hydro_damage_bonus",
   physical: "physical_damage_bonus",
   pyro: "pyro_damage_bonus"
+}
+
+const gameDataDamageStatByElement: Readonly<Record<Element, string>> = {
+  anemo: "anemo_dmg_",
+  cryo: "cryo_dmg_",
+  dendro: "dendro_dmg_",
+  electro: "electro_dmg_",
+  geo: "geo_dmg_",
+  hydro: "hydro_dmg_",
+  physical: "physical_dmg_",
+  pyro: "pyro_dmg_"
 }
 
 function getBuffTotal(buffs: readonly ExternalBuff[], stat: ExternalBuff["stat"]): number {
@@ -687,6 +706,20 @@ function resolveStats(
     getBuffTotal(buffs, "damage_bonus") + actionEffects.damageBonus + finalHpSourcedDamageBonus
   const universalDamageBonus = actionIndependentDamageBonus + intrinsicEffects.damageBonus
   const damageBonus = damageBonusByElement[action.element] + universalDamageBonus
+  const statContributions = resolveStatContributions({
+    action,
+    actionEffects,
+    attackPercent,
+    buffs,
+    build,
+    damageBonus,
+    deltas,
+    effectiveFlatAttack,
+    gameData,
+    intrinsicDamageBonusContributions: intrinsicEffects.contributions.filter(
+      (contribution) => contribution.target === "damageBonus"
+    )
+  })
   const rotation: RotationStats = {
     attack,
     critDamage,
@@ -714,9 +747,126 @@ function resolveStats(
       flatAttack: effectiveFlatAttack,
       resistanceReduction:
         actionEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
+      statContributions,
       talentMultiplier: null
     }
   }
+}
+
+interface ResolveStatContributionsInput {
+  readonly action: CombatActionMetadata
+  readonly actionEffects: ResolvedCombatActionEffects
+  readonly attackPercent: number
+  readonly buffs: readonly ExternalBuff[]
+  readonly build: CharacterBuild
+  readonly damageBonus: number
+  readonly deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined
+  readonly effectiveFlatAttack: number
+  readonly gameData: GameDataRepository
+  readonly intrinsicDamageBonusContributions: readonly { readonly label: string; readonly value: number }[]
+}
+
+const artifactSlotLabels: Readonly<Record<CharacterBuild["artifacts"][number]["slot"], string>> = {
+  circlet: "理之冠",
+  flower: "生之花",
+  goblet: "空之杯",
+  plume: "死之羽",
+  sands: "时之沙"
+}
+
+const elementLabels: Readonly<Record<Element, string>> = {
+  anemo: "风元素",
+  cryo: "冰元素",
+  dendro: "草元素",
+  electro: "雷元素",
+  geo: "岩元素",
+  hydro: "水元素",
+  physical: "物理",
+  pyro: "火元素"
+}
+
+function resolveStatContributions(input: ResolveStatContributionsInput): readonly ResolvedStatContribution[] {
+  const { action, actionEffects, buffs, build, deltas, gameData } = input
+  const contributions: ResolvedStatContribution[] = []
+  const add = (stage: ResolvedStatContribution["stage"], label: string, value: number) => {
+    if (Math.abs(value) >= 0.000001) contributions.push({ label, stage, value })
+  }
+  add(
+    "baseAttack",
+    `角色基础攻击 · ${supportedCharacters.find((character) => character.characterId === build.characterId)?.label ?? build.characterId}`,
+    gameData.getCharacterStat(build.characterId, "atk", build.level, build.ascension) ?? 0
+  )
+  add(
+    "baseAttack",
+    `武器基础攻击 · ${supportedWeapons.find((weapon) => weapon.weaponId === build.weapon.weaponId)?.label ?? build.weapon.weaponId}`,
+    gameData.getWeaponStat(build.weapon.weaponId, "atk", build.weapon.level, build.weapon.ascension) ?? 0
+  )
+  addArtifactStatContributions(contributions, build, "atk_percent", "attackPercent", "攻击力%")
+  add("attackPercent", "角色突破属性 · 攻击力%", gameData.getCharacterAscensionBonus(build.characterId, "atk_", build.ascension) ?? 0)
+  add("attackPercent", "武器副属性 · 攻击力%", gameData.getWeaponStat(build.weapon.weaponId, "atk_", build.weapon.level, build.weapon.ascension) ?? 0)
+  for (const buff of buffs.filter((candidate) => candidate.stat === "attack_percent")) add("attackPercent", buff.label, buff.value)
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "attackPercent")) {
+    add("attackPercent", effect.label, effect.value)
+  }
+  add("attackPercent", "边际模拟 · 攻击力%", getDelta(deltas, "atk_percent"))
+
+  addArtifactStatContributions(contributions, build, "atk", "flatAttack", "固定攻击力")
+  for (const buff of buffs.filter((candidate) => candidate.stat === "attack_flat")) add("flatAttack", buff.label, buff.value)
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "flatAttack")) {
+    add("flatAttack", effect.label, effect.value)
+  }
+  add("flatAttack", "边际模拟 · 固定攻击力", getDelta(deltas, "atk"))
+  addResidualContribution(contributions, "flatAttack", "其他派生固定攻击力", input.effectiveFlatAttack)
+
+  const artifactDamageStat = artifactDamageStatByElement[action.element]
+  addArtifactStatContributions(contributions, build, artifactDamageStat, "damageBonus", `${elementLabels[action.element]}伤害加成`)
+  const gameDataDamageStat = gameDataDamageStatByElement[action.element]
+  add("damageBonus", "角色突破属性 · 元素伤害", gameData.getCharacterAscensionBonus(build.characterId, gameDataDamageStat, build.ascension) ?? 0)
+  add("damageBonus", "武器副属性 · 元素伤害", gameData.getWeaponStat(build.weapon.weaponId, gameDataDamageStat, build.weapon.level, build.weapon.ascension) ?? 0)
+  for (const buff of buffs.filter((candidate) => candidate.stat === "damage_bonus")) add("damageBonus", buff.label, buff.value)
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "damageBonus")) {
+    add("damageBonus", effect.label, effect.value)
+  }
+  for (const contribution of input.intrinsicDamageBonusContributions) {
+    add("damageBonus", contribution.label, contribution.value)
+  }
+  add("damageBonus", "边际模拟 · 元素伤害", getDelta(deltas, artifactDamageStat))
+  addResidualContribution(contributions, "damageBonus", "其他派生增伤", input.damageBonus)
+  addResidualContribution(contributions, "attackPercent", "其他攻击力%", input.attackPercent)
+  return contributions
+}
+
+function addArtifactStatContributions(
+  contributions: ResolvedStatContribution[],
+  build: CharacterBuild,
+  stat: ArtifactStat,
+  stage: ResolvedStatContribution["stage"],
+  statLabel: string
+): void {
+  for (const artifact of build.artifacts) {
+    if (artifact.mainStat.stat === stat && artifact.mainStat.value !== 0) {
+      contributions.push({ label: `${artifactSlotLabels[artifact.slot]}主词条 · ${statLabel}`, stage, value: artifact.mainStat.value })
+    }
+    for (const substat of artifact.substats) {
+      if (substat.stat === stat && substat.value !== 0) {
+        contributions.push({ label: `${artifactSlotLabels[artifact.slot]}副词条 · ${statLabel}`, stage, value: substat.value })
+      }
+    }
+  }
+}
+
+function addResidualContribution(
+  contributions: ResolvedStatContribution[],
+  stage: ResolvedStatContribution["stage"],
+  label: string,
+  expectedTotal: number
+): void {
+  const recorded = contributions.reduce(
+    (total, contribution) => total + (contribution.stage === stage ? contribution.value : 0),
+    0
+  )
+  const residual = expectedTotal - recorded
+  if (Math.abs(residual) >= 0.000001) contributions.push({ label, stage, value: residual })
 }
 
 function resolveSpecialReactionBaseDamage(
@@ -886,11 +1036,13 @@ export function evaluateDeclaredDirectScenarioAction(
   } = input
   assertDeclaredDirectAction(action)
   const talent = getDamageTalentSlot(action)
-  const resolvedActionParameters = resolveActionScenarioParameters(action, actionParameters, build.constellation)
-  const parts = action.damageParts.map((part) =>
+  const resolvedActionParameters = new Map(
+    resolveActionScenarioParameters(action, actionParameters, build.constellation)
+  )
+  let parts = action.damageParts.map((part) =>
     resolveDamagePart(action, build, part, gameData, resolvedActionParameters)
   )
-  const timeline = resolveDeclaredTimeline(action, build, gameData, parts, resolvedActionParameters)
+  let timeline = resolveDeclaredTimeline(action, build, gameData, parts, resolvedActionParameters)
   const effectiveElements = resolveDeclaredActionEffectElements(
     action,
     build.buildId,
@@ -955,6 +1107,11 @@ export function evaluateDeclaredDirectScenarioAction(
     teamElements: resolvePartyElements(build, teammates, gameData),
     teammates
   })
+  applyActionParameterEffects(action, resolvedActionParameters, actionEffects.appliedEffects)
+  parts = action.damageParts.map((part) =>
+    resolveDamagePart(action, build, part, gameData, resolvedActionParameters)
+  )
+  timeline = resolveDeclaredTimeline(action, build, gameData, parts, resolvedActionParameters)
   const effectiveDefenseReduction = enemy.defenseReduction + actionEffects.enemyDefenseReduction
   const stats = resolveStats(
     build,
@@ -2110,6 +2267,7 @@ function resolveScalingTerms(
     {
       readonly coefficientMultiplierParameterId?: string
       readonly coefficientMultiplierScenarioParameterId?: string
+      readonly coefficientMultiplierScenarioParameterScale?: number
       readonly coefficientParameterId: string
       readonly minimumSourceAscension?: number
       readonly stat: ScalingStat
@@ -2117,6 +2275,7 @@ function resolveScalingTerms(
     ...{
       readonly coefficientMultiplierParameterId?: string
       readonly coefficientMultiplierScenarioParameterId?: string
+      readonly coefficientMultiplierScenarioParameterScale?: number
       readonly coefficientParameterId: string
       readonly minimumSourceAscension?: number
       readonly stat: ScalingStat
@@ -2129,6 +2288,7 @@ function resolveScalingTerms(
   const resolveTerm = (term: {
     readonly coefficientMultiplierParameterId?: string
     readonly coefficientMultiplierScenarioParameterId?: string
+    readonly coefficientMultiplierScenarioParameterScale?: number
     readonly coefficientParameterId: string
     readonly minimumSourceAscension?: number
     readonly stat: ScalingStat
@@ -2160,9 +2320,33 @@ function resolveScalingTerms(
         `Damage term ${term.coefficientParameterId} for action ${action.id} has no valid scenario multiplier parameter`
       )
     }
-    return { coefficient: coefficient * multiplier * scenarioMultiplier, stat: term.stat }
+    return {
+      coefficient: coefficient * multiplier * scenarioMultiplier * (term.coefficientMultiplierScenarioParameterScale ?? 1),
+      stat: term.stat
+    }
   }
   return [resolveTerm(first), ...rest.map(resolveTerm)]
+}
+
+function applyActionParameterEffects(
+  action: CombatActionMetadata,
+  actionParameters: Map<string, number>,
+  effects: readonly AppliedCombatActionEffect[]
+): void {
+  for (const effect of effects) {
+    if (effect.target !== "actionParameter") continue
+    const parameterId = effect.actionParameterId
+    const definition = action.scenarioParameters?.find((parameter) => parameter.id === parameterId)
+    if (!parameterId || !definition) {
+      throw new Error(`Action-parameter effect ${effect.id} does not target a declared parameter of ${action.id}`)
+    }
+    const currentValue = actionParameters.get(parameterId) ?? definition.defaultValue
+    const adjustedValue = Math.min(
+      Math.max(currentValue + effect.value, definition.minimumValue),
+      definition.maximumValue
+    )
+    actionParameters.set(parameterId, adjustedValue)
+  }
 }
 
 function requireLegacyScalingStat(actionId: string, scalingStat: ScalingStat | undefined): ScalingStat {

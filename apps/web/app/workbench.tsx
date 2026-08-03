@@ -148,6 +148,7 @@ const moonsignLabels = {
 
 const actionEffectTargetLabels: Readonly<Record<AppliedActionEffect["target"], string>> = {
   additionalDamageEvent: "额外物理伤害事件",
+  actionParameter: "动作状态参数",
   attackPercent: "攻击力",
   baseDamageFlat: "同段基础伤害增加值",
   flatAttack: "固定攻击力",
@@ -398,6 +399,11 @@ function formatPercent(value: number): string {
   return `${prefix}${(value * 100).toFixed(1)}%`
 }
 
+function formatMarginalPercent(value: number): string {
+  const prefix = value > 0 ? "+" : ""
+  return `${prefix}${(value * 100).toFixed(2)}%`
+}
+
 function formatAppliedScenarioBuff(buff: AppliedScenarioBuff): string {
   if (["attack_flat", "defense_flat", "hp_flat", "elemental_mastery"].includes(buff.stat)) {
     return `+${formatNumber(buff.value)}`
@@ -407,6 +413,7 @@ function formatAppliedScenarioBuff(buff: AppliedScenarioBuff): string {
 
 function formatAppliedActionEffect(effect: AppliedActionEffect): string {
   if (effect.target === "talentLevel") return `+${formatNumber(effect.value)}`
+  if (effect.target === "actionParameter") return `+${formatNumber(effect.value)}`
   if (effect.target === "additionalDamageEvent") return `${formatPercent(effect.value)}攻击力期望倍率`
   if (effect.target === "matchedActionAdditiveDamageTerm") {
     return `${formatPercent(effect.value)} × ${getScalingStatLabel(effect.scalingStat ?? "attack")}`
@@ -1085,6 +1092,9 @@ function RotationTraceFormula({
   if (entry.kind === "scaling") {
     const baseMultiplier = analysis.evaluation.stats.talentMultiplier
     const actionMultiplier = baseMultiplier && baseMultiplier !== 0 ? entry.coefficient / baseMultiplier : 1
+    const attackContributions = analysis.evaluation.stats.statContributions.filter((contribution) =>
+      contribution.stage === "baseAttack" || contribution.stage === "attackPercent" || contribution.stage === "flatAttack"
+    )
     return (
       <div className="formulaLines">
         <FormulaEquation label="基础伤害">
@@ -1096,6 +1106,18 @@ function RotationTraceFormula({
         <details className="traceContributionDetails">
           <summary>展开属性倍率</summary>
           <dl>
+            {entry.stat === "attack" ? attackContributions.map((contribution, index) => (
+              <div key={`${contribution.stage}-${contribution.label}-${index}`}>
+                <dt>{contribution.label}</dt>
+                <dd>{contribution.stage === "attackPercent" ? formatFormulaPercent(contribution.value) : formatFormulaNumber(contribution.value)}</dd>
+              </div>
+            )) : null}
+            {entry.stat === "attack" ? (
+              <div className="traceContributionTotal">
+                <dt>最终攻击</dt>
+                <dd>{formatFormulaNumber(analysis.evaluation.stats.baseAttack)} × (1 + {formatFormulaPercent(analysis.evaluation.stats.attackPercent)}) + {formatFormulaNumber(analysis.evaluation.stats.flatAttack)} = {formatFormulaNumber(analysis.evaluation.stats.effectiveAttack)}</dd>
+              </div>
+            ) : null}
             <div><dt>{getScalingStatLabel(entry.stat)}</dt><dd>{formatFormulaNumber(entry.value)}</dd></div>
             {baseMultiplier === null ? null : <div><dt>天赋基础倍率</dt><dd>{formatFormulaPercent(baseMultiplier)}</dd></div>}
             {targetAction?.scenarioParameters?.map((parameter) => {
@@ -1110,6 +1132,10 @@ function RotationTraceFormula({
     )
   }
   if (entry.kind === "scaling_terms") {
+    const attackContributions = analysis.evaluation.stats.statContributions.filter((contribution) =>
+      contribution.stage === "baseAttack" || contribution.stage === "attackPercent" || contribution.stage === "flatAttack"
+    )
+    const usesAttack = entry.terms.some((term) => term.stat === "attack")
     return (
       <div className="formulaLines">
         <FormulaEquation label="基础伤害">
@@ -1123,6 +1149,28 @@ function RotationTraceFormula({
           ))}{" "}
           = <FormulaValue stage="scaling">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
+        <details className="traceContributionDetails">
+          <summary>展开属性倍率</summary>
+          <dl>
+            {usesAttack ? attackContributions.map((contribution, index) => (
+              <div key={`${contribution.stage}-${contribution.label}-${index}`}>
+                <dt>{contribution.label}</dt>
+                <dd>{contribution.stage === "attackPercent" ? formatFormulaPercent(contribution.value) : formatFormulaNumber(contribution.value)}</dd>
+              </div>
+            )) : null}
+            {usesAttack ? (
+              <div className="traceContributionTotal">
+                <dt>最终攻击</dt>
+                <dd>{formatFormulaNumber(analysis.evaluation.stats.baseAttack)} × (1 + {formatFormulaPercent(analysis.evaluation.stats.attackPercent)}) + {formatFormulaNumber(analysis.evaluation.stats.flatAttack)} = {formatFormulaNumber(analysis.evaluation.stats.effectiveAttack)}</dd>
+              </div>
+            ) : null}
+            {targetAction?.scenarioParameters?.map((parameter) => {
+              const value = analysis.evaluation.stats.actionParameters?.[parameter.id]
+              return value === undefined ? null : <div key={parameter.id}><dt>{parameter.label}</dt><dd>{value}</dd></div>
+            })}
+            {entry.terms.map((term, index) => <div key={`${term.stat}-${term.coefficient}-${index}`}><dt>{term.label ?? `${getScalingStatLabel(term.stat)}倍率`}</dt><dd>{formatFormulaPercent(term.coefficient)}</dd></div>)}
+          </dl>
+        </details>
       </div>
     )
   }
@@ -1164,14 +1212,9 @@ function RotationTraceFormula({
     )
   }
   if (entry.kind === "damage_bonus") {
-    const buffContributions = analysis.evaluation.appliedBuffs
-      .filter((buff) => buff.stat === "damage_bonus")
-      .map((buff) => ({ label: buff.label, value: buff.value }))
-    const effectContributions = analysis.evaluation.appliedEffects
-      .filter((effect) => effect.target === "damageBonus")
-      .map((effect) => ({ label: effect.label, value: effect.value }))
-    const namedContributions = [...buffContributions, ...effectContributions]
-    const residual = entry.bonus - namedContributions.reduce((total, contribution) => total + contribution.value, 0)
+    const namedContributions = analysis.evaluation.stats.statContributions.filter(
+      (contribution) => contribution.stage === "damageBonus"
+    )
     return (
       <div className="formulaLines">
         <FormulaEquation label="增伤后伤害">
@@ -1182,7 +1225,6 @@ function RotationTraceFormula({
         <details className="traceContributionDetails">
           <summary>展开增伤来源</summary>
           <dl>
-            {Math.abs(residual) < 0.000001 ? null : <div><dt>角色面板、元素伤害与动作固有加成</dt><dd>{formatFormulaPercent(residual)}</dd></div>}
             {namedContributions.map((contribution, index) => <div key={`${contribution.label}-${index}`}><dt>{contribution.label}</dt><dd>{formatFormulaPercent(contribution.value)}</dd></div>)}
             <div className="traceContributionTotal"><dt>增伤区合计</dt><dd>{formatFormulaPercent(entry.bonus)}</dd></div>
           </dl>
@@ -1458,7 +1500,7 @@ export function BuildEditor({ build, catalog, onChange }: BuildEditorProps) {
         <label>
           <span>角色等级</span>
           <input
-            max={90}
+            max={100}
             min={1}
             type="number"
             value={build.level}
@@ -1626,11 +1668,13 @@ function OrderedDamageReport({
   analysis,
   build,
   catalog,
+  onWeaponRefinementChange,
   targetAction
 }: {
   readonly analysis: AnalysisResponse
   readonly build: CharacterBuild
   readonly catalog: CatalogResponse
+  readonly onWeaponRefinementChange: (weaponId: string, refinement: number) => void
   readonly targetAction: CatalogPrimaryAction | undefined
 }) {
   const rotationTraceEvents = analysis.evaluation.rotation.events.filter((event) => event.trace.length > 0)
@@ -1645,6 +1689,7 @@ function OrderedDamageReport({
         <div className="metricLabel">指标期望结果</div>
         <div className="teamStateStrip" aria-label="队伍共鸣与月兆状态">
           {analysis.evaluation.teamState.activeResonanceIds.map((id) => <span key={id}>{resonanceLabels[id]}</span>)}
+          {analysis.evaluation.teamState.hexereiSecretRite ? <span>魔导秘仪</span> : null}
           <span>{moonsignLabels[analysis.evaluation.teamState.moonsign.level]}</span>
         </div>
         <strong>{formatDamage(analysis.evaluation.rotation.dpr)}</strong>
@@ -1707,12 +1752,13 @@ function OrderedDamageReport({
 
       <article className="wideReport substatReport">
         <div className="cardTitle"><span>ONE AVERAGE ROLL</span><strong>词条增加的边际收益</strong><small>额外增加一个五星圣遗物平均档</small></div>
-        <div className="gainBars">{analysis.analysis.marginalSubstats.map((result) => <div className="gainBar" key={result.stat}><span>{result.label}</span><div><i style={{ width: `${Math.max(result.weight * 100, 1)}%` }} /></div><b>{formatPercent(result.gainRatio)}</b></div>)}</div>
+        <div className="gainBars">{analysis.analysis.marginalSubstats.map((result) => <div className="gainBar" key={result.stat}><span>{result.label}</span><div><i style={{ width: `${Math.max(result.weight * 100, 1)}%` }} /></div><b>{formatMarginalPercent(result.gainRatio)}</b></div>)}</div>
+        {analysis.analysis.progressionGains.length > 0 ? <><div className="gainGroupTitle">角色成长</div><div className="gainBars">{analysis.analysis.progressionGains.map((result) => <div className="gainBar" key={result.id}><span>{result.label}</span><div><i style={{ width: `${Math.max(result.weight * 100, 1)}%` }} /></div><b>{formatMarginalPercent(result.gainRatio)}</b></div>)}</div></> : null}
       </article>
 
       <article className="wideReport weaponReport">
-        <div className="cardTitle"><span>WEAPON SWAP</span><strong>更换武器收益</strong><small>五星 R1 / 四星 R5 · 每把武器重新解析装备效果</small></div>
-        <div className="weaponRows">{analysis.analysis.weapons.map((weapon, index) => <div className="weaponRow" key={weapon.weaponId}><span className="rankNumber">{String(index + 1).padStart(2, "0")}</span><WeaponIcon label={weapon.label} weaponId={weapon.weaponId} /><div><strong>{weapon.label}</strong><small>{weapon.rarity}★ · R{weapon.refinement}</small></div><span>{formatDamage(weapon.expectedDamage)}</span><b className={weapon.gainRatio >= 0 ? "positive" : "negative"}>{formatPercent(weapon.gainRatio)}</b></div>)}</div>
+        <div className="cardTitle"><span>WEAPON SWAP</span><strong>更换武器收益</strong><small>每把武器可独立选择精炼等级，并重新解析装备效果</small></div>
+        <div className="weaponRows">{analysis.analysis.weapons.map((weapon, index) => <div className="weaponRow" key={weapon.weaponId}><span className="rankNumber">{String(index + 1).padStart(2, "0")}</span><WeaponIcon label={weapon.label} weaponId={weapon.weaponId} /><div><strong>{weapon.label}</strong><small>{weapon.rarity}★ · R{weapon.refinement}</small></div><label className="weaponRefinement"><span>精炼</span><select aria-label={`${weapon.label}精炼等级`} value={weapon.refinement} onChange={(event) => onWeaponRefinementChange(weapon.weaponId, numberValue(event.target.value, 1))}>{[1, 2, 3, 4, 5].map((refinement) => <option key={refinement} value={refinement}>R{refinement}</option>)}</select></label><span>{formatDamage(weapon.expectedDamage)}</span><b className={weapon.gainRatio >= 0 ? "positive" : "negative"}>{formatPercent(weapon.gainRatio)}</b></div>)}</div>
       </article>
     </div>
   )
@@ -1734,6 +1780,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   const [enemy, setEnemy] = useState(initialScenario.enemy)
   const [buffs, setBuffs] = useState([...initialScenario.externalBuffs])
   const [selectedCharacterEffectIds, setSelectedCharacterEffectIds] = useState<string[]>([])
+  const [weaponComparisonRefinements, setWeaponComparisonRefinements] = useState<Record<string, number>>({})
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null)
   const [supportMetricResponse, setSupportMetricResponse] = useState<SupportMetricEvaluationResponse | null>(null)
   const [status, setStatus] = useState("请选择计算对象和指标")
@@ -1823,7 +1870,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
     setStatus(`已选择指标：${metric.label}`)
   }
 
-  const runAnalysis = async () => {
+  const runAnalysis = async (refinementOverrides: Readonly<Record<string, number>> = weaponComparisonRefinements) => {
     if (!targetBuild) {
       setError("请选择计算对象")
       return
@@ -1880,7 +1927,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         targetActionId: targetAction.id
       })
       const response = await fetch("/api/backend/v1/analysis", {
-        body: JSON.stringify(scenario),
+        body: JSON.stringify({ ...scenario, weaponComparisonRefinements: refinementOverrides }),
         headers: { "Content-Type": "application/json" },
         method: "POST"
       })
@@ -1895,6 +1942,12 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
       setStatus("计算失败")
       setError(caught instanceof Error ? caught.message : "指标计算失败")
     }
+  }
+
+  const changeWeaponComparisonRefinement = (weaponId: string, refinement: number) => {
+    const nextRefinements = { ...weaponComparisonRefinements, [weaponId]: refinement }
+    setWeaponComparisonRefinements(nextRefinements)
+    void runAnalysis(nextRefinements)
   }
 
   const toggleBuffPreset = (presetId: string) => {
@@ -1987,14 +2040,14 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
                 <p className="automaticEffectsNote">武器与圣遗物效果由系统按照当前角色、队伍和目标动作自动取可达到的最大值。</p>
               </>
             )}
-            <button className="workspacePrimaryButton calculateButton" type="button" onClick={runAnalysis}>开始计算</button>
+            <button className="workspacePrimaryButton calculateButton" type="button" onClick={() => void runAnalysis()}>开始计算</button>
           </div>
         ) : null}
       </section>
 
       <section className="resultsSection calculationResults" id="results">
         <div className="resultsHeading"><div><span className="kicker">METRIC REPORT</span><h2>计算结果</h2></div><span className="targetBadge">{selectedSupportMetric?.label ?? targetAction?.label ?? "尚未选择指标"}</span></div>
-        {supportMetricResponse ? <SupportMetricReport catalog={catalog} response={supportMetricResponse} /> : analysis && targetBuild ? <OrderedDamageReport analysis={analysis} build={targetBuild} catalog={catalog} targetAction={targetAction} /> : <div className="emptyResult"><span>Σ</span><strong>等待计算</strong><p>选择队伍成员和指标后开始计算。</p></div>}
+        {supportMetricResponse ? <SupportMetricReport catalog={catalog} response={supportMetricResponse} /> : analysis && targetBuild ? <OrderedDamageReport analysis={analysis} build={targetBuild} catalog={catalog} onWeaponRefinementChange={changeWeaponComparisonRefinement} targetAction={targetAction} /> : <div className="emptyResult"><span>Σ</span><strong>等待计算</strong><p>选择队伍成员和指标后开始计算。</p></div>}
       </section>
     </main>
   )

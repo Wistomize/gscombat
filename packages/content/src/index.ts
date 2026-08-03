@@ -75,6 +75,7 @@ export {
 export * from "./reviewed-multi-scaling-evidence.js"
 export * from "./rules/elemental-resonances.js"
 export * from "./rules/moonsign.js"
+export * from "./rules/hexerei.js"
 export type { CharacterDefinition, PlaystyleDefinition } from "./types.js"
 export * from "./weapons/engulfing-lightning/index.js"
 export * from "./weapons/festering-desire/index.js"

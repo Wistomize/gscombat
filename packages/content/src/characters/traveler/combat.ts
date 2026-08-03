@@ -115,6 +115,7 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-razorgrass-blade-damage-bonus-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 繁庑的丛草",
           maximumValue: 0.15,
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.0015, talentLevel: 1 }],

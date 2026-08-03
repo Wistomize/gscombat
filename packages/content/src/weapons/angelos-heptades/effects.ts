@@ -37,6 +37,7 @@ export const angelosHeptadesCombatActionEffects: readonly CombatActionEffect[] =
   },
   {
     activation: "active",
+    condition: { kind: "hexerei_secret_rite" },
     exclusivity: { group: "angelos-heptades-guiding-light-recipient-position", variant: "magic-secret-off-field" },
     id: "weapon.angelos-heptades.magic-secret.after-shield.source-final-attack-to-off-field-magic-recipient-damage-bonus",
     label: "尘光七谕 · 魔导·秘仪下后台魔导角色的先导之光（50%伤害）",

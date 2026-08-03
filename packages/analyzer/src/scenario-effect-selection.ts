@@ -1,5 +1,6 @@
 import {
   getCombatActionDefinition,
+  hasHexereiSecretRite,
   isCombatActionEffectApplicable,
   listCombatActionEffects,
   type CombatActionEffect,
@@ -44,6 +45,9 @@ function isMaximumReachableEffectConditionSatisfied(
 ): boolean {
   const condition = effect.condition
   if (!condition) return true
+  if (condition.kind === "hexerei_secret_rite") {
+    return hasHexereiSecretRite([scenario.primary, ...scenario.teammates].map((build) => build.characterId))
+  }
   if (condition.kind === "moonsign_level") {
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
     return rank[teamState.moonsign.level] >= rank[condition.minimum]

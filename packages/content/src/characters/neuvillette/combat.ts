@@ -85,6 +85,7 @@ export const neuvilletteCombatCoverage: CharacterCombatCoverage = {
         {
           fixedValue: 0.3,
           kind: "flat",
+          label: "固有天赋 · 至高仲裁的纪律",
           minimumSourceAscension: 4,
           target: "damageBonus"
         }

@@ -1,5 +1,6 @@
 import {
   getCharacterBurstEnergyCost,
+  hasHexereiSecretRite,
   isCombatActionEffectApplicable,
   isCombatActionEffectDeterministicallyActive,
   listCharacterTalentLevelConstellationBonuses,
@@ -25,6 +26,7 @@ import { countArtifactSet } from "./artifact-stats.js"
 
 /** One content-owned automatic or explicitly selected snapshot contribution resolved for a target action. */
 export interface AppliedCombatActionEffect {
+  readonly actionParameterId?: string
   /** Present while resolving a capped final-maximum-HP conversion before it is materialized for the UI trace. */
   readonly finalHpMaximumValue?: number
   readonly id: string
@@ -540,6 +542,11 @@ function resolveCombatActionEffectsForCandidates(
   const appliedEffects = eligibleEffects.map(({ effect, source }) => {
     const finalHpMaximumValue = resolveFinalHpMaximumValue(effect, source)
     return {
+      ...(effect.target !== "additionalDamageEvent" &&
+      effect.target !== "matchedActionAdditiveDamageTerm" &&
+      effect.actionParameterId !== undefined
+        ? { actionParameterId: effect.actionParameterId }
+        : {}),
       id: effect.id,
       label: effect.label,
       sourceId: source.buildId,
@@ -788,6 +795,9 @@ export function resolveFinalHpToOwnElementDamageBonus(
 
 function matchesEffectCondition(effect: CombatActionEffect, input: ResolveCombatActionEffectCandidatesInput): boolean {
   if (!effect.condition) return true
+  if (effect.condition.kind === "hexerei_secret_rite") {
+    return hasHexereiSecretRite([input.primary, ...input.teammates].map((build) => build.characterId))
+  }
   if (effect.condition.kind === "moonsign_level") {
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
     return input.moonsignLevel !== undefined && rank[input.moonsignLevel] >= rank[effect.condition.minimum]

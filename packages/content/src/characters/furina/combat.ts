@@ -87,6 +87,7 @@ export const furinaCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-salon-member-damage-bonus-per-1000-max-hp",
           kind: "source_stat",
+          label: "固有天赋 · 无人听的自白",
           maximumValueParameterId: "a4-maximum-salon-member-damage-bonus",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.007, talentLevel: 1 }],

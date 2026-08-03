@@ -6,6 +6,22 @@ export const CRIMSON_MOONS_SEMBLANCE_HIGH_BOND_DAMAGE_BONUS = [0.36, 0.48, 0.6, 
 /** Typed selected Bond of Life contributions of Crimson Moon's Semblance. */
 export const crimsonMoonsSemblanceCombatActionEffects: readonly CombatActionEffect[] = [
   {
+    actionParameterId: "bond-of-life-percent",
+    activation: "maximum_reachable",
+    id: "weapon.crimson-moons-semblance.charged-hit.bond-of-life",
+    label: "赤月之形 · 重击命中后赋予生命值上限25%的生命之契",
+    source: { kind: "weapon", weaponId: "CrimsonMoonsSemblance" },
+    target: "actionParameter",
+    targetFilter: {
+      actionIds: [
+        "arlecchino.normal.masque_of_the_red_death.first_hit.full_bond.no_reaction",
+        "arlecchino.normal.masque_of_the_red_death.first_hit.full_bond.hydro_aura_vaporize",
+        "arlecchino.normal.masque_of_the_red_death.first_hit.full_bond.cryo_aura_melt"
+      ]
+    },
+    value: { kind: "fixed", value: 25 }
+  },
+  {
     activation: "active",
     exclusivity: { group: "crimson-moons-semblance-bond", variant: "below-thirty-percent" },
     id: "weapon.crimson-moons-semblance.bond-of-life.below-thirty-percent.damage-bonus",

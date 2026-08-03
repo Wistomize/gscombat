@@ -65,9 +65,16 @@ export interface DeclaredActionIntrinsicEffectStats {
 
 /** Collects action-owned contributions after applying their source, ascension, and snapshot gates. */
 export interface ResolvedDeclaredActionIntrinsicEffects {
+  readonly contributions: readonly ResolvedDeclaredActionIntrinsicEffectContribution[]
   readonly critRate: number
   readonly damageBonus: number
   readonly elementalMastery: number
+}
+
+export interface ResolvedDeclaredActionIntrinsicEffectContribution {
+  readonly label: string
+  readonly target: CombatActionIntrinsicEffect["target"]
+  readonly value: number
 }
 
 /**
@@ -240,27 +247,29 @@ export function resolveDeclaredActionIntrinsicEffects(
   actionParameters?: ReadonlyMap<string, number>
 ): ResolvedDeclaredActionIntrinsicEffects {
   const effects = action.intrinsicEffects ?? []
-  const elementalMastery = stats.elementalMastery + sumIntrinsicEffects(
-    effects,
-    "elementalMastery",
+  const masteryContributions = resolveIntrinsicEffectContributions(
+    effects.filter((effect) => effect.target === "elementalMastery"),
     action,
     build,
     gameData,
     stats,
     actionParameters
   )
+  const elementalMastery = stats.elementalMastery + sumContributionValues(masteryContributions)
   const effectiveStats = { ...stats, elementalMastery }
+  const remainingContributions = resolveIntrinsicEffectContributions(
+    effects.filter((effect) => effect.target !== "elementalMastery"),
+    action,
+    build,
+    gameData,
+    effectiveStats,
+    actionParameters
+  )
+  const contributions = [...masteryContributions, ...remainingContributions]
   return {
-    critRate: sumIntrinsicEffects(effects, "critRate", action, build, gameData, effectiveStats, actionParameters),
-    damageBonus: sumIntrinsicEffects(
-      effects,
-      "damageBonus",
-      action,
-      build,
-      gameData,
-      effectiveStats,
-      actionParameters
-    ),
+    contributions,
+    critRate: sumContributionValues(contributions.filter((contribution) => contribution.target === "critRate")),
+    damageBonus: sumContributionValues(contributions.filter((contribution) => contribution.target === "damageBonus")),
     elementalMastery
   }
 }
@@ -289,22 +298,33 @@ export function resolveDeclaredActionCappedStatToAttackConversion(
   return Math.min(stats[conversion.scalingStat] * ratio, stats.baseAttack * capRatio)
 }
 
-function sumIntrinsicEffects(
+function resolveIntrinsicEffectContributions(
   effects: readonly CombatActionIntrinsicEffect[],
-  target: CombatActionIntrinsicEffect["target"],
   action: CombatActionMetadata,
   build: CharacterBuild,
   gameData: GameDataRepository,
   stats: DeclaredActionIntrinsicEffectStats,
   actionParameters: ReadonlyMap<string, number> | undefined
-): number {
-  return effects
-    .filter((effect) => effect.target === target)
-    .reduce(
-      (total, effect) =>
-        total + resolveIntrinsicEffectValue(effect, action, build, gameData, stats, actionParameters),
-      0
-    )
+): readonly ResolvedDeclaredActionIntrinsicEffectContribution[] {
+  return effects.map((effect) => ({
+    label: getIntrinsicEffectLabel(effect, action),
+    target: effect.target,
+    value: resolveIntrinsicEffectValue(effect, action, build, gameData, stats, actionParameters)
+  }))
+}
+
+function sumContributionValues(contributions: readonly ResolvedDeclaredActionIntrinsicEffectContribution[]): number {
+  return contributions.reduce((total, contribution) => total + contribution.value, 0)
+}
+
+function getIntrinsicEffectLabel(effect: CombatActionIntrinsicEffect, action: CombatActionMetadata): string {
+  if (effect.label) return effect.label
+  const coefficientParameterId = effect.coefficientParameterId
+  const reference = coefficientParameterId
+    ? action.parameterReferences?.find((candidate) => candidate.id === coefficientParameterId)
+    : undefined
+  const slotLabel = reference?.source === "talent" ? getTalentSlotLabel(reference.talentSlot) : "动作固有加成"
+  return coefficientParameterId ? `${slotLabel} · ${coefficientParameterId}` : `${slotLabel} · ${action.id}`
 }
 
 function resolveIntrinsicEffectValue(

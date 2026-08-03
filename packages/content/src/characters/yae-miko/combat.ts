@@ -84,6 +84,7 @@ export const yaeMikoCombatCoverage: CharacterCombatCoverage = {
         {
           coefficientParameterId: "a4-sesshou-sakura-damage-bonus-per-elemental-mastery",
           kind: "source_stat",
+          label: "固有天赋 · 启蜇之祝词",
           minimumSourceAscension: 4,
           snapshotChecks: [{ expectedCoefficient: 0.0015, talentLevel: 1 }],
           sourceStat: "elementalMastery",
