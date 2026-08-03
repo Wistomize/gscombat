@@ -1,0 +1,1038 @@
+{
+  "artifacts": {
+    "ADayCarvedFromRisingWinds": {
+      "circlet": "/icons/artifacts/ADayCarvedFromRisingWinds/circlet.webp",
+      "flower": "/icons/artifacts/ADayCarvedFromRisingWinds/flower.webp",
+      "goblet": "/icons/artifacts/ADayCarvedFromRisingWinds/goblet.webp",
+      "plume": "/icons/artifacts/ADayCarvedFromRisingWinds/plume.webp",
+      "sands": "/icons/artifacts/ADayCarvedFromRisingWinds/sands.webp"
+    },
+    "Adventurer": {
+      "circlet": "/icons/artifacts/Adventurer/circlet.webp",
+      "flower": "/icons/artifacts/Adventurer/flower.webp",
+      "goblet": "/icons/artifacts/Adventurer/goblet.webp",
+      "plume": "/icons/artifacts/Adventurer/plume.webp",
+      "sands": "/icons/artifacts/Adventurer/sands.webp"
+    },
+    "ArchaicPetra": {
+      "circlet": "/icons/artifacts/ArchaicPetra/circlet.webp",
+      "flower": "/icons/artifacts/ArchaicPetra/flower.webp",
+      "goblet": "/icons/artifacts/ArchaicPetra/goblet.webp",
+      "plume": "/icons/artifacts/ArchaicPetra/plume.webp",
+      "sands": "/icons/artifacts/ArchaicPetra/sands.webp"
+    },
+    "Berserker": {
+      "circlet": "/icons/artifacts/Berserker/circlet.webp",
+      "flower": "/icons/artifacts/Berserker/flower.webp",
+      "goblet": "/icons/artifacts/Berserker/goblet.webp",
+      "plume": "/icons/artifacts/Berserker/plume.webp",
+      "sands": "/icons/artifacts/Berserker/sands.webp"
+    },
+    "BlizzardStrayer": {
+      "circlet": "/icons/artifacts/BlizzardStrayer/circlet.webp",
+      "flower": "/icons/artifacts/BlizzardStrayer/flower.webp",
+      "goblet": "/icons/artifacts/BlizzardStrayer/goblet.webp",
+      "plume": "/icons/artifacts/BlizzardStrayer/plume.webp",
+      "sands": "/icons/artifacts/BlizzardStrayer/sands.webp"
+    },
+    "BloodstainedChivalry": {
+      "circlet": "/icons/artifacts/BloodstainedChivalry/circlet.webp",
+      "flower": "/icons/artifacts/BloodstainedChivalry/flower.webp",
+      "goblet": "/icons/artifacts/BloodstainedChivalry/goblet.webp",
+      "plume": "/icons/artifacts/BloodstainedChivalry/plume.webp",
+      "sands": "/icons/artifacts/BloodstainedChivalry/sands.webp"
+    },
+    "BraveHeart": {
+      "circlet": "/icons/artifacts/BraveHeart/circlet.webp",
+      "flower": "/icons/artifacts/BraveHeart/flower.webp",
+      "goblet": "/icons/artifacts/BraveHeart/goblet.webp",
+      "plume": "/icons/artifacts/BraveHeart/plume.webp",
+      "sands": "/icons/artifacts/BraveHeart/sands.webp"
+    },
+    "CelestialGift": {
+      "circlet": "/icons/artifacts/CelestialGift/circlet.webp",
+      "flower": "/icons/artifacts/CelestialGift/flower.webp",
+      "goblet": "/icons/artifacts/CelestialGift/goblet.webp",
+      "plume": "/icons/artifacts/CelestialGift/plume.webp",
+      "sands": "/icons/artifacts/CelestialGift/sands.webp"
+    },
+    "CrimsonWitchOfFlames": {
+      "circlet": "/icons/artifacts/CrimsonWitchOfFlames/circlet.webp",
+      "flower": "/icons/artifacts/CrimsonWitchOfFlames/flower.webp",
+      "goblet": "/icons/artifacts/CrimsonWitchOfFlames/goblet.webp",
+      "plume": "/icons/artifacts/CrimsonWitchOfFlames/plume.webp",
+      "sands": "/icons/artifacts/CrimsonWitchOfFlames/sands.webp"
+    },
+    "DeepwoodMemories": {
+      "circlet": "/icons/artifacts/DeepwoodMemories/circlet.webp",
+      "flower": "/icons/artifacts/DeepwoodMemories/flower.webp",
+      "goblet": "/icons/artifacts/DeepwoodMemories/goblet.webp",
+      "plume": "/icons/artifacts/DeepwoodMemories/plume.webp",
+      "sands": "/icons/artifacts/DeepwoodMemories/sands.webp"
+    },
+    "DesertPavilionChronicle": {
+      "circlet": "/icons/artifacts/DesertPavilionChronicle/circlet.webp",
+      "flower": "/icons/artifacts/DesertPavilionChronicle/flower.webp",
+      "goblet": "/icons/artifacts/DesertPavilionChronicle/goblet.webp",
+      "plume": "/icons/artifacts/DesertPavilionChronicle/plume.webp",
+      "sands": "/icons/artifacts/DesertPavilionChronicle/sands.webp"
+    },
+    "EchoesOfAnOffering": {
+      "circlet": "/icons/artifacts/EchoesOfAnOffering/circlet.webp",
+      "flower": "/icons/artifacts/EchoesOfAnOffering/flower.webp",
+      "goblet": "/icons/artifacts/EchoesOfAnOffering/goblet.webp",
+      "plume": "/icons/artifacts/EchoesOfAnOffering/plume.webp",
+      "sands": "/icons/artifacts/EchoesOfAnOffering/sands.webp"
+    },
+    "EmblemOfSeveredFate": {
+      "circlet": "/icons/artifacts/EmblemOfSeveredFate/circlet.webp",
+      "flower": "/icons/artifacts/EmblemOfSeveredFate/flower.webp",
+      "goblet": "/icons/artifacts/EmblemOfSeveredFate/goblet.webp",
+      "plume": "/icons/artifacts/EmblemOfSeveredFate/plume.webp",
+      "sands": "/icons/artifacts/EmblemOfSeveredFate/sands.webp"
+    },
+    "FinaleOfTheDeepGalleries": {
+      "circlet": "/icons/artifacts/FinaleOfTheDeepGalleries/circlet.webp",
+      "flower": "/icons/artifacts/FinaleOfTheDeepGalleries/flower.webp",
+      "goblet": "/icons/artifacts/FinaleOfTheDeepGalleries/goblet.webp",
+      "plume": "/icons/artifacts/FinaleOfTheDeepGalleries/plume.webp",
+      "sands": "/icons/artifacts/FinaleOfTheDeepGalleries/sands.webp"
+    },
+    "FragmentOfHarmonicWhimsy": {
+      "circlet": "/icons/artifacts/FragmentOfHarmonicWhimsy/circlet.webp",
+      "flower": "/icons/artifacts/FragmentOfHarmonicWhimsy/flower.webp",
+      "goblet": "/icons/artifacts/FragmentOfHarmonicWhimsy/goblet.webp",
+      "plume": "/icons/artifacts/FragmentOfHarmonicWhimsy/plume.webp",
+      "sands": "/icons/artifacts/FragmentOfHarmonicWhimsy/sands.webp"
+    },
+    "Gambler": {
+      "circlet": "/icons/artifacts/Gambler/circlet.webp",
+      "flower": "/icons/artifacts/Gambler/flower.webp",
+      "goblet": "/icons/artifacts/Gambler/goblet.webp",
+      "plume": "/icons/artifacts/Gambler/plume.webp",
+      "sands": "/icons/artifacts/Gambler/sands.webp"
+    },
+    "GildedDreams": {
+      "circlet": "/icons/artifacts/GildedDreams/circlet.webp",
+      "flower": "/icons/artifacts/GildedDreams/flower.webp",
+      "goblet": "/icons/artifacts/GildedDreams/goblet.webp",
+      "plume": "/icons/artifacts/GildedDreams/plume.webp",
+      "sands": "/icons/artifacts/GildedDreams/sands.webp"
+    },
+    "GladiatorsFinale": {
+      "circlet": "/icons/artifacts/GladiatorsFinale/circlet.webp",
+      "flower": "/icons/artifacts/GladiatorsFinale/flower.webp",
+      "goblet": "/icons/artifacts/GladiatorsFinale/goblet.webp",
+      "plume": "/icons/artifacts/GladiatorsFinale/plume.webp",
+      "sands": "/icons/artifacts/GladiatorsFinale/sands.webp"
+    },
+    "GoldenTroupe": {
+      "circlet": "/icons/artifacts/GoldenTroupe/circlet.webp",
+      "flower": "/icons/artifacts/GoldenTroupe/flower.webp",
+      "goblet": "/icons/artifacts/GoldenTroupe/goblet.webp",
+      "plume": "/icons/artifacts/GoldenTroupe/plume.webp",
+      "sands": "/icons/artifacts/GoldenTroupe/sands.webp"
+    },
+    "HeartOfDepth": {
+      "circlet": "/icons/artifacts/HeartOfDepth/circlet.webp",
+      "flower": "/icons/artifacts/HeartOfDepth/flower.webp",
+      "goblet": "/icons/artifacts/HeartOfDepth/goblet.webp",
+      "plume": "/icons/artifacts/HeartOfDepth/plume.webp",
+      "sands": "/icons/artifacts/HeartOfDepth/sands.webp"
+    },
+    "HuskOfOpulentDreams": {
+      "circlet": "/icons/artifacts/HuskOfOpulentDreams/circlet.webp",
+      "flower": "/icons/artifacts/HuskOfOpulentDreams/flower.webp",
+      "goblet": "/icons/artifacts/HuskOfOpulentDreams/goblet.webp",
+      "plume": "/icons/artifacts/HuskOfOpulentDreams/plume.webp",
+      "sands": "/icons/artifacts/HuskOfOpulentDreams/sands.webp"
+    },
+    "Instructor": {
+      "circlet": "/icons/artifacts/Instructor/circlet.webp",
+      "flower": "/icons/artifacts/Instructor/flower.webp",
+      "goblet": "/icons/artifacts/Instructor/goblet.webp",
+      "plume": "/icons/artifacts/Instructor/plume.webp",
+      "sands": "/icons/artifacts/Instructor/sands.webp"
+    },
+    "LongNightsOath": {
+      "circlet": "/icons/artifacts/LongNightsOath/circlet.webp",
+      "flower": "/icons/artifacts/LongNightsOath/flower.webp",
+      "goblet": "/icons/artifacts/LongNightsOath/goblet.webp",
+      "plume": "/icons/artifacts/LongNightsOath/plume.webp",
+      "sands": "/icons/artifacts/LongNightsOath/sands.webp"
+    },
+    "LuckyDog": {
+      "circlet": "/icons/artifacts/LuckyDog/circlet.webp",
+      "flower": "/icons/artifacts/LuckyDog/flower.webp",
+      "goblet": "/icons/artifacts/LuckyDog/goblet.webp",
+      "plume": "/icons/artifacts/LuckyDog/plume.webp",
+      "sands": "/icons/artifacts/LuckyDog/sands.webp"
+    },
+    "MaidenBeloved": {
+      "circlet": "/icons/artifacts/MaidenBeloved/circlet.webp",
+      "flower": "/icons/artifacts/MaidenBeloved/flower.webp",
+      "goblet": "/icons/artifacts/MaidenBeloved/goblet.webp",
+      "plume": "/icons/artifacts/MaidenBeloved/plume.webp",
+      "sands": "/icons/artifacts/MaidenBeloved/sands.webp"
+    },
+    "MarechausseeHunter": {
+      "circlet": "/icons/artifacts/MarechausseeHunter/circlet.webp",
+      "flower": "/icons/artifacts/MarechausseeHunter/flower.webp",
+      "goblet": "/icons/artifacts/MarechausseeHunter/goblet.webp",
+      "plume": "/icons/artifacts/MarechausseeHunter/plume.webp",
+      "sands": "/icons/artifacts/MarechausseeHunter/sands.webp"
+    },
+    "MartialArtist": {
+      "circlet": "/icons/artifacts/MartialArtist/circlet.webp",
+      "flower": "/icons/artifacts/MartialArtist/flower.webp",
+      "goblet": "/icons/artifacts/MartialArtist/goblet.webp",
+      "plume": "/icons/artifacts/MartialArtist/plume.webp",
+      "sands": "/icons/artifacts/MartialArtist/sands.webp"
+    },
+    "NighttimeWhispersInTheEchoingWoods": {
+      "circlet": "/icons/artifacts/NighttimeWhispersInTheEchoingWoods/circlet.webp",
+      "flower": "/icons/artifacts/NighttimeWhispersInTheEchoingWoods/flower.webp",
+      "goblet": "/icons/artifacts/NighttimeWhispersInTheEchoingWoods/goblet.webp",
+      "plume": "/icons/artifacts/NighttimeWhispersInTheEchoingWoods/plume.webp",
+      "sands": "/icons/artifacts/NighttimeWhispersInTheEchoingWoods/sands.webp"
+    },
+    "NoblesseOblige": {
+      "circlet": "/icons/artifacts/NoblesseOblige/circlet.webp",
+      "flower": "/icons/artifacts/NoblesseOblige/flower.webp",
+      "goblet": "/icons/artifacts/NoblesseOblige/goblet.webp",
+      "plume": "/icons/artifacts/NoblesseOblige/plume.webp",
+      "sands": "/icons/artifacts/NoblesseOblige/sands.webp"
+    },
+    "NymphsDream": {
+      "circlet": "/icons/artifacts/NymphsDream/circlet.webp",
+      "flower": "/icons/artifacts/NymphsDream/flower.webp",
+      "goblet": "/icons/artifacts/NymphsDream/goblet.webp",
+      "plume": "/icons/artifacts/NymphsDream/plume.webp",
+      "sands": "/icons/artifacts/NymphsDream/sands.webp"
+    },
+    "ObsidianCodex": {
+      "circlet": "/icons/artifacts/ObsidianCodex/circlet.webp",
+      "flower": "/icons/artifacts/ObsidianCodex/flower.webp",
+      "goblet": "/icons/artifacts/ObsidianCodex/goblet.webp",
+      "plume": "/icons/artifacts/ObsidianCodex/plume.webp",
+      "sands": "/icons/artifacts/ObsidianCodex/sands.webp"
+    },
+    "PaleFlame": {
+      "circlet": "/icons/artifacts/PaleFlame/circlet.webp",
+      "flower": "/icons/artifacts/PaleFlame/flower.webp",
+      "goblet": "/icons/artifacts/PaleFlame/goblet.webp",
+      "plume": "/icons/artifacts/PaleFlame/plume.webp",
+      "sands": "/icons/artifacts/PaleFlame/sands.webp"
+    },
+    "PrayersForDestiny": {
+      "circlet": "/icons/artifacts/PrayersForDestiny/circlet.webp"
+    },
+    "PrayersForIllumination": {
+      "circlet": "/icons/artifacts/PrayersForIllumination/circlet.webp"
+    },
+    "PrayersForWisdom": {
+      "circlet": "/icons/artifacts/PrayersForWisdom/circlet.webp"
+    },
+    "PrayersToSpringtime": {
+      "circlet": "/icons/artifacts/PrayersToSpringtime/circlet.webp"
+    },
+    "ResolutionOfSojourner": {
+      "circlet": "/icons/artifacts/ResolutionOfSojourner/circlet.webp",
+      "flower": "/icons/artifacts/ResolutionOfSojourner/flower.webp",
+      "goblet": "/icons/artifacts/ResolutionOfSojourner/goblet.webp",
+      "plume": "/icons/artifacts/ResolutionOfSojourner/plume.webp",
+      "sands": "/icons/artifacts/ResolutionOfSojourner/sands.webp"
+    },
+    "RetracingBolide": {
+      "circlet": "/icons/artifacts/RetracingBolide/circlet.webp",
+      "flower": "/icons/artifacts/RetracingBolide/flower.webp",
+      "goblet": "/icons/artifacts/RetracingBolide/goblet.webp",
+      "plume": "/icons/artifacts/RetracingBolide/plume.webp",
+      "sands": "/icons/artifacts/RetracingBolide/sands.webp"
+    },
+    "Scholar": {
+      "circlet": "/icons/artifacts/Scholar/circlet.webp",
+      "flower": "/icons/artifacts/Scholar/flower.webp",
+      "goblet": "/icons/artifacts/Scholar/goblet.webp",
+      "plume": "/icons/artifacts/Scholar/plume.webp",
+      "sands": "/icons/artifacts/Scholar/sands.webp"
+    },
+    "ScrollOfTheHeroOfCinderCity": {
+      "circlet": "/icons/artifacts/ScrollOfTheHeroOfCinderCity/circlet.webp",
+      "flower": "/icons/artifacts/ScrollOfTheHeroOfCinderCity/flower.webp",
+      "goblet": "/icons/artifacts/ScrollOfTheHeroOfCinderCity/goblet.webp",
+      "plume": "/icons/artifacts/ScrollOfTheHeroOfCinderCity/plume.webp",
+      "sands": "/icons/artifacts/ScrollOfTheHeroOfCinderCity/sands.webp"
+    },
+    "ShimenawasReminiscence": {
+      "circlet": "/icons/artifacts/ShimenawasReminiscence/circlet.webp",
+      "flower": "/icons/artifacts/ShimenawasReminiscence/flower.webp",
+      "goblet": "/icons/artifacts/ShimenawasReminiscence/goblet.webp",
+      "plume": "/icons/artifacts/ShimenawasReminiscence/plume.webp",
+      "sands": "/icons/artifacts/ShimenawasReminiscence/sands.webp"
+    },
+    "TenacityOfTheMillelith": {
+      "circlet": "/icons/artifacts/TenacityOfTheMillelith/circlet.webp",
+      "flower": "/icons/artifacts/TenacityOfTheMillelith/flower.webp",
+      "goblet": "/icons/artifacts/TenacityOfTheMillelith/goblet.webp",
+      "plume": "/icons/artifacts/TenacityOfTheMillelith/plume.webp",
+      "sands": "/icons/artifacts/TenacityOfTheMillelith/sands.webp"
+    },
+    "TheExile": {
+      "circlet": "/icons/artifacts/TheExile/circlet.webp",
+      "flower": "/icons/artifacts/TheExile/flower.webp",
+      "goblet": "/icons/artifacts/TheExile/goblet.webp",
+      "plume": "/icons/artifacts/TheExile/plume.webp",
+      "sands": "/icons/artifacts/TheExile/sands.webp"
+    },
+    "TravelingDoctor": {
+      "circlet": "/icons/artifacts/TravelingDoctor/circlet.webp",
+      "flower": "/icons/artifacts/TravelingDoctor/flower.webp",
+      "goblet": "/icons/artifacts/TravelingDoctor/goblet.webp",
+      "plume": "/icons/artifacts/TravelingDoctor/plume.webp",
+      "sands": "/icons/artifacts/TravelingDoctor/sands.webp"
+    },
+    "UnfinishedReverie": {
+      "circlet": "/icons/artifacts/UnfinishedReverie/circlet.webp",
+      "flower": "/icons/artifacts/UnfinishedReverie/flower.webp",
+      "goblet": "/icons/artifacts/UnfinishedReverie/goblet.webp",
+      "plume": "/icons/artifacts/UnfinishedReverie/plume.webp",
+      "sands": "/icons/artifacts/UnfinishedReverie/sands.webp"
+    },
+    "VermillionHereafter": {
+      "circlet": "/icons/artifacts/VermillionHereafter/circlet.webp",
+      "flower": "/icons/artifacts/VermillionHereafter/flower.webp",
+      "goblet": "/icons/artifacts/VermillionHereafter/goblet.webp",
+      "plume": "/icons/artifacts/VermillionHereafter/plume.webp",
+      "sands": "/icons/artifacts/VermillionHereafter/sands.webp"
+    },
+    "ViridescentVenerer": {
+      "circlet": "/icons/artifacts/ViridescentVenerer/circlet.webp",
+      "flower": "/icons/artifacts/ViridescentVenerer/flower.webp",
+      "goblet": "/icons/artifacts/ViridescentVenerer/goblet.webp",
+      "plume": "/icons/artifacts/ViridescentVenerer/plume.webp",
+      "sands": "/icons/artifacts/ViridescentVenerer/sands.webp"
+    },
+    "VourukashasGlow": {
+      "circlet": "/icons/artifacts/VourukashasGlow/circlet.webp",
+      "flower": "/icons/artifacts/VourukashasGlow/flower.webp",
+      "goblet": "/icons/artifacts/VourukashasGlow/goblet.webp",
+      "plume": "/icons/artifacts/VourukashasGlow/plume.webp",
+      "sands": "/icons/artifacts/VourukashasGlow/sands.webp"
+    },
+    "WanderersTroupe": {
+      "circlet": "/icons/artifacts/WanderersTroupe/circlet.webp",
+      "flower": "/icons/artifacts/WanderersTroupe/flower.webp",
+      "goblet": "/icons/artifacts/WanderersTroupe/goblet.webp",
+      "plume": "/icons/artifacts/WanderersTroupe/plume.webp",
+      "sands": "/icons/artifacts/WanderersTroupe/sands.webp"
+    }
+  },
+  "characters": {
+    "RaidenShogun": {
+      "element": "electro",
+      "icon": "/icons/characters/RaidenShogun.webp"
+    },
+    "Traveler": {
+      "element": "traveler",
+      "icon": "/icons/characters/Traveler.webp"
+    },
+    "Bennett": {
+      "element": "pyro",
+      "icon": "/icons/characters/Bennett.webp"
+    },
+    "Yelan": {
+      "element": "hydro",
+      "icon": "/icons/characters/Yelan.webp"
+    },
+    "Albedo": {
+      "element": "geo",
+      "icon": "/icons/characters/Albedo.webp"
+    },
+    "Dehya": {
+      "element": "pyro",
+      "icon": "/icons/characters/Dehya.webp"
+    },
+    "Collei": {
+      "element": "dendro",
+      "icon": "/icons/characters/Collei.webp"
+    },
+    "Xiangling": {
+      "element": "pyro",
+      "icon": "/icons/characters/Xiangling.webp"
+    },
+    "Xingqiu": {
+      "element": "hydro",
+      "icon": "/icons/characters/Xingqiu.webp"
+    },
+    "Kaeya": {
+      "element": "cryo",
+      "icon": "/icons/characters/Kaeya.webp"
+    },
+    "Lisa": {
+      "element": "electro",
+      "icon": "/icons/characters/Lisa.webp"
+    },
+    "Sucrose": {
+      "element": "anemo",
+      "icon": "/icons/characters/Sucrose.webp"
+    },
+    "Noelle": {
+      "element": "geo",
+      "icon": "/icons/characters/Noelle.webp"
+    },
+    "Chongyun": {
+      "element": "cryo",
+      "icon": "/icons/characters/Chongyun.webp"
+    },
+    "Razor": {
+      "element": "electro",
+      "icon": "/icons/characters/Razor.webp"
+    },
+    "Yanfei": {
+      "element": "pyro",
+      "icon": "/icons/characters/Yanfei.webp"
+    },
+    "KujouSara": {
+      "element": "electro",
+      "icon": "/icons/characters/KujouSara.webp"
+    },
+    "Gorou": {
+      "element": "geo",
+      "icon": "/icons/characters/Gorou.webp"
+    },
+    "Kaveh": {
+      "element": "dendro",
+      "icon": "/icons/characters/Kaveh.webp"
+    },
+    "Gaming": {
+      "element": "pyro",
+      "icon": "/icons/characters/Gaming.webp"
+    },
+    "Chevreuse": {
+      "element": "pyro",
+      "icon": "/icons/characters/Chevreuse.webp"
+    },
+    "Ororon": {
+      "element": "electro",
+      "icon": "/icons/characters/Ororon.webp"
+    },
+    "LanYan": {
+      "element": "anemo",
+      "icon": "/icons/characters/LanYan.webp"
+    },
+    "Kachina": {
+      "element": "geo",
+      "icon": "/icons/characters/Kachina.webp"
+    },
+    "Dahlia": {
+      "element": "hydro",
+      "icon": "/icons/characters/Dahlia.webp"
+    },
+    "Jean": {
+      "element": "anemo",
+      "icon": "/icons/characters/Jean.webp"
+    },
+    "Xiao": {
+      "element": "anemo",
+      "icon": "/icons/characters/Xiao.webp"
+    },
+    "Aloy": {
+      "element": "cryo",
+      "icon": "/icons/characters/Aloy.webp"
+    },
+    "KamisatoAyaka": {
+      "element": "cryo",
+      "icon": "/icons/characters/KamisatoAyaka.webp"
+    },
+    "Escoffier": {
+      "element": "cryo",
+      "icon": "/icons/characters/Escoffier.webp"
+    },
+    "Qiqi": {
+      "element": "cryo",
+      "icon": "/icons/characters/Qiqi.webp"
+    },
+    "Tighnari": {
+      "element": "dendro",
+      "icon": "/icons/characters/Tighnari.webp"
+    },
+    "YunJin": {
+      "element": "geo",
+      "icon": "/icons/characters/YunJin.webp"
+    },
+    "Zhongli": {
+      "element": "geo",
+      "icon": "/icons/characters/Zhongli.webp"
+    },
+    "Neuvillette": {
+      "element": "hydro",
+      "icon": "/icons/characters/Neuvillette.webp"
+    },
+    "Nilou": {
+      "element": "hydro",
+      "icon": "/icons/characters/Nilou.webp"
+    },
+    "Diluc": {
+      "element": "pyro",
+      "icon": "/icons/characters/Diluc.webp"
+    },
+    "Thoma": {
+      "element": "pyro",
+      "icon": "/icons/characters/Thoma.webp"
+    },
+    "Arlecchino": {
+      "element": "pyro",
+      "icon": "/icons/characters/Arlecchino.webp"
+    },
+    "Cyno": {
+      "element": "electro",
+      "icon": "/icons/characters/Cyno.webp"
+    },
+    "Beidou": {
+      "element": "electro",
+      "icon": "/icons/characters/Beidou.webp"
+    },
+    "Candace": {
+      "element": "hydro",
+      "icon": "/icons/characters/Candace.webp"
+    },
+    "Diona": {
+      "element": "cryo",
+      "icon": "/icons/characters/Diona.webp"
+    },
+    "Eula": {
+      "element": "cryo",
+      "icon": "/icons/characters/Eula.webp"
+    },
+    "Faruzan": {
+      "element": "anemo",
+      "icon": "/icons/characters/Faruzan.webp"
+    },
+    "Ganyu": {
+      "element": "cryo",
+      "icon": "/icons/characters/Ganyu.webp"
+    },
+    "KaedeharaKazuha": {
+      "element": "anemo",
+      "icon": "/icons/characters/KaedeharaKazuha.webp"
+    },
+    "Keqing": {
+      "element": "electro",
+      "icon": "/icons/characters/Keqing.webp"
+    },
+    "Kirara": {
+      "element": "dendro",
+      "icon": "/icons/characters/Kirara.webp"
+    },
+    "KukiShinobu": {
+      "element": "electro",
+      "icon": "/icons/characters/KukiShinobu.webp"
+    },
+    "Layla": {
+      "element": "cryo",
+      "icon": "/icons/characters/Layla.webp"
+    },
+    "Mika": {
+      "element": "cryo",
+      "icon": "/icons/characters/Mika.webp"
+    },
+    "Ningguang": {
+      "element": "geo",
+      "icon": "/icons/characters/Ningguang.webp"
+    },
+    "Sethos": {
+      "element": "electro",
+      "icon": "/icons/characters/Sethos.webp"
+    },
+    "Shenhe": {
+      "element": "cryo",
+      "icon": "/icons/characters/Shenhe.webp"
+    },
+    "Venti": {
+      "element": "anemo",
+      "icon": "/icons/characters/Venti.webp"
+    },
+    "Xinyan": {
+      "element": "pyro",
+      "icon": "/icons/characters/Xinyan.webp"
+    },
+    "Amber": {
+      "element": "pyro",
+      "icon": "/icons/characters/Amber.webp"
+    },
+    "Barbara": {
+      "element": "hydro",
+      "icon": "/icons/characters/Barbara.webp"
+    },
+    "Charlotte": {
+      "element": "cryo",
+      "icon": "/icons/characters/Charlotte.webp"
+    },
+    "Dori": {
+      "element": "electro",
+      "icon": "/icons/characters/Dori.webp"
+    },
+    "Fischl": {
+      "element": "electro",
+      "icon": "/icons/characters/Fischl.webp"
+    },
+    "Klee": {
+      "element": "pyro",
+      "icon": "/icons/characters/Klee.webp"
+    },
+    "Lynette": {
+      "element": "anemo",
+      "icon": "/icons/characters/Lynette.webp"
+    },
+    "Nahida": {
+      "element": "dendro",
+      "icon": "/icons/characters/Nahida.webp"
+    },
+    "Navia": {
+      "element": "geo",
+      "icon": "/icons/characters/Navia.webp"
+    },
+    "Rosaria": {
+      "element": "cryo",
+      "icon": "/icons/characters/Rosaria.webp"
+    },
+    "Sayu": {
+      "element": "anemo",
+      "icon": "/icons/characters/Sayu.webp"
+    },
+    "ShikanoinHeizou": {
+      "element": "anemo",
+      "icon": "/icons/characters/ShikanoinHeizou.webp"
+    },
+    "Tartaglia": {
+      "element": "hydro",
+      "icon": "/icons/characters/Tartaglia.webp"
+    },
+    "Xianyun": {
+      "element": "anemo",
+      "icon": "/icons/characters/Xianyun.webp"
+    },
+    "YaeMiko": {
+      "element": "electro",
+      "icon": "/icons/characters/YaeMiko.webp"
+    },
+    "Yaoyao": {
+      "element": "dendro",
+      "icon": "/icons/characters/Yaoyao.webp"
+    },
+    "Chasca": {
+      "element": "anemo",
+      "icon": "/icons/characters/Chasca.webp"
+    },
+    "Ifa": {
+      "element": "anemo",
+      "icon": "/icons/characters/Ifa.webp"
+    },
+    "Citlali": {
+      "element": "cryo",
+      "icon": "/icons/characters/Citlali.webp"
+    },
+    "Freminet": {
+      "element": "cryo",
+      "icon": "/icons/characters/Freminet.webp"
+    },
+    "Alhaitham": {
+      "element": "dendro",
+      "icon": "/icons/characters/Alhaitham.webp"
+    },
+    "Baizhu": {
+      "element": "dendro",
+      "icon": "/icons/characters/Baizhu.webp"
+    },
+    "Clorinde": {
+      "element": "electro",
+      "icon": "/icons/characters/Clorinde.webp"
+    },
+    "Iansan": {
+      "element": "electro",
+      "icon": "/icons/characters/Iansan.webp"
+    },
+    "AratakiItto": {
+      "element": "geo",
+      "icon": "/icons/characters/AratakiItto.webp"
+    },
+    "Chiori": {
+      "element": "geo",
+      "icon": "/icons/characters/Chiori.webp"
+    },
+    "Aino": {
+      "element": "hydro",
+      "icon": "/icons/characters/Aino.webp"
+    },
+    "Mona": {
+      "element": "hydro",
+      "icon": "/icons/characters/Mona.webp"
+    },
+    "HuTao": {
+      "element": "pyro",
+      "icon": "/icons/characters/HuTao.webp"
+    },
+    "Lyney": {
+      "element": "pyro",
+      "icon": "/icons/characters/Lyney.webp"
+    },
+    "Furina": {
+      "element": "hydro",
+      "icon": "/icons/characters/Furina.webp"
+    },
+    "KamisatoAyato": {
+      "element": "hydro",
+      "icon": "/icons/characters/KamisatoAyato.webp"
+    },
+    "Jahoda": {
+      "element": "anemo",
+      "icon": "/icons/characters/Jahoda.webp"
+    },
+    "Prune": {
+      "element": "anemo",
+      "icon": "/icons/characters/Prune.webp"
+    },
+    "Varka": {
+      "element": "anemo",
+      "icon": "/icons/characters/Varka.webp"
+    },
+    "Lohen": {
+      "element": "cryo",
+      "icon": "/icons/characters/Lohen.webp"
+    },
+    "Wriothesley": {
+      "element": "cryo",
+      "icon": "/icons/characters/Wriothesley.webp"
+    },
+    "Emilie": {
+      "element": "dendro",
+      "icon": "/icons/characters/Emilie.webp"
+    },
+    "Lauma": {
+      "element": "dendro",
+      "icon": "/icons/characters/Lauma.webp"
+    },
+    "Flins": {
+      "element": "electro",
+      "icon": "/icons/characters/Flins.webp"
+    },
+    "Linnea": {
+      "element": "geo",
+      "icon": "/icons/characters/Linnea.webp"
+    },
+    "Xilonen": {
+      "element": "geo",
+      "icon": "/icons/characters/Xilonen.webp"
+    },
+    "Sigewinne": {
+      "element": "hydro",
+      "icon": "/icons/characters/Sigewinne.webp"
+    },
+    "Columbina": {
+      "element": "hydro",
+      "icon": "/icons/characters/Columbina.webp"
+    },
+    "Yoimiya": {
+      "element": "pyro",
+      "icon": "/icons/characters/Yoimiya.webp"
+    },
+    "Nicole": {
+      "element": "pyro",
+      "icon": "/icons/characters/Nicole.webp"
+    },
+    "Mavuika": {
+      "element": "pyro",
+      "icon": "/icons/characters/Mavuika.webp"
+    },
+    "Wanderer": {
+      "element": "anemo",
+      "icon": "/icons/characters/Wanderer.webp"
+    },
+    "YumemizukiMizuki": {
+      "element": "anemo",
+      "icon": "/icons/characters/YumemizukiMizuki.webp"
+    },
+    "Sandrone": {
+      "element": "cryo",
+      "icon": "/icons/characters/Sandrone.webp"
+    },
+    "Skirk": {
+      "element": "cryo",
+      "icon": "/icons/characters/Skirk.webp"
+    },
+    "Kinich": {
+      "element": "dendro",
+      "icon": "/icons/characters/Kinich.webp"
+    },
+    "Nefer": {
+      "element": "dendro",
+      "icon": "/icons/characters/Nefer.webp"
+    },
+    "Ineffa": {
+      "element": "electro",
+      "icon": "/icons/characters/Ineffa.webp"
+    },
+    "Varesa": {
+      "element": "electro",
+      "icon": "/icons/characters/Varesa.webp"
+    },
+    "Illuga": {
+      "element": "geo",
+      "icon": "/icons/characters/Illuga.webp"
+    },
+    "Zibai": {
+      "element": "geo",
+      "icon": "/icons/characters/Zibai.webp"
+    },
+    "Mualani": {
+      "element": "hydro",
+      "icon": "/icons/characters/Mualani.webp"
+    },
+    "SangonomiyaKokomi": {
+      "element": "hydro",
+      "icon": "/icons/characters/SangonomiyaKokomi.webp"
+    },
+    "Durin": {
+      "element": "pyro",
+      "icon": "/icons/characters/Durin.webp"
+    }
+  },
+  "elementPaths": {
+    "anemo": "M 0.34375 8.410156 C 1.652344 10.464844 3.449219 12.652344 6.105469 12.582031 C 7.863281 12.464844 10.175781 12.964844 10.699219 14.914062 C 11.234375 16.394531 9.285156 18.308594 8.105469 16.835938 C 7.921875 16.519531 8.035156 16.324219 8.402344 16.28125 C 10.117188 16.316406 10.710938 14.359375 9.085938 13.683594 C 7.695312 13.515625 6.433594 14.589844 5.09375 14.898438 C 1.359375 15.976562 -0.898438 11.535156 0.34375 8.410156 Z M 17.335938 12.574219 C 15.523438 12.449219 13.136719 13.539062 13.261719 15.632812 C 13.253906 16.121094 13.457031 16.585938 13.816406 16.910156 C 14.179688 17.238281 14.667969 17.386719 15.148438 17.324219 C 15.691406 17.34375 16.390625 16.386719 15.652344 16.273438 C 12.875 16.273438 13.902344 12.671875 16.246094 13.871094 C 17.472656 14.578125 18.851562 14.980469 20.261719 15.050781 C 23.347656 14.746094 24.671875 11.105469 23.671875 8.433594 C 22.179688 10.667969 20.316406 12.886719 17.335938 12.574219 Z M 13.1875 11.25 C 14.527344 10.964844 15.816406 10.46875 17.003906 9.773438 C 18.839844 8.738281 19.882812 6.703125 19.644531 4.605469 C 19.410156 2.507812 17.941406 0.753906 15.917969 0.152344 C 17.851562 4.023438 16.695312 8.722656 13.1875 11.25 Z M 10.882812 11.226562 C 7.308594 8.742188 6.125 3.992188 8.117188 0.121094 C 6.261719 0.667969 4.859375 2.1875 4.457031 4.078125 C 4.054688 5.96875 4.722656 7.929688 6.191406 9.183594 C 7.589844 10.171875 9.160156 10.890625 10.820312 11.300781 Z M 20.042969 11.074219 C 18.082031 12.195312 15.59375 11.695312 13.78125 13.160156 C 12.90625 13.640625 12.371094 14.570312 12.394531 15.566406 C 12.421875 16.566406 13.003906 17.46875 13.902344 17.902344 C 14.304688 18.074219 14.695312 18.257812 15.085938 17.929688 C 15.464844 17.640625 15.769531 17.648438 16.316406 17.90625 C 14.425781 19.523438 12.949219 21.570312 12.011719 23.875 C 11.058594 21.574219 9.578125 19.535156 7.6875 17.914062 C 8.054688 17.636719 8.5625 17.636719 8.929688 17.914062 C 9.960938 18.507812 11.40625 17.230469 11.597656 16.199219 C 12.019531 14.179688 9.992188 12.589844 8.199219 12.207031 C 7.320312 12 6.421875 11.894531 5.542969 11.691406 C 1.484375 10.863281 0.875 6.753906 2.859375 3.609375 C 4.007812 12.007812 9.71875 9.703125 12 14.339844 C 14.265625 9.761719 20.019531 11.972656 21.164062 3.609375 C 22.554688 6.035156 22.972656 9.644531 20.042969 11.074219 Z M 12.976562 19.972656 L 12 19.320312 L 11.019531 19.980469 L 12.015625 21.648438 Z M 12 17.378906 C 11.6875 18.128906 11.0625 18.699219 10.285156 18.9375 C 10.894531 19.140625 11.5625 18.957031 11.984375 18.472656 C 12.714844 19.035156 13.347656 19.1875 13.777344 18.910156 C 12.980469 18.699219 12.324219 18.136719 12 17.378906 Z M 12 17.378906 ",
+    "cryo": "M 2.007812 6.246094 C 2.007812 6.246094 4.292969 9.765625 5.167969 11.667969 C 5.257812 11.328125 5.328125 10.984375 5.378906 10.636719 C 7.332031 10.394531 9.3125 10.695312 11.101562 11.503906 C 9.503906 10.355469 8.257812 8.785156 7.492188 6.972656 C 7.765625 6.753906 8.03125 6.519531 8.28125 6.273438 C 6.195312 6.464844 2.007812 6.246094 2.007812 6.246094 Z M 9.300781 10.457031 C 8.039062 9.925781 6.699219 9.605469 5.335938 9.511719 C 5.292969 8.984375 5.183594 8.464844 5.003906 7.96875 C 5.523438 7.875 6.027344 7.714844 6.507812 7.488281 C 7.265625 8.628906 8.210938 9.628906 9.300781 10.457031 Z M 2.007812 17.753906 C 2.007812 17.753906 4.292969 14.234375 5.167969 12.332031 C 5.257812 12.671875 5.328125 13.015625 5.378906 13.363281 C 7.332031 13.605469 9.3125 13.304688 11.101562 12.496094 C 9.503906 13.644531 8.257812 15.214844 7.492188 17.027344 C 7.765625 17.246094 8.03125 17.480469 8.28125 17.726562 C 6.195312 17.535156 2.007812 17.753906 2.007812 17.753906 Z M 9.300781 13.542969 C 8.039062 14.074219 6.699219 14.394531 5.335938 14.488281 C 5.292969 15.015625 5.183594 15.535156 5.003906 16.03125 C 5.523438 16.125 6.027344 16.285156 6.507812 16.511719 C 7.265625 15.371094 8.210938 14.371094 9.300781 13.542969 Z M 12 23.574219 C 12 23.574219 10.097656 19.839844 8.886719 18.128906 C 9.226562 18.222656 9.5625 18.332031 9.890625 18.460938 C 11.074219 16.890625 11.804688 15.027344 12 13.074219 C 12.195312 15.027344 12.925781 16.894531 14.109375 18.460938 C 14.4375 18.332031 14.765625 18.222656 15.101562 18.128906 C 13.898438 19.839844 12 23.574219 12 23.574219 Z M 12 15.152344 C 11.835938 16.511719 11.441406 17.835938 10.84375 19.066406 C 11.277344 19.367188 11.667969 19.722656 12.007812 20.128906 C 12.347656 19.722656 12.742188 19.367188 13.175781 19.066406 C 12.570312 17.835938 12.171875 16.511719 12 15.152344 Z M 21.992188 17.753906 C 21.992188 17.753906 19.707031 14.234375 18.832031 12.332031 C 18.742188 12.671875 18.671875 13.015625 18.621094 13.363281 C 16.671875 13.605469 14.691406 13.304688 12.898438 12.496094 C 14.496094 13.644531 15.746094 15.214844 16.511719 17.027344 C 16.234375 17.246094 15.972656 17.476562 15.722656 17.726562 C 17.808594 17.535156 21.992188 17.753906 21.992188 17.753906 Z M 14.699219 13.542969 C 15.960938 14.074219 17.300781 14.394531 18.664062 14.488281 C 18.707031 15.015625 18.816406 15.535156 18.996094 16.03125 C 18.476562 16.125 17.96875 16.285156 17.492188 16.511719 C 16.730469 15.375 15.789062 14.371094 14.699219 13.542969 Z M 21.992188 6.246094 C 21.992188 6.246094 19.707031 9.765625 18.832031 11.667969 C 18.742188 11.328125 18.671875 10.984375 18.621094 10.636719 C 16.671875 10.394531 14.691406 10.695312 12.898438 11.503906 C 14.496094 10.355469 15.746094 8.785156 16.511719 6.972656 C 16.234375 6.753906 15.972656 6.523438 15.722656 6.273438 C 17.808594 6.464844 21.992188 6.246094 21.992188 6.246094 Z M 14.699219 10.457031 C 15.960938 9.925781 17.300781 9.605469 18.664062 9.511719 C 18.707031 8.984375 18.816406 8.464844 18.996094 7.96875 C 18.476562 7.875 17.96875 7.714844 17.492188 7.488281 C 16.730469 8.625 15.789062 9.628906 14.699219 10.457031 Z M 12 0.425781 C 12 0.425781 10.097656 4.160156 8.886719 5.871094 C 9.226562 5.777344 9.5625 5.667969 9.890625 5.539062 C 11.074219 7.109375 11.804688 8.972656 12 10.925781 C 12.195312 8.972656 12.925781 7.105469 14.109375 5.539062 C 14.4375 5.667969 14.765625 5.777344 15.101562 5.871094 C 13.898438 4.160156 12 0.425781 12 0.425781 Z M 12 8.847656 C 11.835938 7.488281 11.441406 6.164062 10.84375 4.933594 C 11.277344 4.632812 11.667969 4.277344 12.007812 3.871094 C 12.347656 4.277344 12.742188 4.632812 13.175781 4.933594 C 12.570312 6.164062 12.171875 7.488281 12 8.847656 Z M 13.890625 13.738281 L 13.773438 15.089844 L 12.542969 14.515625 L 11.449219 14.515625 L 10.222656 15.089844 L 10.109375 13.738281 L 9.5625 12.785156 L 8.449219 12.007812 L 9.5625 11.230469 L 10.109375 10.28125 L 10.226562 8.929688 L 11.457031 9.503906 L 12.554688 9.503906 L 13.785156 8.929688 L 13.902344 10.28125 L 14.449219 11.226562 L 15.5625 12.003906 L 14.449219 12.78125 Z M 13.890625 13.738281 ",
+    "dendro": "M 12 1.730469 L 10.679688 3.820312 C 10.25 4.5 10.316406 5.382812 10.839844 5.992188 L 12 7.34375 L 13.160156 5.992188 C 13.683594 5.382812 13.75 4.5 13.320312 3.820312 Z M 1.878906 5.910156 L 2.242188 7.191406 C 2.433594 7.859375 3.082031 8.285156 3.769531 8.191406 L 4.773438 8.050781 L 4.652344 7.089844 C 4.570312 6.46875 4.054688 6 3.433594 5.972656 Z M 22.121094 5.910156 L 20.566406 5.972656 C 19.941406 6 19.425781 6.46875 19.347656 7.089844 L 19.226562 8.050781 L 20.230469 8.191406 C 20.917969 8.285156 21.566406 7.859375 21.757812 7.191406 Z M 8.453125 6.414062 C 6.515625 6.414062 3.421875 8.128906 3.421875 12.027344 C 3.421875 12.417969 3.453125 12.808594 3.515625 13.195312 L 2.9375 12.78125 C 2.613281 12.542969 2.175781 12.542969 1.851562 12.78125 L 1.050781 13.371094 L 1.816406 13.871094 C 2.15625 14.101562 2.613281 14.070312 2.921875 13.800781 L 3.527344 13.277344 C 4.058594 16.273438 6.449219 17.589844 7.808594 18.242188 C 9.34375 18.976562 12 20.492188 12 22.273438 C 12 20.492188 14.65625 18.976562 16.191406 18.242188 C 17.550781 17.589844 19.9375 16.277344 20.472656 13.285156 L 21.070312 13.804688 C 21.382812 14.078125 21.839844 14.105469 22.183594 13.875 L 22.945312 13.371094 L 22.140625 12.78125 C 21.816406 12.542969 21.378906 12.542969 21.054688 12.78125 L 20.484375 13.199219 L 20.425781 13.238281 L 20.484375 13.195312 C 20.546875 12.808594 20.578125 12.421875 20.578125 12.03125 C 20.578125 8.132812 17.484375 6.417969 15.546875 6.417969 C 14.085938 6.417969 13.027344 7.289062 12.597656 7.722656 C 12.464844 7.851562 12.445312 8.054688 12.546875 8.207031 L 12.855469 8.683594 C 12.890625 8.734375 12.945312 8.765625 13.003906 8.769531 C 13.0625 8.773438 13.121094 8.746094 13.160156 8.699219 C 13.5625 8.191406 14.777344 7.007812 16.894531 7.796875 C 18.472656 8.386719 19.464844 9.859375 19.464844 11.613281 C 19.464844 13.371094 18.382812 15.925781 15.539062 16.980469 C 12.695312 18.03125 12 19.734375 12 19.734375 C 12 19.734375 11.304688 18.03125 8.460938 16.980469 C 5.617188 15.925781 4.535156 13.371094 4.535156 11.613281 C 4.535156 9.859375 5.523438 8.386719 7.105469 7.792969 C 9.222656 7.003906 10.4375 8.1875 10.839844 8.695312 C 10.878906 8.742188 10.9375 8.769531 10.996094 8.765625 C 11.054688 8.765625 11.109375 8.730469 11.144531 8.683594 L 11.453125 8.203125 C 11.554688 8.050781 11.535156 7.847656 11.402344 7.71875 C 10.976562 7.289062 9.917969 6.414062 8.453125 6.414062 Z M 15.367188 9.179688 C 14.851562 9.242188 14.253906 9.519531 13.601562 10.195312 C 13.601562 10.195312 15.128906 9.6875 15.675781 10.957031 C 16.226562 12.230469 15.664062 13.644531 13.246094 15.769531 C 13.246094 15.769531 14.730469 15.078125 15.972656 14.023438 C 16.351562 13.71875 16.835938 13.746094 17.320312 13.808594 C 17.804688 13.871094 18.160156 14.238281 18.160156 14.238281 C 17.816406 13.535156 17.21875 13.324219 16.738281 13.285156 C 17.503906 12.421875 17.953125 11.40625 17.457031 10.355469 C 17.28125 9.96875 16.984375 9.648438 16.617188 9.4375 C 16.3125 9.265625 15.882812 9.117188 15.367188 9.179688 Z M 8.628906 9.183594 C 8.113281 9.121094 7.683594 9.269531 7.378906 9.441406 C 7.011719 9.652344 6.71875 9.972656 6.539062 10.359375 C 6.042969 11.410156 6.492188 12.425781 7.257812 13.289062 C 6.777344 13.328125 6.179688 13.535156 5.835938 14.238281 C 5.835938 14.238281 6.191406 13.875 6.675781 13.8125 C 7.160156 13.746094 7.644531 13.722656 8.023438 14.027344 C 9.269531 15.078125 10.753906 15.769531 10.753906 15.769531 C 8.335938 13.644531 7.773438 12.230469 8.324219 10.957031 C 8.871094 9.6875 10.394531 10.199219 10.394531 10.199219 C 9.742188 9.523438 9.144531 9.246094 8.628906 9.183594 Z M 8.628906 9.183594 ",
+    "electro": "M 7.765625 23.171875 C 9.53125 23.296875 11.304688 23.019531 12.953125 22.371094 C 12.546875 22.246094 12.164062 22.140625 11.792969 22.007812 C 11.421875 21.882812 11.054688 21.738281 10.691406 21.578125 C 8.925781 20.898438 7.53125 19.5 6.851562 17.734375 C 6.5 16.734375 6.425781 15.65625 6.632812 14.613281 C 6.835938 14.851562 7.015625 15.089844 7.21875 15.300781 C 7.652344 15.785156 8.316406 15.992188 8.949219 15.847656 C 10.109375 15.636719 10.996094 14.695312 11.140625 13.527344 C 11.328125 12.414062 11.050781 11.273438 10.375 10.367188 C 9.703125 9.460938 8.691406 8.867188 7.570312 8.726562 C 5.078125 8.441406 2.746094 10.003906 2.054688 12.414062 C 1.675781 13.628906 1.484375 14.890625 1.496094 16.164062 C 1.488281 16.691406 1.496094 17.222656 1.496094 17.707031 C 0.425781 15.746094 -0.0859375 13.53125 0.015625 11.300781 C 0.21875 7.871094 1.894531 4.695312 4.609375 2.59375 C 4.164062 3.402344 3.71875 4.164062 3.320312 4.949219 C 2.898438 5.753906 2.65625 6.644531 2.613281 7.554688 C 2.96875 7.222656 3.273438 6.9375 3.585938 6.65625 C 4.617188 5.675781 5.890625 4.988281 7.277344 4.667969 C 9.152344 4.269531 11.101562 4.769531 12.550781 6.019531 L 11.792969 6.175781 C 11.164062 6.292969 10.625 6.691406 10.332031 7.257812 C 10.035156 7.824219 10.019531 8.496094 10.28125 9.078125 C 10.726562 10.355469 11.878906 11.253906 13.230469 11.375 C 14.480469 11.519531 15.734375 11.125 16.675781 10.285156 C 17.617188 9.445312 18.15625 8.246094 18.152344 6.984375 C 18.171875 5.347656 17.484375 3.78125 16.269531 2.6875 C 15.164062 1.640625 13.886719 0.789062 12.492188 0.175781 C 12.402344 0.132812 12.3125 0.0859375 12.183594 0.0195312 C 18.074219 0.0390625 23.082031 4.335938 23.996094 10.160156 C 23.511719 9.390625 23.0625 8.617188 22.5625 7.882812 C 22.066406 7.136719 21.417969 6.5 20.660156 6.019531 C 20.796875 6.65625 20.957031 7.253906 21.050781 7.867188 C 21.472656 9.894531 20.976562 12.007812 19.691406 13.632812 C 18.996094 14.429688 18.101562 15.03125 17.101562 15.378906 C 17.078125 15.382812 17.046875 15.382812 17.019531 15.378906 C 17.128906 15.035156 17.25 14.707031 17.335938 14.371094 C 17.558594 13.542969 17.1875 12.667969 16.4375 12.253906 C 15.523438 11.65625 14.351562 11.625 13.410156 12.171875 C 11.53125 13.089844 10.660156 15.289062 11.410156 17.246094 C 11.996094 19.039062 13.601562 20.308594 15.484375 20.46875 C 16.945312 20.601562 18.410156 20.300781 19.703125 19.609375 C 20.5 19.242188 21.246094 18.753906 22.007812 18.308594 C 22.105469 18.253906 22.191406 18.1875 22.316406 18.105469 C 19.371094 23.140625 13.203125 25.289062 7.765625 23.171875 Z M 7.765625 23.171875 ",
+    "geo": "M 12.203125 10.300781 C 11.347656 11.222656 10.570312 12.085938 9.769531 12.9375 C 9.621094 13.054688 9.578125 13.257812 9.664062 13.425781 C 10.183594 14.585938 10.984375 15.597656 11.988281 16.375 C 12.078125 16.414062 12.183594 16.40625 12.269531 16.359375 C 12.933594 15.917969 13.613281 15.5 14.242188 15.007812 C 15.566406 13.980469 16.796875 12.839844 17.914062 11.589844 C 18.222656 12.21875 18.566406 12.789062 18.800781 13.414062 C 19.144531 14.328125 19.410156 15.277344 19.71875 16.210938 C 19.773438 16.378906 19.734375 16.566406 19.613281 16.699219 C 18.730469 17.941406 17.710938 19.082031 16.582031 20.101562 C 15.140625 21.398438 13.644531 22.625 12.167969 23.875 C 12.109375 23.921875 12.046875 23.960938 11.984375 24 C 11.125 23.296875 10.234375 22.597656 9.378906 21.871094 C 7.644531 20.398438 6.015625 18.808594 4.496094 17.113281 C 3.132812 15.617188 1.929688 13.984375 0.90625 12.234375 C 0.808594 12.089844 0.808594 11.902344 0.90625 11.757812 C 1.5625 10.671875 2.335938 9.660156 3.214844 8.742188 C 5.21875 13.980469 8.222656 18.777344 12.054688 22.871094 C 14.332031 20.648438 16.078125 17.945312 17.164062 14.957031 L 17.101562 14.902344 L 12.074219 19.125 C 12.007812 19.070312 11.9375 19.023438 11.875 18.953125 C 10.117188 17.273438 8.636719 15.328125 7.484375 13.1875 C 7.410156 13.097656 7.378906 12.980469 7.394531 12.863281 C 7.410156 12.75 7.472656 12.644531 7.570312 12.578125 C 8.425781 11.820312 9.28125 11.050781 10.140625 10.304688 C 10.527344 9.972656 10.953125 9.679688 11.402344 9.335938 Z M 12.59375 14.664062 C 13.046875 14.320312 13.46875 14.027344 13.855469 13.695312 C 14.722656 12.949219 15.570312 12.179688 16.429688 11.421875 C 16.523438 11.355469 16.582031 11.25 16.597656 11.136719 C 16.617188 11.019531 16.585938 10.902344 16.515625 10.8125 C 15.363281 8.667969 13.882812 6.71875 12.125 5.035156 C 12.066406 4.976562 11.996094 4.929688 11.929688 4.863281 L 6.898438 9.097656 L 6.832031 9.042969 C 7.921875 6.054688 9.667969 3.351562 11.949219 1.128906 C 15.78125 5.222656 18.785156 10.019531 20.789062 15.257812 C 21.664062 14.339844 22.4375 13.328125 23.09375 12.242188 C 23.191406 12.101562 23.191406 11.910156 23.09375 11.765625 C 22.070312 10.015625 20.863281 8.378906 19.492188 6.886719 C 17.980469 5.191406 16.351562 3.601562 14.621094 2.128906 C 13.765625 1.402344 12.882812 0.703125 12.015625 0 C 11.929688 0.0546875 11.875 0.0859375 11.832031 0.121094 C 10.359375 1.375 8.859375 2.601562 7.421875 3.894531 C 6.289062 4.914062 5.273438 6.058594 4.386719 7.300781 C 4.269531 7.433594 4.226562 7.617188 4.28125 7.789062 C 4.589844 8.722656 4.855469 9.675781 5.199219 10.585938 C 5.433594 11.207031 5.777344 11.789062 6.085938 12.410156 C 7.203125 11.164062 8.433594 10.019531 9.757812 8.992188 C 10.386719 8.503906 11.066406 8.082031 11.730469 7.640625 C 11.816406 7.59375 11.921875 7.585938 12.011719 7.625 C 13.015625 8.402344 13.816406 9.414062 14.335938 10.574219 C 14.421875 10.742188 14.378906 10.945312 14.230469 11.0625 C 13.429688 11.921875 12.644531 12.777344 11.796875 13.699219 Z M 12.59375 14.664062 ",
+    "hydro": "M 5.011719 20.992188 L 5.445312 21.214844 C 7.488281 22.324219 9.785156 22.894531 12.113281 22.863281 C 15.457031 22.804688 18.199219 20.191406 18.414062 16.851562 C 18.632812 13.511719 16.257812 10.566406 12.949219 10.070312 C 11.976562 9.914062 10.984375 9.992188 10.050781 10.296875 C 9.242188 10.589844 8.34375 10.195312 8.015625 9.398438 C 7.6875 8.601562 8.042969 7.691406 8.820312 7.328125 C 9.625 6.96875 10.484375 6.753906 11.359375 6.699219 C 15.265625 6.414062 18.855469 8.863281 20.015625 12.605469 C 21.132812 16.507812 19.324219 20.65625 15.699219 22.488281 C 22.929688 19.84375 23.796875 9.101562 17.089844 5.316406 C 15.34375 4.1875 13.269531 3.6875 11.199219 3.894531 C 8.800781 4.074219 6.5625 5.164062 4.941406 6.9375 C 4.691406 7.226562 4.453125 7.523438 4.230469 7.835938 C 3.871094 8.339844 3.238281 8.566406 2.640625 8.414062 C 2.015625 8.34375 1.492188 7.917969 1.300781 7.320312 C 1.195312 6.921875 1.257812 6.5 1.472656 6.148438 C 2.070312 5.03125 2.859375 4.03125 3.808594 3.195312 C 5.675781 1.507812 8.019531 0.4375 10.519531 0.140625 C 15.230469 -0.460938 19.847656 1.804688 22.257812 5.898438 C 26.859375 12.925781 21.808594 23.019531 13.527344 23.847656 C 11.652344 24.105469 9.746094 23.902344 7.96875 23.261719 C 6.792969 22.792969 5.769531 22.007812 5.011719 20.992188 Z M 14.46875 20.789062 C 13.28125 21.667969 11.671875 21.714844 10.4375 20.898438 C 9.628906 20.445312 9.125 19.589844 9.125 18.660156 C 9.121094 17.734375 9.621094 16.875 10.425781 16.417969 C 10.851562 16.132812 11.386719 16.066406 11.871094 16.234375 C 12.355469 16.40625 12.730469 16.792969 12.882812 17.285156 C 14.203125 20.816406 17.402344 17.535156 15.324219 15.148438 C 14.460938 13.984375 13.046875 13.363281 11.605469 13.519531 C 9.996094 13.636719 8.59375 14.648438 7.976562 16.136719 C 7.359375 17.621094 7.632812 19.332031 8.683594 20.550781 C 9.734375 21.773438 11.386719 22.292969 12.949219 21.902344 C 14.050781 21.636719 14.996094 20.921875 15.554688 19.929688 C 15.195312 20.214844 14.851562 20.53125 14.46875 20.789062 Z M 3.789062 16.320312 C 3.160156 16.320312 2.652344 16.832031 2.652344 17.457031 C 2.652344 18.085938 3.160156 18.59375 3.789062 18.59375 C 4.417969 18.59375 4.925781 18.085938 4.925781 17.457031 C 4.925781 16.832031 4.417969 16.320312 3.789062 16.320312 Z M 1.644531 10.515625 C 0.738281 10.511719 0 11.246094 0 12.15625 C 0 13.0625 0.734375 13.796875 1.644531 13.796875 C 2.550781 13.796875 3.285156 13.0625 3.285156 12.152344 C 3.285156 11.25 2.550781 10.515625 1.644531 10.515625 Z M 1.644531 10.515625 ",
+    "pyro": "M 12.195312 24 C 9.550781 21.480469 6.230469 20.144531 3.347656 18.039062 C 0.824219 16.152344 2.886719 12.816406 4.351562 10.902344 C 5.472656 9.550781 6.480469 8.105469 7.355469 6.578125 C 7.34375 9.324219 10.03125 10.269531 12.125 11.222656 C 8.175781 10.992188 4.8125 15.601562 7.960938 18.71875 C 4.753906 17.394531 3.335938 14.511719 5.734375 11.570312 C 4.5 12.035156 3.613281 13.132812 3.421875 14.4375 C 3.230469 15.746094 3.765625 17.050781 4.816406 17.847656 C 7.101562 19.390625 9.730469 20.390625 11.9375 22.066406 C 12.03125 22.132812 12.152344 22.144531 12.257812 22.101562 C 14.382812 20.570312 16.730469 19.398438 18.980469 18.074219 C 21.8125 16.554688 21.5 13.320312 18.714844 11.929688 C 21.210938 16.765625 16.636719 20.402344 12.027344 20.066406 C 7.015625 19.699219 6.75 14.625 10.957031 15.429688 C 10.046875 15.9375 9.570312 16.980469 9.785156 18 C 10.6875 20.5625 14.851562 19.667969 16.316406 18.054688 C 18.195312 16.292969 16.878906 12.855469 14.640625 11.882812 C 12.082031 10.683594 7.023438 9.265625 8.984375 5.476562 C 10.175781 3.617188 11.570312 2.375 11.789062 0 C 12.53125 0.996094 14.261719 2.945312 13.914062 4.203125 C 13.503906 5.4375 12.054688 5.886719 11.605469 7.136719 C 11.3125 7.679688 11.253906 8.320312 11.4375 8.90625 C 11.625 9.496094 12.042969 9.984375 12.59375 10.261719 C 10.851562 8.394531 12.75 6.132812 14.566406 5.152344 C 13.460938 7.636719 14.277344 10.554688 16.515625 12.105469 C 15.269531 9.363281 14.203125 9.292969 16.292969 6.261719 C 16.699219 8.171875 17.804688 9.863281 19.390625 11.003906 C 22.917969 14.101562 22.648438 17.398438 18.5 19.691406 C 16.214844 20.839844 14.09375 22.289062 12.191406 24 Z M 13.121094 18 C 19.621094 15.558594 11.484375 9.144531 9.070312 14.558594 C 11.496094 13.171875 14.824219 15.292969 13.121094 18 Z M 13.121094 18 "
+  },
+  "source": {
+    "upstreamCommit": "21c98eb60355160274a8c4cecfc5671e2151a073",
+    "upstreamRepository": "https://github.com/frzyc/genshin-optimizer"
+  },
+  "weapons": {
+    "ATeaspoonOfTranscendence": "/icons/weapons/ATeaspoonOfTranscendence.webp",
+    "AThousandBlazingSuns": "/icons/weapons/AThousandBlazingSuns.webp",
+    "AThousandFloatingDreams": "/icons/weapons/AThousandFloatingDreams.webp",
+    "Absolution": "/icons/weapons/Absolution.webp",
+    "Akuoumaru": "/icons/weapons/Akuoumaru.webp",
+    "AlleyHunter": "/icons/weapons/AlleyHunter.webp",
+    "AmenomaKageuchi": "/icons/weapons/AmenomaKageuchi.webp",
+    "AmosBow": "/icons/weapons/AmosBow.webp",
+    "AngelosHeptades": "/icons/weapons/AngelosHeptades.webp",
+    "AquaSimulacra": "/icons/weapons/AquaSimulacra.webp",
+    "AquilaFavonia": "/icons/weapons/AquilaFavonia.webp",
+    "AshGravenDrinkingHorn": "/icons/weapons/AshGravenDrinkingHorn.webp",
+    "AstralVulturesCrimsonPlumage": "/icons/weapons/AstralVulturesCrimsonPlumage.webp",
+    "AthameArtis": "/icons/weapons/AthameArtis.webp",
+    "Azurelight": "/icons/weapons/Azurelight.webp",
+    "BalladOfTheBoundlessBlue": "/icons/weapons/BalladOfTheBoundlessBlue.webp",
+    "BalladOfTheFjords": "/icons/weapons/BalladOfTheFjords.webp",
+    "BeaconOfTheReedSea": "/icons/weapons/BeaconOfTheReedSea.webp",
+    "BlackTassel": "/icons/weapons/BlackTassel.webp",
+    "BlackcliffAgate": "/icons/weapons/BlackcliffAgate.webp",
+    "BlackcliffLongsword": "/icons/weapons/BlackcliffLongsword.webp",
+    "BlackcliffPole": "/icons/weapons/BlackcliffPole.webp",
+    "BlackcliffSlasher": "/icons/weapons/BlackcliffSlasher.webp",
+    "BlackcliffWarbow": "/icons/weapons/BlackcliffWarbow.webp",
+    "BlackmarrowLantern": "/icons/weapons/BlackmarrowLantern.webp",
+    "BloodsoakedRuins": "/icons/weapons/BloodsoakedRuins.webp",
+    "BloodtaintedGreatsword": "/icons/weapons/BloodtaintedGreatsword.webp",
+    "CalamityOfEshu": "/icons/weapons/CalamityOfEshu.webp",
+    "CalamityQueller": "/icons/weapons/CalamityQueller.webp",
+    "CashflowSupervision": "/icons/weapons/CashflowSupervision.webp",
+    "ChainBreaker": "/icons/weapons/ChainBreaker.webp",
+    "Cloudforged": "/icons/weapons/Cloudforged.webp",
+    "CompoundBow": "/icons/weapons/CompoundBow.webp",
+    "CoolSteel": "/icons/weapons/CoolSteel.webp",
+    "CranesEchoingCall": "/icons/weapons/CranesEchoingCall.webp",
+    "CrescentPike": "/icons/weapons/CrescentPike.webp",
+    "CrimsonMoonsSemblance": "/icons/weapons/CrimsonMoonsSemblance.webp",
+    "DarkIronSword": "/icons/weapons/DarkIronSword.webp",
+    "DawningFrost": "/icons/weapons/DawningFrost.webp",
+    "Deathmatch": "/icons/weapons/Deathmatch.webp",
+    "DebateClub": "/icons/weapons/DebateClub.webp",
+    "DialoguesOfTheDesertSages": "/icons/weapons/DialoguesOfTheDesertSages.webp",
+    "DisasterAndRemorse": "/icons/weapons/DisasterAndRemorse.webp",
+    "DodocoTales": "/icons/weapons/DodocoTales.webp",
+    "DragonsBane": "/icons/weapons/DragonsBane.webp",
+    "DragonspineSpear": "/icons/weapons/DragonspineSpear.webp",
+    "EarthShaker": "/icons/weapons/EarthShaker.webp",
+    "ElegyForTheEnd": "/icons/weapons/ElegyForTheEnd.webp",
+    "EmeraldOrb": "/icons/weapons/EmeraldOrb.webp",
+    "EndOfTheLine": "/icons/weapons/EndOfTheLine.webp",
+    "EngulfingLightning": "/icons/weapons/EngulfingLightning.webp",
+    "EtherlightSpindlelute": "/icons/weapons/EtherlightSpindlelute.webp",
+    "EverlastingMoonglow": "/icons/weapons/EverlastingMoonglow.webp",
+    "EyeOfPerception": "/icons/weapons/EyeOfPerception.webp",
+    "FadingTwilight": "/icons/weapons/FadingTwilight.webp",
+    "FangOfTheMountainKing": "/icons/weapons/FangOfTheMountainKing.webp",
+    "FavoniusCodex": "/icons/weapons/FavoniusCodex.webp",
+    "FavoniusGreatsword": "/icons/weapons/FavoniusGreatsword.webp",
+    "FavoniusLance": "/icons/weapons/FavoniusLance.webp",
+    "FavoniusSword": "/icons/weapons/FavoniusSword.webp",
+    "FavoniusWarbow": "/icons/weapons/FavoniusWarbow.webp",
+    "FerrousShadow": "/icons/weapons/FerrousShadow.webp",
+    "FesteringDesire": "/icons/weapons/FesteringDesire.webp",
+    "FilletBlade": "/icons/weapons/FilletBlade.webp",
+    "FlameForgedInsight": "/icons/weapons/FlameForgedInsight.webp",
+    "FleuveCendreFerryman": "/icons/weapons/FleuveCendreFerryman.webp",
+    "FlowerWreathedFeathers": "/icons/weapons/FlowerWreathedFeathers.webp",
+    "FlowingPurity": "/icons/weapons/FlowingPurity.webp",
+    "FluteOfEzpitzal": "/icons/weapons/FluteOfEzpitzal.webp",
+    "FootprintOfTheRainbow": "/icons/weapons/FootprintOfTheRainbow.webp",
+    "ForestRegalia": "/icons/weapons/ForestRegalia.webp",
+    "FracturedHalo": "/icons/weapons/FracturedHalo.webp",
+    "FreedomSworn": "/icons/weapons/FreedomSworn.webp",
+    "Frostbearer": "/icons/weapons/Frostbearer.webp",
+    "FruitOfFulfillment": "/icons/weapons/FruitOfFulfillment.webp",
+    "FruitfulHook": "/icons/weapons/FruitfulHook.webp",
+    "GestOfTheMightyWolf": "/icons/weapons/GestOfTheMightyWolf.webp",
+    "GoldenFrostboundOath": "/icons/weapons/GoldenFrostboundOath.webp",
+    "HakushinRing": "/icons/weapons/HakushinRing.webp",
+    "Halberd": "/icons/weapons/Halberd.webp",
+    "Hamayumi": "/icons/weapons/Hamayumi.webp",
+    "HaranGeppakuFutsu": "/icons/weapons/HaranGeppakuFutsu.webp",
+    "HarbingerOfDawn": "/icons/weapons/HarbingerOfDawn.webp",
+    "HuntersPath": "/icons/weapons/HuntersPath.webp",
+    "IbisPiercer": "/icons/weapons/IbisPiercer.webp",
+    "IronSting": "/icons/weapons/IronSting.webp",
+    "JadefallsSplendor": "/icons/weapons/JadefallsSplendor.webp",
+    "KagotsurubeIsshin": "/icons/weapons/KagotsurubeIsshin.webp",
+    "KagurasVerity": "/icons/weapons/KagurasVerity.webp",
+    "KatsuragikiriNagamasa": "/icons/weapons/KatsuragikiriNagamasa.webp",
+    "KeyOfKhajNisut": "/icons/weapons/KeyOfKhajNisut.webp",
+    "KingsSquire": "/icons/weapons/KingsSquire.webp",
+    "KitainCrossSpear": "/icons/weapons/KitainCrossSpear.webp",
+    "LightOfFoliarIncision": "/icons/weapons/LightOfFoliarIncision.webp",
+    "LightbearingMoonshard": "/icons/weapons/LightbearingMoonshard.webp",
+    "LionsRoar": "/icons/weapons/LionsRoar.webp",
+    "LithicBlade": "/icons/weapons/LithicBlade.webp",
+    "LithicSpear": "/icons/weapons/LithicSpear.webp",
+    "LostPrayerToTheSacredWinds": "/icons/weapons/LostPrayerToTheSacredWinds.webp",
+    "LumidouceElegy": "/icons/weapons/LumidouceElegy.webp",
+    "LuxuriousSeaLord": "/icons/weapons/LuxuriousSeaLord.webp",
+    "MagicGuide": "/icons/weapons/MagicGuide.webp",
+    "MailedFlower": "/icons/weapons/MailedFlower.webp",
+    "MakhairaAquamarine": "/icons/weapons/MakhairaAquamarine.webp",
+    "MappaMare": "/icons/weapons/MappaMare.webp",
+    "MasterKey": "/icons/weapons/MasterKey.webp",
+    "MemoryOfDust": "/icons/weapons/MemoryOfDust.webp",
+    "Messenger": "/icons/weapons/Messenger.webp",
+    "MissiveWindspear": "/icons/weapons/MissiveWindspear.webp",
+    "MistsplitterReforged": "/icons/weapons/MistsplitterReforged.webp",
+    "MitternachtsWaltz": "/icons/weapons/MitternachtsWaltz.webp",
+    "Moonpiercer": "/icons/weapons/Moonpiercer.webp",
+    "MoonweaversDawn": "/icons/weapons/MoonweaversDawn.webp",
+    "MountainBracingBolt": "/icons/weapons/MountainBracingBolt.webp",
+    "MouunsMoon": "/icons/weapons/MouunsMoon.webp",
+    "NightweaversLookingGlass": "/icons/weapons/NightweaversLookingGlass.webp",
+    "NocturnesCurtainCall": "/icons/weapons/NocturnesCurtainCall.webp",
+    "OathswornEye": "/icons/weapons/OathswornEye.webp",
+    "OtherworldlyStory": "/icons/weapons/OtherworldlyStory.webp",
+    "PeakPatrolSong": "/icons/weapons/PeakPatrolSong.webp",
+    "PolarStar": "/icons/weapons/PolarStar.webp",
+    "PortablePowerSaw": "/icons/weapons/PortablePowerSaw.webp",
+    "Predator": "/icons/weapons/Predator.webp",
+    "PrimordialJadeCutter": "/icons/weapons/PrimordialJadeCutter.webp",
+    "PrimordialJadeWingedSpear": "/icons/weapons/PrimordialJadeWingedSpear.webp",
+    "ProspectorsDrill": "/icons/weapons/ProspectorsDrill.webp",
+    "ProspectorsShovel": "/icons/weapons/ProspectorsShovel.webp",
+    "PrototypeAmber": "/icons/weapons/PrototypeAmber.webp",
+    "PrototypeArchaic": "/icons/weapons/PrototypeArchaic.webp",
+    "PrototypeCrescent": "/icons/weapons/PrototypeCrescent.webp",
+    "PrototypeRancour": "/icons/weapons/PrototypeRancour.webp",
+    "PrototypeStarglitter": "/icons/weapons/PrototypeStarglitter.webp",
+    "RainbowSerpentsRainBow": "/icons/weapons/RainbowSerpentsRainBow.webp",
+    "Rainslasher": "/icons/weapons/Rainslasher.webp",
+    "RangeGauge": "/icons/weapons/RangeGauge.webp",
+    "RavenBow": "/icons/weapons/RavenBow.webp",
+    "RecurveBow": "/icons/weapons/RecurveBow.webp",
+    "RedhornStonethresher": "/icons/weapons/RedhornStonethresher.webp",
+    "ReliquaryOfTruth": "/icons/weapons/ReliquaryOfTruth.webp",
+    "RightfulReward": "/icons/weapons/RightfulReward.webp",
+    "RingOfYaxche": "/icons/weapons/RingOfYaxche.webp",
+    "RoyalBow": "/icons/weapons/RoyalBow.webp",
+    "RoyalGreatsword": "/icons/weapons/RoyalGreatsword.webp",
+    "RoyalGrimoire": "/icons/weapons/RoyalGrimoire.webp",
+    "RoyalLongsword": "/icons/weapons/RoyalLongsword.webp",
+    "RoyalSpear": "/icons/weapons/RoyalSpear.webp",
+    "Rust": "/icons/weapons/Rust.webp",
+    "SacrificersStaff": "/icons/weapons/SacrificersStaff.webp",
+    "SacrificialBow": "/icons/weapons/SacrificialBow.webp",
+    "SacrificialFragments": "/icons/weapons/SacrificialFragments.webp",
+    "SacrificialGreatsword": "/icons/weapons/SacrificialGreatsword.webp",
+    "SacrificialJade": "/icons/weapons/SacrificialJade.webp",
+    "SacrificialSword": "/icons/weapons/SacrificialSword.webp",
+    "SapwoodBlade": "/icons/weapons/SapwoodBlade.webp",
+    "ScionOfTheBlazingSun": "/icons/weapons/ScionOfTheBlazingSun.webp",
+    "SequenceOfSolitude": "/icons/weapons/SequenceOfSolitude.webp",
+    "SerenitysCall": "/icons/weapons/SerenitysCall.webp",
+    "SerpentSpine": "/icons/weapons/SerpentSpine.webp",
+    "SharpshootersOath": "/icons/weapons/SharpshootersOath.webp",
+    "SilvershowerHeartstrings": "/icons/weapons/SilvershowerHeartstrings.webp",
+    "SkyriderGreatsword": "/icons/weapons/SkyriderGreatsword.webp",
+    "SkyriderSword": "/icons/weapons/SkyriderSword.webp",
+    "SkywardAtlas": "/icons/weapons/SkywardAtlas.webp",
+    "SkywardBlade": "/icons/weapons/SkywardBlade.webp",
+    "SkywardHarp": "/icons/weapons/SkywardHarp.webp",
+    "SkywardPride": "/icons/weapons/SkywardPride.webp",
+    "SkywardSpine": "/icons/weapons/SkywardSpine.webp",
+    "Slingshot": "/icons/weapons/Slingshot.webp",
+    "SnareHook": "/icons/weapons/SnareHook.webp",
+    "SnowTombedStarsilver": "/icons/weapons/SnowTombedStarsilver.webp",
+    "SolarPearl": "/icons/weapons/SolarPearl.webp",
+    "SongOfBrokenPines": "/icons/weapons/SongOfBrokenPines.webp",
+    "SongOfStillness": "/icons/weapons/SongOfStillness.webp",
+    "SplendorOfTranquilWaters": "/icons/weapons/SplendorOfTranquilWaters.webp",
+    "StaffOfHoma": "/icons/weapons/StaffOfHoma.webp",
+    "StaffOfTheScarletSands": "/icons/weapons/StaffOfTheScarletSands.webp",
+    "StarcallersWatch": "/icons/weapons/StarcallersWatch.webp",
+    "SturdyBone": "/icons/weapons/SturdyBone.webp",
+    "SummitShaper": "/icons/weapons/SummitShaper.webp",
+    "SunnyMorningSleepIn": "/icons/weapons/SunnyMorningSleepIn.webp",
+    "SurfsUp": "/icons/weapons/SurfsUp.webp",
+    "SwordOfDescension": "/icons/weapons/SwordOfDescension.webp",
+    "SwordOfNarzissenkreuz": "/icons/weapons/SwordOfNarzissenkreuz.webp",
+    "SymphonistOfScents": "/icons/weapons/SymphonistOfScents.webp",
+    "TalkingStick": "/icons/weapons/TalkingStick.webp",
+    "TamayurateiNoOhanashi": "/icons/weapons/TamayurateiNoOhanashi.webp",
+    "TheAlleyFlash": "/icons/weapons/TheAlleyFlash.webp",
+    "TheBell": "/icons/weapons/TheBell.webp",
+    "TheBlackSword": "/icons/weapons/TheBlackSword.webp",
+    "TheCatch": "/icons/weapons/TheCatch.webp",
+    "TheDaybreakChronicles": "/icons/weapons/TheDaybreakChronicles.webp",
+    "TheDockhandsAssistant": "/icons/weapons/TheDockhandsAssistant.webp",
+    "TheFirstGreatMagic": "/icons/weapons/TheFirstGreatMagic.webp",
+    "TheFlute": "/icons/weapons/TheFlute.webp",
+    "TheStringless": "/icons/weapons/TheStringless.webp",
+    "TheUnforged": "/icons/weapons/TheUnforged.webp",
+    "TheViridescentHunt": "/icons/weapons/TheViridescentHunt.webp",
+    "TheWidsith": "/icons/weapons/TheWidsith.webp",
+    "ThrillingTalesOfDragonSlayers": "/icons/weapons/ThrillingTalesOfDragonSlayers.webp",
+    "ThunderingPulse": "/icons/weapons/ThunderingPulse.webp",
+    "TidalShadow": "/icons/weapons/TidalShadow.webp",
+    "TomeOfTheEternalFlow": "/icons/weapons/TomeOfTheEternalFlow.webp",
+    "ToukabouShigure": "/icons/weapons/ToukabouShigure.webp",
+    "TravelersHandySword": "/icons/weapons/TravelersHandySword.webp",
+    "TulaytullahsRemembrance": "/icons/weapons/TulaytullahsRemembrance.webp",
+    "TwinNephrite": "/icons/weapons/TwinNephrite.webp",
+    "UltimateOverlordsMegaMagicSword": "/icons/weapons/UltimateOverlordsMegaMagicSword.webp",
+    "UrakuMisugiri": "/icons/weapons/UrakuMisugiri.webp",
+    "Verdict": "/icons/weapons/Verdict.webp",
+    "VividNotions": "/icons/weapons/VividNotions.webp",
+    "VortexVanquisher": "/icons/weapons/VortexVanquisher.webp",
+    "WanderingEvenstar": "/icons/weapons/WanderingEvenstar.webp",
+    "WavebreakersFin": "/icons/weapons/WavebreakersFin.webp",
+    "WaveridingWhirl": "/icons/weapons/WaveridingWhirl.webp",
+    "WhiteIronGreatsword": "/icons/weapons/WhiteIronGreatsword.webp",
+    "WhiteTassel": "/icons/weapons/WhiteTassel.webp",
+    "Whiteblind": "/icons/weapons/Whiteblind.webp",
+    "WindblumeOde": "/icons/weapons/WindblumeOde.webp",
+    "WineAndSong": "/icons/weapons/WineAndSong.webp",
+    "WolfFang": "/icons/weapons/WolfFang.webp",
+    "WolfsGravestone": "/icons/weapons/WolfsGravestone.webp",
+    "XiphosMoonlight": "/icons/weapons/XiphosMoonlight.webp"
+  }
+}

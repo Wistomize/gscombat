@@ -1,5 +1,7 @@
+import type { Element } from "@gscombat/calculator"
+
 export interface CharacterDefinition {
-  readonly element: "electro" | "hydro" | "pyro"
+  readonly element: Exclude<Element, "physical">
   readonly id: string
   readonly name: string
 }

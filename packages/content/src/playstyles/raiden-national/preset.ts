@@ -1,4 +1,4 @@
-import type { ExpectedDamageInput, Modifier } from "@project-b/calculator"
+import type { ExpectedDamageInput, Modifier } from "@gscombat/calculator"
 
 import { illustrativeEmblemBurstModifier } from "../../artifacts/emblem-of-severed-fate/index.js"
 import { bennettDefinition, illustrativeBennettBurstModifier } from "../../characters/bennett/index.js"
@@ -70,6 +70,7 @@ export function createRaidenNationalFoundationInput(options: FoundationFixtureOp
         critDamage: 1.2,
         critRate: 0.7,
         damageBonus: 0.5,
+        elementalMastery: 0,
         flatAttack: 311,
         level: 90
       }

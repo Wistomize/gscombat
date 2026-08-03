@@ -1,0 +1,5 @@
+export {
+  DODOCO_TALES_ATTACK_PERCENT_BY_REFINEMENT,
+  DODOCO_TALES_CHARGED_DAMAGE_BONUS_BY_REFINEMENT,
+  dodocoTalesCombatActionEffects
+} from "./effects.js"

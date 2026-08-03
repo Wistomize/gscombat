@@ -1,0 +1,981 @@
+.reportGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+}
+
+.damageHero,
+.resolvedStats,
+.wideReport {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 22px;
+}
+
+.supportMetricHero,
+.supportConditionsReport {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 22px;
+}
+
+.supportMetricHero > strong {
+  display: block;
+  font-size: clamp(42px, 6vw, 72px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.supportMetricHero > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.supportMetricMeta {
+  border-top: 1px solid var(--border-light);
+  display: grid;
+  gap: 6px;
+  margin-top: 20px;
+  padding-top: 14px;
+}
+
+.supportMetricMeta span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.supportConditionList,
+.supportFormulaTree,
+.supportFormulaTree ul {
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+.supportConditionList {
+  display: grid;
+  gap: 8px;
+}
+
+.supportConditionList li {
+  font-size: 12px;
+}
+
+.supportConditionList .satisfied {
+  color: #166534;
+}
+
+.supportConditionList .unsatisfied {
+  color: #b91c1c;
+}
+
+.supportFormulaTree {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.supportFormulaTree li {
+  margin: 6px 0;
+}
+
+.supportFormulaTree .formulaEquation {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.supportFormulaTerm {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+}
+
+.supportFormulaCondition > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.supportFormulaValue {
+  background: #eff6ff;
+  border-bottom: 2px solid #1d4ed8;
+  border-radius: 2px;
+  color: #1d4ed8;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  padding: 0 2px;
+  white-space: nowrap;
+}
+
+.damageHero > strong {
+  display: block;
+  font-size: clamp(42px, 6vw, 72px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.damageHero > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.damageSplit {
+  border-top: 1px solid var(--border-light);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 20px;
+  padding-top: 14px;
+}
+
+.damageSplit > div:last-child {
+  border-left: 1px solid var(--border-light);
+  padding-left: 18px;
+}
+
+.damageSplit small,
+.resolvedStats dt,
+.weaponRow small,
+.cardTitle small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.damageSplit b {
+  display: block;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+}
+
+.cardTitle {
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-light);
+  gap: 10px;
+  padding-bottom: 12px;
+}
+
+.cardTitle strong {
+  font-size: 14px;
+}
+
+.cardTitle small {
+  margin-left: auto;
+}
+
+.resolvedStats dl {
+  margin: 10px 0 0;
+}
+
+.resolvedStats dl div {
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+}
+
+.resolvedStats dd {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.wideReport {
+  grid-column: 1 / -1;
+}
+
+.weaponRows {
+  margin-top: 6px;
+}
+
+.weaponRow {
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 28px 42px minmax(180px, 1fr) 120px 90px;
+  min-height: 56px;
+}
+
+.rankNumber {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.weaponRow > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.weaponRow > div strong {
+  font-size: 12px;
+}
+
+.weaponRow > span:nth-last-child(2),
+.weaponRow > b {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.positive {
+  color: var(--positive);
+}
+
+.negative {
+  color: var(--danger);
+}
+
+.gainBars {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.gainBar {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 110px 1fr 72px;
+}
+
+.gainBar > span {
+  font-size: 12px;
+}
+
+.gainBar > div {
+  background: #eeeeee;
+  height: 8px;
+  overflow: hidden;
+}
+
+.gainBar i {
+  background: #333333;
+  display: block;
+  height: 100%;
+}
+
+.gainBar b {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.effectiveReport {
+  align-items: end;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr auto;
+}
+
+.effectiveReport .cardTitle {
+  grid-column: 1 / -1;
+}
+
+.effectiveTotal strong {
+  display: block;
+  font-size: 42px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.effectiveTotal span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.artifactScores {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(5, minmax(70px, 1fr));
+}
+
+.artifactScores > div {
+  border-left: 1px solid var(--border);
+  padding: 4px 14px;
+}
+
+.artifactScores span {
+  color: var(--muted);
+  display: block;
+  font-size: 10px;
+  margin-bottom: 5px;
+}
+
+.artifactScores strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.traceSteps {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.traceEvent {
+  display: grid;
+  gap: 8px;
+}
+
+.traceEvent + .traceEvent {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.traceEventTitle {
+  align-items: baseline;
+  display: flex;
+  gap: 9px;
+}
+
+.traceEventTitle strong {
+  font-size: 11px;
+}
+
+.traceEventTitle small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.traceLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 15px;
+}
+
+.traceLegendItem {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--stage-color);
+  color: #333333;
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 600;
+  gap: 5px;
+  min-height: 24px;
+  padding: 3px 7px;
+}
+
+.traceLegendItem i {
+  background: var(--stage-color);
+  border-radius: 50%;
+  display: block;
+  height: 6px;
+  width: 6px;
+}
+
+.traceLegendItem--attack {
+  --stage-color: #9a3412;
+}
+
+.traceLegendItem--scaling {
+  --stage-color: #7c3aed;
+}
+
+.traceLegendItem--talent {
+  --stage-color: #6d28d9;
+}
+
+.traceLegendItem--amplifying_reaction {
+  --stage-color: #c2410c;
+}
+
+.traceLegendItem--additive_reaction {
+  --stage-color: #a16207;
+}
+
+.traceLegendItem--transformative_reaction {
+  --stage-color: #be185d;
+}
+
+.traceLegendItem--damage_bonus {
+  --stage-color: #1d4ed8;
+}
+
+.traceLegendItem--base_damage {
+  --stage-color: #7c3aed;
+}
+
+.traceLegendItem--reaction_coefficient {
+  --stage-color: #be185d;
+}
+
+.traceLegendItem--base_damage_bonus {
+  --stage-color: #1d4ed8;
+}
+
+.traceLegendItem--reaction_damage_bonus {
+  --stage-color: #a16207;
+}
+
+.traceLegendItem--big_power {
+  --stage-color: #6d28d9;
+}
+
+.traceLegendItem--flat_damage_addition {
+  --stage-color: #b45309;
+}
+
+.traceLegendItem--ascension {
+  --stage-color: #0f766e;
+}
+
+.traceLegendItem--crit {
+  --stage-color: #b91c1c;
+}
+
+.traceLegendItem--defense {
+  --stage-color: #0e7490;
+}
+
+.traceLegendItem--resistance {
+  --stage-color: #047857;
+}
+
+.traceLegendItem--hit_count {
+  --stage-color: #6d28d9;
+}
+
+.traceStep {
+  --trace-color: #475467;
+  --trace-soft: #f2f4f7;
+  align-items: center;
+  background: linear-gradient(90deg, var(--trace-soft), #ffffff 42%);
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--trace-color);
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 180px minmax(0, 1fr);
+  min-height: 72px;
+  padding: 13px 16px;
+}
+
+.traceStep[data-stage="attack"] {
+  --trace-color: #9a3412;
+  --trace-soft: #fff7ed;
+}
+
+.traceStep[data-stage="scaling"] {
+  --trace-color: #7c3aed;
+  --trace-soft: #f5f3ff;
+}
+
+.traceStep[data-stage="talent"] {
+  --trace-color: #6d28d9;
+  --trace-soft: #f5f3ff;
+}
+
+.traceStep[data-stage="amplifying_reaction"] {
+  --trace-color: #c2410c;
+  --trace-soft: #fff7ed;
+}
+
+.traceStep[data-stage="additive_reaction"] {
+  --trace-color: #a16207;
+  --trace-soft: #fefce8;
+}
+
+.traceStep[data-stage="transformative_reaction"] {
+  --trace-color: #be185d;
+  --trace-soft: #fdf2f8;
+}
+
+.traceStep[data-stage="damage_bonus"] {
+  --trace-color: #1d4ed8;
+  --trace-soft: #eff6ff;
+}
+
+.traceStep[data-stage="base_damage"] {
+  --trace-color: #7c3aed;
+  --trace-soft: #f5f3ff;
+}
+
+.traceStep[data-stage="reaction_coefficient"] {
+  --trace-color: #be185d;
+  --trace-soft: #fdf2f8;
+}
+
+.traceStep[data-stage="base_damage_bonus"] {
+  --trace-color: #1d4ed8;
+  --trace-soft: #eff6ff;
+}
+
+.traceStep[data-stage="reaction_damage_bonus"] {
+  --trace-color: #a16207;
+  --trace-soft: #fefce8;
+}
+
+.traceStep[data-stage="big_power"] {
+  --trace-color: #6d28d9;
+  --trace-soft: #f5f3ff;
+}
+
+.traceStep[data-stage="flat_damage_addition"] {
+  --trace-color: #b45309;
+  --trace-soft: #fff7ed;
+}
+
+.traceStep[data-stage="ascension"] {
+  --trace-color: #0f766e;
+  --trace-soft: #f0fdfa;
+}
+
+.traceStep[data-stage="crit"] {
+  --trace-color: #b91c1c;
+  --trace-soft: #fef2f2;
+}
+
+.traceStep[data-stage="defense"] {
+  --trace-color: #0e7490;
+  --trace-soft: #ecfeff;
+}
+
+.traceStep[data-stage="resistance"] {
+  --trace-color: #047857;
+  --trace-soft: #ecfdf5;
+}
+
+.traceStep[data-stage="hit_count"] {
+  --trace-color: #6d28d9;
+  --trace-soft: #f5f3ff;
+}
+
+.traceStage {
+  align-items: center;
+  display: grid;
+  gap: 11px;
+  grid-template-columns: 26px 1fr;
+}
+
+.traceStage > span {
+  align-items: center;
+  background: var(--trace-color);
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  font-size: 9px;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.traceStage > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.traceStage strong {
+  color: var(--trace-color);
+  font-size: 13px;
+}
+
+.traceStage small,
+.formulaLines small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.formulaLines {
+  min-width: 0;
+}
+
+.formulaLines p {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.formulaEquationLabel {
+  color: #303030;
+  font-weight: 700;
+}
+
+.formulaAuxiliary {
+  color: var(--muted);
+  font-size: 10px !important;
+  line-height: 1.7 !important;
+  margin-top: 4px !important;
+}
+
+.traceContributionDetails {
+  border-top: 1px dashed color-mix(in srgb, var(--trace-color) 24%, #d9d9d9);
+  margin-top: 8px;
+  padding-top: 7px;
+}
+
+.traceContributionDetails summary {
+  color: var(--trace-color);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  list-style-position: outside;
+  width: fit-content;
+}
+
+.traceContributionDetails dl {
+  display: grid;
+  gap: 0;
+  margin: 7px 0 0;
+  max-width: 720px;
+}
+
+.traceContributionDetails dl > div {
+  align-items: baseline;
+  border-top: 1px solid color-mix(in srgb, var(--trace-color) 10%, #ededed);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  padding: 5px 0;
+}
+
+.traceContributionDetails dt,
+.traceContributionDetails dd {
+  font-size: 11px;
+  margin: 0;
+}
+
+.traceContributionDetails dd {
+  color: var(--trace-color);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.traceContributionTotal {
+  border-top-color: var(--trace-color) !important;
+}
+
+.optionalEffectSelect {
+  align-items: center;
+  border: 1px solid var(--border);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 240px);
+  padding: 12px 14px;
+}
+
+.optionalEffectSelect span {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.optionalEffectSelect select {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  min-height: 34px;
+  padding: 0 8px;
+}
+
+.formulaValue {
+  background: var(--formula-soft);
+  border-bottom: 2px solid var(--formula-color);
+  border-radius: 2px;
+  color: var(--formula-color);
+  font-size: inherit;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  padding: 0 2px;
+  white-space: nowrap;
+}
+
+.formulaValue--attack {
+  --formula-color: #9a3412;
+  --formula-soft: #fff7ed;
+}
+
+.formulaValue--scaling {
+  --formula-color: #7c3aed;
+  --formula-soft: #f5f3ff;
+}
+
+.formulaValue--talent {
+  --formula-color: #6d28d9;
+  --formula-soft: #f5f3ff;
+}
+
+.formulaValue--amplifying_reaction {
+  --formula-color: #c2410c;
+  --formula-soft: #fff7ed;
+}
+
+.formulaValue--additive_reaction {
+  --formula-color: #a16207;
+  --formula-soft: #fefce8;
+}
+
+.formulaValue--transformative_reaction {
+  --formula-color: #be185d;
+  --formula-soft: #fdf2f8;
+}
+
+.formulaValue--hit_count {
+  --formula-color: #6d28d9;
+  --formula-soft: #f5f3ff;
+}
+
+.formulaValue--damage_bonus {
+  --formula-color: #1d4ed8;
+  --formula-soft: #eff6ff;
+}
+
+.formulaValue--base_damage {
+  --formula-color: #7c3aed;
+  --formula-soft: #f5f3ff;
+}
+
+.formulaValue--reaction_coefficient {
+  --formula-color: #be185d;
+  --formula-soft: #fdf2f8;
+}
+
+.formulaValue--base_damage_bonus {
+  --formula-color: #1d4ed8;
+  --formula-soft: #eff6ff;
+}
+
+.formulaValue--reaction_damage_bonus {
+  --formula-color: #a16207;
+  --formula-soft: #fefce8;
+}
+
+.formulaValue--big_power {
+  --formula-color: #6d28d9;
+  --formula-soft: #f5f3ff;
+}
+
+.formulaValue--flat_damage_addition {
+  --formula-color: #b45309;
+  --formula-soft: #fff7ed;
+}
+
+.formulaValue--ascension {
+  --formula-color: #0f766e;
+  --formula-soft: #f0fdfa;
+}
+
+.formulaValue--crit {
+  --formula-color: #b91c1c;
+  --formula-soft: #fef2f2;
+}
+
+.formulaValue--defense {
+  --formula-color: #0e7490;
+  --formula-soft: #ecfeff;
+}
+
+.formulaValue--resistance {
+  --formula-color: #047857;
+  --formula-soft: #ecfdf5;
+}
+
+.buffStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.buffStrip span {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: #444444;
+  font-size: 10px;
+  padding: 5px 8px;
+}
+
+.teamStateStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.teamStateStrip span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 9px;
+}
+
+.appFooter {
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 10px;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: 0 32px;
+}
+
+@media (max-width: 1100px) {
+  .workspaceGrid {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+
+  .artifactGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .artifactEditor:last-child {
+    grid-column: auto;
+  }
+
+  .artifactMainGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .deckHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 820px) {
+  .appHeader {
+    padding: 0 20px;
+  }
+
+  .labIntro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+    padding: 22px 20px;
+  }
+
+  .workspaceGrid {
+    display: block;
+  }
+
+  .controlRail {
+    border-bottom: 1px solid var(--border);
+    border-right: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .primarySection,
+  .sourceSection,
+  .metricSection,
+  .scenarioControls {
+    grid-column: 1 / -1;
+  }
+
+  .mainDeck {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .reportGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .resolvedStats,
+  .damageHero,
+  .wideReport {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .appHeader {
+    height: 58px;
+  }
+
+  .headerStatus > span:not(.statusDot),
+  .brandBlock span,
+  .sourceBadge {
+    display: none;
+  }
+
+  .controlRail {
+    display: block;
+  }
+
+  .identityGrid,
+  .weaponGrid,
+  .talentGrid,
+  .artifactMainGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sourceTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wideField {
+    grid-column: 1 / -1;
+  }
+
+  .deckActions {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .primaryButton {
+    grid-column: 1 / -1;
+  }
+
+  .resultsHeading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .weaponRow {
+    gap: 8px;
+    grid-template-columns: 22px 38px minmax(110px, 1fr) 72px;
+  }
+
+  .weaponRow > span:nth-last-child(2) {
+    display: none;
+  }
+
+  .gainBar {
+    grid-template-columns: 82px 1fr 62px;
+  }
+
+  .effectiveReport {
+    display: block;
+  }
+
+  .artifactScores {
+    grid-template-columns: repeat(5, 1fr);
+    margin-top: 20px;
+  }
+
+  .artifactScores > div {
+    padding: 4px 6px;
+  }
+
+  .artifactScores strong {
+    font-size: 15px;
+  }
+
+  .traceSteps {
+    gap: 7px;
+  }
+
+  .traceStep {
+    align-items: flex-start;
+    gap: 10px;
+    grid-template-columns: 1fr;
+  }
+
+  .appFooter {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+    padding: 0 20px;
+  }
+}

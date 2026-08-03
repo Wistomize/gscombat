@@ -1,0 +1,160 @@
+/**
+ * 角色官方简中名称的离线审计锁。
+ *
+ * 除旅行者外，每项的 label 均逐项核对同一固定 Genshin Optimizer 6.7 提交中
+ * `chs/char_<CharacterId>_gen.json` 的顶层 `name`，并记录该文件的 SHA-256。
+ * `Traveler` 是性别无关的可选角色记录，展示名固定为官方通用称呼“旅行者”；
+ * 其“荧 / 空”本地化原名及校验和在下方例外中明确锁定。
+ */
+export const officialChineseCharacterNameAuditSource = {
+  assetPathPrefix: "libs/gi/dm-localization/assets/locales/chs/char_",
+  assetPathSuffix: "_gen.json",
+  gameVersion: "6.7",
+  locale: "chs",
+  upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+  upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
+} as const
+
+export interface OfficialChineseCharacterNameAuditEntry {
+  readonly characterId: string
+  readonly label: string
+  readonly sourceSha256: string
+}
+
+export const officialChineseCharacterNameAudit: readonly OfficialChineseCharacterNameAuditEntry[] = [
+  { characterId: "RaidenShogun", label: "雷电将军", sourceSha256: "a9b82fd494da823ba0be6f4cc756a0142af15764428d036663ee656ad78d1725" },
+  { characterId: "Traveler", label: "旅行者", sourceSha256: "a8fb39787480c54c028442f3f8ee60491c75878428c32f859c0c9c8355a0c927" },
+  { characterId: "Bennett", label: "班尼特", sourceSha256: "6402b4d0c7a95c6ee9a59d24f0a2caafecb2215dde9a97cf591811c13df6482b" },
+  { characterId: "Yelan", label: "夜兰", sourceSha256: "0eca4b86dc11f0ff6c8cf2be4af3f4b2553bccc8b019641a50e7b5187827f6f0" },
+  { characterId: "Albedo", label: "阿贝多", sourceSha256: "0a60cdd01def88f7343641fa1748d58b012aa0b002c702323f01f86df203ffd5" },
+  { characterId: "Dehya", label: "迪希雅", sourceSha256: "b5f9ece0034f2389772ad18e2fde409c88217c58c0b285547160c1e1795ffddd" },
+  { characterId: "Collei", label: "柯莱", sourceSha256: "9a412b34c2a129bbd999b09260c56c5b03241f3f0b67e3155e983a5622aa6ed8" },
+  { characterId: "Xiangling", label: "香菱", sourceSha256: "adc3e643b88dd0cddde9883797fbc20babd1b2402c8e4956865cd05963e58f8d" },
+  { characterId: "Xingqiu", label: "行秋", sourceSha256: "18b444b0100325d6f6314a814160e783d17b94a7af44224fe876b26f631f779d" },
+  { characterId: "Kaeya", label: "凯亚", sourceSha256: "12b2b929b792724d0dd382a1bd9c9fd47f5523fecec84ceda5c1f40320e819f6" },
+  { characterId: "Lisa", label: "丽莎", sourceSha256: "f0be0ebe4f816d61d9489227df2df35eaaf7e670f7474726c2d64270b8692199" },
+  { characterId: "Sucrose", label: "砂糖", sourceSha256: "8c3eb4a68a258141952aef6eda14ef1f6f1519e2f7e61bf96ea06cb920368420" },
+  { characterId: "Noelle", label: "诺艾尔", sourceSha256: "da1776045af77dd3ef3d60422eefadbed5d69722ac5e1d45fa07da8bdb3f2a68" },
+  { characterId: "Chongyun", label: "重云", sourceSha256: "33fa05ad1cbd0f478047c783a4cc606ff203ccafe1c42527e28cb10765ad081d" },
+  { characterId: "Razor", label: "雷泽", sourceSha256: "cc9988928b808bd1d164dd578cf1f7dfb95c6e898c8b8e0bdf7a62f5c07a2871" },
+  { characterId: "Yanfei", label: "烟绯", sourceSha256: "6ca5349af27ed0b6c4ea08f591d306fd4f908e78eb3e79db4d0561c31702e45d" },
+  { characterId: "KujouSara", label: "九条裟罗", sourceSha256: "ff573396452fcdd37161ea03180205dd18b41a214c4f17e3f3e8d98eb5bdf9d1" },
+  { characterId: "Gorou", label: "五郎", sourceSha256: "ff2de156e543def4f566d7cc5fbb43404e49174b2cabdeb8de7ad249b6ae150b" },
+  { characterId: "Kaveh", label: "卡维", sourceSha256: "a11c11f4165d0312bf133fbec4dd26986598e36338493fe2fa8c9e0247727e3d" },
+  { characterId: "Gaming", label: "嘉明", sourceSha256: "d8558e5a0f4f30f9ea2c10baa95923c37f1917b12b7668524cf74ad1d73393ab" },
+  { characterId: "Chevreuse", label: "夏沃蕾", sourceSha256: "94839eeb9af903cd19eba4f121382d555b952ca7492c58ee9c0db3e3404d52f6" },
+  { characterId: "Ororon", label: "欧洛伦", sourceSha256: "625b6a7fceaac9ad309a1493c2ec36abe89bde09d88ef91fabf4e042788d2471" },
+  { characterId: "LanYan", label: "蓝砚", sourceSha256: "74e8c81a94e2422b1d1eaa5394f521ebcd8e34cfa907028cf9b055f16227800c" },
+  { characterId: "Kachina", label: "卡齐娜", sourceSha256: "b345b6fc560c82378c549d31715154e66c6547559c1fbd0a110c6d9bcf034b96" },
+  { characterId: "Dahlia", label: "塔利雅", sourceSha256: "39bc514e852bd381910b1f32b0c72a67d2a61f7316277a61b279dd6d43c75657" },
+  { characterId: "Jean", label: "琴", sourceSha256: "af1ce2df3113572da3cb7f99a489a532328124b0d5533bea97dba8f79acf3843" },
+  { characterId: "Xiao", label: "魈", sourceSha256: "78b6d07d75611f99a1d96a08f3821d37260f408ce695216ab385d7ab823b284f" },
+  { characterId: "Aloy", label: "埃洛伊", sourceSha256: "4bd7b32276abcac800b8935925501c96346f182a6a0c5403b027784c6d831933" },
+  { characterId: "KamisatoAyaka", label: "神里绫华", sourceSha256: "6d36fde4d820b8a3c8e2b4f3b8f24f8bb737109fc44284b4f41f2bd0b0af2e83" },
+  { characterId: "Escoffier", label: "爱可菲", sourceSha256: "194f26197da4b1691903ffd14c25bfab7fb6a5b8f7a4a8daac94050bdd87747f" },
+  { characterId: "Qiqi", label: "七七", sourceSha256: "42febb443433cd4702f341bfa87be8d49171a4ed662eba347d36a65062b68ed3" },
+  { characterId: "Tighnari", label: "提纳里", sourceSha256: "9bf91f155c8c09c7bb8f9448607b97ff5d326b9583160063d0356d32af73cb20" },
+  { characterId: "YunJin", label: "云堇", sourceSha256: "4ef6e8956590cb3ba2d2c120ad4944b5eb5f9d2e94be03fd851e7204e178b625" },
+  { characterId: "Zhongli", label: "钟离", sourceSha256: "0a51939da2bb3d1b14b9bf53525c817f01faf63712f9166b5393949e87df7f57" },
+  { characterId: "Neuvillette", label: "那维莱特", sourceSha256: "ba76959db30509aa4dd2c29980bf019f3ba5d2d2e011a8d1dc1be88b02ae51d6" },
+  { characterId: "Nilou", label: "妮露", sourceSha256: "c3337bef6869ec9fddc9261bd124931152706144a401f718d18263d6583fe4c9" },
+  { characterId: "Diluc", label: "迪卢克", sourceSha256: "34c0dbea0960efc0d25560fd9d640c11b2799c424f5c81403589f0a4ef699fed" },
+  { characterId: "Thoma", label: "托马", sourceSha256: "2f4bc3f185ffe97a7f7510b3467551c3d26e1e80b911c464b7ed5ebef4ad8d14" },
+  { characterId: "Arlecchino", label: "阿蕾奇诺", sourceSha256: "89f5b1790a7daac0ce84b3ac272f6d098c62c8e0bb63315c129512bc43d5df86" },
+  { characterId: "Cyno", label: "赛诺", sourceSha256: "1195dd25a77fd6820283d413127d0f7c74041e675cf2f7e4b55cbbe6b7aafa2e" },
+  { characterId: "Beidou", label: "北斗", sourceSha256: "6f941d53e7c153bdd3366efe96e98436ea2c477042c20044f6e6c04a93c7c226" },
+  { characterId: "Candace", label: "坎蒂丝", sourceSha256: "26f6122c4d853c489e3f81e7a06e1b8d50c0b2adc987ad9a975ba94065c3fe2d" },
+  { characterId: "Diona", label: "迪奥娜", sourceSha256: "11538cb439ed974623eb2782c0b8bb82ae9139394a284db0a6a7e5df0ecf043a" },
+  { characterId: "Eula", label: "优菈", sourceSha256: "39d46f47fbf6651b3ab6798ed0c4af676244cc43e1f2e9168c3dea85f05e36dd" },
+  { characterId: "Faruzan", label: "珐露珊", sourceSha256: "3e4af822f78dd60bc9978affc50367ea59a3e14ada5c689820badb0ad543afe1" },
+  { characterId: "Ganyu", label: "甘雨", sourceSha256: "78b3927beb976576ea3338ca6850e49d29f6996b231813f9a4f07a52cf09f753" },
+  { characterId: "KaedeharaKazuha", label: "枫原万叶", sourceSha256: "33c664c87b17eb5f437a7bb52ff456f60f55242b2bda851b3a11cdcfdf173a11" },
+  { characterId: "Keqing", label: "刻晴", sourceSha256: "159181ba035e77ee2933951bab15644bfa36fef6d9050911b4bdeb13f316c813" },
+  { characterId: "Kirara", label: "绮良良", sourceSha256: "7f595d84a384b7c5eadc730a5b0608125bb0f3fd572b1e938d511c68f98bc824" },
+  { characterId: "KukiShinobu", label: "久岐忍", sourceSha256: "9cc98ab1588cd666d58ca3a1ab5241b6b8b122c5ee09dffdcb19cb5bb944dd2b" },
+  { characterId: "Layla", label: "莱依拉", sourceSha256: "3a9dd52a99140c1b4201521ffd3ddd6023bd24111d181cd6b1e343a4d422111f" },
+  { characterId: "Mika", label: "米卡", sourceSha256: "345a79ba65aa40881665f1b934a46ff1fab62d10316bde51659e4e4f2a522a0c" },
+  { characterId: "Ningguang", label: "凝光", sourceSha256: "f5573b75c243a525788796b24ee9a6defe613f8bd9f39a3432a50bcdc30d0b6c" },
+  { characterId: "Sethos", label: "赛索斯", sourceSha256: "2294cfa797cf94d51e7d415ce305539619fd7126f7fba74257960f729ca2dc50" },
+  { characterId: "Shenhe", label: "申鹤", sourceSha256: "7f7f78790e96dad0d5b59a072a1cbfde51425f056c515adf268ac9ac1917bdd9" },
+  { characterId: "Venti", label: "温迪", sourceSha256: "457fbdb2275dd873a293ffaeb24bd879751088cd02f468ba23f3555e2e2f4449" },
+  { characterId: "Xinyan", label: "辛焱", sourceSha256: "16d2045ff5ab13269a15063f43f0db7351b78b1216e91011723bef50f5e4a9cd" },
+  { characterId: "Amber", label: "安柏", sourceSha256: "2b475058dd92182d3a361aec029fa1de79b0cb400cd9d683995cd416fcbfebe6" },
+  { characterId: "Barbara", label: "芭芭拉", sourceSha256: "77be8390a4a15b4b6a71c620af1379daaec226edb225dff36d0efc8cccea53dd" },
+  { characterId: "Charlotte", label: "夏洛蒂", sourceSha256: "db32e129889b675d5b7bbbca0fd2049b0efbfc79568d11fc39a2b8eb7c8bff39" },
+  { characterId: "Dori", label: "多莉", sourceSha256: "51d34350b9ce366fcaf50188057c19f956d140f19e1a7effe2afa62f204f2b6c" },
+  { characterId: "Fischl", label: "菲谢尔", sourceSha256: "95158957060a98262e76030d54104773279bcc84b99e22edfe84e00f918677c2" },
+  { characterId: "Klee", label: "可莉", sourceSha256: "a883f7c800bcefaeb504d94b260ebb19738d410377d929104f2d90100a2a0f67" },
+  { characterId: "Lynette", label: "琳妮特", sourceSha256: "ceb4a8802166174b4d013316f8985677990d4d800b878da082d220f89f6f012e" },
+  { characterId: "Nahida", label: "纳西妲", sourceSha256: "51cd34437a349b13ab00fd2bdf3880787e05d7d2e1a6ae1da2571233c0c81c09" },
+  { characterId: "Navia", label: "娜维娅", sourceSha256: "1f87f67fa7e39fdaa95df000b5347b19edec18f308af4149fa5f4d816785de4e" },
+  { characterId: "Rosaria", label: "罗莎莉亚", sourceSha256: "95490ade7fc98ef998207e207e1b2f1f9986d5ee83679c10b0c9d5431cc6063a" },
+  { characterId: "Sayu", label: "早柚", sourceSha256: "0098b758a89f10b7943fd88cc860f5c119927e458988a46a68db6b30e4101dd4" },
+  { characterId: "ShikanoinHeizou", label: "鹿野院平藏", sourceSha256: "01519a88eb9e013729dfd00d7fda3eebfe4da3f8a7b8669c6c729bb604a1440c" },
+  { characterId: "Tartaglia", label: "达达利亚", sourceSha256: "fc128deb5b40e5969bcfb48a4788f0a14eb055a943bef4f6e585024604a77f05" },
+  { characterId: "Xianyun", label: "闲云", sourceSha256: "ee8b1bd6219b83256f9851b731ef9113833296f4cb5888690eb0a6224d27700a" },
+  { characterId: "YaeMiko", label: "八重神子", sourceSha256: "dcb5a31f0b39c027597eaa258edfeda51ed4d7f7b5ee644d214708d543280530" },
+  { characterId: "Yaoyao", label: "瑶瑶", sourceSha256: "f072b094043bfccb00236291ff39546343bc2d172e1d8ca9f1ffc8610eab290e" },
+  { characterId: "Chasca", label: "恰斯卡", sourceSha256: "74474aea69e78f32c7b70a6d254411a037846013a196812530644131c2bbc9a3" },
+  { characterId: "Ifa", label: "伊法", sourceSha256: "5915ae1e212bee4bfc46432d34c300aa142dae084bd39cb67318766eced80c91" },
+  { characterId: "Citlali", label: "茜特菈莉", sourceSha256: "40807b6b7b2ac102eaa026188f7e4978d832f2a2b7dc5f30079bb8f11340d84b" },
+  { characterId: "Freminet", label: "菲米尼", sourceSha256: "dd7e29527d896c68c2362802e06a883dd7b9f5a2c924d2be89deff4442371483" },
+  { characterId: "Alhaitham", label: "艾尔海森", sourceSha256: "f6a34fd37a4b592dcc63819e19bd7e1ac273201563c3a6b2c583a52448b3f74c" },
+  { characterId: "Baizhu", label: "白术", sourceSha256: "b29de7d393fb541798c9483ee17adfe392be52ca89b9b73617048ed787646a34" },
+  { characterId: "Clorinde", label: "克洛琳德", sourceSha256: "070d9b300e0c98b36729d33b490e51ba914691dbe8f0e928f5b0a3e19f49d843" },
+  { characterId: "Iansan", label: "伊安珊", sourceSha256: "c571a86a8924789e8b05dbf1809c254434fda367681fdd4d4aae158ff73cfb6e" },
+  { characterId: "AratakiItto", label: "荒泷一斗", sourceSha256: "35e8e956c8bbbee9c9e62efbfdc4c24cd253c001827715c26d8985be19a326ef" },
+  { characterId: "Chiori", label: "千织", sourceSha256: "b5c227552cbd73a09baa636a384d43f7c1accd4648bf2f824e0481b41bef5a47" },
+  { characterId: "Aino", label: "爱诺", sourceSha256: "30428669874a42a93cd6183c5f71a89faecb0d8abc49fda1118001a179d25222" },
+  { characterId: "Mona", label: "莫娜", sourceSha256: "555a39a13b8b8bae7746684b37fa2180838295988ab2957896d8302beb079ecd" },
+  { characterId: "HuTao", label: "胡桃", sourceSha256: "a7650848c5b0a438689ec5e67c89c068911ea3027cb99e439e0517e322d0e766" },
+  { characterId: "Lyney", label: "林尼", sourceSha256: "f7fea3718271154210384f4bed013c0557e7fbcfbcb04218499d25f58d81cf98" },
+  { characterId: "Furina", label: "芙宁娜", sourceSha256: "1e7605f9966c03263860556a0ecbcc8e81551d358ce93ced6864bfdb586ce6e0" },
+  { characterId: "KamisatoAyato", label: "神里绫人", sourceSha256: "339b85c197898fce057735800e6770924bc00af379f8e66aec6d51cf4e0ea588" },
+  { characterId: "Jahoda", label: "雅珂达", sourceSha256: "7d70b7a3f81150ed4653c7c83556787a09f79d1c3b36afd926a99701b9e57e2d" },
+  { characterId: "Prune", label: "布伦妮", sourceSha256: "aae7cfde517c0587e8380fb926b82c0bd3111b1ab373e66bfd87080e152744e7" },
+  { characterId: "Varka", label: "法尔伽", sourceSha256: "921c4d5e8acd3d51e05956ccf0259475df7a3b89619ac64b6b49249317da3ef3" },
+  { characterId: "Lohen", label: "洛恩", sourceSha256: "64e1f7b70eee545d6bdbe4cdc7bf914ad55f4e73b65332d7661c571819301fce" },
+  { characterId: "Wriothesley", label: "莱欧斯利", sourceSha256: "5d051fed0fe16a099d4ce3ba4cbf4735a6067010a9149293809d1160ea7dbc14" },
+  { characterId: "Emilie", label: "艾梅莉埃", sourceSha256: "cd088997a569d4adfa7b11b3321b1445d743eb0cdb5265c95e9a4c94a0987367" },
+  { characterId: "Lauma", label: "菈乌玛", sourceSha256: "f3c3ae4e2c7d77bd8bb9824d57abf8dbf0647f4a10587f1e8c7f214a16fe627a" },
+  { characterId: "Flins", label: "菲林斯", sourceSha256: "e801df38d07acc143cbb1429e0128f86e1da24189f68a17dcb7b59fcfe75f41f" },
+  { characterId: "Linnea", label: "莉奈娅", sourceSha256: "3bfbf12b572666ccb1fabf378308b3f6a6b7d6c045c7e37f46d5da8d10e61cdd" },
+  { characterId: "Xilonen", label: "希诺宁", sourceSha256: "6290015d9b2836f479abeb9a2020912a479aaf817407a8ef756adc7daff4726f" },
+  { characterId: "Sigewinne", label: "希格雯", sourceSha256: "9c9ad467f4a2f993ccac524eac712007736e22957f36fbfebeaae5b6ae739178" },
+  { characterId: "Columbina", label: "哥伦比娅", sourceSha256: "8ba56a6d875596e7c6790bfd1498ebb99b0209738ad576805c2fc8eb921d7f77" },
+  { characterId: "Yoimiya", label: "宵宫", sourceSha256: "6ab69265b1f991d8348aaa2e1077fdd051c6b77d4b438ffe13d6100eae6dcd6b" },
+  { characterId: "Nicole", label: "尼可", sourceSha256: "27b8e0f7c57796187170af7aade00c30c5bd703af7f9cf2dd2ef7f30882655e6" },
+  { characterId: "Mavuika", label: "玛薇卡", sourceSha256: "019da8a3c3490d24e2ec586003ae2ad6e8ce56a4dd0dce508cc0cbb85414d3de" },
+  { characterId: "Wanderer", label: "流浪者", sourceSha256: "2375dc80a90e89ef37c0d52cc08be5e8fd76d45df4ac3e47bceecff56c456bd7" },
+  { characterId: "YumemizukiMizuki", label: "梦见月瑞希", sourceSha256: "8db1168e631534d05cd0ec208b99b490e3be925c4b1e5c00816b11e03d213fdc" },
+  { characterId: "Sandrone", label: "桑多涅", sourceSha256: "71da13d585128777708a316ad94177174a87d5527a2025d3921453d17ad679e8" },
+  { characterId: "Skirk", label: "丝柯克", sourceSha256: "f69b858c088c04c547c713bb17ba92e029b4f2c706f7a775afac597ba0504b32" },
+  { characterId: "Kinich", label: "基尼奇", sourceSha256: "815f62f57496d6b36329b9673d86f5dc88dcb805d093243eaf8d825088822dc0" },
+  { characterId: "Nefer", label: "奈芙尔", sourceSha256: "42309baeb0db04ea633f8532b052d6c51b30584d8c77df4dc1bd6924c332da38" },
+  { characterId: "Ineffa", label: "伊涅芙", sourceSha256: "e507f9a5f7a03efa5ca35923ec85a74e0ae3d4004ae9292c1202a6d9c1f59ac8" },
+  { characterId: "Varesa", label: "瓦雷莎", sourceSha256: "06c910ef66641109e1387c207d94d06f79b1eb17009581b657339b15d171dd7d" },
+  { characterId: "Illuga", label: "叶洛亚", sourceSha256: "1f65345af36c4f9be13825467a13572bf87692f4e67fc728ddf8318aac9c9da1" },
+  { characterId: "Zibai", label: "兹白", sourceSha256: "0505b2341a8065528991378662721db26f9da1985a7b537c11f7edeb745ce10f" },
+  { characterId: "Mualani", label: "玛拉妮", sourceSha256: "b56be141ca08c222d658193cd6f96f9160346292a34568dabd61ebdb841bc2f9" },
+  { characterId: "SangonomiyaKokomi", label: "珊瑚宫心海", sourceSha256: "2f55b77688113af8ac0b2d761e7e113980959c658f88e8c145d572b685dcff13" },
+  { characterId: "Durin", label: "杜林", sourceSha256: "1460c25dba8d7c038b51636aa0e1290d11695c59ed6f274c0058004f92780174" },
+]
+
+/** The generic Traveler entry is intentionally not collapsed to either gender-specific playable name. */
+export const officialChineseTravelerNameAuditException = {
+  characterId: "Traveler",
+  label: "旅行者",
+  variants: [
+    {
+      characterId: "TravelerF",
+      label: "荧",
+      sourceSha256: "93f7651766c75b02063a9b58e218105bd22c866b0dd799bccaa6cead064e0f9f"
+    },
+    {
+      characterId: "TravelerM",
+      label: "空",
+      sourceSha256: "2561a2854c84e21e718086133c46e0c9c9ed27c20b118c546408435b044b16eb"
+    }
+  ]
+} as const

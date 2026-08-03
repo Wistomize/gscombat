@@ -1,4 +1,4 @@
-import { evaluateExpectedDamage } from "@project-b/calculator"
+import { evaluateExpectedDamage } from "@gscombat/calculator"
 import { describe, expect, it } from "vitest"
 
 import { createRaidenNationalFoundationInput } from "./preset.js"

@@ -47,7 +47,7 @@ damage evaluation rather than generating empty folders only.
 
 **Step 1:** Write failing tests for expected crit and direct-damage stage order.
 
-**Step 2:** Run `pnpm --filter @project-b/calculator test` and confirm failure.
+**Step 2:** Run `pnpm --filter @gscombat/calculator test` and confirm failure.
 
 **Step 3:** Implement the smallest immutable typed pipeline that passes the tests.
 

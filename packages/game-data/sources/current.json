@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "gameVersion": "6.7",
+  "upstreamRepository": "https://github.com/frzyc/genshin-optimizer",
+  "upstreamCommit": "21c98eb60355160274a8c4cecfc5671e2151a073",
+  "upstreamCommittedAt": "2026-07-09T13:05:30Z",
+  "upstreamLicense": "MIT",
+  "dataUrl": "https://raw.githubusercontent.com/frzyc/genshin-optimizer/21c98eb60355160274a8c4cecfc5671e2151a073/libs/gi/stats/src/allStat_gen.json",
+  "dataSha256": "8dceaa2f1ef8ab2931515ece88a7826655d5447e71a40f13f9659217532ebf4b"
+}

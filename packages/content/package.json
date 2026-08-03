@@ -1,5 +1,5 @@
 {
-  "name": "@project-b/content",
+  "name": "@gscombat/content",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./weapon-names": {
+      "types": "./dist/weapon-names.d.ts",
+      "import": "./dist/weapon-names.js"
     }
   },
   "scripts": {
@@ -15,10 +19,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@project-b/calculator": "workspace:*"
+    "@gscombat/calculator": "workspace:*",
+    "@gscombat/contracts": "workspace:*"
   },
   "devDependencies": {
+    "@gscombat/game-data": "workspace:*",
+    "@types/node": "22.20.1",
     "typescript": "6.0.3",
+    "undici": "7.28.0",
     "vitest": "4.1.10"
   }
 }

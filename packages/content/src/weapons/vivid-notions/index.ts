@@ -1,0 +1,6 @@
+export {
+  VIVID_NOTIONS_ATTACK_PERCENT,
+  VIVID_NOTIONS_DAWN_PLUNGE_CRIT_DAMAGE,
+  VIVID_NOTIONS_DUSK_PLUNGE_CRIT_DAMAGE,
+  vividNotionsCombatActionEffects
+} from "./effects.js"

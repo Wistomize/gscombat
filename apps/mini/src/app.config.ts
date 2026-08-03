@@ -4,6 +4,6 @@ export default defineAppConfig({
     backgroundColor: "#090d17",
     navigationBarBackgroundColor: "#090d17",
     navigationBarTextStyle: "white",
-    navigationBarTitleText: "Project B"
+    navigationBarTitleText: "GSCombat"
   }
 })

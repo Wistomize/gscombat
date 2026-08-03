@@ -1,0 +1,5 @@
+export {
+  REDHORN_STONETHRESHER_DEFENSE_PERCENT,
+  REDHORN_STONETHRESHER_NORMAL_CHARGED_DEFENSE_ADDITIVE_DAMAGE,
+  redhornStonethresherCombatActionEffects
+} from "./effects.js"

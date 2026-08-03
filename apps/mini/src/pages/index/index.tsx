@@ -1,5 +1,5 @@
-import { evaluateExpectedDamage } from "@project-b/calculator"
-import { createRaidenNationalFoundationInput } from "@project-b/content"
+import { evaluateExpectedDamage } from "@gscombat/calculator"
+import { createRaidenNationalFoundationInput } from "@gscombat/content"
 import { Text, View } from "@tarojs/components"
 
 import "./index.css"

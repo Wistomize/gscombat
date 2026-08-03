@@ -1,4 +1,4 @@
-import type { Modifier } from "@project-b/calculator"
+import type { Modifier } from "@gscombat/calculator"
 
 export const illustrativeBennettBurstModifier: Modifier = {
   kind: "attack_flat",

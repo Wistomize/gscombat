@@ -1,0 +1,5 @@
+export {
+  KAGURAS_VERITY_SKILL_DAMAGE_BONUS_PER_STACK,
+  KAGURAS_VERITY_THREE_STACK_ALL_ELEMENT_DAMAGE_BONUS,
+  kagurasVerityCombatActionEffects
+} from "./effects.js"

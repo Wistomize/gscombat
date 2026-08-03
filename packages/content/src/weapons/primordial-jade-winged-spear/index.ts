@@ -1,0 +1,5 @@
+export {
+  PRIMORDIAL_JADE_WINGED_SPEAR_ATTACK_PERCENT_PER_STACK,
+  PRIMORDIAL_JADE_WINGED_SPEAR_SEVEN_STACK_DAMAGE_BONUS,
+  primordialJadeWingedSpearCombatActionEffects
+} from "./effects.js"

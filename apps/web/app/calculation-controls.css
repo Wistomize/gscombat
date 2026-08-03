@@ -1,0 +1,774 @@
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+input,
+select,
+textarea {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  min-height: 36px;
+  padding: 7px 9px;
+  width: 100%;
+}
+
+textarea {
+  line-height: 1.5;
+  resize: vertical;
+}
+
+label > span {
+  color: #444444;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.labShell {
+  min-height: 100vh;
+}
+
+.appHeader {
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  height: 64px;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.brandBlock,
+.brandBlock > div,
+.headerStatus,
+.sectionLabel,
+.deckActions,
+.cardTitle,
+.artifactTitle,
+.teamIdentity,
+.resultsHeading,
+.appFooter {
+  align-items: center;
+  display: flex;
+}
+
+.brandBlock > div {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brandBlock strong {
+  font-size: 16px;
+}
+
+.brandBlock span,
+.headerStatus {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.headerStatus {
+  gap: 10px;
+}
+
+.statusDot {
+  background: #12b76a;
+  border-radius: 50%;
+  height: 7px;
+  width: 7px;
+}
+
+.quietButton,
+.secondaryButton,
+.primaryButton,
+.sourceTabs button,
+.textButton,
+.iconButton {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.quietButton {
+  font-size: 12px;
+  padding: 7px 10px;
+}
+
+.quietButton:hover,
+.secondaryButton:hover,
+.sourceTabs button:hover {
+  background: #f5f5f5;
+  border-color: #aaaaaa;
+}
+
+.labIntro {
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  gap: 24px;
+  margin: 0 auto;
+  max-width: 1600px;
+  padding: 28px 32px;
+}
+
+.labIntro h1 {
+  font-size: 24px;
+  margin: 0;
+}
+
+.labIntro p {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.errorBanner {
+  align-items: center;
+  background: #fff6f5;
+  border: 1px solid #fecdca;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: auto 1fr auto;
+  margin: 16px auto;
+  max-width: 1536px;
+  padding: 12px 14px;
+}
+
+.errorBanner strong,
+.errorBanner span {
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.errorBanner button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.workspaceGrid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  margin: 0 auto;
+  max-width: 1600px;
+}
+
+.controlRail {
+  border-right: 1px solid var(--border);
+}
+
+.railSection {
+  border-bottom: 1px solid var(--border);
+  padding: 22px 20px;
+}
+
+.sectionToggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 24px 1fr auto;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.sectionToggle > span {
+  align-items: center;
+  background: #111111;
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  font-size: 10px;
+  height: 22px;
+  justify-content: center;
+  width: 22px;
+}
+
+.sectionToggle > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sectionToggle strong {
+  font-size: 14px;
+}
+
+.sectionToggle small {
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sectionToggle > b {
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.setupPanelBody {
+  margin-top: 18px;
+}
+
+.supportNotice {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 8px 0 14px;
+}
+
+.workflowNextButton {
+  background: #111111;
+  border: 1px solid #111111;
+  border-radius: 4px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 16px;
+  min-height: 38px;
+  padding: 8px 12px;
+  width: 100%;
+}
+
+.workflowNextButton:hover {
+  background: #333333;
+}
+
+.sectionLabel {
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.sectionLabel > span {
+  align-items: center;
+  background: #111111;
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  font-size: 10px;
+  height: 22px;
+  justify-content: center;
+  width: 22px;
+}
+
+.sectionLabel > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionLabel strong {
+  font-size: 14px;
+}
+
+.sectionLabel small,
+.kicker,
+.editorSectionTitle > span,
+.cardTitle > span,
+.metricLabel {
+  display: none;
+}
+
+.sourceTabs {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sourceTabs button {
+  color: #444444;
+  font-size: 12px;
+  padding: 8px 4px;
+}
+
+.sourceTabs button.active {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+}
+
+.sourceBody {
+  background: var(--panel);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.sourceBody > strong {
+  display: block;
+  font-size: 13px;
+}
+
+.showcaseImport .primaryButton {
+  width: 100%;
+}
+
+.sourceBody p,
+.fieldHint {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.sourceBody label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.sourceBuildList,
+.metricChoices {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sourceBuildChoice,
+.metricChoice {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px;
+  text-align: left;
+}
+
+.sourceBuildChoice:hover,
+.metricChoice:hover {
+  background: #f5f5f5;
+  border-color: #999999;
+}
+
+.sourceBuildChoice[aria-pressed="true"],
+.metricChoice.active {
+  border: 2px solid #111111;
+  padding: 9px;
+}
+
+.sourceBuildChoice strong,
+.metricChoice strong {
+  font-size: 12px;
+}
+
+.sourceBuildChoice span,
+.metricChoice span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.resetPresetButton {
+  margin-top: 6px;
+}
+
+.secondaryButton,
+.primaryButton {
+  align-items: center;
+  display: inline-flex;
+  font-size: 12px;
+  justify-content: center;
+  min-height: 36px;
+  padding: 7px 12px;
+}
+
+.primaryButton {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+  font-weight: 600;
+  gap: 16px;
+  min-height: 40px;
+  padding: 8px 16px;
+}
+
+.primaryButton:hover {
+  background: #333333;
+}
+
+.teamStack {
+  display: grid;
+  gap: 8px;
+}
+
+.teamCard {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  display: grid;
+  padding: 4px;
+}
+
+.teamCard.active {
+  border: 2px solid #111111;
+  padding: 3px;
+}
+
+.teamIdentity {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  gap: 11px;
+  padding: 8px;
+  text-align: left;
+}
+
+.teamIdentity > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.teamIdentity div {
+  display: flex;
+  flex-direction: column;
+}
+
+.teamIdentity strong {
+  font-size: 13px;
+}
+
+.teamIdentity small {
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.teamCard select {
+  border: 0;
+  border-top: 1px solid var(--border-light);
+  border-radius: 0;
+  font-size: 11px;
+  min-height: 30px;
+  padding: 5px 8px;
+}
+
+.compactGrid,
+.identityGrid,
+.weaponGrid,
+.talentGrid,
+.artifactMainGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.compactGrid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.toggleList {
+  border-top: 1px solid var(--border-light);
+  margin-top: 16px;
+  padding-top: 8px;
+}
+
+.toggleRow {
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  min-height: 36px;
+}
+
+.toggleRow > span {
+  color: #333333;
+  font-size: 12px;
+  margin: 0;
+}
+
+.toggleRow input {
+  accent-color: #111111;
+  min-height: auto;
+  width: auto;
+}
+
+.effectToggleGroup {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.effectToggleGroup .toggleRow {
+  border-bottom: 0;
+}
+
+.effectSourceRow {
+  align-items: center;
+  display: flex;
+  font-size: 12px;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 0 0 8px;
+}
+
+.effectSourceRow select {
+  min-height: 28px;
+  width: min(240px, 70%);
+}
+
+.mainDeck {
+  min-width: 0;
+  padding: 0 32px 56px;
+}
+
+.setupPlaceholder {
+  align-items: flex-start;
+  border: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 24px;
+  min-height: 220px;
+  padding: 32px;
+}
+
+.setupPlaceholder > span {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+.setupPlaceholder > strong {
+  font-size: 20px;
+  margin-top: 12px;
+}
+
+.setupPlaceholder > p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 10px 0 0;
+  max-width: 520px;
+}
+
+.deckHeader {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  min-height: 112px;
+  padding: 24px 0;
+}
+
+.deckHeader h2,
+.resultsHeading h2 {
+  font-size: 20px;
+  margin: 0 0 6px;
+}
+
+.deckHeader p {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+}
+
+.deckActions {
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.sourceBadge,
+.targetBadge,
+.levelTag {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: #444444;
+  font-size: 11px;
+  padding: 7px 9px;
+}
+
+.buildEditor {
+  padding: 24px 0 48px;
+}
+
+.identityGrid {
+  grid-template-columns: minmax(250px, 2fr) repeat(2, minmax(100px, 0.5fr));
+}
+
+.editorSection {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+
+.editorSectionTitle {
+  align-items: baseline;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.editorSectionTitle strong {
+  font-size: 14px;
+}
+
+.weaponGrid {
+  grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(110px, 0.5fr));
+}
+
+.talentGrid {
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  max-width: 620px;
+}
+
+.artifactsSection .fieldHint {
+  margin: -4px 0 14px;
+}
+
+.artifactGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.artifactEditor {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 14px;
+}
+
+.artifactEditor:last-child {
+  grid-column: 1 / -1;
+}
+
+.artifactTitle {
+  border-bottom: 1px solid var(--border-light);
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.artifactTitle > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.artifactTitle div span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.artifactTitle div strong {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 400;
+  margin-top: 3px;
+}
+
+.levelTag {
+  background: #ffffff;
+  color: var(--text);
+  padding: 5px 7px;
+}
+
+.artifactMainGrid {
+  grid-template-columns: 1.4fr 0.6fr 1.2fr 0.8fr;
+}
+
+.artifactMainGrid input,
+.artifactMainGrid select,
+.substatRow input,
+.substatRow select {
+  font-size: 11px;
+  min-height: 34px;
+}
+
+.substatList {
+  border-top: 1px solid var(--border-light);
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.substatRow {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(110px, 1fr) minmax(80px, 0.6fr) 32px;
+}
+
+.iconButton {
+  color: var(--muted);
+  font-size: 16px;
+  min-height: 32px;
+}
+
+.iconButton:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.textButton {
+  border: 0;
+  color: #333333;
+  font-size: 11px;
+  justify-self: start;
+  padding: 5px 0;
+  text-decoration: underline;
+}
+
+.resultsSection {
+  border-top: 2px solid #111111;
+  padding-top: 28px;
+}
+
+.resultsHeading {
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.emptyResult {
+  align-items: center;
+  border: 1px dashed #bbbbbb;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 220px;
+  padding: 32px;
+  text-align: center;
+}
+
+.emptyResult > span {
+  display: none;
+}
+
+.emptyResult strong {
+  font-size: 16px;
+}
+
+.emptyResult p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  max-width: 460px;
+}

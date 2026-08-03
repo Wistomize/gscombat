@@ -1,0 +1,9 @@
+:{$PUBLIC_PORT:18473} {
+	encode zstd gzip
+	header {
+		Referrer-Policy "same-origin"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+	}
+	reverse_proxy web:3200
+}

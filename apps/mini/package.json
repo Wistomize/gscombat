@@ -1,5 +1,5 @@
 {
-  "name": "@project-b/mini",
+  "name": "@gscombat/mini",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,8 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@project-b/calculator": "workspace:*",
-    "@project-b/content": "workspace:*",
+    "@gscombat/calculator": "workspace:*",
+    "@gscombat/content": "workspace:*",
     "@tarojs/components": "4.2.1",
     "@tarojs/helper": "4.2.1",
     "@tarojs/plugin-framework-react": "4.2.1",

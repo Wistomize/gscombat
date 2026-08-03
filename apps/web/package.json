@@ -1,17 +1,19 @@
 {
-  "name": "@project-b/web",
+  "name": "@gscombat/web",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev --port 3100",
-    "start": "next start --port 3100",
-    "test": "vitest run --passWithNoTests",
+    "dev": "next dev --port 3200",
+    "icons:update": "node --experimental-strip-types tools/update-visual-assets.ts",
+    "start": "next start --port 3200",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@project-b/calculator": "workspace:*",
-    "@project-b/content": "workspace:*",
+    "@gscombat/calculator": "workspace:*",
+    "@gscombat/content": "workspace:*",
+    "@gscombat/contracts": "workspace:*",
     "next": "16.2.10",
     "react": "18.3.1",
     "react-dom": "18.3.1"
@@ -20,6 +22,7 @@
     "@types/node": "22.20.1",
     "@types/react": "18.3.31",
     "@types/react-dom": "18.3.7",
+    "jsdom": "24.1.3",
     "typescript": "6.0.3",
     "vitest": "4.1.10"
   }

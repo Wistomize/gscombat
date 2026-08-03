@@ -1,0 +1,5 @@
+export {
+  SLINGSHOT_AFTER_POINT_THREE_SECONDS_DAMAGE_PENALTY,
+  SLINGSHOT_WITHIN_POINT_THREE_SECONDS_DAMAGE_BONUS,
+  slingshotCombatActionEffects
+} from "./effects.js"

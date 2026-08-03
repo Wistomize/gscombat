@@ -1,0 +1,5 @@
+export {
+  AMOS_BOW_NORMAL_CHARGED_DAMAGE_BONUS,
+  AMOS_BOW_PROJECTILE_FLIGHT_TIME_DAMAGE_BONUS_PER_STACK,
+  amosBowCombatActionEffects
+} from "./effects.js"

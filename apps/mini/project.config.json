@@ -1,9 +1,9 @@
 {
   "appid": "touristappid",
   "compileType": "miniprogram",
-  "description": "Project B damage analyzer foundation",
+  "description": "GSCombat Genshin Impact combat analyzer",
   "miniprogramRoot": "dist/",
-  "projectname": "project-b-mini",
+  "projectname": "gscombat-mini",
   "setting": {
     "es6": false,
     "minified": false,

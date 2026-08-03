@@ -1,5 +1,16 @@
 import Type from "typebox"
 
+import { TraceEntrySchema } from "./analysis.js"
+
+export * from "./analysis.js"
+export * from "./builds.js"
+export * from "./combat-authoring-audit.js"
+export * from "./catalog.js"
+export * from "./combat-coverage.js"
+export * from "./scenarios.js"
+export * from "./support-metrics.js"
+export * from "./workspace.js"
+
 export const PresetIdSchema = Type.Literal("raiden-national.initial-slash")
 
 export const EvaluationRequestSchema = Type.Object({
@@ -8,20 +19,6 @@ export const EvaluationRequestSchema = Type.Object({
 })
 
 export type EvaluationRequest = Type.Static<typeof EvaluationRequestSchema>
-
-export const TraceEntrySchema = Type.Object({
-  after: Type.Number(),
-  before: Type.Number(),
-  source: Type.String(),
-  stage: Type.Union([
-    Type.Literal("attack"),
-    Type.Literal("talent"),
-    Type.Literal("damage_bonus"),
-    Type.Literal("crit"),
-    Type.Literal("defense"),
-    Type.Literal("resistance")
-  ])
-})
 
 export const EvaluationResponseSchema = Type.Object({
   contentVersion: Type.String(),
@@ -42,3 +39,18 @@ export const HealthResponseSchema = Type.Object({
 })
 
 export type HealthResponse = Type.Static<typeof HealthResponseSchema>
+
+export const GameDataStatusResponseSchema = Type.Object({
+  counts: Type.Object({
+    artifactSets: Type.Integer({ minimum: 0 }),
+    characterSkillParameterGroups: Type.Integer({ minimum: 0 }),
+    characterSkillParameters: Type.Integer({ minimum: 0 }),
+    characters: Type.Integer({ minimum: 0 }),
+    weapons: Type.Integer({ minimum: 0 })
+  }),
+  gameVersion: Type.String(),
+  schemaVersion: Type.Integer({ minimum: 1 }),
+  upstreamCommit: Type.String()
+})
+
+export type GameDataStatusResponse = Type.Static<typeof GameDataStatusResponseSchema>

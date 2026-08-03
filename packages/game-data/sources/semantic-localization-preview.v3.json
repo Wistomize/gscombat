@@ -1,0 +1,664 @@
+{
+  "formatVersion": 3,
+  "gameVersion": "6.7",
+  "upstreamRepository": "https://github.com/frzyc/genshin-optimizer",
+  "upstreamCommit": "21c98eb60355160274a8c4cecfc5671e2151a073",
+  "locale": "chs",
+  "assetsAggregateSha256": "7d84561a572bbd4dfa4fcea1f429eb14457caaaba20a445a947b899c83be8667",
+  "assets": [
+    {
+      "assetId": "Aino",
+      "talentParameterOwnerId": "Aino",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Aino_gen.json",
+      "sha256": "30428669874a42a93cd6183c5f71a89faecb0d8abc49fda1118001a179d25222"
+    },
+    {
+      "assetId": "Alhaitham",
+      "talentParameterOwnerId": "Alhaitham",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Alhaitham_gen.json",
+      "sha256": "f6a34fd37a4b592dcc63819e19bd7e1ac273201563c3a6b2c583a52448b3f74c"
+    },
+    {
+      "assetId": "Aloy",
+      "talentParameterOwnerId": "Aloy",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Aloy_gen.json",
+      "sha256": "4bd7b32276abcac800b8935925501c96346f182a6a0c5403b027784c6d831933"
+    },
+    {
+      "assetId": "Amber",
+      "talentParameterOwnerId": "Amber",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Amber_gen.json",
+      "sha256": "2b475058dd92182d3a361aec029fa1de79b0cb400cd9d683995cd416fcbfebe6"
+    },
+    {
+      "assetId": "Arlecchino",
+      "talentParameterOwnerId": "Arlecchino",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Arlecchino_gen.json",
+      "sha256": "89f5b1790a7daac0ce84b3ac272f6d098c62c8e0bb63315c129512bc43d5df86"
+    },
+    {
+      "assetId": "AratakiItto",
+      "talentParameterOwnerId": "AratakiItto",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_AratakiItto_gen.json",
+      "sha256": "35e8e956c8bbbee9c9e62efbfdc4c24cd253c001827715c26d8985be19a326ef"
+    },
+    {
+      "assetId": "Baizhu",
+      "talentParameterOwnerId": "Baizhu",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Baizhu_gen.json",
+      "sha256": "b29de7d393fb541798c9483ee17adfe392be52ca89b9b73617048ed787646a34"
+    },
+    {
+      "assetId": "Barbara",
+      "talentParameterOwnerId": "Barbara",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Barbara_gen.json",
+      "sha256": "77be8390a4a15b4b6a71c620af1379daaec226edb225dff36d0efc8cccea53dd"
+    },
+    {
+      "assetId": "Beidou",
+      "talentParameterOwnerId": "Beidou",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Beidou_gen.json",
+      "sha256": "6f941d53e7c153bdd3366efe96e98436ea2c477042c20044f6e6c04a93c7c226"
+    },
+    {
+      "assetId": "Candace",
+      "talentParameterOwnerId": "Candace",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Candace_gen.json",
+      "sha256": "26f6122c4d853c489e3f81e7a06e1b8d50c0b2adc987ad9a975ba94065c3fe2d"
+    },
+    {
+      "assetId": "Chevreuse",
+      "talentParameterOwnerId": "Chevreuse",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Chevreuse_gen.json",
+      "sha256": "94839eeb9af903cd19eba4f121382d555b952ca7492c58ee9c0db3e3404d52f6"
+    },
+    {
+      "assetId": "Charlotte",
+      "talentParameterOwnerId": "Charlotte",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Charlotte_gen.json",
+      "sha256": "db32e129889b675d5b7bbbca0fd2049b0efbfc79568d11fc39a2b8eb7c8bff39"
+    },
+    {
+      "assetId": "Chasca",
+      "talentParameterOwnerId": "Chasca",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Chasca_gen.json",
+      "sha256": "74474aea69e78f32c7b70a6d254411a037846013a196812530644131c2bbc9a3"
+    },
+    {
+      "assetId": "Chiori",
+      "talentParameterOwnerId": "Chiori",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Chiori_gen.json",
+      "sha256": "b5c227552cbd73a09baa636a384d43f7c1accd4648bf2f824e0481b41bef5a47"
+    },
+    {
+      "assetId": "Chongyun",
+      "talentParameterOwnerId": "Chongyun",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Chongyun_gen.json",
+      "sha256": "33fa05ad1cbd0f478047c783a4cc606ff203ccafe1c42527e28cb10765ad081d"
+    },
+    {
+      "assetId": "Citlali",
+      "talentParameterOwnerId": "Citlali",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Citlali_gen.json",
+      "sha256": "40807b6b7b2ac102eaa026188f7e4978d832f2a2b7dc5f30079bb8f11340d84b"
+    },
+    {
+      "assetId": "Clorinde",
+      "talentParameterOwnerId": "Clorinde",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Clorinde_gen.json",
+      "sha256": "070d9b300e0c98b36729d33b490e51ba914691dbe8f0e928f5b0a3e19f49d843"
+    },
+    {
+      "assetId": "Columbina",
+      "talentParameterOwnerId": "Columbina",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Columbina_gen.json",
+      "sha256": "8ba56a6d875596e7c6790bfd1498ebb99b0209738ad576805c2fc8eb921d7f77"
+    },
+    {
+      "assetId": "Cyno",
+      "talentParameterOwnerId": "Cyno",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Cyno_gen.json",
+      "sha256": "1195dd25a77fd6820283d413127d0f7c74041e675cf2f7e4b55cbbe6b7aafa2e"
+    },
+    {
+      "assetId": "Dahlia",
+      "talentParameterOwnerId": "Dahlia",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Dahlia_gen.json",
+      "sha256": "39bc514e852bd381910b1f32b0c72a67d2a61f7316277a61b279dd6d43c75657"
+    },
+    {
+      "assetId": "Diona",
+      "talentParameterOwnerId": "Diona",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Diona_gen.json",
+      "sha256": "11538cb439ed974623eb2782c0b8bb82ae9139394a284db0a6a7e5df0ecf043a"
+    },
+    {
+      "assetId": "Diluc",
+      "talentParameterOwnerId": "Diluc",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Diluc_gen.json",
+      "sha256": "34c0dbea0960efc0d25560fd9d640c11b2799c424f5c81403589f0a4ef699fed"
+    },
+    {
+      "assetId": "Dori",
+      "talentParameterOwnerId": "Dori",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Dori_gen.json",
+      "sha256": "51d34350b9ce366fcaf50188057c19f956d140f19e1a7effe2afa62f204f2b6c"
+    },
+    {
+      "assetId": "Escoffier",
+      "talentParameterOwnerId": "Escoffier",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Escoffier_gen.json",
+      "sha256": "194f26197da4b1691903ffd14c25bfab7fb6a5b8f7a4a8daac94050bdd87747f"
+    },
+    {
+      "assetId": "Eula",
+      "talentParameterOwnerId": "Eula",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Eula_gen.json",
+      "sha256": "39d46f47fbf6651b3ab6798ed0c4af676244cc43e1f2e9168c3dea85f05e36dd"
+    },
+    {
+      "assetId": "Emilie",
+      "talentParameterOwnerId": "Emilie",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Emilie_gen.json",
+      "sha256": "cd088997a569d4adfa7b11b3321b1445d743eb0cdb5265c95e9a4c94a0987367"
+    },
+    {
+      "assetId": "Faruzan",
+      "talentParameterOwnerId": "Faruzan",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Faruzan_gen.json",
+      "sha256": "3e4af822f78dd60bc9978affc50367ea59a3e14ada5c689820badb0ad543afe1"
+    },
+    {
+      "assetId": "Freminet",
+      "talentParameterOwnerId": "Freminet",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Freminet_gen.json",
+      "sha256": "dd7e29527d896c68c2362802e06a883dd7b9f5a2c924d2be89deff4442371483"
+    },
+    {
+      "assetId": "Fischl",
+      "talentParameterOwnerId": "Fischl",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Fischl_gen.json",
+      "sha256": "95158957060a98262e76030d54104773279bcc84b99e22edfe84e00f918677c2"
+    },
+    {
+      "assetId": "Flins",
+      "talentParameterOwnerId": "Flins",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Flins_gen.json",
+      "sha256": "e801df38d07acc143cbb1429e0128f86e1da24189f68a17dcb7b59fcfe75f41f"
+    },
+    {
+      "assetId": "Furina",
+      "talentParameterOwnerId": "Furina",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Furina_gen.json",
+      "sha256": "1e7605f9966c03263860556a0ecbcc8e81551d358ce93ced6864bfdb586ce6e0"
+    },
+    {
+      "assetId": "Gaming",
+      "talentParameterOwnerId": "Gaming",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Gaming_gen.json",
+      "sha256": "d8558e5a0f4f30f9ea2c10baa95923c37f1917b12b7668524cf74ad1d73393ab"
+    },
+    {
+      "assetId": "Ganyu",
+      "talentParameterOwnerId": "Ganyu",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Ganyu_gen.json",
+      "sha256": "78b3927beb976576ea3338ca6850e49d29f6996b231813f9a4f07a52cf09f753"
+    },
+    {
+      "assetId": "Gorou",
+      "talentParameterOwnerId": "Gorou",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Gorou_gen.json",
+      "sha256": "ff2de156e543def4f566d7cc5fbb43404e49174b2cabdeb8de7ad249b6ae150b"
+    },
+    {
+      "assetId": "HuTao",
+      "talentParameterOwnerId": "HuTao",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_HuTao_gen.json",
+      "sha256": "a7650848c5b0a438689ec5e67c89c068911ea3027cb99e439e0517e322d0e766"
+    },
+    {
+      "assetId": "Iansan",
+      "talentParameterOwnerId": "Iansan",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Iansan_gen.json",
+      "sha256": "c571a86a8924789e8b05dbf1809c254434fda367681fdd4d4aae158ff73cfb6e"
+    },
+    {
+      "assetId": "Ifa",
+      "talentParameterOwnerId": "Ifa",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Ifa_gen.json",
+      "sha256": "5915ae1e212bee4bfc46432d34c300aa142dae084bd39cb67318766eced80c91"
+    },
+    {
+      "assetId": "Jahoda",
+      "talentParameterOwnerId": "Jahoda",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Jahoda_gen.json",
+      "sha256": "7d70b7a3f81150ed4653c7c83556787a09f79d1c3b36afd926a99701b9e57e2d"
+    },
+    {
+      "assetId": "Jean",
+      "talentParameterOwnerId": "Jean",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Jean_gen.json",
+      "sha256": "af1ce2df3113572da3cb7f99a489a532328124b0d5533bea97dba8f79acf3843"
+    },
+    {
+      "assetId": "KaedeharaKazuha",
+      "talentParameterOwnerId": "KaedeharaKazuha",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_KaedeharaKazuha_gen.json",
+      "sha256": "33c664c87b17eb5f437a7bb52ff456f60f55242b2bda851b3a11cdcfdf173a11"
+    },
+    {
+      "assetId": "Kachina",
+      "talentParameterOwnerId": "Kachina",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Kachina_gen.json",
+      "sha256": "b345b6fc560c82378c549d31715154e66c6547559c1fbd0a110c6d9bcf034b96"
+    },
+    {
+      "assetId": "Kaeya",
+      "talentParameterOwnerId": "Kaeya",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Kaeya_gen.json",
+      "sha256": "12b2b929b792724d0dd382a1bd9c9fd47f5523fecec84ceda5c1f40320e819f6"
+    },
+    {
+      "assetId": "KamisatoAyaka",
+      "talentParameterOwnerId": "KamisatoAyaka",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_KamisatoAyaka_gen.json",
+      "sha256": "6d36fde4d820b8a3c8e2b4f3b8f24f8bb737109fc44284b4f41f2bd0b0af2e83"
+    },
+    {
+      "assetId": "KamisatoAyato",
+      "talentParameterOwnerId": "KamisatoAyato",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_KamisatoAyato_gen.json",
+      "sha256": "339b85c197898fce057735800e6770924bc00af379f8e66aec6d51cf4e0ea588"
+    },
+    {
+      "assetId": "Kaveh",
+      "talentParameterOwnerId": "Kaveh",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Kaveh_gen.json",
+      "sha256": "a11c11f4165d0312bf133fbec4dd26986598e36338493fe2fa8c9e0247727e3d"
+    },
+    {
+      "assetId": "Keqing",
+      "talentParameterOwnerId": "Keqing",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Keqing_gen.json",
+      "sha256": "159181ba035e77ee2933951bab15644bfa36fef6d9050911b4bdeb13f316c813"
+    },
+    {
+      "assetId": "Kirara",
+      "talentParameterOwnerId": "Kirara",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Kirara_gen.json",
+      "sha256": "7f595d84a384b7c5eadc730a5b0608125bb0f3fd572b1e938d511c68f98bc824"
+    },
+    {
+      "assetId": "Klee",
+      "talentParameterOwnerId": "Klee",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Klee_gen.json",
+      "sha256": "a883f7c800bcefaeb504d94b260ebb19738d410377d929104f2d90100a2a0f67"
+    },
+    {
+      "assetId": "KujouSara",
+      "talentParameterOwnerId": "KujouSara",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_KujouSara_gen.json",
+      "sha256": "ff573396452fcdd37161ea03180205dd18b41a214c4f17e3f3e8d98eb5bdf9d1"
+    },
+    {
+      "assetId": "KukiShinobu",
+      "talentParameterOwnerId": "KukiShinobu",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_KukiShinobu_gen.json",
+      "sha256": "9cc98ab1588cd666d58ca3a1ab5241b6b8b122c5ee09dffdcb19cb5bb944dd2b"
+    },
+    {
+      "assetId": "Layla",
+      "talentParameterOwnerId": "Layla",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Layla_gen.json",
+      "sha256": "3a9dd52a99140c1b4201521ffd3ddd6023bd24111d181cd6b1e343a4d422111f"
+    },
+    {
+      "assetId": "LanYan",
+      "talentParameterOwnerId": "LanYan",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_LanYan_gen.json",
+      "sha256": "74e8c81a94e2422b1d1eaa5394f521ebcd8e34cfa907028cf9b055f16227800c"
+    },
+    {
+      "assetId": "Lauma",
+      "talentParameterOwnerId": "Lauma",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Lauma_gen.json",
+      "sha256": "f3c3ae4e2c7d77bd8bb9824d57abf8dbf0647f4a10587f1e8c7f214a16fe627a"
+    },
+    {
+      "assetId": "Linnea",
+      "talentParameterOwnerId": "Linnea",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Linnea_gen.json",
+      "sha256": "3bfbf12b572666ccb1fabf378308b3f6a6b7d6c045c7e37f46d5da8d10e61cdd"
+    },
+    {
+      "assetId": "Lisa",
+      "talentParameterOwnerId": "Lisa",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Lisa_gen.json",
+      "sha256": "f0be0ebe4f816d61d9489227df2df35eaaf7e670f7474726c2d64270b8692199"
+    },
+    {
+      "assetId": "Lynette",
+      "talentParameterOwnerId": "Lynette",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Lynette_gen.json",
+      "sha256": "ceb4a8802166174b4d013316f8985677990d4d800b878da082d220f89f6f012e"
+    },
+    {
+      "assetId": "Lyney",
+      "talentParameterOwnerId": "Lyney",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Lyney_gen.json",
+      "sha256": "f7fea3718271154210384f4bed013c0557e7fbcfbcb04218499d25f58d81cf98"
+    },
+    {
+      "assetId": "Lohen",
+      "talentParameterOwnerId": "Lohen",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Lohen_gen.json",
+      "sha256": "64e1f7b70eee545d6bdbe4cdc7bf914ad55f4e73b65332d7661c571819301fce"
+    },
+    {
+      "assetId": "Mika",
+      "talentParameterOwnerId": "Mika",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Mika_gen.json",
+      "sha256": "345a79ba65aa40881665f1b934a46ff1fab62d10316bde51659e4e4f2a522a0c"
+    },
+    {
+      "assetId": "Mavuika",
+      "talentParameterOwnerId": "Mavuika",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Mavuika_gen.json",
+      "sha256": "019da8a3c3490d24e2ec586003ae2ad6e8ce56a4dd0dce508cc0cbb85414d3de"
+    },
+    {
+      "assetId": "Mona",
+      "talentParameterOwnerId": "Mona",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Mona_gen.json",
+      "sha256": "555a39a13b8b8bae7746684b37fa2180838295988ab2957896d8302beb079ecd"
+    },
+    {
+      "assetId": "Nahida",
+      "talentParameterOwnerId": "Nahida",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Nahida_gen.json",
+      "sha256": "51cd34437a349b13ab00fd2bdf3880787e05d7d2e1a6ae1da2571233c0c81c09"
+    },
+    {
+      "assetId": "Navia",
+      "talentParameterOwnerId": "Navia",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Navia_gen.json",
+      "sha256": "1f87f67fa7e39fdaa95df000b5347b19edec18f308af4149fa5f4d816785de4e"
+    },
+    {
+      "assetId": "Nicole",
+      "talentParameterOwnerId": "Nicole",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Nicole_gen.json",
+      "sha256": "27b8e0f7c57796187170af7aade00c30c5bd703af7f9cf2dd2ef7f30882655e6"
+    },
+    {
+      "assetId": "Neuvillette",
+      "talentParameterOwnerId": "Neuvillette",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Neuvillette_gen.json",
+      "sha256": "ba76959db30509aa4dd2c29980bf019f3ba5d2d2e011a8d1dc1be88b02ae51d6"
+    },
+    {
+      "assetId": "Nilou",
+      "talentParameterOwnerId": "Nilou",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Nilou_gen.json",
+      "sha256": "c3337bef6869ec9fddc9261bd124931152706144a401f718d18263d6583fe4c9"
+    },
+    {
+      "assetId": "Ningguang",
+      "talentParameterOwnerId": "Ningguang",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Ningguang_gen.json",
+      "sha256": "f5573b75c243a525788796b24ee9a6defe613f8bd9f39a3432a50bcdc30d0b6c"
+    },
+    {
+      "assetId": "Noelle",
+      "talentParameterOwnerId": "Noelle",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Noelle_gen.json",
+      "sha256": "da1776045af77dd3ef3d60422eefadbed5d69722ac5e1d45fa07da8bdb3f2a68"
+    },
+    {
+      "assetId": "Ororon",
+      "talentParameterOwnerId": "Ororon",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Ororon_gen.json",
+      "sha256": "625b6a7fceaac9ad309a1493c2ec36abe89bde09d88ef91fabf4e042788d2471"
+    },
+    {
+      "assetId": "Prune",
+      "talentParameterOwnerId": "Prune",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Prune_gen.json",
+      "sha256": "aae7cfde517c0587e8380fb926b82c0bd3111b1ab373e66bfd87080e152744e7"
+    },
+    {
+      "assetId": "Qiqi",
+      "talentParameterOwnerId": "Qiqi",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Qiqi_gen.json",
+      "sha256": "42febb443433cd4702f341bfa87be8d49171a4ed662eba347d36a65062b68ed3"
+    },
+    {
+      "assetId": "Razor",
+      "talentParameterOwnerId": "Razor",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Razor_gen.json",
+      "sha256": "cc9988928b808bd1d164dd578cf1f7dfb95c6e898c8b8e0bdf7a62f5c07a2871"
+    },
+    {
+      "assetId": "Rosaria",
+      "talentParameterOwnerId": "Rosaria",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Rosaria_gen.json",
+      "sha256": "95490ade7fc98ef998207e207e1b2f1f9986d5ee83679c10b0c9d5431cc6063a"
+    },
+    {
+      "assetId": "Sayu",
+      "talentParameterOwnerId": "Sayu",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Sayu_gen.json",
+      "sha256": "0098b758a89f10b7943fd88cc860f5c119927e458988a46a68db6b30e4101dd4"
+    },
+    {
+      "assetId": "Sethos",
+      "talentParameterOwnerId": "Sethos",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Sethos_gen.json",
+      "sha256": "2294cfa797cf94d51e7d415ce305539619fd7126f7fba74257960f729ca2dc50"
+    },
+    {
+      "assetId": "Shenhe",
+      "talentParameterOwnerId": "Shenhe",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Shenhe_gen.json",
+      "sha256": "7f7f78790e96dad0d5b59a072a1cbfde51425f056c515adf268ac9ac1917bdd9"
+    },
+    {
+      "assetId": "ShikanoinHeizou",
+      "talentParameterOwnerId": "ShikanoinHeizou",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_ShikanoinHeizou_gen.json",
+      "sha256": "01519a88eb9e013729dfd00d7fda3eebfe4da3f8a7b8669c6c729bb604a1440c"
+    },
+    {
+      "assetId": "Sigewinne",
+      "talentParameterOwnerId": "Sigewinne",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Sigewinne_gen.json",
+      "sha256": "9c9ad467f4a2f993ccac524eac712007736e22957f36fbfebeaae5b6ae739178"
+    },
+    {
+      "assetId": "Sucrose",
+      "talentParameterOwnerId": "Sucrose",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Sucrose_gen.json",
+      "sha256": "8c3eb4a68a258141952aef6eda14ef1f6f1519e2f7e61bf96ea06cb920368420"
+    },
+    {
+      "assetId": "Tartaglia",
+      "talentParameterOwnerId": "Tartaglia",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Tartaglia_gen.json",
+      "sha256": "fc128deb5b40e5969bcfb48a4788f0a14eb055a943bef4f6e585024604a77f05"
+    },
+    {
+      "assetId": "Thoma",
+      "talentParameterOwnerId": "Thoma",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Thoma_gen.json",
+      "sha256": "2f4bc3f185ffe97a7f7510b3467551c3d26e1e80b911c464b7ed5ebef4ad8d14"
+    },
+    {
+      "assetId": "Tighnari",
+      "talentParameterOwnerId": "Tighnari",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Tighnari_gen.json",
+      "sha256": "9bf91f155c8c09c7bb8f9448607b97ff5d326b9583160063d0356d32af73cb20"
+    },
+    {
+      "assetId": "Venti",
+      "talentParameterOwnerId": "Venti",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Venti_gen.json",
+      "sha256": "457fbdb2275dd873a293ffaeb24bd879751088cd02f468ba23f3555e2e2f4449"
+    },
+    {
+      "assetId": "Varka",
+      "talentParameterOwnerId": "Varka",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Varka_gen.json",
+      "sha256": "921c4d5e8acd3d51e05956ccf0259475df7a3b89619ac64b6b49249317da3ef3"
+    },
+    {
+      "assetId": "Wriothesley",
+      "talentParameterOwnerId": "Wriothesley",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Wriothesley_gen.json",
+      "sha256": "5d051fed0fe16a099d4ce3ba4cbf4735a6067010a9149293809d1160ea7dbc14"
+    },
+    {
+      "assetId": "Xiangling",
+      "talentParameterOwnerId": "Xiangling",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Xiangling_gen.json",
+      "sha256": "adc3e643b88dd0cddde9883797fbc20babd1b2402c8e4956865cd05963e58f8d"
+    },
+    {
+      "assetId": "Xianyun",
+      "talentParameterOwnerId": "Xianyun",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Xianyun_gen.json",
+      "sha256": "ee8b1bd6219b83256f9851b731ef9113833296f4cb5888690eb0a6224d27700a"
+    },
+    {
+      "assetId": "Xiao",
+      "talentParameterOwnerId": "Xiao",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Xiao_gen.json",
+      "sha256": "78b6d07d75611f99a1d96a08f3821d37260f408ce695216ab385d7ab823b284f"
+    },
+    {
+      "assetId": "Xinyan",
+      "talentParameterOwnerId": "Xinyan",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Xinyan_gen.json",
+      "sha256": "16d2045ff5ab13269a15063f43f0db7351b78b1216e91011723bef50f5e4a9cd"
+    },
+    {
+      "assetId": "Xilonen",
+      "talentParameterOwnerId": "Xilonen",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Xilonen_gen.json",
+      "sha256": "6290015d9b2836f479abeb9a2020912a479aaf817407a8ef756adc7daff4726f"
+    },
+    {
+      "assetId": "YaeMiko",
+      "talentParameterOwnerId": "YaeMiko",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_YaeMiko_gen.json",
+      "sha256": "dcb5a31f0b39c027597eaa258edfeda51ed4d7f7b5ee644d214708d543280530"
+    },
+    {
+      "assetId": "Yanfei",
+      "talentParameterOwnerId": "Yanfei",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Yanfei_gen.json",
+      "sha256": "6ca5349af27ed0b6c4ea08f591d306fd4f908e78eb3e79db4d0561c31702e45d"
+    },
+    {
+      "assetId": "Yaoyao",
+      "talentParameterOwnerId": "Yaoyao",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Yaoyao_gen.json",
+      "sha256": "f072b094043bfccb00236291ff39546343bc2d172e1d8ca9f1ffc8610eab290e"
+    },
+    {
+      "assetId": "Yoimiya",
+      "talentParameterOwnerId": "Yoimiya",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Yoimiya_gen.json",
+      "sha256": "6ab69265b1f991d8348aaa2e1077fdd051c6b77d4b438ffe13d6100eae6dcd6b"
+    },
+    {
+      "assetId": "YunJin",
+      "talentParameterOwnerId": "YunJin",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_YunJin_gen.json",
+      "sha256": "4ef6e8956590cb3ba2d2c120ad4944b5eb5f9d2e94be03fd851e7204e178b625"
+    },
+    {
+      "assetId": "Zhongli",
+      "talentParameterOwnerId": "Zhongli",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Zhongli_gen.json",
+      "sha256": "0a51939da2bb3d1b14b9bf53525c817f01faf63712f9166b5393949e87df7f57"
+    },
+    {
+      "assetId": "Wanderer",
+      "talentParameterOwnerId": "Wanderer",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Wanderer_gen.json",
+      "sha256": "2375dc80a90e89ef37c0d52cc08be5e8fd76d45df4ac3e47bceecff56c456bd7"
+    },
+    {
+      "assetId": "YumemizukiMizuki",
+      "talentParameterOwnerId": "YumemizukiMizuki",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_YumemizukiMizuki_gen.json",
+      "sha256": "8db1168e631534d05cd0ec208b99b490e3be925c4b1e5c00816b11e03d213fdc"
+    },
+    {
+      "assetId": "Sandrone",
+      "talentParameterOwnerId": "Sandrone",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Sandrone_gen.json",
+      "sha256": "71da13d585128777708a316ad94177174a87d5527a2025d3921453d17ad679e8"
+    },
+    {
+      "assetId": "Skirk",
+      "talentParameterOwnerId": "Skirk",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Skirk_gen.json",
+      "sha256": "f69b858c088c04c547c713bb17ba92e029b4f2c706f7a775afac597ba0504b32"
+    },
+    {
+      "assetId": "Kinich",
+      "talentParameterOwnerId": "Kinich",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Kinich_gen.json",
+      "sha256": "815f62f57496d6b36329b9673d86f5dc88dcb805d093243eaf8d825088822dc0"
+    },
+    {
+      "assetId": "Nefer",
+      "talentParameterOwnerId": "Nefer",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Nefer_gen.json",
+      "sha256": "42309baeb0db04ea633f8532b052d6c51b30584d8c77df4dc1bd6924c332da38"
+    },
+    {
+      "assetId": "Ineffa",
+      "talentParameterOwnerId": "Ineffa",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Ineffa_gen.json",
+      "sha256": "e507f9a5f7a03efa5ca35923ec85a74e0ae3d4004ae9292c1202a6d9c1f59ac8"
+    },
+    {
+      "assetId": "Varesa",
+      "talentParameterOwnerId": "Varesa",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Varesa_gen.json",
+      "sha256": "06c910ef66641109e1387c207d94d06f79b1eb17009581b657339b15d171dd7d"
+    },
+    {
+      "assetId": "Illuga",
+      "talentParameterOwnerId": "Illuga",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Illuga_gen.json",
+      "sha256": "1f65345af36c4f9be13825467a13572bf87692f4e67fc728ddf8318aac9c9da1"
+    },
+    {
+      "assetId": "Zibai",
+      "talentParameterOwnerId": "Zibai",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Zibai_gen.json",
+      "sha256": "0505b2341a8065528991378662721db26f9da1985a7b537c11f7edeb745ce10f"
+    },
+    {
+      "assetId": "Mualani",
+      "talentParameterOwnerId": "Mualani",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Mualani_gen.json",
+      "sha256": "b56be141ca08c222d658193cd6f96f9160346292a34568dabd61ebdb841bc2f9"
+    },
+    {
+      "assetId": "SangonomiyaKokomi",
+      "talentParameterOwnerId": "SangonomiyaKokomi",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_SangonomiyaKokomi_gen.json",
+      "sha256": "2f55b77688113af8ac0b2d761e7e113980959c658f88e8c145d572b685dcff13"
+    },
+    {
+      "assetId": "Durin",
+      "talentParameterOwnerId": "Durin",
+      "relativePath": "libs/gi/dm-localization/assets/locales/chs/char_Durin_gen.json",
+      "sha256": "1460c25dba8d7c038b51636aa0e1290d11695c59ed6f274c0058004f92780174"
+    }
+  ]
+}

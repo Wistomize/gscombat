@@ -13,6 +13,6 @@ export default defineConfig({
   framework: "react",
   outputRoot: "dist",
   plugins: ["@tarojs/plugin-platform-weapp"],
-  projectName: "project-b-mini",
+  projectName: "gscombat-mini",
   sourceRoot: "src"
 })
