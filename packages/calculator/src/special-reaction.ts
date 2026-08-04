@@ -2,6 +2,7 @@ import { calculateResistanceMultiplier } from "./evaluate.js"
 import { getReactionBaseDamage } from "./reaction.js"
 import type {
   ExpectedDamageResult,
+  ScalingStat,
   SpecialReactionKind,
   SpecialReactionTraceFormula,
   SpecialReactionTraceStage,
@@ -86,6 +87,14 @@ export interface SpecialReactionDamageResult extends ExpectedDamageResult {
   readonly trace: readonly SpecialReactionTraceEntry[]
 }
 
+/** One resolved stat term that contributes to a direct Moon or Stellar action's base damage. */
+export interface SpecialReactionBaseDamageTerm {
+  readonly coefficient: number
+  readonly label?: string
+  readonly stat: ScalingStat
+  readonly value: number
+}
+
 /** One participant's independent reaction Moon damage before party aggregation. */
 export interface LunarReactionParticipantDamageResult {
   readonly critRate: number
@@ -114,6 +123,8 @@ export interface LunarReactionExpectedDamageResult {
 interface DirectSpecialReactionDamageInputBase {
   /** Scaling-stat value times the explicitly selected character action's multiplier. */
   readonly baseDamage: number
+  /** Optional resolved terms retained so an event trace can show its real per-hit base-damage construction. */
+  readonly baseDamageTerms?: readonly SpecialReactionBaseDamageTerm[]
   /** Additive ratio in the special-reaction base-damage-bonus stage. */
   readonly baseDamageBonus?: number
   /** Multiplicative special-reaction big-power stage. */
@@ -134,6 +145,7 @@ interface DirectSpecialReactionDamageInputBase {
 interface ResolvedSpecialReactionDamageInput {
   readonly ascensionBonus: number
   readonly baseDamage: number
+  readonly baseDamageTerms?: readonly (SpecialReactionBaseDamageTerm & { readonly contribution: number })[]
   readonly baseDamageBonus: number
   readonly bigPowerMultiplier?: number
   readonly critDamage: number
@@ -183,6 +195,7 @@ export function calculateDirectSpecialReactionDamage(
   input: DirectSpecialReactionDamageInput
 ): SpecialReactionDamageResult {
   const baseDamage = requireNonNegativeFinite("Special-reaction base damage", input.baseDamage)
+  const baseDamageTerms = resolveSpecialReactionBaseDamageTerms(input.baseDamageTerms, baseDamage)
   const elementalMastery = requireNonNegativeFinite("Special-reaction elemental mastery", input.elementalMastery)
   const bigPowerMultiplier = requireNonNegativeFinite(
     "Special-reaction big-power multiplier",
@@ -193,6 +206,7 @@ export function calculateDirectSpecialReactionDamage(
   return calculateSpecialReactionDamage({
     ascensionBonus: requireFinite("Special-reaction ascension bonus", input.ascensionBonus ?? 0),
     baseDamage,
+    ...(baseDamageTerms === undefined ? {} : { baseDamageTerms }),
     baseDamageBonus: requireFinite("Special-reaction base damage bonus", input.baseDamageBonus ?? 0),
     bigPowerMultiplier,
     critDamage: requireNonNegativeFinite("Special-reaction crit damage", input.critDamage),
@@ -314,6 +328,7 @@ function calculateSpecialReactionDamage(input: ResolvedSpecialReactionDamageInpu
   const trace: SpecialReactionTraceEntry[] = [
     createSpecialReactionTraceEntry("base_damage", "resolved_special_reaction_base", 0, input.baseDamage, {
       kind: "special_reaction_base_damage",
+      ...(input.baseDamageTerms === undefined ? {} : { terms: input.baseDamageTerms.map((term) => ({ ...term })) }),
       value: input.baseDamage
     }),
     createSpecialReactionTraceEntry(
@@ -412,6 +427,23 @@ function calculateSpecialReactionDamage(input: ResolvedSpecialReactionDamageInpu
     reactionCoefficient: input.reactionCoefficient,
     trace
   }
+}
+
+function resolveSpecialReactionBaseDamageTerms(
+  terms: readonly SpecialReactionBaseDamageTerm[] | undefined,
+  baseDamage: number
+): readonly (SpecialReactionBaseDamageTerm & { readonly contribution: number })[] | undefined {
+  if (terms === undefined) return undefined
+  const resolvedTerms = terms.map((term) => {
+    const coefficient = requireFinite("Special-reaction base-damage term coefficient", term.coefficient)
+    const value = requireFinite("Special-reaction base-damage term value", term.value)
+    return { ...term, coefficient, contribution: coefficient * value, value }
+  })
+  const resolvedBaseDamage = resolvedTerms.reduce((total, term) => total + term.contribution, 0)
+  if (Math.abs(resolvedBaseDamage - baseDamage) > 0.000001) {
+    throw new Error("Special-reaction base-damage terms must sum to the declared base damage")
+  }
+  return resolvedTerms
 }
 
 function calculateLunarReactionCriticalOutcome(

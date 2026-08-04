@@ -18,6 +18,7 @@ import {
   type RotationEventResult,
   type RotationResult,
   type RotationStats,
+  type SpecialReactionBaseDamageTerm,
   type SpecialReactionDamageResult,
   type ScalingStat,
   type SustainedAuraWindow
@@ -30,18 +31,23 @@ import type {
   MoonsignLevel
 } from "@gscombat/content"
 import { supportedCharacters, supportedWeapons } from "@gscombat/content"
-import type { ArtifactStat, CharacterBuild, EnemyConfig, ExternalBuff } from "@gscombat/contracts"
+import type { ArtifactStat, CharacterBuild, EnemyConfig, EvaluationScenario, ExternalBuff } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 
 import { resolveBaseCombatStats } from "./base-stats.js"
 import {
   EMPTY_COMBAT_ACTION_EFFECTS,
+  listSelectedSourceAttackSnapshotActivationEffectIds,
+  listSelectedSourceAttackSnapshotEffectIds,
+  listSelectedSourceDefenseSnapshotActivationEffectIds,
   listSelectedSourceDefenseSnapshotEffectIds,
   resolveAdditionalDamageEventEffects,
+  resolveCombatActionAttackEffects,
   resolveCombatActionDefenseEffects,
   resolveCombatActionElementalMasteryEffects,
   resolveCombatActionEffects,
   resolveSelfAutomaticEquipmentEffects,
+  resolveSelfMaximumReachableEquipmentStatEffects,
   resolveFinalElementalMasteryToFlatAttack,
   resolveFinalHpToFlatAttack,
   resolveFinalHpToDamageBonus,
@@ -63,6 +69,8 @@ import {
   resolveDeclaredActionTalentLevelConstellationBonuses,
   resolveDeclaredTalentCoefficientValue
 } from "./declared-action.js"
+import { normalizeScenarioEffectSelections } from "./scenario-effect-selection.js"
+import { resolveTeamState } from "./team-state.js"
 
 /** A resolved hit coefficient inside a semantic direct-action declaration. */
 export interface DeclaredDirectActionPartEvaluation {
@@ -85,6 +93,7 @@ interface DeclaredDamageTimelineEvent {
   readonly hitCount: number
   readonly id: string
   readonly part: DeclaredDirectActionPartEvaluation
+  readonly specialReaction?: CombatDirectSpecialReactionConfig
   readonly statSnapshotTime: number
   readonly time: number
 }
@@ -101,22 +110,47 @@ export interface ResolvedDeclaredScenarioStats {
   /** Resolved, bounded manual snapshot input used by the target action. */
   readonly actionParameters?: Readonly<Record<string, number>>
   readonly baseAttack: number
+  readonly baseDefense: number
+  readonly baseElementalMastery: number
+  readonly baseHp: number
   readonly critDamage: number
   readonly critRate: number
   readonly damageBonus: number
+  readonly defensePercent: number
   readonly effectiveAttack: number
+  readonly effectiveDefense: number
+  readonly effectiveHp: number
   readonly elementalMastery: number
   readonly energyRecharge: number
   readonly flatAttack: number
+  /** Every non-base elemental-mastery contribution, including action-owned derived conversions. */
+  readonly flatElementalMastery: number
+  readonly flatDefense: number
+  readonly flatHp: number
+  readonly hpPercent: number
   readonly resistanceReduction: number
   readonly statContributions: readonly ResolvedStatContribution[]
   readonly scalingTerms?: readonly DeclaredDirectActionScalingTermEvaluation[]
   readonly talentMultiplier: number | null
 }
 
+export type ResolvedStatContributionStage =
+  | "attackPercent"
+  | "baseAttack"
+  | "baseDefense"
+  | "baseElementalMastery"
+  | "baseHp"
+  | "damageBonus"
+  | "defensePercent"
+  | "elementalMastery"
+  | "flatAttack"
+  | "flatDefense"
+  | "flatHp"
+  | "hpPercent"
+
 export interface ResolvedStatContribution {
   readonly label: string
-  readonly stage: "attackPercent" | "baseAttack" | "damageBonus" | "flatAttack"
+  readonly stage: ResolvedStatContributionStage
   readonly value: number
 }
 
@@ -222,6 +256,114 @@ function getDelta(
   return deltas?.[stat] ?? 0
 }
 
+/**
+ * Resolves the selected source build's own stable equipment stat state without importing a teammate's team buff.
+ *
+ * Each source is temporarily the primary build only for maximum-reachable equipment selection. The effect resolver
+ * then filters the selected IDs to self-owned direct stat effects, so the source can receive its own full stacks
+ * (for example, Shenhe's off-field six-stack Calamity Queller) without treating that weapon as a recipient buff.
+ */
+function resolveSourceSelfMaximumReachableEquipmentStatEffects(
+  action: CombatActionMetadata,
+  source: CharacterBuild,
+  sourceTeammates: readonly CharacterBuild[],
+  gameData: GameDataRepository,
+  enemyCount: number,
+  baseEnergyRecharge: number,
+  primaryElement: CombatActionMetadata["element"] | null,
+  primaryDifferentElementTeammateCount: number | null,
+  primarySameElementTeammateCount: number | null,
+  teamUniqueElementCount: number | null
+): ResolvedCombatActionEffects {
+  const sourceScenario: EvaluationScenario = {
+    conditions: { activeEffectIds: [], enemyCount, equipmentEffectMode: "maximum_reachable" },
+    enemy: { defenseReduction: 0, level: 100, name: "来源属性快照", resistance: 0.1 },
+    externalBuffs: [],
+    gameDataVersion: gameData.getManifest().gameVersion,
+    primary: source,
+    targetActionId: action.id,
+    teammates: [...sourceTeammates]
+  }
+  const normalizedScenario = normalizeScenarioEffectSelections(
+    sourceScenario,
+    gameData,
+    resolveTeamState(source, sourceTeammates, gameData)
+  )
+  return resolveSelfMaximumReachableEquipmentStatEffects({
+    action,
+    activeEffectIds: normalizedScenario.conditions.activeEffectIds,
+    ...(normalizedScenario.conditions.activeEffectSourceBuildIds === undefined
+      ? {}
+      : { activeEffectSourceBuildIds: normalizedScenario.conditions.activeEffectSourceBuildIds }),
+    baseEnergyRecharge,
+    enemyCount,
+    gameData,
+    ...(primaryElement === null ? {} : { primaryElement }),
+    primary: source,
+    ...(primaryDifferentElementTeammateCount === null
+      ? {}
+      : { primaryDifferentElementTeammateCount }),
+    ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
+    ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
+    teamElements: resolvePartyElements(source, sourceTeammates, gameData),
+    teammates: sourceTeammates
+  })
+}
+
+/** Resolves every party member's source-owned maximum-reachable equipment state once for one action evaluation. */
+function resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
+  primary: CharacterBuild,
+  teammates: readonly CharacterBuild[],
+  action: CombatActionMetadata,
+  gameData: GameDataRepository,
+  enemyCount: number
+): ReadonlyMap<string, ResolvedCombatActionEffects> {
+  const party = [primary, ...teammates]
+  const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
+  return new Map(
+    party.map((source) => {
+      const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
+      const base = resolveBaseCombatStats(source, gameData, action.element)
+      const primaryElement = resolveBuildElement(source, gameData)
+      const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
+        source,
+        sourceTeammates,
+        gameData
+      )
+      const primarySameElementTeammateCount = resolvePrimarySameElementTeammateCount(
+        source,
+        sourceTeammates,
+        gameData
+      )
+      return [
+        source.buildId,
+        resolveSourceSelfMaximumReachableEquipmentStatEffects(
+          action,
+          source,
+          sourceTeammates,
+          gameData,
+          enemyCount,
+          base.energyRecharge,
+          primaryElement,
+          primaryDifferentElementTeammateCount,
+          primarySameElementTeammateCount,
+          teamUniqueElementCount
+        )
+      ] as const
+    })
+  )
+}
+
+/** Reads one cached source-owned equipment state, keeping source-stat resolver failures actionable. */
+function getSourceSelfMaximumReachableEquipmentEffects(
+  effectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>,
+  sourceBuildId: string
+): ResolvedCombatActionEffects {
+  const effects = effectsByBuildId.get(sourceBuildId)
+  if (effects === undefined) throw new Error(`Missing maximum-reachable equipment state for source build ${sourceBuildId}`)
+  return effects
+}
+
 /** Resolves each configured source build's final HP before an active party effect reads that source stat. */
 function resolveSourceFinalHpByBuildId(
   primary: CharacterBuild,
@@ -230,7 +372,8 @@ function resolveSourceFinalHpByBuildId(
   gameData: GameDataRepository,
   buffs: readonly ExternalBuff[],
   deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined,
-  enemyCount: number
+  enemyCount: number,
+  sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>
 ): ReadonlyMap<string, number> {
   const party = [primary, ...teammates]
   const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
@@ -264,10 +407,19 @@ function resolveSourceFinalHpByBuildId(
         ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
         teammates: sourceTeammates
       })
+      const maximumReachableEffects = getSourceSelfMaximumReachableEquipmentEffects(
+        sourceSelfMaximumEquipmentEffectsByBuildId,
+        source.buildId
+      )
       const isPrimary = source.buildId === primary.buildId
       const hpPercent =
-        automaticEffects.hpPercent + (isPrimary ? getDelta(deltas, "hp_percent") + getBuffTotal(buffs, "hp_percent") : 0)
-      const flatHp = automaticEffects.hpFlat + (isPrimary ? getDelta(deltas, "hp") + getBuffTotal(buffs, "hp_flat") : 0)
+        automaticEffects.hpPercent +
+        maximumReachableEffects.hpPercent +
+        (isPrimary ? getDelta(deltas, "hp_percent") + getBuffTotal(buffs, "hp_percent") : 0)
+      const flatHp =
+        automaticEffects.hpFlat +
+        maximumReachableEffects.hpFlat +
+        (isPrimary ? getDelta(deltas, "hp") + getBuffTotal(buffs, "hp_flat") : 0)
       return [source.buildId, base.hp + base.baseHp * hpPercent + flatHp] as const
     })
   )
@@ -282,7 +434,8 @@ function resolveSourceFinalElementalMasteryByBuildId(
   buffs: readonly ExternalBuff[],
   deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined,
   enemyCount: number,
-  sourceFinalHpByBuildId: ReadonlyMap<string, number>
+  sourceFinalHpByBuildId: ReadonlyMap<string, number>,
+  sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>
 ): ReadonlyMap<string, number> {
   const party = [primary, ...teammates]
   const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
@@ -318,12 +471,17 @@ function resolveSourceFinalElementalMasteryByBuildId(
         teamElements: resolvePartyElements(source, sourceTeammates, gameData),
         teammates: sourceTeammates
       })
+      const maximumReachableEffects = getSourceSelfMaximumReachableEquipmentEffects(
+        sourceSelfMaximumEquipmentEffectsByBuildId,
+        source.buildId
+      )
       const sourceFinalHp = sourceFinalHpByBuildId.get(source.buildId)
       if (sourceFinalHp === undefined) throw new Error(`Missing final HP for source build ${source.buildId}`)
       const isPrimary = source.buildId === primary.buildId
       const elementalMastery =
         base.elementalMastery +
         automaticEffects.elementalMastery +
+        maximumReachableEffects.elementalMastery +
         resolveFinalHpToElementalMastery(sourceFinalHp, automaticEffects) +
         (isPrimary ? getDelta(deltas, "elemental_mastery") + getBuffTotal(buffs, "elemental_mastery") : 0)
       return [source.buildId, elementalMastery] as const
@@ -341,13 +499,14 @@ function resolveSourceFinalDefenseByBuildId(
   deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined,
   enemyCount: number,
   activeEffectIds: readonly string[],
-  activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined
+  activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined,
+  sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>
 ): ReadonlyMap<string, number> {
   const party = [primary, ...teammates]
   const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
   return new Map(
     party.map((source) => {
-      const sourceDefenseSnapshotEffectIds = listSelectedSourceDefenseSnapshotEffectIds({
+      const sourceDefenseSnapshotActivationEffectIds = listSelectedSourceDefenseSnapshotActivationEffectIds({
         activeEffectIds,
         ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
         primary,
@@ -367,9 +526,26 @@ function resolveSourceFinalDefenseByBuildId(
         sourceTeammates,
         gameData
       )
+      const automaticEffects = resolveSelfAutomaticEquipmentEffects({
+        action,
+        baseEnergyRecharge: base.energyRecharge,
+        enemyCount,
+        ...(primaryElement === null ? {} : { primaryElement }),
+        primary: source,
+        ...(primaryDifferentElementTeammateCount === null
+          ? {}
+          : { primaryDifferentElementTeammateCount }),
+        ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
+        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
+        teammates: sourceTeammates
+      })
+      const maximumReachableEffects = getSourceSelfMaximumReachableEquipmentEffects(
+        sourceSelfMaximumEquipmentEffectsByBuildId,
+        source.buildId
+      )
       const sourceDefenseEffects = resolveCombatActionDefenseEffects({
         action,
-        activeEffectIds: sourceDefenseSnapshotEffectIds,
+        activeEffectIds: sourceDefenseSnapshotActivationEffectIds,
         baseEnergyRecharge: base.energyRecharge,
         enemyCount,
         ...(primaryElement === null ? {} : { primaryElement }),
@@ -383,9 +559,13 @@ function resolveSourceFinalDefenseByBuildId(
       })
       const isPrimary = source.buildId === primary.buildId
       const defensePercent =
+        automaticEffects.defensePercent +
+        maximumReachableEffects.defensePercent +
         sourceDefenseEffects.defensePercent +
         (isPrimary ? getDelta(deltas, "def_percent") + getBuffTotal(buffs, "defense_percent") : 0)
       const flatDefense =
+        automaticEffects.defenseFlat +
+        maximumReachableEffects.defenseFlat +
         sourceDefenseEffects.defenseFlat +
         (isPrimary ? getDelta(deltas, "def") + getBuffTotal(buffs, "defense_flat") : 0)
       return [source.buildId, base.defense + base.baseDefense * defensePercent + flatDefense] as const
@@ -401,12 +581,22 @@ function resolveSourceFinalAttackByBuildId(
   gameData: GameDataRepository,
   buffs: readonly ExternalBuff[],
   deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined,
-  enemyCount: number
+  enemyCount: number,
+  activeEffectIds: readonly string[],
+  activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined,
+  sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>
 ): ReadonlyMap<string, number> {
   const party = [primary, ...teammates]
   const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
   return new Map(
     party.map((source) => {
+      const sourceAttackSnapshotActivationEffectIds = listSelectedSourceAttackSnapshotActivationEffectIds({
+        activeEffectIds,
+        ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
+        primary,
+        sourceBuild: source,
+        teammates
+      })
       const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
       const base = resolveBaseCombatStats(source, gameData, action.element)
       const primaryElement = resolveBuildElement(source, gameData)
@@ -435,12 +625,36 @@ function resolveSourceFinalAttackByBuildId(
         ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
         teammates: sourceTeammates
       })
+      const maximumReachableEffects = getSourceSelfMaximumReachableEquipmentEffects(
+        sourceSelfMaximumEquipmentEffectsByBuildId,
+        source.buildId
+      )
+      const sourceAttackEffects = resolveCombatActionAttackEffects({
+        action,
+        activeEffectIds: sourceAttackSnapshotActivationEffectIds,
+        baseEnergyRecharge: base.energyRecharge,
+        enemyCount,
+        gameData,
+        ...(primaryElement === null ? {} : { primaryElement }),
+        primary: source,
+        ...(primaryDifferentElementTeammateCount === null
+          ? {}
+          : { primaryDifferentElementTeammateCount }),
+        ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
+        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
+        teammates: sourceTeammates
+      })
       const isPrimary = source.buildId === primary.buildId
       const attackPercent =
         automaticEffects.attackPercent +
+        maximumReachableEffects.attackPercent +
+        sourceAttackEffects.attackPercent +
         (isPrimary ? getDelta(deltas, "atk_percent") + getBuffTotal(buffs, "attack_percent") : 0)
       const flatAttack =
-        automaticEffects.flatAttack + (isPrimary ? getDelta(deltas, "atk") + getBuffTotal(buffs, "attack_flat") : 0)
+        automaticEffects.flatAttack +
+        maximumReachableEffects.flatAttack +
+        sourceAttackEffects.flatAttack +
+        (isPrimary ? getDelta(deltas, "atk") + getBuffTotal(buffs, "attack_flat") : 0)
       return [source.buildId, base.attack + base.baseAttack * attackPercent + flatAttack] as const
     })
   )
@@ -463,6 +677,13 @@ export function resolveScenarioSourceStatMaps(input: {
   readonly sourceFinalElementalMasteryByBuildId: ReadonlyMap<string, number>
   readonly sourceFinalHpByBuildId: ReadonlyMap<string, number>
 } {
+  const sourceSelfMaximumEquipmentEffectsByBuildId = resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
+    input.primary,
+    input.teammates,
+    input.action,
+    input.gameData,
+    input.enemyCount
+  )
   const sourceFinalHpByBuildId = resolveSourceFinalHpByBuildId(
     input.primary,
     input.teammates,
@@ -470,7 +691,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.gameData,
     input.buffs,
     input.artifactStatDeltas,
-    input.enemyCount
+    input.enemyCount,
+    sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const sourceFinalElementalMasteryByBuildId = resolveSourceFinalElementalMasteryByBuildId(
     input.primary,
@@ -480,7 +702,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.buffs,
     input.artifactStatDeltas,
     input.enemyCount,
-    sourceFinalHpByBuildId
+    sourceFinalHpByBuildId,
+    sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const sourceFinalDefenseByBuildId = resolveSourceFinalDefenseByBuildId(
     input.primary,
@@ -491,7 +714,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.artifactStatDeltas,
     input.enemyCount,
     input.activeEffectIds,
-    input.activeEffectSourceBuildIds
+    input.activeEffectSourceBuildIds,
+    sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const sourceFinalAttackByBuildId = resolveSourceFinalAttackByBuildId(
     input.primary,
@@ -500,7 +724,10 @@ export function resolveScenarioSourceStatMaps(input: {
     input.gameData,
     input.buffs,
     input.artifactStatDeltas,
-    input.enemyCount
+    input.enemyCount,
+    input.activeEffectIds,
+    input.activeEffectSourceBuildIds,
+    sourceSelfMaximumEquipmentEffectsByBuildId
   )
   return {
     sourceFinalAttackByBuildId,
@@ -541,10 +768,14 @@ function assertDeclaredDirectAction(action: CombatActionMetadata): asserts actio
   }
   const hasMultipleScalingPart = action.damageParts.some(hasMultipleScalingTerms)
   if (hasMultipleScalingPart) {
-    if (!action.damageParts.every(hasMultipleScalingTerms)) {
+    const hasLegacyScalingPart = action.damageParts.some((part) => !hasMultipleScalingTerms(part))
+    if (hasLegacyScalingPart && !hasDeclaredMixedSpecialReactionEvents(action)) {
       throw new Error(`Declared multi-scaling action ${action.id} must not mix multi-scaling and legacy damage parts`)
     }
-    if (action.scalingStat) {
+    if (hasLegacyScalingPart && !action.scalingStat) {
+      throw new Error(`Declared mixed special-reaction action ${action.id} must declare a legacy scaling stat`)
+    }
+    if (!hasLegacyScalingPart && action.scalingStat) {
       throw new Error(`Declared multi-scaling action ${action.id} must not also declare a legacy scaling stat`)
     }
     return
@@ -601,19 +832,52 @@ function assertDeclaredSpecialReactionAction(action: CombatActionMetadata): asse
   } else if (!action.scalingStat) {
     throw new Error(`Declared special-reaction action ${action.id} must declare a supported scaling stat`)
   }
-  const storedApplicationsParameterId = action.specialReaction.stellarStoredElementalApplicationsParameterId
-  if (action.specialReaction.kind === "stellar_superconduct") {
+  assertDeclaredSpecialReactionConfig(action.id, action.specialReaction, action.scenarioParameters)
+}
+
+/** Validates one explicitly declared Moon or Stellar formula configuration, whether action- or event-owned. */
+function assertDeclaredSpecialReactionConfig(
+  actionId: string,
+  config: CombatDirectSpecialReactionConfig,
+  scenarioParameters: CombatActionMetadata["scenarioParameters"]
+): void {
+  const storedApplicationsParameterId = config.stellarStoredElementalApplicationsParameterId
+  if (config.kind === "stellar_superconduct") {
     if (!storedApplicationsParameterId) {
-      throw new Error(`Stellar-Superconduct action ${action.id} must declare its manual application snapshot parameter`)
+      throw new Error(`Stellar-Superconduct action ${actionId} must declare its manual application snapshot parameter`)
     }
-    if (!action.scenarioParameters?.some((parameter) => parameter.id === storedApplicationsParameterId)) {
-      throw new Error(`Stellar-Superconduct action ${action.id} references an undeclared application snapshot parameter`)
+    if (!scenarioParameters?.some((parameter) => parameter.id === storedApplicationsParameterId)) {
+      throw new Error(`Stellar-Superconduct action ${actionId} references an undeclared application snapshot parameter`)
     }
     return
   }
   if (storedApplicationsParameterId !== undefined) {
-    throw new Error(`Moon-reaction action ${action.id} must not declare a Stellar-Superconduct application snapshot`)
+    throw new Error(`Moon-reaction action ${actionId} must not declare a Stellar-Superconduct application snapshot`)
   }
+}
+
+/** Validates that one mixed special-reaction event remains outside the ordinary aura and infusion pipeline. */
+function assertDeclaredMixedSpecialReactionEvent(
+  action: CombatActionMetadata,
+  event: CombatDamageEventTemplate
+): void {
+  const config = event.specialReaction
+  if (!config) return
+  if (event.elementalApplication || event.elementOverrideTarget) {
+    throw new Error(`Special-reaction event ${event.id} for action ${action.id} cannot declare ordinary elemental mechanics`)
+  }
+  assertDeclaredSpecialReactionConfig(action.id, config, action.scenarioParameters)
+}
+
+/** Identifies a direct action that evaluates both ordinary and independent special-reaction damage events. */
+function hasDeclaredMixedSpecialReactionEvents(action: CombatActionMetadata): boolean {
+  return action.timeline?.damageEvents.some((event) => event.specialReaction !== undefined) ?? false
+}
+
+function isDeclaredSpecialReactionTimelineEvent(
+  event: DeclaredDamageTimelineEvent
+): event is DeclaredDamageTimelineEvent & { readonly specialReaction: CombatDirectSpecialReactionConfig } {
+  return event.specialReaction !== undefined
 }
 
 function resolveStats(
@@ -642,17 +906,33 @@ function resolveStats(
   const energyRecharge =
     base.energyRecharge + getDelta(deltas, "energy_recharge") + getBuffTotal(buffs, "energy_recharge") + actionEffects.energyRecharge
   const defensePercent =
-    getDelta(deltas, "def_percent") + getBuffTotal(buffs, "defense_percent") + actionEffects.defensePercent
-  const flatDefense = getDelta(deltas, "def") + getBuffTotal(buffs, "defense_flat") + actionEffects.defenseFlat
-  const hpPercent = getDelta(deltas, "hp_percent") + getBuffTotal(buffs, "hp_percent") + actionEffects.hpPercent
-  const flatHp = getDelta(deltas, "hp") + getBuffTotal(buffs, "hp_flat") + actionEffects.hpFlat
-  const defense = base.defense + base.baseDefense * defensePercent + flatDefense
-  const hp = base.hp + base.baseHp * hpPercent + flatHp
+    base.defensePercent +
+    getDelta(deltas, "def_percent") +
+    getBuffTotal(buffs, "defense_percent") +
+    actionEffects.defensePercent
+  const flatDefense = base.flatDefense + getDelta(deltas, "def") + getBuffTotal(buffs, "defense_flat") + actionEffects.defenseFlat
+  const hpPercent = base.hpPercent + getDelta(deltas, "hp_percent") + getBuffTotal(buffs, "hp_percent") + actionEffects.hpPercent
+  const flatHp = base.flatHp + getDelta(deltas, "hp") + getBuffTotal(buffs, "hp_flat") + actionEffects.hpFlat
+  // Preserve the established arithmetic order for final-stat-derived effects. The normalized fields above are
+  // presentation data, while this path must remain bit-for-bit compatible with existing final-HP/DEF conversions.
+  const defense =
+    base.defense +
+    base.baseDefense * (getDelta(deltas, "def_percent") + getBuffTotal(buffs, "defense_percent") + actionEffects.defensePercent) +
+    getDelta(deltas, "def") +
+    getBuffTotal(buffs, "defense_flat") +
+    actionEffects.defenseFlat
+  const hp =
+    base.hp +
+    base.baseHp * (getDelta(deltas, "hp_percent") + getBuffTotal(buffs, "hp_percent") + actionEffects.hpPercent) +
+    getDelta(deltas, "hp") +
+    getBuffTotal(buffs, "hp_flat") +
+    actionEffects.hpFlat
   const finalHpSourcedFlatAttack = resolveFinalHpToFlatAttack(hp, actionEffects)
   const finalHpSourcedElementalMastery = resolveFinalHpToElementalMastery(hp, actionEffects)
   const finalHpSourcedDamageBonus = resolveFinalHpToDamageBonus(hp, actionEffects)
   const finalHpSourcedOwnElementDamageBonus = resolveFinalHpToOwnElementDamageBonus(hp, actionEffects)
-  const baseElementalMastery =
+  const characterBaseElementalMastery = gameData.getCharacterBaseStats(build.characterId).eleMas ?? 0
+  const preIntrinsicElementalMastery =
     base.elementalMastery +
     getDelta(deltas, "elemental_mastery") +
     getBuffTotal(buffs, "elemental_mastery") +
@@ -663,7 +943,7 @@ function resolveStats(
     action,
     build,
     gameData,
-    { attack: preliminaryAttack, defense, elementalMastery: baseElementalMastery, hp },
+    { attack: preliminaryAttack, defense, elementalMastery: preIntrinsicElementalMastery, hp },
     actionParameters
   )
   const cappedStatToAttackConversion = resolveDeclaredActionCappedStatToAttackConversion(
@@ -688,10 +968,11 @@ function resolveStats(
     action,
     build,
     gameData,
-    { attack, defense, elementalMastery: baseElementalMastery, hp },
+    { attack, defense, elementalMastery: preIntrinsicElementalMastery, hp },
     actionParameters
   )
   const elementalMastery = intrinsicEffects.elementalMastery
+  const flatElementalMastery = elementalMastery - characterBaseElementalMastery
   const critRate = baseCritRate + intrinsicEffects.critRate
   const baseDamageBonusByElement = resolveDamageBonusByElement(build, gameData, deltas, action.element, base.damageBonus)
   const primaryElement = resolveBuildElement(build, gameData)
@@ -710,15 +991,25 @@ function resolveStats(
     action,
     actionEffects,
     attackPercent,
+    baseElementalMastery: characterBaseElementalMastery,
     buffs,
     build,
     damageBonus,
+    defensePercent,
     deltas,
+    effectiveHp: hp,
     effectiveFlatAttack,
+    elementalMastery,
+    flatDefense,
+    flatHp,
     gameData,
     intrinsicDamageBonusContributions: intrinsicEffects.contributions.filter(
       (contribution) => contribution.target === "damageBonus"
-    )
+    ),
+    intrinsicElementalMasteryContributions: intrinsicEffects.contributions.filter(
+      (contribution) => contribution.target === "elementalMastery"
+    ),
+    hpPercent
   })
   const rotation: RotationStats = {
     attack,
@@ -738,13 +1029,23 @@ function resolveStats(
     scenario: {
       attackPercent,
       baseAttack: base.baseAttack,
+      baseDefense: base.baseDefense,
+      baseElementalMastery: characterBaseElementalMastery,
+      baseHp: base.baseHp,
       critDamage,
       critRate,
       damageBonus,
+      defensePercent,
       effectiveAttack: attack,
+      effectiveDefense: defense,
+      effectiveHp: hp,
       elementalMastery,
       energyRecharge,
       flatAttack: effectiveFlatAttack,
+      flatElementalMastery,
+      flatDefense,
+      flatHp,
+      hpPercent,
       resistanceReduction:
         actionEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
       statContributions,
@@ -757,13 +1058,21 @@ interface ResolveStatContributionsInput {
   readonly action: CombatActionMetadata
   readonly actionEffects: ResolvedCombatActionEffects
   readonly attackPercent: number
+  readonly baseElementalMastery: number
   readonly buffs: readonly ExternalBuff[]
   readonly build: CharacterBuild
   readonly damageBonus: number
+  readonly defensePercent: number
   readonly deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined
   readonly effectiveFlatAttack: number
+  readonly effectiveHp: number
+  readonly elementalMastery: number
+  readonly flatDefense: number
+  readonly flatHp: number
   readonly gameData: GameDataRepository
   readonly intrinsicDamageBonusContributions: readonly { readonly label: string; readonly value: number }[]
+  readonly intrinsicElementalMasteryContributions: readonly { readonly label: string; readonly value: number }[]
+  readonly hpPercent: number
 }
 
 const artifactSlotLabels: Readonly<Record<CharacterBuild["artifacts"][number]["slot"], string>> = {
@@ -817,6 +1126,75 @@ function resolveStatContributions(input: ResolveStatContributionsInput): readonl
   }
   add("flatAttack", "边际模拟 · 固定攻击力", getDelta(deltas, "atk"))
   addResidualContribution(contributions, "flatAttack", "其他派生固定攻击力", input.effectiveFlatAttack)
+
+  add(
+    "baseHp",
+    `角色基础生命值 · ${supportedCharacters.find((character) => character.characterId === build.characterId)?.label ?? build.characterId}`,
+    gameData.getCharacterStat(build.characterId, "hp", build.level, build.ascension) ?? 0
+  )
+  addArtifactStatContributions(contributions, build, "hp_percent", "hpPercent", "生命值%")
+  add("hpPercent", "角色突破属性 · 生命值%", gameData.getCharacterAscensionBonus(build.characterId, "hp_", build.ascension) ?? 0)
+  add("hpPercent", "武器副属性 · 生命值%", gameData.getWeaponStat(build.weapon.weaponId, "hp_", build.weapon.level, build.weapon.ascension) ?? 0)
+  for (const buff of buffs.filter((candidate) => candidate.stat === "hp_percent")) add("hpPercent", buff.label, buff.value)
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "hpPercent")) {
+    add("hpPercent", effect.label, effect.value)
+  }
+  add("hpPercent", "边际模拟 · 生命值%", getDelta(deltas, "hp_percent"))
+  addResidualContribution(contributions, "hpPercent", "其他生命值%", input.hpPercent)
+
+  addArtifactStatContributions(contributions, build, "hp", "flatHp", "固定生命值")
+  for (const buff of buffs.filter((candidate) => candidate.stat === "hp_flat")) add("flatHp", buff.label, buff.value)
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "hpFlat")) {
+    add("flatHp", effect.label, effect.value)
+  }
+  add("flatHp", "边际模拟 · 固定生命值", getDelta(deltas, "hp"))
+  addResidualContribution(contributions, "flatHp", "其他固定生命值", input.flatHp)
+
+  add(
+    "baseDefense",
+    `角色基础防御力 · ${supportedCharacters.find((character) => character.characterId === build.characterId)?.label ?? build.characterId}`,
+    gameData.getCharacterStat(build.characterId, "def", build.level, build.ascension) ?? 0
+  )
+  addArtifactStatContributions(contributions, build, "def_percent", "defensePercent", "防御力%")
+  add("defensePercent", "角色突破属性 · 防御力%", gameData.getCharacterAscensionBonus(build.characterId, "def_", build.ascension) ?? 0)
+  add("defensePercent", "武器副属性 · 防御力%", gameData.getWeaponStat(build.weapon.weaponId, "def_", build.weapon.level, build.weapon.ascension) ?? 0)
+  for (const buff of buffs.filter((candidate) => candidate.stat === "defense_percent")) {
+    add("defensePercent", buff.label, buff.value)
+  }
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "defensePercent")) {
+    add("defensePercent", effect.label, effect.value)
+  }
+  add("defensePercent", "边际模拟 · 防御力%", getDelta(deltas, "def_percent"))
+  addResidualContribution(contributions, "defensePercent", "其他防御力%", input.defensePercent)
+
+  addArtifactStatContributions(contributions, build, "def", "flatDefense", "固定防御力")
+  for (const buff of buffs.filter((candidate) => candidate.stat === "defense_flat")) {
+    add("flatDefense", buff.label, buff.value)
+  }
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "defenseFlat")) {
+    add("flatDefense", effect.label, effect.value)
+  }
+  add("flatDefense", "边际模拟 · 固定防御力", getDelta(deltas, "def"))
+  addResidualContribution(contributions, "flatDefense", "其他固定防御力", input.flatDefense)
+
+  add("baseElementalMastery", "角色基础元素精通", input.baseElementalMastery)
+  addArtifactStatContributions(contributions, build, "elemental_mastery", "elementalMastery", "元素精通")
+  add("elementalMastery", "角色突破属性 · 元素精通", gameData.getCharacterAscensionBonus(build.characterId, "eleMas", build.ascension) ?? 0)
+  add("elementalMastery", "武器副属性 · 元素精通", gameData.getWeaponStat(build.weapon.weaponId, "eleMas", build.weapon.level, build.weapon.ascension) ?? 0)
+  for (const buff of buffs.filter((candidate) => candidate.stat === "elemental_mastery")) {
+    add("elementalMastery", buff.label, buff.value)
+  }
+  for (const effect of actionEffects.appliedEffects) {
+    if (effect.target === "elementalMastery") add("elementalMastery", effect.label, effect.value)
+    if (effect.target === "finalHpToElementalMastery") {
+      add("elementalMastery", `${effect.label} · 最终生命值转元素精通`, effect.value * input.effectiveHp)
+    }
+  }
+  for (const contribution of input.intrinsicElementalMasteryContributions) {
+    add("elementalMastery", contribution.label, contribution.value)
+  }
+  add("elementalMastery", "边际模拟 · 元素精通", getDelta(deltas, "elemental_mastery"))
+  addResidualContribution(contributions, "elementalMastery", "其他元素精通", input.elementalMastery)
 
   const artifactDamageStat = artifactDamageStatByElement[action.element]
   addArtifactStatContributions(contributions, build, artifactDamageStat, "damageBonus", `${elementLabels[action.element]}伤害加成`)
@@ -872,16 +1250,59 @@ function addResidualContribution(
 function resolveSpecialReactionBaseDamage(
   action: CombatActionMetadata,
   part: DeclaredDirectActionPartEvaluation,
-  stats: RotationStats
+  stats: RotationStats,
+  coefficientMultiplier = 1
 ): number {
+  return resolveSpecialReactionBaseDamageTerms(action, part, stats, coefficientMultiplier).reduce(
+    (total, term) => total + term.coefficient * term.value,
+    0
+  )
+}
+
+/** Resolves one special-reaction event's stat-specific base-damage terms for its formula trace. */
+function resolveSpecialReactionBaseDamageTerms(
+  action: CombatActionMetadata,
+  part: DeclaredDirectActionPartEvaluation,
+  stats: RotationStats,
+  coefficientMultiplier = 1
+): readonly SpecialReactionBaseDamageTerm[] {
   if (hasResolvedMultipleScalingTerms(part)) {
-    return part.terms.reduce(
-      (total, term) => total + resolveSpecialReactionScalingValue(stats, term.stat) * term.coefficient,
-      0
-    )
+    return part.terms.map((term) => ({
+      coefficient: term.coefficient * coefficientMultiplier,
+      stat: term.stat,
+      value: resolveSpecialReactionScalingValue(stats, term.stat)
+    }))
   }
   const scalingStat = requireLegacyScalingStat(action.id, action.scalingStat)
-  return resolveSpecialReactionScalingValue(stats, scalingStat) * (part.coefficient ?? 0)
+  return [
+    {
+      coefficient: (part.coefficient ?? 0) * coefficientMultiplier,
+      stat: scalingStat,
+      value: resolveSpecialReactionScalingValue(stats, scalingStat)
+    }
+  ]
+}
+
+/** Combines resolved shared stats with the one selected event's actual base scaling declaration. */
+function createDeclaredScenarioStats(
+  action: CombatActionMetadata,
+  actionParameters: ReadonlyMap<string, number>,
+  stats: ResolvedDeclaredScenarioStats,
+  multiScalingPart:
+    | (DeclaredDirectActionPartEvaluation & {
+        readonly terms: readonly [DeclaredDirectActionScalingTermEvaluation, ...DeclaredDirectActionScalingTermEvaluation[]]
+      })
+    | undefined,
+  talentMultiplier: number | null
+): ResolvedDeclaredScenarioStats {
+  return {
+    ...stats,
+    ...(action.scenarioParameters && action.scenarioParameters.length > 0
+      ? { actionParameters: Object.fromEntries(actionParameters) }
+      : {}),
+    ...(multiScalingPart ? { scalingTerms: multiScalingPart.terms } : {}),
+    talentMultiplier
+  }
 }
 
 function resolveSpecialReactionScalingValue(stats: RotationStats, stat: ScalingStat): number {
@@ -894,21 +1315,38 @@ function resolveSpecialReactionScalingValue(stats: RotationStats, stat: ScalingS
 function resolveDirectSpecialReactionInput(
   config: CombatDirectSpecialReactionConfig,
   baseDamage: number,
+  baseDamageTerms: readonly SpecialReactionBaseDamageTerm[],
   stats: ResolvedDeclaredScenarioStats,
   actionEffects: Pick<
     ResolvedCombatActionEffects,
-    "specialReactionDamageBonus" | "specialReactionFlatDamageAddition"
+    | "appliedEffects"
+    | "specialReactionBaseDamageBonus"
+    | "specialReactionBaseDamageFlat"
+    | "specialReactionBigPowerBonus"
+    | "specialReactionDamageBonus"
+    | "specialReactionElevation"
+    | "specialReactionFlatDamageAddition"
   >,
   externalReactionDamageBonus: number,
   enemyResistance: number,
   resistanceReduction: number,
   actionParameters: ReadonlyMap<string, number>
 ): DirectSpecialReactionDamageInput {
+  const baseDamageEffectTerms = actionEffects.appliedEffects
+    .filter((effect) => effect.target === "specialReactionBaseDamageFlat")
+    .map((effect) => ({
+      coefficient: stats.elementalMastery === 0 ? 1 : effect.value / stats.elementalMastery,
+      label: effect.label,
+      stat: "elementalMastery" as const,
+      value: stats.elementalMastery === 0 ? effect.value : stats.elementalMastery
+    }))
+  const resolvedBaseDamageTerms = [...baseDamageTerms, ...baseDamageEffectTerms]
   const common = {
-    ...(config.ascensionBonus === undefined ? {} : { ascensionBonus: config.ascensionBonus }),
-    baseDamage,
-    ...(config.baseDamageBonus === undefined ? {} : { baseDamageBonus: config.baseDamageBonus }),
-    ...(config.bigPowerMultiplier === undefined ? {} : { bigPowerMultiplier: config.bigPowerMultiplier }),
+    ascensionBonus: (config.ascensionBonus ?? 0) + actionEffects.specialReactionElevation,
+    baseDamage: baseDamage + actionEffects.specialReactionBaseDamageFlat,
+    baseDamageTerms: resolvedBaseDamageTerms,
+    baseDamageBonus: (config.baseDamageBonus ?? 0) + actionEffects.specialReactionBaseDamageBonus,
+    bigPowerMultiplier: (config.bigPowerMultiplier ?? 1) * (1 + actionEffects.specialReactionBigPowerBonus),
     critDamage: stats.critDamage,
     critRate: stats.critRate,
     elementalMastery: stats.elementalMastery,
@@ -942,8 +1380,12 @@ function isSpecialReactionStatEffect(effect: AppliedCombatActionEffect): boolean
     effect.target === "defenseFlat" ||
     effect.target === "defensePercent" ||
     effect.target === "elementalMastery" ||
+    effect.target === "specialReactionBaseDamageFlat" ||
+    effect.target === "specialReactionBaseDamageBonus" ||
+    effect.target === "specialReactionBigPowerBonus" ||
     effect.target === "specialReactionDamageBonus" ||
     effect.target === "specialReactionFlatDamageAddition" ||
+    effect.target === "specialReactionElevation" ||
     effect.target === "enemyResistanceReduction" ||
     effect.target === "energyRecharge" ||
     effect.target === "hpFlat" ||
@@ -980,6 +1422,53 @@ function createDirectSpecialReactionRotation(
     }))
   }
   return { dpr: result.expectedDamage, dps: result.expectedDamage, duration: 1, events: [event] }
+}
+
+/** Projects one special-reaction event result into the shared rotation-event response shape. */
+function createDeclaredSpecialReactionRotationEvent(
+  action: CombatActionMetadata,
+  ownerId: string,
+  event: DeclaredDamageTimelineEvent & { readonly specialReaction: CombatDirectSpecialReactionConfig },
+  result: SpecialReactionDamageResult,
+  appliedEffects: readonly AppliedCombatActionEffect[]
+): RotationEventResult {
+  const expectedDamage = result.expectedDamage * event.hitCount
+  return {
+    appliedEffectIds: appliedEffects.map((effect) => effect.id),
+    critDamage: result.critDamage * event.hitCount,
+    element: action.element,
+    expectedDamage,
+    hitCount: event.hitCount,
+    id: `${action.id}.${event.id}`,
+    nonCritDamage: result.nonCritDamage * event.hitCount,
+    ownerId,
+    statSnapshotTime: event.statSnapshotTime,
+    time: event.time,
+    trace: [
+      ...result.trace.map((entry) => ({
+        after: entry.after,
+        before: entry.before,
+        formula: entry.formula,
+        kind: "special_reaction" as const,
+        stage: entry.stage
+      })),
+      ...(event.hitCount === 1
+        ? []
+        : [{ after: expectedDamage, before: result.expectedDamage, hitCount: event.hitCount, kind: "hit_count" as const }])
+    ]
+  }
+}
+
+/** Keeps a mixed action's shared applied-effects ledger compact while retaining distinct resolved values. */
+function deduplicateAppliedEffects(
+  effects: readonly AppliedCombatActionEffect[]
+): readonly AppliedCombatActionEffect[] {
+  const uniqueEffects = new Map<string, AppliedCombatActionEffect>()
+  for (const effect of effects) {
+    const key = [effect.id, effect.sourceId, effect.target, effect.value].join("\u0000")
+    if (!uniqueEffects.has(key)) uniqueEffects.set(key, effect)
+  }
+  return [...uniqueEffects.values()]
 }
 
 function resolveDamageBonusByElement(
@@ -1035,6 +1524,7 @@ export function evaluateDeclaredDirectScenarioAction(
     moonsignLevel = "none"
   } = input
   assertDeclaredDirectAction(action)
+  if (hasDeclaredMixedSpecialReactionEvents(action)) return evaluateDeclaredMixedSpecialReactionScenarioAction(input)
   const talent = getDamageTalentSlot(action)
   const resolvedActionParameters = new Map(
     resolveActionScenarioParameters(action, actionParameters, build.constellation)
@@ -1246,6 +1736,7 @@ export function evaluateDeclaredDirectScenarioAction(
       declaredReaction,
       legacyScalingStat,
       matchedActionDamageScalingTerms,
+      actionEffects.baseDamageFlat,
       stats.rotation,
       event,
       actionEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
@@ -1310,6 +1801,315 @@ export function evaluateDeclaredDirectScenarioAction(
     events: [...declaredRotationEvents, ...additionalDamageRotationEvents].sort((left, right) => left.time - right.time)
   })
   return { appliedEffects, parts, result, rotation, stats: scenarioStats }
+}
+
+/**
+ * Evaluates a verified direct action whose timeline contains both ordinary direct hits and independent Moon or
+ * Stellar-reaction hits. The two event families deliberately resolve their effects and formula stages separately.
+ */
+function evaluateDeclaredMixedSpecialReactionScenarioAction(
+  input: DeclaredDirectScenarioInput
+): DeclaredDirectScenarioEvaluation {
+  const {
+    activeEffectIds = [],
+    activeEffectSourceBuildIds,
+    action,
+    artifactStatDeltas,
+    build,
+    buffs,
+    enemy,
+    enemyCount = 1,
+    gameData,
+    actionParameters,
+    rotationAuras,
+    rotationEffects,
+    rotationElementOverrides,
+    teammates = [],
+    moonsignLevel = "none"
+  } = input
+  assertDeclaredDirectAction(action)
+  const talent = getDamageTalentSlot(action)
+  const resolvedActionParameters = new Map(
+    resolveActionScenarioParameters(action, actionParameters, build.constellation)
+  )
+  let parts = action.damageParts.map((part) =>
+    resolveDamagePart(action, build, part, gameData, resolvedActionParameters)
+  )
+  let timeline = resolveDeclaredTimeline(action, build, gameData, parts, resolvedActionParameters)
+  let ordinaryEvents = timeline.events.filter((event) => event.specialReaction === undefined)
+  let specialEvents = timeline.events.filter(isDeclaredSpecialReactionTimelineEvent)
+  const ordinaryTimeline = { duration: timeline.duration, events: ordinaryEvents }
+  const effectiveElements = resolveDeclaredActionEffectElements(
+    action,
+    build.buildId,
+    ordinaryTimeline,
+    rotationElementOverrides
+  )
+  const {
+    baseStats,
+    primaryDifferentElementTeammateCount,
+    primaryElement,
+    primarySameElementTeammateCount,
+    resolvedActiveEffectIds,
+    sourceFinalAttackByBuildId,
+    sourceFinalDefenseByBuildId,
+    sourceFinalElementalMasteryByBuildId,
+    sourceFinalHpByBuildId,
+    teamUniqueElementCount
+  } = resolveScenarioActionEffectContext({
+    action,
+    activeEffectIds,
+    ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
+    ...(artifactStatDeltas === undefined ? {} : { artifactStatDeltas }),
+    build,
+    buffs,
+    enemyCount,
+    gameData,
+    moonsignLevel,
+    resolvedActionParameters,
+    teammates
+  })
+  const legacyScalingStat = action.scalingStat
+  const candidateAmplifyingReactionKinds = resolveActualDynamicAmplifyingReactionKinds(
+    action,
+    build.buildId,
+    action.additiveReaction ?? action.amplifyingReaction,
+    legacyScalingStat,
+    ordinaryTimeline,
+    baseStats.rotation,
+    enemy,
+    rotationAuras,
+    rotationElementOverrides
+  )
+  const actionEffectContext = {
+    action,
+    activeEffectIds: resolvedActiveEffectIds,
+    ...(candidateAmplifyingReactionKinds.length > 0 ? { candidateAmplifyingReactionKinds } : {}),
+    ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
+    baseEnergyRecharge: baseStats.scenario.energyRecharge,
+    enemyCount,
+    effectiveElements,
+    gameData,
+    moonsignLevel,
+    primary: build,
+    ...(primaryElement === null ? {} : { primaryElement }),
+    sourceFinalDefenseByBuildId,
+    sourceFinalAttackByBuildId,
+    sourceFinalHpByBuildId,
+    sourceFinalElementalMasteryByBuildId,
+    ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
+    ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
+    ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
+    teamElements: resolvePartyElements(build, teammates, gameData),
+    teammates
+  }
+  const specialReactionKinds = [...new Set(specialEvents.map((event) => event.specialReaction.kind))]
+  const parameterEffects = resolveCombatActionEffects({
+    ...actionEffectContext,
+    candidateSpecialReactionKinds: specialReactionKinds
+  })
+  applyActionParameterEffects(action, resolvedActionParameters, parameterEffects.appliedEffects)
+  parts = action.damageParts.map((part) => resolveDamagePart(action, build, part, gameData, resolvedActionParameters))
+  timeline = resolveDeclaredTimeline(action, build, gameData, parts, resolvedActionParameters)
+  ordinaryEvents = timeline.events.filter((event) => event.specialReaction === undefined)
+  specialEvents = timeline.events.filter(isDeclaredSpecialReactionTimelineEvent)
+  const resolvedOrdinaryTimeline = { duration: timeline.duration, events: ordinaryEvents }
+  const ordinaryActionEffects = resolveCombatActionEffects({
+    ...actionEffectContext,
+    candidateSpecialReactionKinds: [],
+    effectiveElements: resolveDeclaredActionEffectElements(
+      action,
+      build.buildId,
+      resolvedOrdinaryTimeline,
+      rotationElementOverrides
+    )
+  })
+  const ordinaryStats = resolveStats(
+    build,
+    action,
+    gameData,
+    buffs,
+    artifactStatDeltas,
+    resolvedActionParameters,
+    ordinaryActionEffects
+  )
+  const ordinaryPartIds = new Set(ordinaryEvents.map((event) => event.part.id))
+  const ordinaryParts = parts.filter((part) => ordinaryPartIds.has(part.id))
+  const ordinaryMultiScalingPart = ordinaryParts.find(hasResolvedMultipleScalingTerms)
+  const ordinaryTalentMultiplier = ordinaryMultiScalingPart
+    ? null
+    : ordinaryParts.reduce((total, part) => total + (part.coefficient ?? 0), 0)
+  const ordinaryScenarioStats = createDeclaredScenarioStats(
+    action,
+    resolvedActionParameters,
+    ordinaryStats.scenario,
+    ordinaryMultiScalingPart,
+    ordinaryTalentMultiplier
+  )
+  const effectiveDefenseReduction = enemy.defenseReduction + ordinaryActionEffects.enemyDefenseReduction
+  const additiveReaction = resolveAdditiveReactionWithActionEffects(
+    action.additiveReaction,
+    ordinaryActionEffects.reactionDamageBonus
+  )
+  const amplifyingReaction = resolveAmplifyingReactionWithActionEffects(
+    action.amplifyingReaction,
+    ordinaryActionEffects.amplifyingReactionBonus
+  )
+  const declaredReaction = additiveReaction ?? amplifyingReaction
+  const matchedActionDamageScalingTerms = resolveMatchedActionDamageScalingTerms(ordinaryActionEffects)
+  const ordinaryAppliedEffects = materializeDeferredStatEffects(
+    ordinaryActionEffects.appliedEffects,
+    ordinaryStats.rotation.hp,
+    ordinaryStats.elementalMasteryForAttackConversion
+  )
+  const declaredRotationEvents = ordinaryEvents.map((event) =>
+    createDeclaredRotationEvent(
+      action,
+      build.buildId,
+      declaredReaction,
+      legacyScalingStat,
+      matchedActionDamageScalingTerms,
+      ordinaryActionEffects.baseDamageFlat,
+      ordinaryStats.rotation,
+      event,
+      ordinaryActionEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
+      ordinaryActionEffects.enemyDefenseIgnore,
+      ordinaryActionEffects.amplifyingReactionBonus
+    )
+  )
+  const additionalDamageEventTime = ordinaryEvents[0]?.time ?? 0
+  const additionalDamageEventSnapshotTime = ordinaryEvents[0]?.statSnapshotTime ?? 0
+  const additionalDamageRotationEvents = ordinaryActionEffects.additionalDamageEvents.map((event) => {
+    const additionalDamageEventEffects = resolveAdditionalDamageEventEffects({
+      ...actionEffectContext,
+      additionalDamageEvent: event,
+      candidateSpecialReactionKinds: [],
+      effectiveElements: [event.element]
+    })
+    const additionalDamageEventStats = resolveStats(
+      build,
+      action,
+      gameData,
+      buffs,
+      artifactStatDeltas,
+      resolvedActionParameters,
+      additionalDamageEventEffects
+    )
+    return createAdditionalDamageRotationEvent(
+      action.id,
+      build.buildId,
+      additionalDamageEventStats.additionalDamageEventRotation,
+      event,
+      additionalDamageEventTime,
+      additionalDamageEventSnapshotTime,
+      additionalDamageEventEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
+      additionalDamageEventEffects.enemyDefenseIgnore
+    )
+  })
+  const ordinaryRotation = evaluateRotation({
+    duration: timeline.duration,
+    enemy: {
+      defenseReduction: effectiveDefenseReduction,
+      level: enemy.level,
+      resistance: enemy.resistance
+    },
+    ...(rotationEffects ? { effects: rotationEffects } : {}),
+    ...(rotationElementOverrides ? { elementOverrides: rotationElementOverrides } : {}),
+    ...(rotationAuras ? { sustainedAuras: rotationAuras } : {}),
+    events: [...declaredRotationEvents, ...additionalDamageRotationEvents].sort((left, right) => left.time - right.time)
+  })
+  const specialEffectsByKind = new Map<string, ResolvedCombatActionEffects>()
+  const specialStatsByKind = new Map<string, ReturnType<typeof resolveStats>>()
+  const resolveSpecialEffects = (kind: NonNullable<CombatActionMetadata["specialReaction"]>["kind"]) => {
+    const known = specialEffectsByKind.get(kind)
+    if (known) return known
+    const effects = resolveCombatActionEffects({
+      ...actionEffectContext,
+      candidateSpecialReactionKinds: [kind],
+      effectiveElements: [action.element]
+    })
+    specialEffectsByKind.set(kind, effects)
+    return effects
+  }
+  const resolveSpecialStats = (kind: NonNullable<CombatActionMetadata["specialReaction"]>["kind"]) => {
+    const known = specialStatsByKind.get(kind)
+    if (known) return known
+    const stats = resolveStats(
+      build,
+      action,
+      gameData,
+      buffs,
+      artifactStatDeltas,
+      resolvedActionParameters,
+      resolveSpecialEffects(kind)
+    )
+    specialStatsByKind.set(kind, stats)
+    return stats
+  }
+  const specialEventResults = specialEvents.map((event) => {
+    const effects = resolveSpecialEffects(event.specialReaction.kind)
+    const stats = resolveSpecialStats(event.specialReaction.kind)
+    const scenarioStats = createDeclaredScenarioStats(
+      action,
+      resolvedActionParameters,
+      stats.scenario,
+      hasResolvedMultipleScalingTerms(event.part) ? event.part : undefined,
+      hasResolvedMultipleScalingTerms(event.part) ? null : event.part.coefficient ?? 0
+    )
+    const baseDamageTerms = resolveSpecialReactionBaseDamageTerms(
+      action,
+      event.part,
+      stats.rotation,
+      event.coefficientMultiplier
+    )
+    const baseDamage = baseDamageTerms.reduce((total, term) => total + term.coefficient * term.value, 0)
+    const result = calculateDirectSpecialReactionDamage(
+      resolveDirectSpecialReactionInput(
+        event.specialReaction,
+        baseDamage,
+        baseDamageTerms,
+        scenarioStats,
+        effects,
+        getBuffTotal(buffs, "special_reaction_damage_bonus"),
+        enemy.resistance,
+        effects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
+        resolvedActionParameters
+      )
+    )
+    const appliedEffects = materializeDeferredStatEffects(
+      effects.appliedEffects,
+      stats.rotation.hp,
+      stats.elementalMasteryForAttackConversion
+    ).filter(isSpecialReactionStatEffect)
+    return { appliedEffects, event, result, scenarioStats }
+  })
+  const specialRotationEvents = specialEventResults.map(({ appliedEffects, event, result }) =>
+    createDeclaredSpecialReactionRotationEvent(action, build.buildId, event, result, appliedEffects)
+  )
+  const rotationEvents = [...ordinaryRotation.events, ...specialRotationEvents].sort((left, right) => left.time - right.time)
+  const dpr = rotationEvents.reduce((total, event) => total + event.expectedDamage, 0)
+  const rotation: RotationResult = { dpr, dps: dpr / timeline.duration, duration: timeline.duration, events: rotationEvents }
+  const constellationTalentBonuses = resolveDeclaredActionTalentLevelConstellationBonuses(action, build)
+  const appliedEffects = deduplicateAppliedEffects([
+    ...ordinaryAppliedEffects,
+    ...specialEventResults.flatMap((entry) => entry.appliedEffects),
+    ...constellationTalentBonuses.map((bonus) => ({
+      id: bonus.id,
+      label: bonus.label,
+      sourceId: build.buildId,
+      target: "talentLevel" as const,
+      value: bonus.value
+    }))
+  ])
+  const firstSpecialScenarioStats = specialEventResults[0]?.scenarioStats
+  const stats = ordinaryEvents.length > 0 || !firstSpecialScenarioStats ? ordinaryScenarioStats : firstSpecialScenarioStats
+  const result: ExpectedDamageResult = {
+    critDamage: rotationEvents.reduce((total, event) => total + event.critDamage, 0),
+    expectedDamage: rotation.dpr,
+    nonCritDamage: rotationEvents.reduce((total, event) => total + event.nonCritDamage, 0),
+    trace: []
+  }
+  return { appliedEffects, parts, result, rotation, stats }
 }
 
 /**
@@ -1418,7 +2218,10 @@ export function evaluateDeclaredTransformativeScenarioAction(
         ownerId: build.buildId,
         reaction: {
           ...action.transformativeReaction,
-          bonus: actionEffects.reactionDamageBonus
+          bonus: actionEffects.reactionDamageBonus,
+          ...(actionEffects.transformativeReactionFlatDamageAddition === 0
+            ? {}
+            : { flatDamageAddition: actionEffects.transformativeReactionFlatDamageAddition })
         },
         ...(actionEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction") > 0
           ? {
@@ -1454,6 +2257,7 @@ function createTransformativeExpectedDamageResult(event: RotationEventResult): E
           baseDamage: entry.baseDamage,
           bonus: entry.bonus,
           elementalMastery: entry.elementalMastery,
+          flatDamageAddition: entry.flatDamageAddition,
           kind: "transformative_reaction",
           multiplier: entry.multiplier,
           reaction: entry.reaction
@@ -1579,11 +2383,13 @@ export function evaluateDeclaredSpecialReactionScenarioAction(
     ...(multiScalingPart ? { scalingTerms: multiScalingPart.terms } : {}),
     talentMultiplier: multiScalingPart ? null : part.coefficient ?? 0
   }
+  const baseDamageTerms = resolveSpecialReactionBaseDamageTerms(action, part, stats.rotation)
   const baseDamage = resolveSpecialReactionBaseDamage(action, part, stats.rotation)
   const result = calculateDirectSpecialReactionDamage(
     resolveDirectSpecialReactionInput(
       action.specialReaction,
       baseDamage,
+      baseDamageTerms,
       scenarioStats,
       actionEffects,
       getBuffTotal(buffs, "special_reaction_damage_bonus"),
@@ -1649,9 +2455,25 @@ function resolveScenarioActionEffectContext(input: {
         primary: input.build,
         sourceBuild: input.build,
         teammates: input.teammates
+      }),
+      ...listSelectedSourceAttackSnapshotEffectIds({
+        activeEffectIds: input.activeEffectIds,
+        ...(input.activeEffectSourceBuildIds === undefined
+          ? {}
+          : { activeEffectSourceBuildIds: input.activeEffectSourceBuildIds }),
+        primary: input.build,
+        sourceBuild: input.build,
+        teammates: input.teammates
       })
     ])
   ]
+  const sourceSelfMaximumEquipmentEffectsByBuildId = resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
+    input.build,
+    input.teammates,
+    input.action,
+    input.gameData,
+    input.enemyCount
+  )
   const sourceFinalHpByBuildId = resolveSourceFinalHpByBuildId(
     input.build,
     input.teammates,
@@ -1659,7 +2481,8 @@ function resolveScenarioActionEffectContext(input: {
     input.gameData,
     input.buffs,
     input.artifactStatDeltas,
-    input.enemyCount
+    input.enemyCount,
+    sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const sourceFinalElementalMasteryByBuildId = resolveSourceFinalElementalMasteryByBuildId(
     input.build,
@@ -1669,7 +2492,8 @@ function resolveScenarioActionEffectContext(input: {
     input.buffs,
     input.artifactStatDeltas,
     input.enemyCount,
-    sourceFinalHpByBuildId
+    sourceFinalHpByBuildId,
+    sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const sourceFinalDefenseByBuildId = resolveSourceFinalDefenseByBuildId(
     input.build,
@@ -1680,7 +2504,8 @@ function resolveScenarioActionEffectContext(input: {
     input.artifactStatDeltas,
     input.enemyCount,
     input.activeEffectIds,
-    input.activeEffectSourceBuildIds
+    input.activeEffectSourceBuildIds,
+    sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const sourceFinalAttackByBuildId = resolveSourceFinalAttackByBuildId(
     input.build,
@@ -1689,7 +2514,10 @@ function resolveScenarioActionEffectContext(input: {
     input.gameData,
     input.buffs,
     input.artifactStatDeltas,
-    input.enemyCount
+    input.enemyCount,
+    resolvedActiveEffectIds,
+    input.activeEffectSourceBuildIds,
+    sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const baseStats = resolveStats(
     input.build,
@@ -1782,6 +2610,7 @@ function resolveDeclaredTimeline(
   const partsById = new Map(parts.map((part) => [part.id, part]))
   const events: DeclaredDamageTimelineEvent[] = []
   for (const event of actionTimeline.damageEvents) {
+    assertDeclaredMixedSpecialReactionEvent(action, event)
     const hitCount = resolveDeclaredEventHitCount(event, actionParameters, action.id)
     if (hitCount === 0) continue
     const part = partsById.get(event.damagePartId)
@@ -1791,6 +2620,7 @@ function resolveDeclaredTimeline(
     events.push({
       ...(event.elementalApplication ? { elementalApplication: event.elementalApplication } : {}),
       ...(event.elementOverrideTarget ? { elementOverrideTarget: event.elementOverrideTarget } : {}),
+      ...(event.specialReaction ? { specialReaction: event.specialReaction } : {}),
       coefficientMultiplier: resolveDeclaredEventCoefficientMultiplier(
         event,
         action,
@@ -1857,7 +2687,7 @@ function resolveActualDynamicAmplifyingReactionKinds(
     ...(rotationElementOverrides ? { elementOverrides: rotationElementOverrides } : {}),
     sustainedAuras: rotationAuras,
     events: timeline.events.map((event) =>
-      createDeclaredRotationEvent(action, ownerId, reaction, legacyScalingStat, [], stats, event, 0, 0, 0)
+      createDeclaredRotationEvent(action, ownerId, reaction, legacyScalingStat, [], 0, stats, event, 0, 0, 0)
     )
   })
   return [
@@ -1876,6 +2706,7 @@ function createDeclaredRotationEvent(
   reaction: CombatActionMetadata["additiveReaction"] | CombatActionMetadata["amplifyingReaction"],
   legacyScalingStat: ScalingStat | undefined,
   matchedActionDamageScalingTerms: readonly DamageScalingTerm[],
+  baseDamageFlat: number,
   stats: RotationStats,
   event: DeclaredDamageTimelineEvent,
   resistanceReduction: number,
@@ -1902,6 +2733,7 @@ function createDeclaredRotationEvent(
     return {
       ...base,
       scaling: {
+        ...(baseDamageFlat === 0 ? {} : { flatDamage: baseDamageFlat }),
         terms: appendMatchedActionDamageScalingTerms(
           multiplyScalingTerms(event.part.terms, event.coefficientMultiplier),
           matchedActionDamageScalingTerms
@@ -1913,6 +2745,7 @@ function createDeclaredRotationEvent(
     return {
       ...base,
       scaling: {
+        ...(baseDamageFlat === 0 ? {} : { flatDamage: baseDamageFlat }),
         terms: [
           {
             coefficient: (event.part.coefficient ?? 0) * event.coefficientMultiplier,
@@ -1927,6 +2760,7 @@ function createDeclaredRotationEvent(
     ...base,
     scaling: {
       coefficient: (event.part.coefficient ?? 0) * event.coefficientMultiplier,
+      ...(baseDamageFlat === 0 ? {} : { flatDamage: baseDamageFlat }),
       stat: requireLegacyScalingStat(action.id, legacyScalingStat)
     }
   }
@@ -2034,16 +2868,17 @@ export function resolveActionScenarioParameters(
   for (const definition of definitions) {
     assertScenarioParameterDefinition(action.id, definition)
     const hasSelectedValue = Object.prototype.hasOwnProperty.call(selectedParameters ?? {}, definition.id)
-    const selectedValue = hasSelectedValue ? selectedParameters?.[definition.id] : definition.defaultValue
+    const range = resolveActionScenarioParameterRange(definition, sourceConstellation)
+    const selectedValue = hasSelectedValue ? selectedParameters?.[definition.id] : range.defaultValue
     if (
       typeof selectedValue !== "number" ||
       !Number.isInteger(selectedValue) ||
-      selectedValue < definition.minimumValue ||
-      selectedValue > definition.maximumValue ||
+      selectedValue < range.minimumValue ||
+      selectedValue > range.maximumValue ||
       (definition.allowedValues !== undefined && !definition.allowedValues.includes(selectedValue))
     ) {
       throw new Error(
-        `Scenario parameter ${definition.id} for action ${action.id} must be an allowed integer from ${definition.minimumValue} to ${definition.maximumValue}`
+        `Scenario parameter ${definition.id} for action ${action.id} must be an allowed integer from ${range.minimumValue} to ${range.maximumValue}`
       )
     }
     const requiredConstellation = getScenarioParameterMinimumSourceConstellation(definition, selectedValue)
@@ -2075,6 +2910,39 @@ export function resolveActionScenarioParameters(
   return resolved
 }
 
+type ActionScenarioParameterDefinition = NonNullable<CombatActionMetadata["scenarioParameters"]>[number]
+type ActionScenarioParameterConstellationRange = NonNullable<
+  ActionScenarioParameterDefinition["rangeBySourceConstellation"]
+>[number]
+
+interface ResolvedActionScenarioParameterRange {
+  readonly defaultValue: number
+  readonly maximumValue: number
+  readonly minimumValue: number
+}
+
+/** Resolves the highest applicable constellation-specific bounds for one action snapshot input. */
+function resolveActionScenarioParameterRange(
+  definition: ActionScenarioParameterDefinition,
+  sourceConstellation: number
+): ResolvedActionScenarioParameterRange {
+  let selectedRange: ActionScenarioParameterConstellationRange | undefined
+  for (const candidate of definition.rangeBySourceConstellation ?? []) {
+    if (candidate.minimumSourceConstellation > sourceConstellation) continue
+    if (
+      selectedRange === undefined ||
+      candidate.minimumSourceConstellation > selectedRange.minimumSourceConstellation
+    ) {
+      selectedRange = candidate
+    }
+  }
+  return {
+    defaultValue: selectedRange?.defaultValue ?? definition.defaultValue,
+    maximumValue: selectedRange?.maximumValue ?? definition.maximumValue,
+    minimumValue: selectedRange?.minimumValue ?? definition.minimumValue
+  }
+}
+
 function assertScenarioParameterDefinition(
   actionId: string,
   definition: NonNullable<CombatActionMetadata["scenarioParameters"]>[number]
@@ -2088,10 +2956,43 @@ function assertScenarioParameterDefinition(
   if (definition.defaultValue < definition.minimumValue || definition.defaultValue > definition.maximumValue) {
     throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has an out-of-range default`)
   }
+  const constellationRanges = definition.rangeBySourceConstellation
+  if (constellationRanges) {
+    const thresholds = new Set<number>()
+    for (const range of constellationRanges) {
+      if (
+        !Number.isInteger(range.minimumSourceConstellation) ||
+        range.minimumSourceConstellation < 1 ||
+        range.minimumSourceConstellation > 6
+      ) {
+        throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has an invalid constellation range threshold`)
+      }
+      if (thresholds.has(range.minimumSourceConstellation)) {
+        throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has duplicate constellation range thresholds`)
+      }
+      thresholds.add(range.minimumSourceConstellation)
+      if (range.defaultValue === undefined && range.maximumValue === undefined && range.minimumValue === undefined) {
+        throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has an empty constellation range`)
+      }
+      if (
+        (range.defaultValue !== undefined && !Number.isInteger(range.defaultValue)) ||
+        (range.maximumValue !== undefined && !Number.isInteger(range.maximumValue)) ||
+        (range.minimumValue !== undefined && !Number.isInteger(range.minimumValue))
+      ) {
+        throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has non-integer constellation range bounds`)
+      }
+      const minimumValue = range.minimumValue ?? definition.minimumValue
+      const maximumValue = range.maximumValue ?? definition.maximumValue
+      const defaultValue = range.defaultValue ?? definition.defaultValue
+      if (minimumValue > maximumValue || defaultValue < minimumValue || defaultValue > maximumValue) {
+        throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has invalid constellation range bounds`)
+      }
+    }
+  }
   if (definition.allowedValues) {
     const allowedValues = new Set<number>()
     for (const value of definition.allowedValues) {
-      if (!Number.isInteger(value) || value < definition.minimumValue || value > definition.maximumValue) {
+      if (!Number.isInteger(value) || !isScenarioParameterValueWithinAnyDeclaredRange(definition, value)) {
         throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has an out-of-range allowed value`)
       }
       if (allowedValues.has(value)) {
@@ -2102,19 +3003,36 @@ function assertScenarioParameterDefinition(
     if (!allowedValues.has(definition.defaultValue)) {
       throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has a disallowed default`)
     }
+    for (const range of constellationRanges ?? []) {
+      const defaultValue = range.defaultValue ?? definition.defaultValue
+      if (!allowedValues.has(defaultValue)) {
+        throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has a disallowed constellation default`)
+      }
+    }
   }
   const constellationRequirements = definition.minimumSourceConstellationByValue
   if (constellationRequirements) {
     const gatedValues = new Set<number>()
     for (const requirement of constellationRequirements) {
-      if (!Number.isInteger(requirement.value) || requirement.value < definition.minimumValue || requirement.value > definition.maximumValue) {
+      if (
+        !Number.isInteger(requirement.minimumSourceConstellation) ||
+        requirement.minimumSourceConstellation < 1 ||
+        requirement.minimumSourceConstellation > 6
+      ) {
+        throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has an invalid constellation threshold`)
+      }
+      if (
+        !Number.isInteger(requirement.value) ||
+        !isScenarioParameterValueWithinRangeAtConstellation(
+          definition,
+          requirement.value,
+          requirement.minimumSourceConstellation
+        )
+      ) {
         throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has an out-of-range constellation-gated value`)
       }
       if (definition.allowedValues && !definition.allowedValues.includes(requirement.value)) {
         throw new Error(`Scenario parameter ${definition.id} for action ${actionId} gates a disallowed value`)
-      }
-      if (!Number.isInteger(requirement.minimumSourceConstellation) || requirement.minimumSourceConstellation < 1 || requirement.minimumSourceConstellation > 6) {
-        throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has an invalid constellation threshold`)
       }
       if (gatedValues.has(requirement.value)) {
         throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has duplicate constellation-gated values`)
@@ -2132,7 +3050,7 @@ function assertScenarioParameterDefinition(
     if (!Number.isInteger(entry.parameterValue) || !Number.isInteger(entry.maximumValue)) {
       throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has non-integer dependent bounds`)
     }
-    if (entry.maximumValue < definition.minimumValue || entry.maximumValue > definition.maximumValue) {
+    if (!isScenarioParameterValueWithinAnyDeclaredRange(definition, entry.maximumValue)) {
       throw new Error(`Scenario parameter ${definition.id} for action ${actionId} has an out-of-range dependent maximum`)
     }
     if (sourceValues.has(entry.parameterValue)) {
@@ -2140,6 +3058,27 @@ function assertScenarioParameterDefinition(
     }
     sourceValues.add(entry.parameterValue)
   }
+}
+
+function isScenarioParameterValueWithinAnyDeclaredRange(
+  definition: ActionScenarioParameterDefinition,
+  value: number
+): boolean {
+  if (value >= definition.minimumValue && value <= definition.maximumValue) return true
+  return (definition.rangeBySourceConstellation ?? []).some((range) => {
+    const minimumValue = range.minimumValue ?? definition.minimumValue
+    const maximumValue = range.maximumValue ?? definition.maximumValue
+    return value >= minimumValue && value <= maximumValue
+  })
+}
+
+function isScenarioParameterValueWithinRangeAtConstellation(
+  definition: ActionScenarioParameterDefinition,
+  value: number,
+  sourceConstellation: number
+): boolean {
+  const range = resolveActionScenarioParameterRange(definition, sourceConstellation)
+  return value >= range.minimumValue && value <= range.maximumValue
 }
 
 /** Returns the source-constellation threshold for one declared snapshot value, when it has one. */

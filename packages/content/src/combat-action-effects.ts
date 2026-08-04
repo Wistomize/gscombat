@@ -583,7 +583,8 @@ export function isCombatActionEffectApplicable(
   effectiveElements: readonly CombatActionMetadata["element"][] = [action.element],
   recipientWeaponType?: CatalogWeaponType,
   candidateAmplifyingReactionKinds: readonly NonNullable<CombatActionMetadata["amplifyingReaction"]>["kind"][] = [],
-  candidateReactionKinds: readonly CombatActionReactionKind[] = []
+  candidateReactionKinds: readonly CombatActionReactionKind[] = [],
+  candidateSpecialReactionKinds?: readonly NonNullable<CombatActionMetadata["specialReaction"]>["kind"][]
 ): boolean {
   const filter = effect.targetFilter
   if (!filter) return true
@@ -614,16 +615,26 @@ export function isCombatActionEffectApplicable(
   ) {
     return false
   }
-  if (
-    filter.specialReactionKinds &&
-    (!action.specialReaction || !filter.specialReactionKinds.includes(action.specialReaction.kind))
-  ) {
+  const specialReactionKinds = candidateSpecialReactionKinds ?? listDeclaredSpecialReactionKinds(action)
+  if (filter.specialReactionKinds && !specialReactionKinds.some((kind) => filter.specialReactionKinds!.includes(kind))) {
     return false
   }
   const actionElements = effectiveElements.length > 0 ? effectiveElements : [action.element]
   const filterElements = filter.elements
   if (filterElements && !actionElements.every((element) => filterElements.includes(element))) return false
   return !filter.talentSlots || filter.talentSlots.includes(action.talentSlot)
+}
+
+/** Lists all direct Moon or Stellar formula kinds declared by an action or one of its timed hit events. */
+function listDeclaredSpecialReactionKinds(
+  action: CombatActionMetadata
+): readonly NonNullable<CombatActionMetadata["specialReaction"]>["kind"][] {
+  return [
+    ...new Set([
+      ...(action.specialReaction ? [action.specialReaction.kind] : []),
+      ...(action.timeline?.damageEvents.flatMap((event) => (event.specialReaction ? [event.specialReaction.kind] : [])) ?? [])
+    ])
+  ]
 }
 
 /** Lists active snapshot choices that can affect the selected action before source-build validation. */

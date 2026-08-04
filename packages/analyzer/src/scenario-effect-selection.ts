@@ -29,7 +29,11 @@ function getEquipmentEffectSourceBuilds(
   const matching = candidates.filter((build) => {
     if (source.kind === "weapon") return build.weapon.weaponId === source.weaponId
     if (source.kind === "artifact_set") return countArtifactSet(build, source.setId) >= source.minimumPieces
-    return build.characterId === source.characterId
+    return (
+      build.characterId === source.characterId &&
+      (source.minimumSourceAscension === undefined || build.ascension >= source.minimumSourceAscension) &&
+      (source.minimumSourceConstellation === undefined || build.constellation >= source.minimumSourceConstellation)
+    )
   })
   const relation = effect.targetFilter?.recipientSourceRelation
   if (relation === "source") return matching.filter((build) => build.buildId === scenario.primary.buildId)
@@ -132,6 +136,7 @@ function addMaximumReachableEquipmentEffects(
   })
 
   const bestByExclusivityGroup = new Map<string, (typeof eligibleEffects)[number]>()
+  // Exclusivity chooses one state variant, not one stat contribution. A selected stack can grant several effects.
   for (const candidate of eligibleEffects) {
     const group = candidate.effect.exclusivity?.group
     if (!group) {
@@ -148,7 +153,14 @@ function addMaximumReachableEquipmentEffects(
       bestByExclusivityGroup.set(group, candidate)
     }
   }
-  for (const candidate of bestByExclusivityGroup.values()) selectedEffectIds.add(candidate.effect.id)
+  for (const candidate of eligibleEffects) {
+    const group = candidate.effect.exclusivity?.group
+    if (!group) continue
+    const selectedCandidate = bestByExclusivityGroup.get(group)
+    if (selectedCandidate?.effect.exclusivity?.variant === candidate.effect.exclusivity?.variant) {
+      selectedEffectIds.add(candidate.effect.id)
+    }
+  }
 }
 
 function selectAutomaticEffectSources(

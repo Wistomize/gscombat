@@ -5,6 +5,7 @@ import {
   listCharacterTalentLevelConstellationBonuses,
   listHealingEquipmentEffects,
   listRecipientEquipmentEffects,
+  normalizeProjectedMetricLabel,
   resolveHealingEquipmentEffectValue,
   resolveRecipientEquipmentEffectValue,
   type CombatDamageBonusAttackType,
@@ -44,7 +45,7 @@ import {
   resolveTalentParameterOwnerId,
   resolveTeamUniqueElementCount
 } from "./build-variant.js"
-import { getScenarioParameterMinimumSourceConstellation } from "./declared-scenario.js"
+import { resolveActionScenarioParameters } from "./declared-scenario.js"
 import { evaluateScenario } from "./scenario.js"
 
 /** Supplies runtime state for one selected friendly recipient of a support metric. */
@@ -381,13 +382,14 @@ function evaluateDamageMetric(
     input.gameData
   )
   const value = evaluation.actionExpectedDamage
+  const label = normalizeProjectedMetricLabel(metric.label)
   return {
     actionId: metric.actionId,
     conditions: [],
     formula: { events: evaluation.rotation.events, kind: "rotation_events", value },
     id: metric.id,
     kind: "damage",
-    label: metric.label,
+    label,
     potentialValue: value,
     sourceActionId: metric.sourceActionId,
     target: { kind: "enemy" },
@@ -665,6 +667,7 @@ function evaluateHealingMetric(
   teammates: readonly CharacterBuild[] | undefined,
   gameData: GameDataRepository
 ): CombatHealingMetricEvaluation {
+  const label = normalizeProjectedMetricLabel(metric.label)
   const stats = resolveMetricSourceCombatStats(metric, build, sourceContext, teammates, gameData)
   const percentage = resolveMetricParameter(metric, metric.percentageParameter, build, gameData)
   const flatAmount = resolveMetricParameter(metric, metric.flatParameter, build, gameData)
@@ -753,7 +756,7 @@ function evaluateHealingMetric(
     id: metric.id,
     incomingHealingBonus: recipient.incomingHealingBonus,
     kind: "healing",
-    label: metric.label,
+    label,
     percentage: percentage.value,
     potentialValue: potentialFormula.value,
     recipient: recipient.recipient,
@@ -790,6 +793,7 @@ function evaluateFlatStatBuffMetric(
   teammates: readonly CharacterBuild[] | undefined,
   gameData: GameDataRepository
 ): CombatFlatStatBuffMetricEvaluation {
+  const label = normalizeProjectedMetricLabel(metric.label)
   const stats = resolveMetricSourceCombatStats(metric, build, sourceContext, teammates, gameData)
   const ratio = resolveMetricParameter(metric, metric.ratioParameter, build, gameData)
   const ratioConstellationBonus = (metric.ratioConstellationBonuses ?? []).reduce(
@@ -820,7 +824,7 @@ function evaluateFlatStatBuffMetric(
     formula,
     id: metric.id,
     kind: "stat_buff",
-    label: metric.label,
+    label,
     potentialValue: potentialFormula.value,
     ratio: ratio.value,
     ratioConstellationBonus,
@@ -838,6 +842,7 @@ function evaluateScalarMetric(
   metric: CombatScalarMetricDefinition,
   input: EvaluateCombatMetricInput
 ): CombatScalarMetricEvaluation {
+  const label = normalizeProjectedMetricLabel(metric.label)
   const stats = resolveMetricSourceCombatStats(
     metric,
     input.build,
@@ -895,7 +900,7 @@ function evaluateScalarMetric(
     operands.push(talentParameterTerm("天赋固定值", flatParameterDefinition, flatParameter))
   }
 
-  const uncappedFormula = addFormula(metric.label, operands)
+  const uncappedFormula = addFormula(label, operands)
   const maximumValue = metric.maximumValue ?? maximumValueParameter?.value
   const maximumValueFormula = maximumValueParameter && maximumValueParameterDefinition
     ? talentParameterTerm("天赋效果上限", maximumValueParameterDefinition, maximumValueParameter)
@@ -919,7 +924,7 @@ function evaluateScalarMetric(
     ? multiplyFormula("护盾强效后的吸收量", [basePotentialFormula, shieldStrengthMultiplier])
     : basePotentialFormula
   const sourceContribution = applySourceAscensionRequirement(
-    metric.label,
+    label,
     metric.minimumSourceAscension,
     input.build,
     potentialFormula
@@ -934,7 +939,7 @@ function evaluateScalarMetric(
     formula,
     id: metric.id,
     kind: "scalar",
-    label: metric.label,
+    label,
     ...(maximumValue === undefined ? {} : { maximumValue }),
     potentialValue: potentialFormula.value,
     ratio,
@@ -1185,40 +1190,14 @@ function resolveMetricRatioScenarioParameter(
     throw new Error(`Metric ${metric.id} references missing action snapshot ${parameter.parameterId}`)
   }
 
-  const actionParameters = context?.actionParameters
-  const value = actionParameters?.[parameter.parameterId] ?? definition.defaultValue
-  const maximumValue = resolveActionScenarioParameterMaximum(sourceAction.id, definition, actionParameters)
-  const isAllowedValue = definition.allowedValues?.includes(value) ?? true
-  if (!Number.isInteger(value) || value < definition.minimumValue || value > maximumValue || !isAllowedValue) {
-    throw new Error(`Metric ${metric.id} has invalid action snapshot ${parameter.parameterId}`)
-  }
-  const requiredConstellation = getScenarioParameterMinimumSourceConstellation(definition, value)
-  if (requiredConstellation !== undefined && build.constellation < requiredConstellation) {
-    throw new Error(
-      `Metric ${metric.id} action snapshot ${parameter.parameterId}=${value} requires source constellation ` +
-        `${requiredConstellation}`
-    )
-  }
-  return { label: definition.label, parameterId: definition.id, value }
-}
-
-function resolveActionScenarioParameterMaximum(
-  actionId: string,
-  definition: NonNullable<NonNullable<ReturnType<typeof getCombatActionDefinition>>["scenarioParameters"]>[number],
-  actionParameters: CombatMetricEvaluationContext["actionParameters"] | undefined
-): number {
-  const maximumByParameter = definition.maximumValueByParameter
-  if (!maximumByParameter) return definition.maximumValue
-
-  const sourceAction = getCombatActionDefinition(actionId)
-  const dependency = sourceAction?.scenarioParameters?.find(
-    (candidate) => candidate.id === maximumByParameter.parameterId
+  const resolvedActionParameters = resolveActionScenarioParameters(
+    sourceAction,
+    context?.actionParameters,
+    build.constellation
   )
-  if (!dependency) throw new Error(`Action ${actionId} has an invalid maximum snapshot dependency`)
-  const dependencyValue = actionParameters?.[dependency.id] ?? dependency.defaultValue
-  const matchingMaximum = maximumByParameter.values.find((entry) => entry.parameterValue === dependencyValue)
-  if (!matchingMaximum) throw new Error(`Action ${actionId} has an invalid maximum snapshot value`)
-  return matchingMaximum.maximumValue
+  const value = resolvedActionParameters.get(parameter.parameterId)
+  if (value === undefined) throw new Error(`Metric ${metric.id} has no action snapshot ${parameter.parameterId}`)
+  return { label: definition.label, parameterId: definition.id, value }
 }
 
 function resolveMetricParameter(

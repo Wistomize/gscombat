@@ -176,6 +176,7 @@ export const SupportMetricResultSchema = Type.Cyclic(
           Type.Literal("attack_buff"),
           Type.Literal("attack_speed_bonus"),
           Type.Literal("bloom_related_reaction_damage_bonus"),
+          Type.Literal("bloom_related_reaction_flat_damage_addition"),
           Type.Literal("damage_bonus"),
           Type.Literal("defense_buff"),
           Type.Literal("elemental_flat_damage_bonus"),

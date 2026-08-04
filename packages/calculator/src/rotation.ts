@@ -143,7 +143,8 @@ export interface SingleDamageScaling {
 /** Multiple base scaling contributions evaluated as one hit before shared damage multipliers. */
 export interface MultiDamageScaling {
   readonly coefficient?: never
-  readonly flatDamage?: never
+  /** Flat base damage added after every resolved scaling term and before shared multipliers. */
+  readonly flatDamage?: number
   readonly stat?: never
   readonly terms: readonly [DamageScalingTerm, ...DamageScalingTerm[]]
 }
@@ -154,6 +155,8 @@ export interface ReactionConfig {
   readonly bonus: number
   /** Required only for transformative reactions whose damage element cannot be inferred from the reaction kind. */
   readonly damageElement?: Element
+  /** Adds once per transformative reaction hit after its reaction multiplier, before resistance. */
+  readonly flatDamageAddition?: number
   readonly kind: RotationReaction
 }
 
@@ -278,9 +281,11 @@ export type RotationTraceEntry =
       readonly before: number
       readonly bonus: number
       readonly elementalMastery: number
+      /** Additive reaction base damage after the level/EM/reaction-bonus calculation. */
+      readonly flatDamageAddition: number
       /**
        * Number of reaction hits included in after.
-       * after = baseDamage × multiplier × (1 + 16 × EM / (EM + 2000) + bonus) × hitCount.
+       * after = (baseDamage × multiplier × (1 + 16 × EM / (EM + 2000) + bonus) + flatDamageAddition) × hitCount.
        */
       readonly hitCount: number
       readonly kind: "transformative_reaction"
@@ -767,17 +772,26 @@ function resolveRotationScalingDamage(
         value
       }
     })
-    const damage = terms.reduce((total, term) => total + term.contribution, 0)
-    trace.push({ after: damage, before: 0, kind: "scaling_terms", terms })
+    const flatDamage = scaling.flatDamage ?? 0
+    const damage = terms.reduce((total, term) => total + term.contribution, 0) + flatDamage
+    trace.push({
+      after: damage,
+      before: 0,
+      ...(flatDamage === 0 ? {} : { flatDamage }),
+      kind: "scaling_terms",
+      terms
+    })
     return damage
   }
 
   const value = getScalingValue(stats, scaling.stat)
-  const damage = value * scaling.coefficient + (scaling.flatDamage ?? 0)
+  const flatDamage = scaling.flatDamage ?? 0
+  const damage = value * scaling.coefficient + flatDamage
   trace.push({
     after: damage,
     before: 0,
     coefficient: scaling.coefficient,
+    ...(flatDamage === 0 ? {} : { flatDamage }),
     kind: "scaling",
     stat: scaling.stat,
     value
@@ -795,11 +809,12 @@ function evaluateTransformativeEvent(
   const multiplier = transformativeReactionMultiplier[reaction.kind]
   const damageElement = getTransformativeReactionDamageElement(reaction)
   const baseDamage = getReactionBaseDamage(event.stats.level)
-  const beforeResistance =
+  const reactionDamage =
     baseDamage *
     multiplier *
-    (1 + transformativeReactionBonus(event.stats.elementalMastery, reaction.bonus)) *
-    hitCount
+    (1 + transformativeReactionBonus(event.stats.elementalMastery, reaction.bonus))
+  const flatDamageAddition = reaction.flatDamageAddition ?? 0
+  const beforeResistance = (reactionDamage + flatDamageAddition) * hitCount
   const baseResistance = getElementResistance(enemy, damageElement)
   const resistanceReduction = event.resistanceReduction ?? 0
   const effectiveResistance = baseResistance - resistanceReduction
@@ -823,6 +838,7 @@ function evaluateTransformativeEvent(
         before: 0,
         bonus: reaction.bonus,
         elementalMastery: event.stats.elementalMastery,
+        flatDamageAddition,
         hitCount,
         kind: "transformative_reaction",
         multiplier,

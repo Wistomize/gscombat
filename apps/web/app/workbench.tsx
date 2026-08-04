@@ -16,7 +16,7 @@ import { type ReactNode, useEffect, useMemo, useState } from "react"
 import { assembleEvaluationScenario } from "../lib/scenario-adapter"
 import { fromDisplayStatValue, toDisplayStatValue } from "../lib/stats"
 import { loadBuildLibrary, loadParty } from "../lib/workspace-config"
-import { ArtifactIcon, CharacterAvatar, WeaponIcon } from "./visual-icons"
+import { ArtifactIcon, CharacterAvatar, getCharacterElement, WeaponIcon } from "./visual-icons"
 
 const slotLabels: Readonly<Record<ArtifactPiece["slot"], string>> = {
   circlet: "理之冠",
@@ -89,10 +89,13 @@ type SpecialReactionKind = Extract<
 >["reactionKind"]
 type CatalogPrimaryAction = CatalogResponse["characters"][number]["primaryActions"][number]
 type CatalogSupportMetric = CatalogResponse["characters"][number]["supportMetrics"][number]
+type CatalogScenarioParameter = NonNullable<CatalogSupportMetric["scenarioParameters"]>[number]
 type ScenarioEffectOption = NonNullable<CatalogPrimaryAction["scenarioEffects"]>[number]
 type AppliedScenarioBuff = AnalysisResponse["evaluation"]["appliedBuffs"][number]
 type AppliedActionEffect = AnalysisResponse["evaluation"]["appliedEffects"][number]
 type ActiveResonanceId = AnalysisResponse["evaluation"]["teamState"]["activeResonanceIds"][number]
+type ResolvedScenarioStats = AnalysisResponse["evaluation"]["stats"]
+type ResolvedStatContribution = ResolvedScenarioStats["statContributions"][number]
 type SupportMetricFormula = SupportMetricEvaluationResponse["metric"]["formula"]
 
 interface SupportMetricContextDraft {
@@ -126,7 +129,7 @@ const traceStageMeta: Readonly<Record<PipelineStage, { readonly hint: string; re
   resistance: { hint: "敌人抗性与抗性降低", label: "抗性区" },
   hit_count: { hint: "同一事件的多段命中合计", label: "命中段数" },
   transformative_reaction: { hint: "剧变反应的等级、元素精通与反应加成", label: "剧变反应区" },
-  ascension: { hint: "特殊反应抗性结算后的最终升变加成", label: "升变区" }
+  ascension: { hint: "特殊反应抗性结算后的独立伤害擢升", label: "伤害擢升区" }
 }
 
 const resonanceLabels: Readonly<Record<ActiveResonanceId, string>> = {
@@ -157,7 +160,12 @@ const actionEffectTargetLabels: Readonly<Record<AppliedActionEffect["target"], s
   damageBonus: "伤害加成",
   amplifyingReactionBonus: "蒸发/融化反应加成",
   reactionDamageBonus: "普通反应伤害加成",
+  transformativeReactionFlatDamageAddition: "剧变反应基础伤害增加值",
+  specialReactionBaseDamageFlat: "月曜/星烁反应基础伤害增加值",
+  specialReactionBaseDamageBonus: "月曜/星烁反应基础伤害加成",
+  specialReactionBigPowerBonus: "月曜/星烁反应专属倍率",
   specialReactionDamageBonus: "月曜/星烁反应伤害加成",
+  specialReactionElevation: "月曜/星烁反应伤害擢升",
   specialReactionFlatDamageAddition: "月曜/星烁反应固定伤害增加值",
   defenseFlat: "固定防御力",
   defensePercent: "防御力",
@@ -192,11 +200,23 @@ function getDefaultActionParameters(action: CatalogPrimaryAction | undefined): R
   return Object.fromEntries(action.scenarioParameters.map((parameter) => [parameter.id, parameter.defaultValue]))
 }
 
-function createSupportMetricContextDraft(metric: CatalogSupportMetric): SupportMetricContextDraft {
-  const actionParameters = metric.scenarioParameters?.length
-    ? Object.fromEntries(metric.scenarioParameters.map((parameter) => [parameter.id, parameter.defaultValue]))
-    : undefined
-  return actionParameters ? { actionParameters } : {}
+function getScenarioParameterRange(
+  parameter: CatalogScenarioParameter,
+  sourceConstellation: number
+): Pick<CatalogScenarioParameter, "defaultValue" | "maximumValue" | "minimumValue"> {
+  const eligibleRanges = parameter.rangeBySourceConstellation
+    ?.filter((range) => sourceConstellation >= range.minimumSourceConstellation)
+    .sort((left, right) => left.minimumSourceConstellation - right.minimumSourceConstellation)
+  const range = eligibleRanges?.at(-1)
+  return {
+    defaultValue: range?.defaultValue ?? parameter.defaultValue,
+    maximumValue: range?.maximumValue ?? parameter.maximumValue,
+    minimumValue: range?.minimumValue ?? parameter.minimumValue
+  }
+}
+
+function createSupportMetricContextDraft(): SupportMetricContextDraft {
+  return {}
 }
 
 function createSupportMetricEvaluationContext(
@@ -415,6 +435,14 @@ function formatAppliedActionEffect(effect: AppliedActionEffect): string {
   if (effect.target === "talentLevel") return `+${formatNumber(effect.value)}`
   if (effect.target === "actionParameter") return `+${formatNumber(effect.value)}`
   if (effect.target === "additionalDamageEvent") return `${formatPercent(effect.value)}攻击力期望倍率`
+  if (
+    effect.target === "baseDamageFlat" ||
+    effect.target === "specialReactionBaseDamageFlat" ||
+    effect.target === "specialReactionFlatDamageAddition" ||
+    effect.target === "transformativeReactionFlatDamageAddition"
+  ) {
+    return `+${formatFormulaNumber(effect.value)}`
+  }
   if (effect.target === "matchedActionAdditiveDamageTerm") {
     return `${formatPercent(effect.value)} × ${getScalingStatLabel(effect.scalingStat ?? "attack")}`
   }
@@ -482,6 +510,65 @@ function FormulaEquation({ children, label }: { readonly children: ReactNode; re
       <span className="formulaEquationLabel">{label} = </span>
       {children}
     </p>
+  )
+}
+
+function getScalingContributionStages(
+  stat: "attack" | "defense" | "elementalMastery" | "hp"
+): readonly ResolvedStatContribution["stage"][] {
+  if (stat === "attack") return ["baseAttack", "attackPercent", "flatAttack"]
+  if (stat === "defense") return ["baseDefense", "defensePercent", "flatDefense"]
+  if (stat === "hp") return ["baseHp", "hpPercent", "flatHp"]
+  return ["baseElementalMastery", "elementalMastery"]
+}
+
+function isPercentStatContribution(stage: ResolvedStatContribution["stage"]): boolean {
+  return stage === "attackPercent" || stage === "defensePercent" || stage === "hpPercent"
+}
+
+function ScalingStatBreakdown({
+  stats,
+  stat
+}: {
+  readonly stats: ResolvedScenarioStats
+  readonly stat: "attack" | "defense" | "elementalMastery" | "hp"
+}) {
+  const contributionStages = getScalingContributionStages(stat)
+  const contributions = stats.statContributions.filter((contribution) => contributionStages.includes(contribution.stage))
+  const total =
+    stat === "attack"
+      ? {
+          label: "最终攻击",
+          value: `${formatFormulaNumber(stats.baseAttack)} × (1 + ${formatFormulaPercent(stats.attackPercent)}) + ${formatFormulaNumber(stats.flatAttack)} = ${formatFormulaNumber(stats.effectiveAttack)}`
+        }
+      : stat === "defense"
+        ? {
+            label: "最终防御",
+            value: `${formatFormulaNumber(stats.baseDefense)} × (1 + ${formatFormulaPercent(stats.defensePercent)}) + ${formatFormulaNumber(stats.flatDefense)} = ${formatFormulaNumber(stats.effectiveDefense)}`
+          }
+        : stat === "hp"
+          ? {
+              label: "最终生命值",
+              value: `${formatFormulaNumber(stats.baseHp)} × (1 + ${formatFormulaPercent(stats.hpPercent)}) + ${formatFormulaNumber(stats.flatHp)} = ${formatFormulaNumber(stats.effectiveHp)}`
+            }
+          : {
+              label: "最终元素精通",
+              value: `${formatFormulaNumber(stats.baseElementalMastery)} + ${formatFormulaNumber(stats.flatElementalMastery)} = ${formatFormulaNumber(stats.elementalMastery)}`
+            }
+
+  return (
+    <>
+      {contributions.map((contribution, index) => (
+        <div key={`${contribution.stage}-${contribution.label}-${index}`}>
+          <dt>{contribution.label}</dt>
+          <dd>{isPercentStatContribution(contribution.stage) ? formatFormulaPercent(contribution.value) : formatFormulaNumber(contribution.value)}</dd>
+        </div>
+      ))}
+      <div className="traceContributionTotal">
+        <dt>{total.label}</dt>
+        <dd>{total.value}</dd>
+      </div>
+    </>
   )
 }
 
@@ -699,23 +786,103 @@ function getElementLabel(element: string): string {
   return labels[element] ?? element
 }
 
+function ActionEffectSources({
+  effects,
+  targets
+}: {
+  readonly effects: readonly AppliedActionEffect[] | undefined
+  readonly targets: readonly AppliedActionEffect["target"][]
+}) {
+  const matchingEffects = effects?.filter((effect) => targets.includes(effect.target)) ?? []
+  if (matchingEffects.length === 0) return null
+  return (
+    <details className="traceContributionDetails">
+      <summary>展开当前阶段来源</summary>
+      <dl>
+        {matchingEffects.map((effect) => (
+          <div key={effect.id}><dt>{effect.label}</dt><dd>{formatAppliedActionEffect(effect)}</dd></div>
+        ))}
+      </dl>
+    </details>
+  )
+}
+
 function SpecialReactionTraceFormula({
   after,
   before,
+  effects,
   formula,
-  previousStage
+  previousStage,
+  stats
 }: {
   readonly after: number
   readonly before: number
+  readonly effects: readonly AppliedActionEffect[] | undefined
   readonly formula: SpecialReactionFormula
   readonly previousStage: PipelineStage
+  readonly stats: ResolvedScenarioStats | undefined
 }) {
   if (formula.kind === "special_reaction_base_damage") {
+    const fallbackTerms =
+      stats === undefined
+        ? []
+        : (stats.scalingTerms ?? []).map((term) => {
+            const value =
+              term.stat === "attack"
+                ? stats.effectiveAttack
+                : term.stat === "defense"
+                  ? stats.effectiveDefense
+                  : term.stat === "hp"
+                    ? stats.effectiveHp
+                    : stats.elementalMastery
+            return {
+              coefficient: term.coefficient,
+              contribution: term.coefficient * value,
+              label: term.label,
+              stat: term.stat,
+              value
+            }
+          })
+    const terms = formula.terms ?? fallbackTerms
+    const scalingStats = [...new Set(terms.map((term) => term.stat))]
+    const specialBaseDamageEffects = effects?.filter((effect) => effect.target === "specialReactionBaseDamageFlat") ?? []
+    const hasBreakdown = terms.length > 0 || specialBaseDamageEffects.length > 0
     return (
       <div className="formulaLines">
         <FormulaEquation label="特殊反应基础伤害">
-          <FormulaValue stage="base_damage">{formatFormulaNumber(formula.value)}</FormulaValue>
+          {!hasBreakdown ? <FormulaValue stage="base_damage">{formatFormulaNumber(formula.value)}</FormulaValue> : terms.map((term, index) => (
+            <span key={`${term.stat}-${term.coefficient}-${term.label ?? ""}-${index}`}>
+              {index > 0 ? " + " : ""}
+              <FormulaValue stage="base_damage">{formatFormulaNumber(term.value)}</FormulaValue> ×{" "}
+              <FormulaValue stage="base_damage">{formatFormulaPercent(term.coefficient)}</FormulaValue>（
+              {getScalingStatLabel(term.stat)}{term.label ? `，${term.label}` : ""}）
+            </span>
+          ))}
+          {specialBaseDamageEffects.map((effect, index) => (
+            <span key={effect.id}>
+              {terms.length > 0 || index > 0 ? " + " : ""}
+              <FormulaValue stage="base_damage">{formatFormulaNumber(effect.value)}</FormulaValue>（{effect.label}）
+            </span>
+          ))}
+          {!hasBreakdown ? null : <> = <FormulaValue stage="base_damage">{formatFormulaNumber(formula.value)}</FormulaValue></>}
         </FormulaEquation>
+        {stats === undefined || scalingStats.length === 0 ? null : (
+          <details className="traceContributionDetails">
+            <summary>展开属性倍率</summary>
+            <dl>
+              {scalingStats.map((stat) => <ScalingStatBreakdown key={stat} stat={stat} stats={stats} />)}
+              {terms.map((term, index) => (
+                <div key={`${term.stat}-${term.coefficient}-${index}`}>
+                  <dt>{term.label ?? `${getScalingStatLabel(term.stat)}倍率`}</dt>
+                  <dd>{formatFormulaNumber(term.value)} × {formatFormulaPercent(term.coefficient)} = {formatFormulaNumber(term.contribution)}</dd>
+                </div>
+              ))}
+              {specialBaseDamageEffects.map((effect) => (
+                <div key={effect.id}><dt>{effect.label}</dt><dd>+{formatFormulaNumber(effect.value)}</dd></div>
+              ))}
+            </dl>
+          </details>
+        )}
       </div>
     )
   }
@@ -747,6 +914,7 @@ function SpecialReactionTraceFormula({
         <p className="formulaAuxiliary">
           基础伤害乘数 = <FormulaValue stage="base_damage_bonus">{formatFormulaNumber(formula.multiplier)}</FormulaValue>
         </p>
+        <ActionEffectSources effects={effects} targets={["specialReactionBaseDamageBonus"]} />
       </div>
     )
   }
@@ -766,6 +934,7 @@ function SpecialReactionTraceFormula({
           ，反应伤害乘数 ={" "}
           <FormulaValue stage="reaction_damage_bonus">{formatFormulaNumber(formula.multiplier)}</FormulaValue>
         </p>
+        <ActionEffectSources effects={effects} targets={["specialReactionDamageBonus"]} />
       </div>
     )
   }
@@ -777,6 +946,7 @@ function SpecialReactionTraceFormula({
           <FormulaValue stage="big_power">{formatFormulaPercent(formula.multiplier)}</FormulaValue> ={" "}
           <FormulaValue stage="big_power">{formatFormulaNumber(after)}</FormulaValue>
         </FormulaEquation>
+        <ActionEffectSources effects={effects} targets={["specialReactionBigPowerBonus"]} />
       </div>
     )
   }
@@ -788,6 +958,7 @@ function SpecialReactionTraceFormula({
           <FormulaValue stage="flat_damage_addition">{formatFormulaNumber(formula.flatDamageAddition)}</FormulaValue> ={" "}
           <FormulaValue stage="flat_damage_addition">{formatFormulaNumber(after)}</FormulaValue>
         </FormulaEquation>
+        <ActionEffectSources effects={effects} targets={["specialReactionFlatDamageAddition"]} />
       </div>
     )
   }
@@ -840,19 +1011,30 @@ function SpecialReactionTraceFormula({
   }
   return (
     <div className="formulaLines">
-      <FormulaEquation label="升变加成">
+      <FormulaEquation label="伤害擢升">
         <FormulaValue stage={previousStage}>{formatFormulaNumber(before)}</FormulaValue> × (1 +{" "}
         <FormulaValue stage="ascension">{formatFormulaPercent(formula.ascensionBonus)}</FormulaValue>) ={" "}
         <FormulaValue stage="ascension">{formatFormulaNumber(after)}</FormulaValue>
       </FormulaEquation>
       <p className="formulaAuxiliary">
-        升变乘数 = <FormulaValue stage="ascension">{formatFormulaNumber(formula.multiplier)}</FormulaValue>
+        擢升乘数 = <FormulaValue stage="ascension">{formatFormulaNumber(formula.multiplier)}</FormulaValue>
       </p>
+      <ActionEffectSources effects={effects} targets={["specialReactionElevation"]} />
     </div>
   )
 }
 
-function TraceFormula({ entry, previousStage }: { readonly entry: DamageTraceEntry; readonly previousStage: DamageTraceStage }) {
+function TraceFormula({
+  entry,
+  effects,
+  previousStage,
+  stats
+}: {
+  readonly entry: DamageTraceEntry
+  readonly effects: readonly AppliedActionEffect[] | undefined
+  readonly previousStage: DamageTraceStage
+  readonly stats: ResolvedScenarioStats | undefined
+}) {
   const formula = entry.formula
   if (
     formula.kind === "special_reaction_base_damage" ||
@@ -863,7 +1045,7 @@ function TraceFormula({ entry, previousStage }: { readonly entry: DamageTraceEnt
     formula.kind === "special_reaction_flat_damage_addition" ||
     formula.kind === "special_reaction_ascension"
   ) {
-    return <SpecialReactionTraceFormula after={entry.after} before={entry.before} formula={formula} previousStage={previousStage} />
+    return <SpecialReactionTraceFormula after={entry.after} before={entry.before} effects={effects} formula={formula} previousStage={previousStage} stats={stats} />
   }
   if (formula.kind === "attack") {
     return (
@@ -973,9 +1155,12 @@ function TraceFormula({ entry, previousStage }: { readonly entry: DamageTraceEnt
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(formula.multiplier)}</FormulaValue> × [1 + (16 ×{" "}
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(formula.elementalMastery)}</FormulaValue>) ÷ (
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(formula.elementalMastery)}</FormulaValue> + 2,000) +{" "}
-          <FormulaValue stage="transformative_reaction">{formatFormulaPercent(formula.bonus)}</FormulaValue>] ={" "}
+          <FormulaValue stage="transformative_reaction">{formatFormulaPercent(formula.bonus)}</FormulaValue>]
+          {formula.flatDamageAddition === 0 ? null : <> + <FormulaValue stage="flat_damage_addition">{formatFormulaNumber(formula.flatDamageAddition)}</FormulaValue>（基础伤害增加）</>}
+          {" "}= {" "}
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
+        <ActionEffectSources effects={effects} targets={["transformativeReactionFlatDamageAddition"]} />
       </div>
     )
   }
@@ -1087,38 +1272,29 @@ function RotationTraceFormula({
   readonly targetAction: CatalogPrimaryAction | undefined
 }) {
   if (entry.kind === "special_reaction") {
-    return <SpecialReactionTraceFormula after={entry.after} before={entry.before} formula={entry.formula} previousStage={previousStage} />
+    return <SpecialReactionTraceFormula after={entry.after} before={entry.before} effects={analysis.evaluation.appliedEffects} formula={entry.formula} previousStage={previousStage} stats={analysis.evaluation.stats} />
   }
   if (entry.kind === "scaling") {
     const baseMultiplier = analysis.evaluation.stats.talentMultiplier
     const actionMultiplier = baseMultiplier && baseMultiplier !== 0 ? entry.coefficient / baseMultiplier : 1
-    const attackContributions = analysis.evaluation.stats.statContributions.filter((contribution) =>
-      contribution.stage === "baseAttack" || contribution.stage === "attackPercent" || contribution.stage === "flatAttack"
-    )
+    const flatDamageEffects = analysis.evaluation.appliedEffects.filter((effect) => effect.target === "baseDamageFlat")
     return (
       <div className="formulaLines">
         <FormulaEquation label="基础伤害">
           <FormulaValue stage="scaling">{formatFormulaNumber(entry.value)}</FormulaValue> ×{" "}
           <FormulaValue stage="scaling">{formatFormulaPercent(entry.coefficient)}</FormulaValue>（
-          {getScalingStatLabel(entry.stat)}） ={" "}
+          {getScalingStatLabel(entry.stat)}）
+          {entry.flatDamage === undefined ? null : <> + <FormulaValue stage="flat_damage_addition">{formatFormulaNumber(entry.flatDamage)}</FormulaValue>（同段基础伤害增加）</>}
+          {" "}= {" "}
           <FormulaValue stage="scaling">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
         <details className="traceContributionDetails">
           <summary>展开属性倍率</summary>
           <dl>
-            {entry.stat === "attack" ? attackContributions.map((contribution, index) => (
-              <div key={`${contribution.stage}-${contribution.label}-${index}`}>
-                <dt>{contribution.label}</dt>
-                <dd>{contribution.stage === "attackPercent" ? formatFormulaPercent(contribution.value) : formatFormulaNumber(contribution.value)}</dd>
-              </div>
-            )) : null}
-            {entry.stat === "attack" ? (
-              <div className="traceContributionTotal">
-                <dt>最终攻击</dt>
-                <dd>{formatFormulaNumber(analysis.evaluation.stats.baseAttack)} × (1 + {formatFormulaPercent(analysis.evaluation.stats.attackPercent)}) + {formatFormulaNumber(analysis.evaluation.stats.flatAttack)} = {formatFormulaNumber(analysis.evaluation.stats.effectiveAttack)}</dd>
-              </div>
-            ) : null}
-            <div><dt>{getScalingStatLabel(entry.stat)}</dt><dd>{formatFormulaNumber(entry.value)}</dd></div>
+            <ScalingStatBreakdown stat={entry.stat} stats={analysis.evaluation.stats} />
+            {entry.flatDamage === undefined ? null : flatDamageEffects.map((effect) => (
+              <div key={effect.id}><dt>{effect.label}</dt><dd>+{formatFormulaNumber(effect.value)}</dd></div>
+            ))}
             {baseMultiplier === null ? null : <div><dt>天赋基础倍率</dt><dd>{formatFormulaPercent(baseMultiplier)}</dd></div>}
             {targetAction?.scenarioParameters?.map((parameter) => {
               const value = analysis.evaluation.stats.actionParameters?.[parameter.id]
@@ -1132,10 +1308,8 @@ function RotationTraceFormula({
     )
   }
   if (entry.kind === "scaling_terms") {
-    const attackContributions = analysis.evaluation.stats.statContributions.filter((contribution) =>
-      contribution.stage === "baseAttack" || contribution.stage === "attackPercent" || contribution.stage === "flatAttack"
-    )
-    const usesAttack = entry.terms.some((term) => term.stat === "attack")
+    const scalingStats = [...new Set(entry.terms.map((term) => term.stat))]
+    const flatDamageEffects = analysis.evaluation.appliedEffects.filter((effect) => effect.target === "baseDamageFlat")
     return (
       <div className="formulaLines">
         <FormulaEquation label="基础伤害">
@@ -1147,23 +1321,17 @@ function RotationTraceFormula({
               {getScalingStatLabel(term.stat)}{term.label ? `，${term.label}` : ""}）
             </span>
           ))}{" "}
+          {entry.flatDamage === undefined ? null : <> + <FormulaValue stage="flat_damage_addition">{formatFormulaNumber(entry.flatDamage)}</FormulaValue>（同段基础伤害增加）</>}
+          {" "}
           = <FormulaValue stage="scaling">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
         <details className="traceContributionDetails">
           <summary>展开属性倍率</summary>
           <dl>
-            {usesAttack ? attackContributions.map((contribution, index) => (
-              <div key={`${contribution.stage}-${contribution.label}-${index}`}>
-                <dt>{contribution.label}</dt>
-                <dd>{contribution.stage === "attackPercent" ? formatFormulaPercent(contribution.value) : formatFormulaNumber(contribution.value)}</dd>
-              </div>
-            )) : null}
-            {usesAttack ? (
-              <div className="traceContributionTotal">
-                <dt>最终攻击</dt>
-                <dd>{formatFormulaNumber(analysis.evaluation.stats.baseAttack)} × (1 + {formatFormulaPercent(analysis.evaluation.stats.attackPercent)}) + {formatFormulaNumber(analysis.evaluation.stats.flatAttack)} = {formatFormulaNumber(analysis.evaluation.stats.effectiveAttack)}</dd>
-              </div>
-            ) : null}
+            {scalingStats.map((stat) => <ScalingStatBreakdown key={stat} stat={stat} stats={analysis.evaluation.stats} />)}
+            {entry.flatDamage === undefined ? null : flatDamageEffects.map((effect) => (
+              <div key={effect.id}><dt>{effect.label}</dt><dd>+{formatFormulaNumber(effect.value)}</dd></div>
+            ))}
             {targetAction?.scenarioParameters?.map((parameter) => {
               const value = analysis.evaluation.stats.actionParameters?.[parameter.id]
               return value === undefined ? null : <div key={parameter.id}><dt>{parameter.label}</dt><dd>{value}</dd></div>
@@ -1276,14 +1444,16 @@ function RotationTraceFormula({
     return (
       <div className="formulaLines">
         <FormulaEquation label={`${getTransformativeReactionLabel(entry.reaction)}伤害`}>
-          <FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.baseDamage)}</FormulaValue> ×{" "}
+          （<FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.baseDamage)}</FormulaValue> ×{" "}
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.multiplier)}</FormulaValue> × [1 + (16 ×{" "}
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.elementalMastery)}</FormulaValue>) ÷ (
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.elementalMastery)}</FormulaValue> + 2,000) +{" "}
-          <FormulaValue stage="transformative_reaction">{formatFormulaPercent(entry.bonus)}</FormulaValue>] ×{" "}
+          <FormulaValue stage="transformative_reaction">{formatFormulaPercent(entry.bonus)}</FormulaValue>]
+          {entry.flatDamageAddition === 0 ? null : <> + <FormulaValue stage="flat_damage_addition">{formatFormulaNumber(entry.flatDamageAddition)}</FormulaValue>（基础伤害增加）</>}） ×{" "}
           <FormulaValue stage="transformative_reaction">{entry.hitCount.toString()}</FormulaValue> ={" "}
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
+        <ActionEffectSources effects={analysis.evaluation.appliedEffects} targets={["transformativeReactionFlatDamageAddition"]} />
       </div>
     )
   }
@@ -1642,6 +1812,23 @@ function getMaximumReachableConditions(
   }
 }
 
+function removeUnavailableResonanceConditions(
+  conditions: EvaluationScenario["conditions"],
+  hasCryoResonance: boolean,
+  hasGeoResonance: boolean
+): EvaluationScenario["conditions"] {
+  let normalized = conditions
+  if (!hasGeoResonance && normalized.primaryShielded !== undefined) {
+    const { primaryShielded: _primaryShielded, ...withoutShield } = normalized
+    normalized = withoutShield
+  }
+  if (!hasCryoResonance && normalized.targetFrozen !== undefined) {
+    const { targetFrozen: _targetFrozen, ...withoutFrozen } = normalized
+    normalized = withoutFrozen
+  }
+  return normalized
+}
+
 function ArtifactRawValueReport({ build, catalog }: { readonly build: CharacterBuild; readonly catalog: CatalogResponse }) {
   return (
     <article className="wideReport rawArtifactReport">
@@ -1693,7 +1880,7 @@ function OrderedDamageReport({
           <span>{moonsignLabels[analysis.evaluation.teamState.moonsign.level]}</span>
         </div>
         <strong>{formatDamage(analysis.evaluation.rotation.dpr)}</strong>
-        <span>{targetAction?.label ?? "目标技能"} · 动作总暴击期望</span>
+        <span>{targetAction?.label ?? "目标技能"} · 当前配置 C{build.constellation} · 动作总暴击期望</span>
         <div className="damageSplit">
           <div><small>不暴击</small><b>{formatDamage(analysis.evaluation.rotation.events.reduce((total, event) => total + event.nonCritDamage, 0))}</b></div>
           <div><small>暴击</small><b>{formatDamage(analysis.evaluation.rotation.events.reduce((total, event) => total + event.critDamage, 0))}</b></div>
@@ -1734,7 +1921,7 @@ function OrderedDamageReport({
                   })}
                 </section>
               ))
-            : analysis.evaluation.result.trace.map((entry, index) => <div aria-label={`${traceStageMeta[entry.stage].label}结算公式`} className="traceStep" data-stage={entry.stage} key={`${entry.stage}-${index}`}><div className="traceStage"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{traceStageMeta[entry.stage].label}</strong><small>{traceStageMeta[entry.stage].hint}</small></div></div><TraceFormula entry={entry} previousStage={analysis.evaluation.result.trace[index - 1]?.stage ?? entry.stage} /></div>)}
+            : analysis.evaluation.result.trace.map((entry, index) => <div aria-label={`${traceStageMeta[entry.stage].label}结算公式`} className="traceStep" data-stage={entry.stage} key={`${entry.stage}-${index}`}><div className="traceStage"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{traceStageMeta[entry.stage].label}</strong><small>{traceStageMeta[entry.stage].hint}</small></div></div><TraceFormula effects={analysis.evaluation.appliedEffects} entry={entry} previousStage={analysis.evaluation.result.trace[index - 1]?.stage ?? entry.stage} stats={analysis.evaluation.stats} /></div>)}
         </div>
         <div className="buffStrip">
           {analysis.evaluation.appliedBuffs.map((buff) => <span key={`${buff.sourceId}-${buff.stat}`}>{buff.label} {formatAppliedScenarioBuff(buff)}</span>)}
@@ -1804,6 +1991,16 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
     const build = builds.find((candidate) => candidate.buildId === buildId)
     return build ? [build] : []
   })
+  const partyElementCounts = partyBuilds.reduce(
+    (counts, build) => {
+      const element = getCharacterElement(build.characterId)
+      if (element !== "traveler") counts.set(element, (counts.get(element) ?? 0) + 1)
+      return counts
+    },
+    new Map<string, number>()
+  )
+  const hasCryoResonance = (partyElementCounts.get("cryo") ?? 0) >= 2
+  const hasGeoResonance = (partyElementCounts.get("geo") ?? 0) >= 2
   const targetBuild = partyBuilds.find((build) => build.buildId === targetBuildId)
   const targetCharacter = catalog.characters.find((character) => character.characterId === targetBuild?.characterId)
   const targetAction = targetCharacter?.primaryActions.find((action) => action.id === targetActionId)
@@ -1823,6 +2020,19 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
           return groups
         }, new Map<string, ScenarioEffectOption[]>())]
     : []
+
+  useEffect(() => {
+    setConditions((current) => {
+      const shouldClearShield = !hasGeoResonance && current.primaryShielded !== undefined
+      const shouldClearFrozen = !hasCryoResonance && current.targetFrozen !== undefined
+      if (!shouldClearShield && !shouldClearFrozen) return current
+
+      const next = { ...current }
+      if (shouldClearShield) delete next.primaryShielded
+      if (shouldClearFrozen) delete next.targetFrozen
+      return next
+    })
+  }, [hasCryoResonance, hasGeoResonance])
 
   const clearResults = () => {
     setAnalysis(null)
@@ -1864,7 +2074,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   const selectSupportMetric = (metric: CatalogSupportMetric) => {
     setSupportMetricId(metric.id)
     setTargetActionId(null)
-    setSupportMetricContext(createSupportMetricContextDraft(metric))
+    setSupportMetricContext(createSupportMetricContextDraft())
     setSelectedCharacterEffectIds([])
     clearResults()
     setStatus(`已选择指标：${metric.label}`)
@@ -1911,7 +2121,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
     setStatus("正在计算指标与边际收益…")
     try {
       const effectiveConditions = getMaximumReachableConditions(
-        conditions,
+        removeUnavailableResonanceConditions(conditions, hasCryoResonance, hasGeoResonance),
         targetAction,
         targetBuild,
         teammates,
@@ -2017,7 +2227,27 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
                 {needsRecipientInSourceArea(selectedSupportMetric) ? <label className="toggleRow"><span>受益角色位于来源技能区域内</span><input aria-label="受益角色位于来源区域" checked={supportMetricContext.recipient?.isWithinSourceArea ?? false} type="checkbox" onChange={(event) => setSupportMetricContext((current) => ({ ...current, recipient: { ...current.recipient, isWithinSourceArea: event.target.checked } }))} /></label> : null}
                 {selectedSupportMetric.recipientTargetRouting === "active_recipient_if_moonsign_else_self" ? <label className="toggleRow"><span>受益角色处于月兆状态</span><input aria-label="受益角色处于月兆状态" checked={supportMetricContext.recipient?.isMoonsign ?? false} type="checkbox" onChange={(event) => setSupportMetricContext((current) => ({ ...current, recipient: { ...current.recipient, isMoonsign: event.target.checked } }))} /></label> : null}
                 {needsSourceHpFraction(selectedSupportMetric) ? <label><span>来源角色当前生命比例（%）</span><input max={100} min={0} type="number" value={supportMetricContext.source?.currentHpFraction === undefined ? "" : supportMetricContext.source.currentHpFraction * 100} onChange={(event) => setSupportMetricContext((current) => ({ ...current, source: { currentHpFraction: parseOptionalPercent(event.target.value) } }))} /></label> : null}
-                {selectedSupportMetric.scenarioParameters?.map((parameter) => <label key={parameter.id}><span>{parameter.label}</span><input max={parameter.maximumValue} min={parameter.minimumValue} type="number" value={supportMetricContext.actionParameters?.[parameter.id] ?? parameter.defaultValue} onChange={(event) => setSupportMetricContext((current) => ({ ...current, actionParameters: { ...current.actionParameters, [parameter.id]: numberValue(event.target.value, parameter.defaultValue) } }))} /></label>)}
+                {selectedSupportMetric.scenarioParameters?.map((parameter) => {
+                  const range = getScenarioParameterRange(parameter, targetBuild.constellation)
+                  return (
+                    <label key={parameter.id}>
+                      <span>{parameter.label}</span>
+                      <input
+                        max={range.maximumValue}
+                        min={range.minimumValue}
+                        type="number"
+                        value={supportMetricContext.actionParameters?.[parameter.id] ?? range.defaultValue}
+                        onChange={(event) => setSupportMetricContext((current) => ({
+                          ...current,
+                          actionParameters: {
+                            ...current.actionParameters,
+                            [parameter.id]: numberValue(event.target.value, range.defaultValue)
+                          }
+                        }))}
+                      />
+                    </label>
+                  )
+                })}
               </div>
             ) : (
               <>
@@ -2028,8 +2258,8 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
                   {targetAction?.scenarioParameters?.map((parameter) => <label key={parameter.id}><span>{parameter.label}</span><input aria-label={`${parameter.label}数值`} max={parameter.maximumValue} min={parameter.minimumValue} type="number" value={conditions.actionParameters?.[parameter.id] ?? parameter.defaultValue} onChange={(event) => { clearResults(); setConditions((current) => ({ ...current, actionParameters: { ...current.actionParameters, [parameter.id]: numberValue(event.target.value, parameter.defaultValue) } })) }} /></label>)}
                 </div>
                 <div className="scenarioToggles">
-                  <label className="toggleRow"><span>角色处于护盾保护</span><input checked={conditions.primaryShielded ?? false} type="checkbox" onChange={(event) => { clearResults(); setConditions((current) => ({ ...current, primaryShielded: event.target.checked })) }} /></label>
-                  <label className="toggleRow"><span>目标处于冻结状态</span><input checked={conditions.targetFrozen ?? false} type="checkbox" onChange={(event) => { clearResults(); setConditions((current) => ({ ...current, targetFrozen: event.target.checked })) }} /></label>
+                  {hasGeoResonance ? <label className="toggleRow"><span>角色处于护盾保护（双岩共鸣）</span><input checked={conditions.primaryShielded ?? false} type="checkbox" onChange={(event) => { clearResults(); setConditions((current) => ({ ...current, primaryShielded: event.target.checked })) }} /></label> : null}
+                  {hasCryoResonance ? <label className="toggleRow"><span>目标处于冻结状态（双冰共鸣）</span><input checked={conditions.targetFrozen ?? false} type="checkbox" onChange={(event) => { clearResults(); setConditions((current) => ({ ...current, targetFrozen: event.target.checked })) }} /></label> : null}
                   {characterEffectOptions.map((effect) => <label className="toggleRow" key={effect.id}><span>{effect.label}</span><input checked={selectedCharacterEffectIds.includes(effect.id)} type="checkbox" onChange={() => toggleCharacterEffect(effect.id)} /></label>)}
                   {optionalEffectGroups.map(([group, effects]) => {
                     const label = effects[0]?.label.split("：")[0] ?? "可选效果"

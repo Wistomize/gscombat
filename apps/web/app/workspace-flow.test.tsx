@@ -112,13 +112,23 @@ const analysisResponse: AnalysisResponse = {
     stats: {
       attackPercent: 1.471,
       baseAttack: 945.3,
+      baseDefense: 0,
+      baseElementalMastery: 0,
+      baseHp: 0,
       critDamage: 1.238,
       critRate: 0.625,
       damageBonus: 2.413,
+      defensePercent: 0,
       effectiveAttack: 3729.4,
+      effectiveDefense: 0,
+      effectiveHp: 0,
       elementalMastery: 0,
       energyRecharge: 3.1,
       flatAttack: 1394.5,
+      flatDefense: 0,
+      flatElementalMastery: 0,
+      flatHp: 0,
+      hpPercent: 0,
       resistanceReduction: 0,
       statContributions: [
         { label: "角色基础攻击 · 雷电将军", stage: "baseAttack", value: 337 },
@@ -341,8 +351,8 @@ describe("team-first workspace integration", () => {
       .find((label) => label.textContent?.includes("角色处于护盾保护"))?.querySelector<HTMLInputElement>("input")
     const frozenToggle = [...document.querySelectorAll<HTMLLabelElement>("label")]
       .find((label) => label.textContent?.includes("目标处于冻结状态"))?.querySelector<HTMLInputElement>("input")
-    await click(shieldToggle)
-    await click(frozenToggle)
+    expect(shieldToggle).toBeUndefined()
+    expect(frozenToggle).toBeUndefined()
     await click(findButton("开始计算"))
 
     const request = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined
@@ -353,7 +363,8 @@ describe("team-first workspace integration", () => {
     }
     expect(scenario.primary.buildId).toBe(raidenNationalBuiltinScenario.primary.buildId)
     expect(scenario.teammates).toHaveLength(0)
-    expect(scenario.conditions).toMatchObject({ primaryShielded: true, targetFrozen: true })
+    expect(scenario.conditions).not.toHaveProperty("primaryShielded", true)
+    expect(scenario.conditions).not.toHaveProperty("targetFrozen", true)
 
     const reportOrder = [...document.querySelectorAll<HTMLElement>(".orderedReport > article")].map((article) => article.textContent ?? "")
     expect(reportOrder[0]).toContain("指标期望结果")

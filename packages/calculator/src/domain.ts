@@ -190,6 +190,8 @@ export type TraceFormula =
       readonly baseDamage: number
       readonly bonus: number
       readonly elementalMastery: number
+      /** Additive reaction base damage after the level/EM/reaction-bonus calculation. */
+      readonly flatDamageAddition: number
       readonly kind: "transformative_reaction"
       readonly multiplier: number
       readonly reaction: TransformativeReaction
@@ -216,7 +218,17 @@ export type TraceFormula =
       readonly resistance: number
       readonly resistanceReduction: number
     }
-  | { readonly kind: "special_reaction_base_damage"; readonly value: number }
+  | {
+      readonly kind: "special_reaction_base_damage"
+      readonly terms?: {
+        readonly coefficient: number
+        readonly contribution: number
+        readonly label?: string
+        readonly stat: ScalingStat
+        readonly value: number
+      }[]
+      readonly value: number
+    }
   | {
       readonly kind: "special_reaction_coefficient"
       readonly multiplier: number

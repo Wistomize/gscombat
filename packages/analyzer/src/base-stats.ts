@@ -12,11 +12,13 @@ export interface ResolvedCoreCombatStats extends Omit<RotationStats, "damageBonu
   readonly baseAttack: number
   readonly baseDefense: number
   readonly baseHp: number
+  readonly defensePercent: number
   readonly energyRecharge: number
   readonly flatAttack: number
   readonly flatDefense: number
   readonly flatHp: number
   readonly healingBonus: number
+  readonly hpPercent: number
 }
 
 /** Fully resolved baseline stats before character kits, weapon passives, team buffs, or conditions. */
@@ -114,6 +116,7 @@ export function resolveCoreCombatStats(build: CharacterBuild, gameData: GameData
       getCharacterSecondaryStat(build, gameData, "critRate_") +
       getWeaponSecondaryStat(build, gameData, "critRate_"),
     defense: baseDefense * (1 + defensePercent) + flatDefense,
+    defensePercent,
     elementalMastery:
       baseElementalMastery +
       artifacts.elemental_mastery +
@@ -133,6 +136,7 @@ export function resolveCoreCombatStats(build: CharacterBuild, gameData: GameData
       getCharacterSecondaryStat(build, gameData, "heal_") +
       getWeaponSecondaryStat(build, gameData, "heal_"),
     hp: baseHp * (1 + hpPercent) + flatHp,
+    hpPercent,
     level: build.level
   }
 }

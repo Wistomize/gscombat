@@ -4,7 +4,7 @@ import {
   characterCatalogPresentation,
   characterCatalogPresentationVersion
 } from "./catalog-presentation.js"
-import { supportedCharacters, supportedWeapons } from "./catalog.js"
+import { normalizeProjectedMetricLabel, supportedCharacters, supportedWeapons } from "./catalog.js"
 import { listCharacterCombatCoverage, listCombatActions, listCombatMetrics } from "./combat-registry.js"
 import type { CombatDamageMetricDefinition, CombatMetricDefinition } from "./combat/types.js"
 import { requireOfficialWeaponName } from "./weapon-names.js"
@@ -163,6 +163,66 @@ describe("supported character catalog", () => {
         })
       })
     ])
+  })
+
+  it("removes C0 baseline wording from projected labels without removing higher-constellation behavior", () => {
+    const nefer = supportedCharacters.find((character) => character.characterId === "Nefer")
+    const ganyu = supportedCharacters.find((character) => character.characterId === "Ganyu")
+    const furina = supportedCharacters.find((character) => character.characterId === "Furina")
+    const neferCoverage = listCharacterCombatCoverage().find((coverage) => coverage.characterId === "Nefer")
+    const projectedMetricLabels = supportedCharacters.flatMap((character) => [
+      ...character.primaryActions.map((action) => action.label),
+      ...character.supportMetrics.map((metric) => metric.label)
+    ])
+
+    expect(nefer?.primaryActions).toContainEqual(
+      expect.objectContaining({
+        id: "nefer.skill.senet_strategy.phantom_performance.second_hit"
+      })
+    )
+    expect(ganyu?.primaryActions).toContainEqual(
+      expect.objectContaining({
+        id: "ganyu.normal.frostflake_arrow.level_two.hit_and_bloom"
+      })
+    )
+    expect(furina?.supportMetrics).toContainEqual(
+      expect.objectContaining({
+        id: "furina.burst.let_the_people_rejoice.fanfare.damage_bonus",
+        label: "万众狂欢 / 气氛值全伤害加成"
+      })
+    )
+    expect(
+      furina?.supportMetrics
+        .find((metric) => metric.id === "furina.burst.let_the_people_rejoice.fanfare.damage_bonus")
+        ?.scenarioParameters
+        ?.find((parameter) => parameter.id === "fanfare-points")
+    ).toEqual(
+      expect.objectContaining({
+        defaultValue: 300,
+        maximumValue: 300,
+        minimumValue: 0,
+        rangeBySourceConstellation: [
+          {
+            defaultValue: 400,
+            maximumValue: 400,
+            minimumSourceConstellation: 1,
+            minimumValue: 150
+          }
+        ]
+      })
+    )
+    expect(projectedMetricLabels).not.toContainEqual(expect.stringMatching(/C0|0命|零命/))
+    expect(neferCoverage?.talentLevelConstellationBonuses).toContainEqual({
+      minimumSourceConstellation: 3,
+      talentSlot: "skill",
+      value: 3
+    })
+  })
+
+  it("normalizes every supported zero-constellation spelling at the projection boundary", () => {
+    expect(normalizeProjectedMetricLabel("示例 / C0 单次命中（无反应）")).toBe("示例 / 单次命中（无反应）")
+    expect(normalizeProjectedMetricLabel("示例 / 单次命中（0命、无反应）")).toBe("示例 / 单次命中（无反应）")
+    expect(normalizeProjectedMetricLabel("示例 / 单次命中（零命，无反应）")).toBe("示例 / 单次命中（无反应）")
   })
 })
 

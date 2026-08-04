@@ -168,7 +168,7 @@ export const linneaCombatCoverage: CharacterCombatCoverage = {
       id: "linnea.passive.lunar_crystallize_base_damage_bonus",
       label: "月兆祝赐·栖居调研 · 月结晶基础伤害加成",
       source: { characterId: "Linnea", kind: "character" },
-      target: "specialReactionDamageBonus",
+      target: "specialReactionBaseDamageBonus",
       targetFilter: { specialReactionKinds: ["lunar_crystallize"] },
       value: {
         kind: "source_final_defense",

@@ -2251,8 +2251,13 @@ function validateDeclaredDirectScalingShape(
   issues: CombatRegistryIntegrityIssue[]
 ): void {
   const hasMultipleScalingPart = damageParts.some(hasMultipleScalingTerms)
+  const hasLegacyScalingPart = damageParts.some((part) => !hasMultipleScalingTerms(part))
+  const hasTimelineSpecialReaction =
+    action.timeline?.damageEvents.some((event) => event.specialReaction !== undefined) ?? false
   const hasInvalidShape =
-    (hasMultipleScalingPart && (!damageParts.every(hasMultipleScalingTerms) || action.scalingStat !== undefined)) ||
+    (hasMultipleScalingPart &&
+      ((hasLegacyScalingPart && (!hasTimelineSpecialReaction || action.scalingStat === undefined)) ||
+        (!hasLegacyScalingPart && action.scalingStat !== undefined))) ||
     (!hasMultipleScalingPart && action.scalingStat === undefined)
   if (!hasInvalidShape) return
 

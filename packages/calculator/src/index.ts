@@ -58,6 +58,7 @@ export type {
   LunarReactionKind,
   LunarReactionParticipantDamageResult,
   LunarReactionParticipantInput,
+  SpecialReactionBaseDamageTerm,
   SpecialReactionDamageResult,
   SpecialReactionTraceEntry,
   StellarReactionKind

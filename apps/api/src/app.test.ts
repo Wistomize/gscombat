@@ -182,7 +182,7 @@ describe("API", () => {
   it("exposes the complete combat coverage graph without relying on a character-by-character fixture list", async () => {
     const response = await app.inject({ method: "GET", url: "/v1/combat-coverage" })
 
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode, response.body).toBe(200)
     const coverage = response.json() as {
       readonly characterStatusCounts: Readonly<Record<string, number>>
       readonly characters: readonly {
@@ -217,6 +217,11 @@ describe("API", () => {
         0
       )
     )
+    expect(
+      coverage.characters.flatMap((character) => character.metrics.map((metric) => metric.label)).some(
+        (label) => /C0|0命|零命/.test(label)
+      )
+    ).toBe(false)
 
     for (const character of coverage.characters) {
       const actionIds = new Set(character.actions.map((action) => action.id))
@@ -332,6 +337,35 @@ describe("API", () => {
         target: "friendly_recipient"
       })
     ])
+  })
+
+  it("projects Furina's constellation-sensitive Fanfare bounds into the browser catalog", async () => {
+    const response = await app.inject({ method: "GET", url: "/v1/catalog" })
+    const furina = response.json().characters.find((character: { readonly characterId: string }) => character.characterId === "Furina")
+    const fanfareMetric = furina?.supportMetrics.find(
+      (metric: { readonly id: string }) => metric.id === "furina.burst.let_the_people_rejoice.fanfare.damage_bonus"
+    )
+    const fanfareParameter = fanfareMetric?.scenarioParameters?.find(
+      (parameter: { readonly id: string }) => parameter.id === "fanfare-points"
+    )
+
+    expect(response.statusCode).toBe(200)
+    expect(fanfareMetric?.label).toBe("万众狂欢 / 气氛值全伤害加成")
+    expect(fanfareParameter).toEqual({
+      defaultValue: 300,
+      id: "fanfare-points",
+      label: "当前气氛值（C0：0–300点；C1及以上：施放元素爆发后初始150点，最多400点）",
+      maximumValue: 300,
+      minimumValue: 0,
+      rangeBySourceConstellation: [
+        {
+          defaultValue: 400,
+          maximumValue: 400,
+          minimumSourceConstellation: 1,
+          minimumValue: 150
+        }
+      ]
+    })
   })
 
   it("projects content-owned Xiangling snapshots into the browser catalog", async () => {

@@ -16,6 +16,14 @@ const ScalingTermSchema = Type.Object({
   stat: ScalingStatSchema
 })
 
+const SpecialReactionBaseDamageTermSchema = Type.Object({
+  coefficient: Type.Number(),
+  contribution: Type.Number(),
+  label: Type.Optional(Type.String()),
+  stat: ScalingStatSchema,
+  value: Type.Number()
+})
+
 const SpecialReactionKindSchema = Type.Union([
   Type.Literal("lunar_bloom"),
   Type.Literal("lunar_charged"),
@@ -64,7 +72,11 @@ const ResistanceTraceFormulaSchema = Type.Object({
 })
 
 const SpecialReactionTraceFormulaSchema = Type.Union([
-  Type.Object({ kind: Type.Literal("special_reaction_base_damage"), value: Type.Number() }),
+  Type.Object({
+    kind: Type.Literal("special_reaction_base_damage"),
+    terms: Type.Optional(Type.Array(SpecialReactionBaseDamageTermSchema)),
+    value: Type.Number()
+  }),
   Type.Object({
     kind: Type.Literal("special_reaction_coefficient"),
     multiplier: Type.Number(),
@@ -154,6 +166,7 @@ const TraceFormulaSchema = Type.Union([
     baseDamage: Type.Number({ description: "Level-scaled transformative reaction base damage." }),
     bonus: Type.Number(),
     elementalMastery: Type.Number({ description: "Elemental mastery used by the transformative reaction formula." }),
+    flatDamageAddition: Type.Number({ description: "Additive base damage after the transformative reaction formula." }),
     kind: Type.Literal("transformative_reaction"),
     multiplier: Type.Number(),
     reaction: Type.Union([
@@ -264,6 +277,7 @@ const RotationTraceEntrySchema = Type.Union([
     after: Type.Number(),
     before: Type.Number(),
     coefficient: Type.Number(),
+    flatDamage: Type.Optional(Type.Number()),
     kind: Type.Literal("scaling"),
     stat: ScalingStatSchema,
     value: Type.Number()
@@ -271,6 +285,7 @@ const RotationTraceEntrySchema = Type.Union([
   Type.Object({
     after: Type.Number(),
     before: Type.Number(),
+    flatDamage: Type.Optional(Type.Number()),
     kind: Type.Literal("scaling_terms"),
     terms: Type.Array(
       Type.Intersect([
@@ -356,8 +371,9 @@ const RotationTraceEntrySchema = Type.Union([
     before: Type.Number(),
     bonus: Type.Number(),
     elementalMastery: Type.Number({ description: "Elemental mastery used by the transformative reaction formula." }),
+    flatDamageAddition: Type.Number({ description: "Additive base damage after the transformative reaction formula." }),
     hitCount: Type.Integer({
-      description: "after = baseDamage × multiplier × (1 + 16 × EM / (EM + 2000) + bonus) × hitCount.",
+      description: "after = (baseDamage × multiplier × (1 + 16 × EM / (EM + 2000) + bonus) + flatDamageAddition) × hitCount.",
       minimum: 1
     }),
     kind: Type.Literal("transformative_reaction"),
@@ -478,8 +494,13 @@ export const AnalysisResponseSchema = Type.Object({
           Type.Literal("damageBonus"),
           Type.Literal("amplifyingReactionBonus"),
           Type.Literal("reactionDamageBonus"),
+          Type.Literal("transformativeReactionFlatDamageAddition"),
+          Type.Literal("specialReactionBaseDamageFlat"),
+          Type.Literal("specialReactionBaseDamageBonus"),
+          Type.Literal("specialReactionBigPowerBonus"),
           Type.Literal("specialReactionDamageBonus"),
           Type.Literal("specialReactionFlatDamageAddition"),
+          Type.Literal("specialReactionElevation"),
           Type.Literal("defenseFlat"),
           Type.Literal("defensePercent"),
           Type.Literal("flatAttack"),
@@ -517,13 +538,23 @@ export const AnalysisResponseSchema = Type.Object({
       attackPercent: Type.Number(),
       actionParameters: Type.Optional(Type.Record(Type.String({ minLength: 1, maxLength: 80 }), Type.Integer())),
       baseAttack: Type.Number(),
+      baseDefense: Type.Number(),
+      baseElementalMastery: Type.Number(),
+      baseHp: Type.Number(),
       critDamage: Type.Number(),
       critRate: Type.Number(),
       damageBonus: Type.Number(),
+      defensePercent: Type.Number(),
       effectiveAttack: Type.Number(),
+      effectiveDefense: Type.Number(),
+      effectiveHp: Type.Number(),
       elementalMastery: Type.Number(),
       energyRecharge: Type.Number(),
       flatAttack: Type.Number(),
+      flatElementalMastery: Type.Number(),
+      flatDefense: Type.Number(),
+      flatHp: Type.Number(),
+      hpPercent: Type.Number(),
       resistanceReduction: Type.Number(),
       statContributions: Type.Array(
         Type.Object({
@@ -531,8 +562,16 @@ export const AnalysisResponseSchema = Type.Object({
           stage: Type.Union([
             Type.Literal("attackPercent"),
             Type.Literal("baseAttack"),
+            Type.Literal("baseDefense"),
+            Type.Literal("baseElementalMastery"),
+            Type.Literal("baseHp"),
             Type.Literal("damageBonus"),
-            Type.Literal("flatAttack")
+            Type.Literal("defensePercent"),
+            Type.Literal("elementalMastery"),
+            Type.Literal("flatAttack"),
+            Type.Literal("flatDefense"),
+            Type.Literal("flatHp"),
+            Type.Literal("hpPercent")
           ]),
           value: Type.Number()
         })

@@ -54,6 +54,18 @@ function resolveFullMoonsignReactionBonus(
   )
 }
 
+/** Lists every independent Moon or Stellar formula kind declared by an action and its damage events. */
+function listActionSpecialReactionKinds(
+  action: CombatActionMetadata
+): readonly NonNullable<CombatActionMetadata["specialReaction"]>["kind"][] {
+  return [
+    ...new Set([
+      ...(action.specialReaction ? [action.specialReaction.kind] : []),
+      ...(action.timeline?.damageEvents.flatMap((event) => (event.specialReaction ? [event.specialReaction.kind] : [])) ?? [])
+    ])
+  ]
+}
+
 /** Resolves scenario-level buffs supplied by external inputs, resonances, and Moonsign. */
 export function resolveTeamBuffs(
   scenario: EvaluationScenario,
@@ -70,11 +82,12 @@ export function resolveTeamBuffs(
   }
   if (hasResonance(teamState, "resonance.dendro")) {
     buffs.push({ label: "蔓生之草", sourceId: "resonance.dendro", stat: "elemental_mastery", value: 50 })
+    const specialReactionKinds = listActionSpecialReactionKinds(action)
     let reactionKind =
       "transformativeReaction" in action
         ? action.transformativeReaction.kind
-        : "specialReaction" in action
-          ? action.specialReaction.kind
+        : specialReactionKinds[0]
+          ? specialReactionKinds[0]
           : "additiveReaction" in action
             ? action.additiveReaction?.kind
             : undefined
@@ -86,13 +99,17 @@ export function resolveTeamBuffs(
       if (action.element === "dendro") reactionKind = "spread"
     }
     if (
-      ["burning", "bloom", "lunar_bloom", "quicken", "aggravate", "spread", "hyperbloom", "burgeon"].includes(
-        reactionKind ?? ""
+      ["burning", "bloom", "lunar_bloom", "quicken", "aggravate", "spread", "hyperbloom", "burgeon"].some(
+        (kind) => kind === reactionKind || specialReactionKinds.includes(kind as typeof specialReactionKinds[number])
       )
     ) {
       buffs.push({ label: "蔓生之草 · 一阶反应", sourceId: "resonance.dendro", stat: "elemental_mastery", value: 30 })
     }
-    if (["aggravate", "spread", "hyperbloom", "burgeon"].includes(reactionKind ?? "")) {
+    if (
+      ["aggravate", "spread", "hyperbloom", "burgeon"].some(
+        (kind) => kind === reactionKind || specialReactionKinds.includes(kind as typeof specialReactionKinds[number])
+      )
+    ) {
       buffs.push({ label: "蔓生之草 · 二阶反应", sourceId: "resonance.dendro", stat: "elemental_mastery", value: 20 })
     }
   }
@@ -102,7 +119,8 @@ export function resolveTeamBuffs(
   if (hasResonance(teamState, "resonance.cryo") && targetHasCryo) {
     buffs.push({ label: "粉碎之冰", sourceId: "resonance.cryo", stat: "crit_rate", value: 0.15 })
   }
-  const nearMooncage = "specialReaction" in action && action.specialReaction.kind === "lunar_crystallize"
+  const specialReactionKinds = listActionSpecialReactionKinds(action)
+  const nearMooncage = specialReactionKinds.includes("lunar_crystallize")
   if (hasResonance(teamState, "resonance.geo") && (scenario.conditions.primaryShielded === true || nearMooncage)) {
     buffs.push({ label: "坚定之岩", sourceId: "resonance.geo", stat: "damage_bonus", value: 0.15 })
     if (action.element === "geo") {
@@ -114,9 +132,9 @@ export function resolveTeamBuffs(
       })
     }
   }
-  const isLunarReaction =
-    "specialReaction" in action &&
-    ["lunar_bloom", "lunar_charged", "lunar_crystallize"].includes(action.specialReaction.kind)
+  const isLunarReaction = specialReactionKinds.some((kind) =>
+    ["lunar_bloom", "lunar_charged", "lunar_crystallize"].includes(kind)
+  )
   if (teamState.moonsign.level === "ascendant_gleam" && isLunarReaction) {
     const bonus = resolveFullMoonsignReactionBonus(scenario, gameData, teamState)
     if (bonus && bonus.value > 0) {

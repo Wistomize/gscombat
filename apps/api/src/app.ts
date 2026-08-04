@@ -18,6 +18,7 @@ import {
   getCombatActionDefinition,
   getCombatMetricDefinition,
   listActiveScenarioEffectOptionsForAction,
+  normalizeProjectedMetricLabel,
   type CombatActionMetadata,
   type CombatDamagePart,
   type CombatElementOverrideEffect,
@@ -305,7 +306,12 @@ export function serializeCombatAction(
       : {}),
     ...(scenarioParameters
       ? {
-          scenarioParameters: scenarioParameters.map(({ allowedValues, maximumValueByParameter, ...parameter }) => ({
+          scenarioParameters: scenarioParameters.map(({
+            allowedValues,
+            maximumValueByParameter,
+            rangeBySourceConstellation,
+            ...parameter
+          }) => ({
             ...parameter,
             ...(allowedValues ? { allowedValues: [...allowedValues] } : {}),
             ...(maximumValueByParameter
@@ -315,6 +321,9 @@ export function serializeCombatAction(
                     values: maximumValueByParameter.values.map((value) => ({ ...value }))
                   }
                 }
+              : {}),
+            ...(rangeBySourceConstellation
+              ? { rangeBySourceConstellation: rangeBySourceConstellation.map((range) => ({ ...range })) }
               : {})
           }))
         }
@@ -387,7 +396,7 @@ export function serializeCombatMetric(
   return {
     id: metric.id,
     kind: metric.kind,
-    label: metric.label,
+    label: normalizeProjectedMetricLabel(metric.label),
     sourceActionId: metric.sourceActionId,
     status: metric.status,
     target: metric.target
@@ -592,7 +601,12 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
             ...(scenarioEffects.length > 0 ? { scenarioEffects: [...scenarioEffects] } : {}),
             ...(scenarioParameters
               ? {
-                  scenarioParameters: scenarioParameters.map(({ allowedValues, maximumValueByParameter, ...parameter }) => ({
+                  scenarioParameters: scenarioParameters.map(({
+                    allowedValues,
+                    maximumValueByParameter,
+                    rangeBySourceConstellation,
+                    ...parameter
+                  }) => ({
                     ...parameter,
                     ...(allowedValues ? { allowedValues: [...allowedValues] } : {}),
                     ...(maximumValueByParameter
@@ -602,6 +616,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
                             values: maximumValueByParameter.values.map((value) => ({ ...value }))
                           }
                         }
+                      : {}),
+                    ...(rangeBySourceConstellation
+                      ? { rangeBySourceConstellation: rangeBySourceConstellation.map((range) => ({ ...range })) }
                       : {})
                   }))
                 }
@@ -623,7 +640,12 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
             ...(recipientRequirements ? { recipientRequirements: recipientRequirements.map((requirement) => ({ ...requirement })) } : {}),
             ...(scenarioParameters
               ? {
-                  scenarioParameters: scenarioParameters.map(({ allowedValues, maximumValueByParameter, ...parameter }) => ({
+                  scenarioParameters: scenarioParameters.map(({
+                    allowedValues,
+                    maximumValueByParameter,
+                    rangeBySourceConstellation,
+                    ...parameter
+                  }) => ({
                     ...parameter,
                     ...(allowedValues ? { allowedValues: [...allowedValues] } : {}),
                     ...(maximumValueByParameter
@@ -633,6 +655,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
                             values: maximumValueByParameter.values.map((value) => ({ ...value }))
                           }
                         }
+                      : {}),
+                    ...(rangeBySourceConstellation
+                      ? { rangeBySourceConstellation: rangeBySourceConstellation.map((range) => ({ ...range })) }
                       : {})
                   }))
                 }

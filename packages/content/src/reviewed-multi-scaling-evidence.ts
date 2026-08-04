@@ -1102,6 +1102,45 @@ export const reviewedMultiScalingEvidenceRegistry = {
       ]
     },
     {
+      actionId: "nefer.skill.senet_strategy.phantom_performance.second_hit",
+      damagePartId: "phantom-performance-self-second-hit",
+      source: {
+        sourcePath: "libs/gi/sheets/src/Characters/Nefer/index.tsx",
+        upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+        upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
+      },
+      terms: [
+        {
+          coefficientParameterId: "phantom-performance-self-second-hit-attack",
+          explanation:
+            "The pinned Phantom Performance node maps skill[6] nefer3Atk into its second self-hit Attack term.",
+          groupId: "skill",
+          parameterIndex: 6,
+          snapshotChecks: [
+            { expectedCoefficient: 0.32032, talentLevel: 1 },
+            { expectedCoefficient: 0.576576, talentLevel: 10 }
+          ],
+          stat: "attack",
+          symbol: "nefer3Atk",
+          talentSlot: "skill"
+        },
+        {
+          coefficientParameterId: "phantom-performance-self-second-hit-elemental-mastery",
+          explanation:
+            "The same pinned Phantom Performance node maps skill[7] nefer3EleMas into its second self-hit Elemental Mastery term.",
+          groupId: "skill",
+          parameterIndex: 7,
+          snapshotChecks: [
+            { expectedCoefficient: 0.64064, talentLevel: 1 },
+            { expectedCoefficient: 1.153152, talentLevel: 10 }
+          ],
+          stat: "elementalMastery",
+          symbol: "nefer3EleMas",
+          talentSlot: "skill"
+        }
+      ]
+    },
+    {
       actionId: "razor.burst.lightning_fang.wolf_spirit.fourth_hit",
       damagePartId: "lightning-fang-wolf-spirit-fourth-hit",
       source: {

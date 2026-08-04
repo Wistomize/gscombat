@@ -18,7 +18,7 @@ import {
   type CombatActionMetadata,
   type CombatElementOverrideEffect
 } from "@gscombat/content"
-import type { AmplifyingReactionConfig, Element, ScalingStat } from "@gscombat/calculator"
+import type { AmplifyingReactionConfig, DirectSpecialReactionKind, Element, ScalingStat } from "@gscombat/calculator"
 import type { CharacterBuild } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 
@@ -83,9 +83,19 @@ export interface ResolvedCombatActionEffects {
   readonly amplifyingReactionBonus: number
   /** Adds only to the selected ordinary reaction's dedicated formula stage. */
   readonly reactionDamageBonus: number
+  /** Adds after a selected transformative reaction's level, multiplier, and reaction-bonus calculation. */
+  readonly transformativeReactionFlatDamageAddition: number
   /** Adds only to the selected direct Moon or Stellar reaction's dedicated formula stage. */
   readonly specialReactionDamageBonus: number
+  /** Adds directly to the selected special-reaction event's base damage before its dedicated multipliers. */
+  readonly specialReactionBaseDamageFlat: number
+  /** Adds to the selected special-reaction event's independent base-damage-bonus stage. */
+  readonly specialReactionBaseDamageBonus: number
+  /** Adds to the selected direct special-reaction event's independent big-power multiplier as a ratio. */
+  readonly specialReactionBigPowerBonus: number
   readonly specialReactionFlatDamageAddition: number
+  /** Adds to the selected special-reaction event's final elevation stage. */
+  readonly specialReactionElevation: number
   readonly defenseFlat: number
   readonly defensePercent: number
   readonly enemyDefenseIgnore: number
@@ -131,8 +141,13 @@ export const EMPTY_COMBAT_ACTION_EFFECTS: ResolvedCombatActionEffects = {
   damageBonus: 0,
   amplifyingReactionBonus: 0,
   reactionDamageBonus: 0,
+  transformativeReactionFlatDamageAddition: 0,
   specialReactionDamageBonus: 0,
+  specialReactionBaseDamageFlat: 0,
+  specialReactionBaseDamageBonus: 0,
+  specialReactionBigPowerBonus: 0,
   specialReactionFlatDamageAddition: 0,
+  specialReactionElevation: 0,
   defenseFlat: 0,
   defensePercent: 0,
   enemyDefenseIgnore: 0,
@@ -156,6 +171,8 @@ interface ResolveCombatActionEffectCandidatesInput {
   readonly candidateAmplifyingReactionKinds?: readonly AmplifyingReactionConfig["kind"][]
   /** Ordinary reaction kinds directly declared by the metric or derived from its explicit target setup. */
   readonly candidateReactionKinds?: readonly CombatActionReactionKind[]
+  /** Direct Moon or Stellar kinds belonging to the current event class, when the selected action mixes formula paths. */
+  readonly candidateSpecialReactionKinds?: readonly DirectSpecialReactionKind[]
   readonly activeEffectIds: readonly string[]
   /** Explicit source-build choices for active effects with multiple eligible party-owned holders. */
   readonly activeEffectSourceBuildIds?: Readonly<Record<string, string>>
@@ -372,12 +389,44 @@ export function resolveSelfAutomaticEquipmentEffects(
   )
 }
 
-/** Resolves only direct defense-stat effects while assembling a source build's final defense snapshot. */
+/**
+ * Resolves selected maximum-reachable direct stat effects owned by the current source's own weapon or artifact set.
+ *
+ * The caller supplies IDs selected in a source-centric maximum-reachable scenario. Party-owned equipment effects and
+ * effects that explicitly target another recipient are excluded, so a support source cannot inherit a teammate's
+ * temporary team buff while its final stat snapshot is assembled.
+ */
+export function resolveSelfMaximumReachableEquipmentStatEffects(
+  input: ResolveCombatActionEffectsInput
+): ResolvedCombatActionEffects {
+  const candidates = listCombatActionEffects().filter(
+    (effect) =>
+      isSelfMaximumReachableEquipmentStatEffect(effect) &&
+      isSelfMaximumReachableEquipmentStatEffectCompatibleWithSource(effect, input.primary)
+  )
+  return resolveCombatActionEffectsForCandidates(input, candidates)
+}
+
+/** Resolves explicitly selected defense snapshots while assembling a source build's final defense snapshot. */
 export function resolveCombatActionDefenseEffects(
   input: ResolveCombatActionEffectsInput
 ): ResolvedCombatActionEffects {
   const candidates = listCombatActionEffects().filter(
-    (effect) => effect.target === "defenseFlat" || effect.target === "defensePercent"
+    (effect) =>
+      effect.activation !== "automatic" &&
+      (effect.target === "defenseFlat" || effect.target === "defensePercent")
+  )
+  return resolveCombatActionEffectsForCandidates(input, candidates)
+}
+
+/** Resolves explicitly selected attack snapshots while assembling a source build's final attack snapshot. */
+export function resolveCombatActionAttackEffects(
+  input: ResolveCombatActionEffectsInput
+): ResolvedCombatActionEffects {
+  const candidates = listCombatActionEffects().filter(
+    (effect) =>
+      effect.activation !== "automatic" &&
+      (effect.target === "attackPercent" || effect.target === "flatAttack")
   )
   return resolveCombatActionEffectsForCandidates(input, candidates)
 }
@@ -397,7 +446,7 @@ export function resolveCombatActionElementalMasteryEffects(
 }
 
 /** Input for finding the source-owned self snapshots implied by a selected source-defense conversion. */
-export interface SourceDefenseSnapshotSelectionInput {
+export interface SourceStatSnapshotSelectionInput {
   readonly activeEffectIds: readonly string[]
   readonly activeEffectSourceBuildIds?: Readonly<Record<string, string>>
   readonly primary: CharacterBuild
@@ -405,9 +454,51 @@ export interface SourceDefenseSnapshotSelectionInput {
   readonly teammates: readonly CharacterBuild[]
 }
 
+export type SourceDefenseSnapshotSelectionInput = SourceStatSnapshotSelectionInput
+export type SourceAttackSnapshotSelectionInput = SourceStatSnapshotSelectionInput
+
 /** Lists a selected source build's self-stat snapshots implied by a source-defense conversion. */
 export function listSelectedSourceDefenseSnapshotEffectIds(
   input: SourceDefenseSnapshotSelectionInput
+): readonly string[] {
+  return listSelectedSourceStatSnapshotEffectIds(input, "source_final_defense")
+}
+
+/**
+ * Lists a selected source build's defense snapshots together with the state IDs required to activate them.
+ *
+ * Source-stat resolution evaluates only defense targets, but its selected snapshot can itself require the
+ * source-final-defense conversion that established the snapshot. Keeping that prerequisite here prevents a
+ * state-dependent self snapshot from being silently discarded while the source stat is assembled.
+ */
+export function listSelectedSourceDefenseSnapshotActivationEffectIds(
+  input: SourceDefenseSnapshotSelectionInput
+): readonly string[] {
+  return listSnapshotActivationEffectIds(listSelectedSourceDefenseSnapshotEffectIds(input))
+}
+
+/** Lists a selected source build's self-stat snapshots implied by a source-attack conversion. */
+export function listSelectedSourceAttackSnapshotEffectIds(
+  input: SourceAttackSnapshotSelectionInput
+): readonly string[] {
+  return listSelectedSourceStatSnapshotEffectIds(input, "source_final_attack")
+}
+
+/**
+ * Lists a selected source build's attack snapshots together with the state IDs required to activate them.
+ *
+ * This is intentionally separate from the recipient-facing snapshot list: the prerequisite conversion must be
+ * visible while resolving the source's own attack, but is not independently applied to the recipient action.
+ */
+export function listSelectedSourceAttackSnapshotActivationEffectIds(
+  input: SourceAttackSnapshotSelectionInput
+): readonly string[] {
+  return listSnapshotActivationEffectIds(listSelectedSourceAttackSnapshotEffectIds(input))
+}
+
+function listSelectedSourceStatSnapshotEffectIds(
+  input: SourceStatSnapshotSelectionInput,
+  conversionKind: "source_final_attack" | "source_final_defense"
 ): readonly string[] {
   const selectedEffectIds = new Set(input.activeEffectIds)
   const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
@@ -416,16 +507,17 @@ export function listSelectedSourceDefenseSnapshotEffectIds(
       listCombatActionEffects().flatMap((effect) => {
         if (
           !selectedEffectIds.has(effect.id) ||
-          effect.activation !== "active" ||
-          effect.value.kind !== "source_final_defense"
+          (effect.activation !== "active" && effect.activation !== "maximum_reachable") ||
+          effect.value.kind !== conversionKind
         ) {
           return []
         }
-        return (effect.value.sourceDefenseSnapshotEffectIds ?? []).filter((snapshotEffectId) => {
+        const snapshotEffectIds = getSourceStatSnapshotEffectIds(effect, conversionKind)
+        return snapshotEffectIds.filter((snapshotEffectId) => {
           const snapshotEffect = effectsById.get(snapshotEffectId)
           return (
             snapshotEffect !== undefined &&
-            isSourceDefenseConversionSelectedForBuild(effect, input) &&
+            isSourceStatConversionSelectedForBuild(effect, input) &&
             isSelfSnapshotOwnedBy(snapshotEffect, input.sourceBuild)
           )
         })
@@ -434,9 +526,36 @@ export function listSelectedSourceDefenseSnapshotEffectIds(
   ]
 }
 
-function isSourceDefenseConversionSelectedForBuild(
+/** Adds every recursively required state ID so a self snapshot can pass normal activation checks. */
+function listSnapshotActivationEffectIds(snapshotEffectIds: readonly string[]): readonly string[] {
+  const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
+  const activeEffectIds = new Set(snapshotEffectIds)
+  const pendingEffectIds = [...snapshotEffectIds]
+  while (pendingEffectIds.length > 0) {
+    const effectId = pendingEffectIds.pop()
+    if (effectId === undefined) continue
+    for (const requiredEffectId of effectsById.get(effectId)?.requiredActiveEffectIds ?? []) {
+      if (activeEffectIds.has(requiredEffectId)) continue
+      activeEffectIds.add(requiredEffectId)
+      pendingEffectIds.push(requiredEffectId)
+    }
+  }
+  return [...activeEffectIds]
+}
+
+function getSourceStatSnapshotEffectIds(
   effect: CombatActionEffect,
-  input: SourceDefenseSnapshotSelectionInput
+  conversionKind: "source_final_attack" | "source_final_defense"
+): readonly string[] {
+  if (conversionKind === "source_final_defense") {
+    return effect.value.kind === "source_final_defense" ? effect.value.sourceDefenseSnapshotEffectIds ?? [] : []
+  }
+  return effect.value.kind === "source_final_attack" ? effect.value.sourceAttackSnapshotEffectIds ?? [] : []
+}
+
+function isSourceStatConversionSelectedForBuild(
+  effect: CombatActionEffect,
+  input: SourceStatSnapshotSelectionInput
 ): boolean {
   const sourceCandidates = listSourceCandidates(effect, input.primary, input.teammates)
   if (!sourceCandidates.some((build) => build.buildId === input.sourceBuild.buildId)) return false
@@ -520,7 +639,8 @@ function resolveCombatActionEffectsForCandidates(
         input.effectiveElements,
         recipientWeaponType,
         input.candidateAmplifyingReactionKinds,
-        input.candidateReactionKinds
+        input.candidateReactionKinds,
+        input.candidateSpecialReactionKinds
       )
     )
     .flatMap((effect) => resolveEligibleActionEffect(effect, input))
@@ -590,8 +710,13 @@ function resolveCombatActionEffectsForCandidates(
     damageBonus: sumEffectTarget(appliedEffects, "damageBonus"),
     amplifyingReactionBonus: sumEffectTarget(appliedEffects, "amplifyingReactionBonus"),
     reactionDamageBonus: sumEffectTarget(appliedEffects, "reactionDamageBonus"),
+    transformativeReactionFlatDamageAddition: sumEffectTarget(appliedEffects, "transformativeReactionFlatDamageAddition"),
     specialReactionDamageBonus: sumEffectTarget(appliedEffects, "specialReactionDamageBonus"),
+    specialReactionBaseDamageFlat: sumEffectTarget(appliedEffects, "specialReactionBaseDamageFlat"),
+    specialReactionBaseDamageBonus: sumEffectTarget(appliedEffects, "specialReactionBaseDamageBonus"),
+    specialReactionBigPowerBonus: sumEffectTarget(appliedEffects, "specialReactionBigPowerBonus"),
     specialReactionFlatDamageAddition: sumEffectTarget(appliedEffects, "specialReactionFlatDamageAddition"),
+    specialReactionElevation: sumEffectTarget(appliedEffects, "specialReactionElevation"),
     defenseFlat: sumEffectTarget(appliedEffects, "defenseFlat"),
     defensePercent: sumEffectTarget(appliedEffects, "defensePercent"),
     enemyDefenseIgnore: sumEffectTarget(appliedEffects, "enemyDefenseIgnore"),
@@ -617,6 +742,36 @@ function isSelfAutomaticEquipmentEffect(effect: CombatActionEffect): boolean {
   }
   if (effect.source.kind === "weapon") return effect.source.holder !== "party_member"
   return effect.source.kind === "artifact_set" && effect.source.holder !== "party_member"
+}
+
+function isSelfMaximumReachableEquipmentStatEffect(effect: CombatActionEffect): boolean {
+  if (
+    effect.activation !== "active" &&
+    effect.activation !== "maximum_reachable"
+  ) {
+    return false
+  }
+  const source = effect.source
+  if (source.kind === "character" || source.holder === "party_member") return false
+  if (effect.targetFilter?.recipientSourceRelation === "not_source") return false
+  return (
+    effect.target === "attackPercent" ||
+    effect.target === "defenseFlat" ||
+    effect.target === "defensePercent" ||
+    effect.target === "flatAttack" ||
+    effect.target === "hpFlat" ||
+    effect.target === "hpPercent" ||
+    effect.target === "elementalMastery"
+  )
+}
+
+/** Keeps a source-only equipment snapshot from inheriting a passive restricted to another character. */
+function isSelfMaximumReachableEquipmentStatEffectCompatibleWithSource(
+  effect: CombatActionEffect,
+  source: CharacterBuild
+): boolean {
+  const recipientCharacterIds = effect.targetFilter?.recipientCharacterIds
+  return recipientCharacterIds === undefined || recipientCharacterIds.includes(source.characterId)
 }
 
 interface ExclusiveActionEffect {
@@ -661,7 +816,13 @@ function isCombatActionEffectCompatibleWithAdditionalDamageEvent(effect: CombatA
     !isCombatActionStatEffect(effect) ||
     effect.target === "amplifyingReactionBonus" ||
     effect.target === "reactionDamageBonus" ||
-    effect.target === "specialReactionDamageBonus"
+    effect.target === "transformativeReactionFlatDamageAddition" ||
+    effect.target === "specialReactionDamageBonus" ||
+    effect.target === "specialReactionBaseDamageFlat" ||
+    effect.target === "specialReactionBaseDamageBonus" ||
+    effect.target === "specialReactionBigPowerBonus" ||
+    effect.target === "specialReactionFlatDamageAddition" ||
+    effect.target === "specialReactionElevation"
   ) {
     return false
   }
@@ -947,7 +1108,11 @@ function resolveEffectValue(
     if (finalElementalMastery === undefined) {
       throw new Error(`Source final-elemental-mastery conversion ${effect.id} requires elemental mastery for ${source.buildId}`)
     }
-    return Math.max(finalElementalMastery + (effect.value.offset ?? 0), 0) * multiplier
+    const value = Math.max(finalElementalMastery + (effect.value.offset ?? 0), 0) * multiplier
+    const maximumValue = effect.value.maximumValue
+    return maximumValue === undefined
+      ? value
+      : Math.min(value, resolveComputedEffectScalar(maximumValue, effect.id, input, source))
   }
   if (effect.value.kind === "source_final_defense") {
     const finalDefense = input.sourceFinalDefenseByBuildId?.get(source.buildId)

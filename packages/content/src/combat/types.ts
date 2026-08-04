@@ -203,6 +203,17 @@ export type CombatDamagePart = SingleScalingCombatDamagePart | MultiScalingComba
 /** Selects when a damage event reads its currently supported resolved stat snapshot. */
 export type CombatEventSnapshot = "cast" | "hit" | "time"
 
+/** Declares a constellation-specific valid range for one bounded action snapshot input. */
+export interface CombatActionIntegerScenarioParameterConstellationRange {
+  /** The default used when the caller does not supply a manual value at this constellation or higher. */
+  readonly defaultValue?: number
+  /** The highest valid value while the relevant source-owned state is active. */
+  readonly maximumValue?: number
+  readonly minimumSourceConstellation: number
+  /** The lowest valid value while the relevant source-owned state is active. */
+  readonly minimumValue?: number
+}
+
 /** One bounded integer choice that changes a declared action without introducing arbitrary evaluator code. */
 export interface CombatActionIntegerScenarioParameter {
   /** Optional finite set when a snapshot input has meaningful values outside a continuous integer range. */
@@ -225,6 +236,8 @@ export interface CombatActionIntegerScenarioParameter {
     }[]
   }
   readonly minimumValue: number
+  /** Overrides the manual-state range and default when the source build reaches a constellation threshold. */
+  readonly rangeBySourceConstellation?: readonly CombatActionIntegerScenarioParameterConstellationRange[]
 }
 
 /** Resolves an event's total hit count from a constant or one declared integer action parameter. */
@@ -272,6 +285,11 @@ interface CombatDamageEventTemplateBase {
   /** Represents repeated identical hits after all action-specific constraints have been resolved. */
   readonly hitCount?: CombatEventHitCount
   readonly id: string
+  /**
+   * Resolves this one event with the independent Moon or Stellar direct-reaction formula.
+   * Such an event does not consume or derive an ordinary elemental aura, and cannot receive an elemental override.
+   */
+  readonly specialReaction?: CombatDirectSpecialReactionConfig
 }
 
 /** Binds one scheduled damage event to its action cast-time stat snapshot. */
@@ -391,6 +409,7 @@ export type CombatScalarMetricSemantic =
   | "attack_buff"
   | "attack_speed_bonus"
   | "bloom_related_reaction_damage_bonus"
+  | "bloom_related_reaction_flat_damage_addition"
   | "damage_bonus"
   | "defense_buff"
   | "elemental_flat_damage_bonus"
@@ -559,10 +578,20 @@ export type CombatActionEffectTarget =
   | "amplifyingReactionBonus"
   /** Adds only to an eligible Aggravate, Spread, or transformative-reaction formula. */
   | "reactionDamageBonus"
+  /** Adds after an eligible transformative reaction's level, multiplier, and reaction-bonus calculation, before resistance. */
+  | "transformativeReactionFlatDamageAddition"
   /** Adds only to an eligible direct Moon or Stellar reaction's dedicated reaction-damage-bonus stage. */
   | "specialReactionDamageBonus"
+  /** Adds directly to an eligible Moon or Stellar action's base damage before every special-reaction multiplier. */
+  | "specialReactionBaseDamageFlat"
+  /** Adds to an eligible Moon or Stellar action's independent base-damage-bonus stage. */
+  | "specialReactionBaseDamageBonus"
+  /** Adds to an eligible direct Moon or Stellar action's independent big-power multiplier as a ratio. */
+  | "specialReactionBigPowerBonus"
   /** Adds after the independent Moon or Stellar reaction multipliers, before critical expectation. */
   | "specialReactionFlatDamageAddition"
+  /** Adds to an eligible Moon or Stellar action's final damage-elevation stage. */
+  | "specialReactionElevation"
   | "defenseFlat"
   | "defensePercent"
   | "enemyDefenseIgnore"
@@ -753,6 +782,8 @@ export type CombatActionEffectValue =
   | {
       /** An elemental-mastery conversion resolved after all selected elemental-mastery effects. */
       readonly kind: "final_elemental_mastery"
+      /** Caps this final-elemental-mastery conversion after its multiplier has been applied. */
+      readonly maximumValue?: CombatActionEffectComputedScalar
       readonly multiplier: CombatActionEffectComputedScalar
       /** Added to the source stat before applying the multiplier. */
       readonly offset?: number
@@ -779,13 +810,18 @@ export type CombatActionEffectValue =
       readonly sourceDefenseSnapshotEffectIds?: readonly string[]
     }
   | {
-      /** A source-owned final-attack conversion with an optional per-effect cap. */
-      readonly kind: "source_final_attack"
-      readonly maximumValue?: CombatActionEffectComputedScalar
-      readonly multiplier: CombatActionEffectComputedScalar
-      /** Added to the source stat before applying the multiplier. */
-      readonly offset?: number
-    }
+    /** A source-owned final-attack conversion with an optional per-effect cap. */
+    readonly kind: "source_final_attack"
+    readonly maximumValue?: CombatActionEffectComputedScalar
+    readonly multiplier: CombatActionEffectComputedScalar
+    /** Added to the source stat before applying the multiplier. */
+    readonly offset?: number
+    /**
+     * Active self-stat snapshots that are guaranteed to be present on the source when this conversion is captured.
+     * These contribute only while resolving the source's final attack, never as independent effects on the recipient.
+     */
+    readonly sourceAttackSnapshotEffectIds?: readonly string[]
+  }
   | {
       /** Converts the source character and weapon's configured base attack into a recipient stat. */
       readonly kind: "source_base_attack"

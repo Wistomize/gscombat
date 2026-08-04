@@ -1106,8 +1106,7 @@ describe("declared direct scenario actions", () => {
     expect(
       travelerAtHighElementalMastery.stats.damageBonus - travelerAtHighElementalMasteryWithoutA4.stats.damageBonus
     ).toBeCloseTo(0.15)
-    expect(nefer.rotation.dpr).toBeGreaterThan(nefer.result.expectedDamage)
-    for (const evaluation of [nahida, xiaoAtCap, zhongliAtA4, mavuikaAt200, travelerAtHighElementalMastery]) {
+    for (const evaluation of [nefer, nahida, xiaoAtCap, zhongliAtA4, mavuikaAt200, travelerAtHighElementalMastery]) {
       expect(evaluation.rotation.dpr).toBeCloseTo(evaluation.result.expectedDamage)
     }
   })

@@ -2,6 +2,19 @@ import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { neferDefinition } from "./definition.js"
 
+const phantomPerformanceVeilMultiplier = {
+  kind: "scenario_parameter_lookup" as const,
+  parameterId: "a1-veil-stack-count",
+  values: [
+    { multiplier: 1, parameterValue: 0 },
+    { multiplier: 1.08, parameterValue: 1 },
+    { multiplier: 1.16, parameterValue: 2 },
+    { multiplier: 1.24, parameterValue: 3 },
+    { multiplier: 1.32, parameterValue: 4 },
+    { multiplier: 1.4, parameterValue: 5 }
+  ]
+} as const
+
 export const neferCombatCoverage: CharacterCombatCoverage = {
   actions: [
     {
@@ -107,6 +120,51 @@ export const neferCombatCoverage: CharacterCombatCoverage = {
               stat: "elementalMastery"
             }
           ]
+        },
+        {
+          id: "phantom-performance-self-second-hit",
+          scalingTerms: [
+            {
+              coefficientParameterId: "phantom-performance-self-second-hit-attack",
+              snapshotChecks: [
+                { expectedCoefficient: 0.32032, talentLevel: 1 },
+                { expectedCoefficient: 0.576576, talentLevel: 10 }
+              ],
+              stat: "attack"
+            },
+            {
+              coefficientParameterId: "phantom-performance-self-second-hit-elemental-mastery",
+              snapshotChecks: [
+                { expectedCoefficient: 0.64064, talentLevel: 1 },
+                { expectedCoefficient: 1.153152, talentLevel: 10 }
+              ],
+              stat: "elementalMastery"
+            }
+          ]
+        },
+        {
+          coefficientParameterId: "phantom-performance-shade-first-hit-elemental-mastery",
+          id: "phantom-performance-shade-first-hit",
+          snapshotChecks: [
+            { expectedCoefficient: 0.96, talentLevel: 1 },
+            { expectedCoefficient: 1.728, talentLevel: 10 }
+          ]
+        },
+        {
+          coefficientParameterId: "phantom-performance-shade-second-hit-elemental-mastery",
+          id: "phantom-performance-shade-second-hit",
+          snapshotChecks: [
+            { expectedCoefficient: 0.96, talentLevel: 1 },
+            { expectedCoefficient: 1.728, talentLevel: 10 }
+          ]
+        },
+        {
+          coefficientParameterId: "phantom-performance-shade-third-hit-elemental-mastery",
+          id: "phantom-performance-shade-third-hit",
+          snapshotChecks: [
+            { expectedCoefficient: 1.28, talentLevel: 1 },
+            { expectedCoefficient: 2.304, talentLevel: 10 }
+          ]
         }
       ],
       element: neferDefinition.element,
@@ -124,7 +182,9 @@ export const neferCombatCoverage: CharacterCombatCoverage = {
               { multiplier: 0, parameterValue: 0 },
               { multiplier: 0, parameterValue: 1 },
               { multiplier: 0, parameterValue: 2 },
-              { multiplier: 1, parameterValue: 3 }
+              { multiplier: 1, parameterValue: 3 },
+              { multiplier: 1, parameterValue: 4 },
+              { multiplier: 2, parameterValue: 5 }
             ]
           },
           snapshotChecks: [{ expectedCoefficient: 100, talentLevel: 1 }],
@@ -148,6 +208,41 @@ export const neferCombatCoverage: CharacterCombatCoverage = {
           talentSlot: "skill"
         },
         {
+          groupId: "skill",
+          id: "phantom-performance-self-second-hit-attack",
+          parameterIndex: 6,
+          source: "talent",
+          talentSlot: "skill"
+        },
+        {
+          groupId: "skill",
+          id: "phantom-performance-self-second-hit-elemental-mastery",
+          parameterIndex: 7,
+          source: "talent",
+          talentSlot: "skill"
+        },
+        {
+          groupId: "skill",
+          id: "phantom-performance-shade-first-hit-elemental-mastery",
+          parameterIndex: 8,
+          source: "talent",
+          talentSlot: "skill"
+        },
+        {
+          groupId: "skill",
+          id: "phantom-performance-shade-second-hit-elemental-mastery",
+          parameterIndex: 9,
+          source: "talent",
+          talentSlot: "skill"
+        },
+        {
+          groupId: "skill",
+          id: "phantom-performance-shade-third-hit-elemental-mastery",
+          parameterIndex: 10,
+          source: "talent",
+          talentSlot: "skill"
+        },
+        {
           groupId: "passive1",
           id: "a1-veil-elemental-mastery-bonus",
           parameterIndex: 2,
@@ -157,37 +252,131 @@ export const neferCombatCoverage: CharacterCombatCoverage = {
       ],
       scenarioParameters: [
         {
-          allowedValues: [0, 1, 2, 3],
+          allowedValues: [0, 1, 2, 3, 4, 5],
           defaultValue: 3,
           id: "a1-veil-stack-count",
-          label: "A1 幻戏帷幕层数（已满足月兆·满辉）",
-          maximumValue: 3,
+          label: "A1 幻戏帷幕层数（已满足月兆·满辉；C2 自动补足至5层）",
+          maximumValue: 5,
           minimumValue: 0
         }
       ],
       status: "verified",
+      scalingStat: "elementalMastery",
       talentSlot: "skill",
       timeline: {
         damageEvents: [
           {
             at: 0,
-            coefficientMultiplier: {
-              kind: "scenario_parameter_lookup",
-              parameterId: "a1-veil-stack-count",
-              values: [
-                { multiplier: 1, parameterValue: 0 },
-                { multiplier: 1.08, parameterValue: 1 },
-                { multiplier: 1.16, parameterValue: 2 },
-                { multiplier: 1.24, parameterValue: 3 }
-              ]
-            },
+            coefficientMultiplier: phantomPerformanceVeilMultiplier,
             damagePartId: "phantom-performance-second-hit",
-            id: "phantom-performance-second-hit",
+            id: "phantom-performance-self-first-hit",
             snapshot: "hit"
+          },
+          {
+            at: 0.08,
+            coefficientMultiplier: phantomPerformanceVeilMultiplier,
+            damagePartId: "phantom-performance-self-second-hit",
+            id: "phantom-performance-self-second-hit",
+            snapshot: "hit"
+          },
+          {
+            at: 0.16,
+            coefficientMultiplier: phantomPerformanceVeilMultiplier,
+            damagePartId: "phantom-performance-shade-first-hit",
+            id: "phantom-performance-shade-first-hit",
+            snapshot: "hit",
+            specialReaction: { kind: "lunar_bloom" }
+          },
+          {
+            at: 0.24,
+            coefficientMultiplier: phantomPerformanceVeilMultiplier,
+            damagePartId: "phantom-performance-shade-second-hit",
+            id: "phantom-performance-shade-second-hit",
+            snapshot: "hit",
+            specialReaction: { kind: "lunar_bloom" }
+          },
+          {
+            at: 0.32,
+            coefficientMultiplier: phantomPerformanceVeilMultiplier,
+            damagePartId: "phantom-performance-shade-third-hit",
+            id: "phantom-performance-shade-third-hit",
+            snapshot: "hit",
+            specialReaction: { kind: "lunar_bloom" }
           }
         ],
         duration: 1
       }
+    }
+  ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "nefer.passive.moonsign_benediction.dusklit_eaves.lunar_bloom_base_damage_bonus",
+      label: "月兆祝赐·暮檐 · 月绽放基础伤害加成",
+      source: { characterId: "Nefer", kind: "character" },
+      target: "specialReactionBaseDamageBonus",
+      targetFilter: { specialReactionKinds: ["lunar_bloom"] },
+      value: {
+        kind: "final_elemental_mastery",
+        maximumValue: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive3",
+            id: "lunar-bloom-base-damage-bonus-maximum",
+            parameterIndex: 1,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        },
+        multiplier: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive3",
+            id: "lunar-bloom-base-damage-bonus-per-elemental-mastery",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "nefer.constellation.1.planning_breeds_success.phantom_performance.lunar_bloom_base_damage",
+      label: "C1 谋定而后动 · 幻戏月绽放基础伤害增加",
+      source: { characterId: "Nefer", kind: "character", minimumSourceConstellation: 1 },
+      target: "specialReactionBaseDamageFlat",
+      targetFilter: {
+        actionIds: ["nefer.skill.senet_strategy.phantom_performance.second_hit"],
+        recipientSourceRelation: "source",
+        specialReactionKinds: ["lunar_bloom"]
+      },
+      value: {
+        kind: "final_elemental_mastery",
+        multiplier: { kind: "fixed", value: 0.6 }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      actionParameterId: "a1-veil-stack-count",
+      id: "nefer.constellation.2.observation_feeds_strategy.veil_stack_count",
+      label: "C2 观局得谋 · 幻戏帷幕满层额外2层",
+      source: { characterId: "Nefer", kind: "character", minimumSourceConstellation: 2 },
+      target: "actionParameter",
+      targetFilter: {
+        actionIds: ["nefer.skill.senet_strategy.phantom_performance.second_hit"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 2 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "nefer.constellation.4.delusion_ensnares_reason.dendro_resistance_reduction",
+      label: "C4 妄念迷心 · 暗影舞状态下草元素抗性降低",
+      source: { characterId: "Nefer", kind: "character", minimumSourceConstellation: 4 },
+      target: "enemyResistanceReduction",
+      targetFilter: { elements: ["dendro"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.2 }
     }
   ],
   characterId: "Nefer",
@@ -197,14 +386,14 @@ export const neferCombatCoverage: CharacterCombatCoverage = {
       characterId: "Nefer",
       id: "nefer.skill.senet_strategy.phantom_performance.second_hit",
       kind: "damage",
-      label: "弈术·千夜一舞 / 幻戏自身二段单次命中（C0，A1幻戏帷幕3层，无预设反应）",
+      label: "弈术·千夜一舞 / 幻戏完整五段命中期望伤害",
       sourceActionId: "nefer.skill.senet_strategy.phantom_performance.second_hit",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One baseline C0 first normal-attack hit, one Dance of a Thousand Nights initial hit, and one Phantom Performance self second hit are verified. The selected C0 metric reuses one direct Dendro Phantom Performance self second hit against one enemy: the pinned 6.7 Genshin Optimizer sheet maps it to skill[4] times Attack plus skill[5] times Elemental Mastery, or 0.2464 and 0.4928 at Talent Level 1, then 0.44352 and 0.88704 at Level 10. Its action-owned A1 Veil stack input is manually chosen from zero through three C0 stacks and defaults to three; after A1 is unlocked and Moon Sign: Ascendant is already satisfied, each stack multiplies this direct hit by 1.08, so the selected three-stack value is 1.24 times the two scaling terms. At the selected three stacks, A1's +100 Elemental Mastery is included before that multiplier. It does not preset a target aura or reaction. The skill's Lunar-Bloom shade hits are deliberately not declared as direct damage. The initial hit remains a verified underlying action but is no longer selected. External infusion, Shadow Dance sequences, Verdant Dew generation, charge availability, reactions, timing, other passives, constellations, external effects, and other states remain unmodeled.",
+    "The selected Phantom Performance metric resolves its complete five-hit sequence against one enemy: two ordinary Dendro self-hits (skill[4] + skill[5], then skill[6] + skill[7]) followed by three direct Lunar-Bloom shade hits (skill[8], skill[9], and skill[10]). The first self-hit remains under its established identifier for saved-workspace compatibility. The A1 Veil input defaults to its full three-stack Ascendant-Gleam state, applying +100 Elemental Mastery and a 1.24 base multiplier to every hit; C2 automatically adds two stacks and raises the same state to +200 Elemental Mastery and 1.40. Nefer's Moonsign Benediction contributes min(final Elemental Mastery × 0.0175%, 14%) in the Lunar-Bloom base-damage-bonus stage. C1 adds 60% of Nefer's final Elemental Mastery to the three shade hits' Lunar-Bloom base damage, and C4's Dendro resistance reduction is included. C6's conversion/extra hit and final Lunar-Bloom elevation, Shadow Dance timing, Verdant Dew generation, target aura, and full rotations remain outside this single-action metric.",
   label: neferDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

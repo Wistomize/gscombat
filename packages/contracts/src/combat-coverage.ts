@@ -88,6 +88,21 @@ const CombatEventHitCountSchema = Type.Union([
   })
 ])
 
+const CombatEventSpecialReactionConfigSchema = Type.Object({
+  ascensionBonus: Type.Optional(Type.Number()),
+  baseDamageBonus: Type.Optional(Type.Number()),
+  bigPowerMultiplier: Type.Optional(Type.Number({ minimum: 0 })),
+  flatDamageAddition: Type.Optional(Type.Number()),
+  kind: Type.Union([
+    Type.Literal("lunar_bloom"),
+    Type.Literal("lunar_charged"),
+    Type.Literal("lunar_crystallize"),
+    Type.Literal("stellar_superconduct")
+  ]),
+  reactionDamageBonus: Type.Optional(Type.Number()),
+  stellarStoredElementalApplicationsParameterId: Type.Optional(Type.String({ minLength: 1 }))
+})
+
 const CombatEventScenarioParameterCoefficientMultiplierSchema = Type.Union([
   Type.Object({
     kind: Type.Literal("scenario_parameter_lookup"),
@@ -115,7 +130,8 @@ const CombatDamageEventTemplateBaseSchema = {
   elementalApplication: Type.Optional(RotationElementalApplicationSchema),
   elementOverrideTarget: Type.Optional(Type.Literal("normal_attack")),
   hitCount: Type.Optional(CombatEventHitCountSchema),
-  id: Type.String({ minLength: 1 })
+  id: Type.String({ minLength: 1 }),
+  specialReaction: Type.Optional(CombatEventSpecialReactionConfigSchema)
 }
 
 const CombatDamageEventTemplateSchema = Type.Union([
@@ -199,7 +215,18 @@ export const CombatActionIntegerScenarioParameterSchema = Type.Object({
       )
     })
   ),
-  minimumValue: Type.Integer()
+  minimumValue: Type.Integer(),
+  rangeBySourceConstellation: Type.Optional(
+    Type.Array(
+      Type.Object({
+        defaultValue: Type.Optional(Type.Integer()),
+        maximumValue: Type.Optional(Type.Integer()),
+        minimumSourceConstellation: Type.Integer({ minimum: 1, maximum: 6 }),
+        minimumValue: Type.Optional(Type.Integer())
+      }),
+      { minItems: 1 }
+    )
+  )
 })
 
 const CombatTalentCoefficientSnapshotCheckSchema = Type.Object({

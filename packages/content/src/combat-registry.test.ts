@@ -20,6 +20,7 @@ describe("character combat coverage registry", () => {
     const damageSupportSemantics = new Set([
       "attack_buff",
       "bloom_related_reaction_damage_bonus",
+      "bloom_related_reaction_flat_damage_addition",
       "damage_bonus",
       "defense_buff",
       "elemental_flat_damage_bonus",

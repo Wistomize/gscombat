@@ -24,7 +24,12 @@ export const webCatalog: CatalogResponse = {
         ...(scenarioEffects.length > 0 ? { scenarioEffects: [...scenarioEffects] } : {}),
         ...(scenarioParameters
           ? {
-              scenarioParameters: scenarioParameters.map(({ allowedValues, maximumValueByParameter, ...parameter }) => ({
+              scenarioParameters: scenarioParameters.map(({
+                allowedValues,
+                maximumValueByParameter,
+                rangeBySourceConstellation,
+                ...parameter
+              }) => ({
                 ...parameter,
                 ...(allowedValues ? { allowedValues: [...allowedValues] } : {}),
                 ...(maximumValueByParameter
@@ -34,6 +39,9 @@ export const webCatalog: CatalogResponse = {
                         values: maximumValueByParameter.values.map((value) => ({ ...value }))
                       }
                     }
+                  : {}),
+                ...(rangeBySourceConstellation
+                  ? { rangeBySourceConstellation: rangeBySourceConstellation.map((range) => ({ ...range })) }
                   : {})
               }))
             }
@@ -62,7 +70,12 @@ export const webCatalog: CatalogResponse = {
         : {}),
       ...(scenarioParameters
         ? {
-            scenarioParameters: scenarioParameters.map(({ allowedValues, maximumValueByParameter, ...parameter }) => ({
+            scenarioParameters: scenarioParameters.map(({
+              allowedValues,
+              maximumValueByParameter,
+              rangeBySourceConstellation,
+              ...parameter
+            }) => ({
               ...parameter,
               ...(allowedValues ? { allowedValues: [...allowedValues] } : {}),
               ...(maximumValueByParameter
@@ -72,6 +85,9 @@ export const webCatalog: CatalogResponse = {
                       values: maximumValueByParameter.values.map((value) => ({ ...value }))
                     }
                   }
+                : {}),
+              ...(rangeBySourceConstellation
+                ? { rangeBySourceConstellation: rangeBySourceConstellation.map((range) => ({ ...range })) }
                 : {})
             }))
           }

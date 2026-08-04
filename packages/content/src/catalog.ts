@@ -131,10 +131,27 @@ function isSelectablePrimaryAction(action: CombatActionMetadata, selectedDamageA
   return action.kind === "damage" && action.status === "verified" && selectedDamageActionIds.has(action.id)
 }
 
+/**
+ * Removes an authored zero-constellation baseline qualifier from a catalog label.
+ *
+ * Metric labels describe the selected action or output, rather than limiting the configured character build. Actual
+ * constellation effects and talent-level bonuses remain declared on the combat coverage and are evaluated later.
+ */
+export function normalizeProjectedMetricLabel(label: string): string {
+  return label
+    .replace(/([（(])\s*(?:C0|0命|零命)\s*[，、,:：]?\s*/g, "$1")
+    .replace(/([，、,:：])\s*(?:C0|0命|零命)\s*[，、,:：]?\s*/g, "$1")
+    .replace(/(^|\s)(?:C0|0命|零命)\s*[，、,:：]?\s*/g, "$1")
+    .replace(/[（(]\s*[）)]/g, "")
+    .replace(/([，、,:：])\s+/g, "$1")
+    .replace(/\s{2,}/g, " ")
+    .trim()
+}
+
 function getPrimaryActionLabel(action: CombatActionMetadata, metricLabel?: string): string {
   const friendlyLabel = friendlyPrimaryActionLabels[action.id]
-  if (friendlyLabel) return friendlyLabel
-  if (metricLabel) return metricLabel
+  if (friendlyLabel) return normalizeProjectedMetricLabel(friendlyLabel)
+  if (metricLabel) return normalizeProjectedMetricLabel(metricLabel)
   const hitLabel = action.damageParts && action.damageParts.length > 1 ? "已验证基础多段伤害" : "已验证基础单段伤害"
   return `${genericActionPrefixes[action.talentSlot]} / ${hitLabel}`
 }
@@ -152,6 +169,9 @@ function cloneScenarioParameter(
             values: parameter.maximumValueByParameter.values.map((value) => ({ ...value }))
           }
         }
+      : {}),
+    ...(parameter.rangeBySourceConstellation
+      ? { rangeBySourceConstellation: parameter.rangeBySourceConstellation.map((range) => ({ ...range })) }
       : {})
   }
 }
@@ -213,7 +233,7 @@ function createSupportMetric(
     ...(conditionalRecipientRequirements?.length ? { conditionalRecipientRequirements } : {}),
     id: metric.id,
     kind: metric.kind,
-    label: metric.label,
+    label: normalizeProjectedMetricLabel(metric.label),
     ...(sourceAction.scenarioParameters?.length
       ? { scenarioParameters: sourceAction.scenarioParameters.map(cloneScenarioParameter) }
       : {}),

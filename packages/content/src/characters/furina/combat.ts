@@ -29,9 +29,17 @@ export const furinaCombatCoverage: CharacterCombatCoverage = {
         {
           defaultValue: 300,
           id: "fanfare-points",
-          label: "当前气氛值（C0：0–300点）",
+          label: "当前气氛值（C0：0–300点；C1及以上：施放元素爆发后初始150点，最多400点）",
           maximumValue: 300,
-          minimumValue: 0
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            {
+              defaultValue: 400,
+              maximumValue: 400,
+              minimumSourceConstellation: 1,
+              minimumValue: 150
+            }
+          ]
         }
       ],
       status: "verified",
@@ -193,7 +201,7 @@ export const furinaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Furina",
       id: "furina.burst.let_the_people_rejoice.fanfare.damage_bonus",
       kind: "scalar",
-      label: "万众狂欢 / 气氛值全伤害加成（C0、手填0–300点）",
+      label: "万众狂欢 / 气氛值全伤害加成",
       ratioParameter: {
         reference: {
           groupId: "burst",
@@ -217,7 +225,7 @@ export const furinaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit is verified as a baseline C0 attack-scaling Physical hit. One Ousia Mademoiselle Crabaletta hit is verified as a Hydro hit that scales from Furina's max HP and reads stats at hit time. Its selected 0–4 successful HP-consumption participants apply the documented 100–140% member-attack multiplier, defaulting to four. At ascension 4+, A4's min(HP / 1000 × 0.7%, 28%) Salon-member damage bonus is included. The selected source-owned support metric calculates Let the People Rejoice's all-damage bonus for one friendly recipient as the explicitly hand-filled current Fanfare point count × burst[4]; C3 adds three Burst levels. This first slice is deliberately C0 and accepts 0–300 points, so C1's starting points and higher cap are excluded rather than silently treated as C0. The Ousia initial bubble, Gentilhomme Usher, Surintendante Chevalmarin, Pneuma's Singer of Many Waters, member cadence, actual HP drain and participant eligibility, Burst healing bonus, reactions, external infusions, Arkhe switching, other passives, C1/C2/C4/C6, and rotation behavior remain unmodeled.",
+    "One first normal-attack hit is verified as a baseline attack-scaling Physical hit. One Ousia Mademoiselle Crabaletta hit is verified as a Hydro hit that scales from Furina's max HP and reads stats at hit time. Its selected 0–4 successful HP-consumption participants apply the documented 100–140% member-attack multiplier, defaulting to four. At ascension 4+, A4's min(HP / 1000 × 0.7%, 28%) Salon-member damage bonus is included. The selected source-owned support metric calculates Let the People Rejoice's all-damage bonus for one friendly recipient as current Fanfare point count × burst[4]. Its action snapshot uses C0's 0–300 range, while C1+ begins Burst at 150 points and caps at 400; when no manual state is supplied, the evaluator uses the full reachable cap (300 at C0 and 400 at C1+). C3 adds three Burst levels. The Ousia initial bubble, Gentilhomme Usher, Surintendante Chevalmarin, Pneuma's Singer of Many Waters, member cadence, actual HP drain and participant eligibility, Burst healing bonus, reactions, external infusions, Arkhe switching, other passives, C2/C4/C6, and rotation behavior remain unmodeled.",
   label: furinaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

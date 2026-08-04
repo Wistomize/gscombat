@@ -67,7 +67,19 @@ interface ApiSpecialEvaluation {
   }
   readonly rotation: {
     readonly events: readonly {
-      readonly trace: readonly { readonly formula: { readonly bonus?: number; readonly kind: string }; readonly stage: string }[]
+      readonly trace: readonly {
+        readonly formula: {
+          readonly bonus?: number
+          readonly kind: string
+          readonly terms?: readonly {
+            readonly coefficient: number
+            readonly stat: string
+            readonly value: number
+          }[]
+        }
+        readonly kind: string
+        readonly stage: string
+      }[]
     }[]
   }
 }
@@ -157,4 +169,27 @@ describe("special-reaction weapon effects API", () => {
     expect(stellarActive.result.expectedDamage).toBeGreaterThan(0)
     expect(lunarActive.result.expectedDamage).toBeGreaterThan(0)
   }, 20_000)
+
+  it("serializes the independent Lunar-Crystallize base terms without ordinary bonus or defense stages", async () => {
+    const zibai = createBuild("Zibai", "LightbearingMoonshard")
+    const response = await app.inject({
+      method: "POST",
+      payload: createScenario(zibai, "zibai.burst.tri_sphere_eminence.second_hit.lunar_crystallize"),
+      url: "/v1/analysis"
+    })
+
+    expect(response.statusCode).toBe(200)
+    const evaluation = response.json().evaluation as ApiSpecialEvaluation
+    const trace = evaluation.rotation.events[0]?.trace ?? []
+    const baseDamage = trace.find((entry) => entry.stage === "base_damage")
+
+    expect(baseDamage).toMatchObject({
+      formula: {
+        kind: "special_reaction_base_damage",
+        terms: [expect.objectContaining({ coefficient: expect.any(Number), stat: "defense", value: expect.any(Number) })]
+      },
+      kind: "special_reaction"
+    })
+    expect(trace.some((entry) => entry.kind === "damage_bonus" || entry.kind === "defense")).toBe(false)
+  })
 })
