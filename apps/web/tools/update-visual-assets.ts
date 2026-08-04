@@ -6,7 +6,7 @@ import { DatabaseSync } from "node:sqlite"
 import { promisify } from "node:util"
 import { fileURLToPath } from "node:url"
 
-import { supportedArtifactSets, supportedCharacters, supportedWeapons } from "@gscombat/content"
+import { supportedCharacters, supportedWeapons } from "@gscombat/content"
 
 const execFileAsync = promisify(execFile)
 const upstreamCommit = "21c98eb60355160274a8c4cecfc5671e2151a073"
@@ -34,6 +34,10 @@ interface TreeResponse {
 
 interface CharacterElementRow {
   readonly element: string | null
+  readonly id: string
+}
+
+interface ArtifactSetRow {
   readonly id: string
 }
 
@@ -110,6 +114,16 @@ function readCharacterElements(): ReadonlyMap<string, Element> {
   }
 }
 
+function readArtifactSetIds(): readonly string[] {
+  const database = new DatabaseSync(gameDataPath, { readOnly: true })
+  try {
+    const rows = database.prepare("SELECT id FROM artifact_sets ORDER BY id").all() as unknown as ArtifactSetRow[]
+    return rows.map((row) => row.id)
+  } finally {
+    database.close()
+  }
+}
+
 async function readElementPaths(): Promise<Record<(typeof elementNames)[number], string>> {
   const entries = await Promise.all(elementNames.map(async (element) => {
     const componentName = `${element[0]!.toUpperCase()}${element.slice(1)}Icon`
@@ -129,6 +143,7 @@ async function main(): Promise<void> {
   if (tree.truncated) throw new Error("Upstream asset tree is truncated")
   const paths = tree.tree.filter((entry) => entry.type === "blob").map((entry) => entry.path)
   const characterElements = readCharacterElements()
+  const artifactSetIds = readArtifactSetIds()
   const temporaryRoot = await mkdtemp(join(tmpdir(), "gscombat-icons-"))
   const characters: Record<string, { element: Element; icon: string }> = {}
   const weapons: Record<string, string> = {}
@@ -161,20 +176,23 @@ async function main(): Promise<void> {
       tasks.push(() => downloadThumbnail(sourcePath, join(packageRoot, "public", icon), 96, temporaryRoot, resume))
     }
 
-    for (const artifactSet of supportedArtifactSets) {
+    for (const artifactSetId of artifactSetIds) {
       const slotIcons: Partial<Record<ArtifactSlot, string>> = {}
       for (const [slot, suffix] of Object.entries(artifactSuffixes) as [ArtifactSlot, string][]) {
         const sourcePath = paths.find((path) =>
           new RegExp(
-            `^libs/gi/assets/src/gen/artifacts/${artifactSet.setId}/UI_RelicIcon_[^/]+_${suffix}\\.png$`
+            `^libs/gi/assets/src/gen/artifacts/${artifactSetId}/UI_RelicIcon_[^/]+_${suffix}\\.png$`
           ).test(path)
         )
         if (!sourcePath) continue
-        const icon = `/icons/artifacts/${artifactSet.setId}/${slot}.webp`
+        const icon = `/icons/artifacts/${artifactSetId}/${slot}.webp`
         slotIcons[slot] = icon
         tasks.push(() => downloadThumbnail(sourcePath, join(packageRoot, "public", icon), 80, temporaryRoot, resume))
       }
-      artifacts[artifactSet.setId] = slotIcons
+      if (Object.keys(slotIcons).length === 0) {
+        throw new Error(`Missing artifact icon source for ${artifactSetId}`)
+      }
+      artifacts[artifactSetId] = slotIcons
     }
 
     await runWithConcurrency(tasks, 24)
