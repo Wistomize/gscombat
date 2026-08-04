@@ -97,6 +97,20 @@ export const chevreuseCombatCoverage: CharacterCombatCoverage = {
         kind: "team_element_subset",
         requiredElements: ["pyro", "electro"]
       },
+      id: "chevreuse.passive.vanguards_coordinated_tactics.pyro_electro_resistance_reduction",
+      label: "尖兵协同战法 · 超载后火/雷元素抗性降低",
+      source: { characterId: "Chevreuse", kind: "character", minimumSourceAscension: 1 },
+      target: "enemyResistanceReduction",
+      targetFilter: { elements: ["pyro", "electro"] },
+      value: { kind: "fixed", value: 0.4 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: {
+        allowedElements: ["pyro", "electro"],
+        kind: "team_element_subset",
+        requiredElements: ["pyro", "electro"]
+      },
       id: "chevreuse.passive.vertical_force_coordination.attack_bonus",
       label: "纵阵武力统筹 · 火雷角色攻击力提升",
       source: { characterId: "Chevreuse", kind: "character", minimumSourceAscension: 4 },
@@ -117,6 +131,15 @@ export const chevreuseCombatCoverage: CharacterCombatCoverage = {
           }
         }
       }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "chevreuse.constellation.in_pursuit_of_ending_evil.pyro_electro_damage_bonus",
+      label: "终结罪恶的追缉 · 治疗三次后的火/雷元素伤害加成",
+      source: { characterId: "Chevreuse", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: { elements: ["pyro", "electro"] },
+      value: { kind: "fixed", value: 0.6 }
     }
   ],
   characterId: "Chevreuse",
@@ -148,7 +171,7 @@ export const chevreuseCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One Ring of Bursting Grenades explosive grenade hit and one Short-Range Rapid Interdiction Fire press hit remain verified baseline C0 attack-scaling Pyro actions for lower-level calculation, but neither is a selected metric because Chevreuse's role-defining output is her support effect. The selected metric calculates Vertical Force Coordination's Attack bonus after an Overcharged Ball from the held Skill hits: Chevreuse's max HP × (passive2[0] ÷ 1,000), capped at passive2[2], or max HP × 0.00001 capped at 40%. It is available only after Ascension 4, requires a party made entirely of Pyro and Electro characters, and affects nearby Pyro or Electro party members for 30 seconds; the displayed recipient is manually selected and its element eligibility is declared here rather than inferred from a current main DPS. C3 raises Skill level and C5 raises Burst level, but neither changes this passive metric. The model excludes A1's Pyro/Electro Resistance reduction, Skill healing, C6's healing-triggered Pyro/Electro Damage Bonus, reactions, timing, external effects, and other character states.",
+    "One Ring of Bursting Grenades explosive grenade hit and one Short-Range Rapid Interdiction Fire press hit remain verified baseline C0 attack-scaling Pyro actions for lower-level calculation, but neither is a selected metric because Chevreuse's role-defining output is her support effect. The selected metric calculates Vertical Force Coordination's Attack bonus after an Overcharged Ball from the held Skill hits: Chevreuse's max HP × (passive2[0] ÷ 1,000), capped at passive2[2], or max HP × 0.00001 capped at 40%. It is available only after Ascension 4, requires a party made entirely of Pyro and Electro characters, and affects nearby Pyro or Electro party members for 30 seconds; the displayed recipient is manually selected and its element eligibility is declared here rather than inferred from a current main DPS. For a complete Pyro/Electro party, maximum-reachable evaluation resolves Vanguard's Coordinated Tactics after Overloaded as 40% Pyro/Electro Resistance reduction. At C6, three reached Skill-healing stacks resolve as 60% Pyro/Electro Damage Bonus. C3 raises Skill level and C5 raises Burst level, but neither changes these support values. The model excludes reaction timing, external effects, and other character states.",
   label: chevreuseDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [
