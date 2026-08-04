@@ -193,6 +193,7 @@ function findButton(label: string): HTMLButtonElement | undefined {
 describe("invite workspace integration", () => {
   it("logs in, initializes an empty cloud workspace, and synchronizes party changes", async () => {
     let authenticated = false
+    let nickname = "朋友测试"
     let revision = 0
     let cloudDocument: WorkspaceDocument = { builds: [], party: { memberBuildIds: [] }, schemaVersion: 1 }
     const requests: { readonly document?: WorkspaceDocument; readonly method: string; readonly url: string }[] = []
@@ -206,14 +207,22 @@ describe("invite workspace integration", () => {
             status: 401
           })
         }
-        return new Response(JSON.stringify({ authenticated: true, label: "测试朋友" }), {
+        return new Response(JSON.stringify({ authenticated: true, label: nickname }), {
           headers: { "Content-Type": "application/json" },
           status: 200
         })
       }
       if (url.endsWith("/v1/session/invite") && method === "POST") {
         authenticated = true
-        return new Response(JSON.stringify({ authenticated: true, label: "测试朋友" }), {
+        return new Response(JSON.stringify({ authenticated: true, label: nickname }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200
+        })
+      }
+      if (url.endsWith("/v1/session/label") && method === "PATCH") {
+        const payload = JSON.parse(String(init?.body)) as { readonly label: string }
+        nickname = payload.label.trim()
+        return new Response(JSON.stringify({ authenticated: true, label: nickname }), {
           headers: { "Content-Type": "application/json" },
           status: 200
         })
@@ -264,7 +273,15 @@ describe("invite workspace integration", () => {
     await flushAsyncWork(25)
     await flushAsyncWork(25)
 
-    expect(document.querySelector(".workspaceSession")?.textContent).toContain("测试朋友")
+    expect(document.querySelector(".workspaceSession")?.textContent).toContain("未设置昵称")
+    expect(document.querySelector(".workspaceSession")?.textContent).not.toContain("朋友测试")
+    await click(findButton("改名"))
+    const nicknameInput = document.querySelector<HTMLInputElement>('input[name="nickname"]')
+    expect(nicknameInput?.value).toBe("朋友测试")
+    await changeInput(nicknameInput, "派蒙")
+    await click(document.querySelector<HTMLButtonElement>('.workspaceSessionRename button[type="submit"]'))
+    await flushAsyncWork()
+    expect(document.querySelector(".workspaceSession")?.textContent).toContain("派蒙")
     expect(requests[0]?.document?.builds).toHaveLength(4)
 
     const raidenCard = [...document.querySelectorAll<HTMLElement>(".buildGroup")].find((card) =>
@@ -277,6 +294,63 @@ describe("invite workspace integration", () => {
     expect(requests.at(-1)?.document?.party.memberBuildIds).toEqual([
       raidenNationalBuiltinScenario.primary.buildId
     ])
+  })
+})
+
+describe("showcase import feedback", () => {
+  it("shows the API error message instead of only an HTTP status", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
+      code: "showcase_unavailable",
+      message: "该 UID 的角色展示柜暂时不可读取"
+    }), {
+      headers: { "Content-Type": "application/json" },
+      status: 500
+    })))
+
+    await render(createElement(ConfigurationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      initialScenario: raidenNationalBuiltinScenario
+    }))
+    await flushAsyncWork()
+
+    await click(findButton("导入展示柜配置"))
+    const showcaseInput = document.querySelector<HTMLInputElement>('input[inputmode="numeric"]')
+    await changeInput(showcaseInput, "249548209")
+    await click(findButton("确认导入"))
+    await flushAsyncWork()
+
+    expect(document.querySelector(".workspaceError")?.textContent).toContain("该 UID 的角色展示柜暂时不可读取")
+  })
+
+  it("summarizes all skipped showcase characters after a partial import", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
+      builds: [raidenNationalBuiltinScenario.primary],
+      nickname: "旅行者",
+      skipped: [
+        { count: 2, reason: "incomplete_equipment" },
+        { count: 1, reason: "unsupported_character" }
+      ],
+      ttl: 60,
+      uid: "249548209"
+    }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200
+    })))
+
+    await render(createElement(ConfigurationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      initialScenario: raidenNationalBuiltinScenario
+    }))
+    await flushAsyncWork()
+
+    await click(findButton("导入展示柜配置"))
+    const showcaseInput = document.querySelector<HTMLInputElement>('input[inputmode="numeric"]')
+    await changeInput(showcaseInput, "249548209")
+    await click(findButton("确认导入"))
+    await flushAsyncWork()
+
+    expect(document.querySelector(".workspaceHeader")?.textContent)
+      .toContain("已导入 旅行者 的 1 份配置，跳过 3 个不完整或暂不支持角色")
   })
 })
 

@@ -3,7 +3,8 @@ import type {
   ArtifactSlot,
   ArtifactStat,
   CharacterBuild,
-  ShowcaseImportResponse
+  ShowcaseImportResponse,
+  ShowcaseSkippedBuildReason
 } from "@gscombat/contracts"
 
 import {
@@ -57,6 +58,16 @@ interface EnkaResponse {
 interface CachedShowcase {
   readonly expiresAt: number
   readonly response: ShowcaseImportResponse
+}
+
+class ShowcaseAvatarNormalizationError extends Error {
+  public readonly reason: ShowcaseSkippedBuildReason
+
+  public constructor(reason: ShowcaseSkippedBuildReason, message: string) {
+    super(message)
+    this.name = "ShowcaseAvatarNormalizationError"
+    this.reason = reason
+  }
 }
 
 export interface ShowcaseImporter {
@@ -113,14 +124,21 @@ const percentageStats = new Set<ArtifactStat>([
 ])
 
 function requireNumber(value: number | undefined, description: string): number {
-  if (value === undefined || !Number.isFinite(value)) throw new Error(`Invalid Enka payload: ${description}`)
+  if (value === undefined || !Number.isFinite(value)) {
+    throw new ShowcaseAvatarNormalizationError("invalid_avatar_data", `Invalid Enka payload: ${description}`)
+  }
   return value
 }
 
 function normalizeStat(stat: EnkaStat): { readonly stat: ArtifactStat; readonly value: number } {
   const propertyId = stat.mainPropId ?? stat.appendPropId ?? stat.appendPropID
   const mappedStat = propertyId ? statMappings[propertyId] : undefined
-  if (!mappedStat) throw new Error(`Unsupported Enka artifact stat: ${propertyId ?? "missing"}`)
+  if (!mappedStat) {
+    throw new ShowcaseAvatarNormalizationError(
+      "unsupported_equipment",
+      `Unsupported Enka artifact stat: ${propertyId ?? "missing"}`
+    )
+  }
   const rawValue = requireNumber(stat.statValue ?? stat.propValue, `${propertyId} value`)
   return { stat: mappedStat, value: percentageStats.has(mappedStat) ? rawValue / 100 : rawValue }
 }
@@ -128,11 +146,23 @@ function normalizeStat(stat: EnkaStat): { readonly stat: ArtifactStat; readonly 
 function normalizeArtifact(equip: EnkaEquip, uid: string, avatarId: number): ArtifactPiece | undefined {
   if (equip.flat?.itemType !== "ITEM_RELIQUARY") return undefined
   const slot = equip.flat.equipType ? slotMappings[equip.flat.equipType] : undefined
-  if (!slot) throw new Error(`Unsupported Enka artifact slot: ${equip.flat.equipType ?? "missing"}`)
+  if (!slot) {
+    throw new ShowcaseAvatarNormalizationError(
+      "unsupported_equipment",
+      `Unsupported Enka artifact slot: ${equip.flat.equipType ?? "missing"}`
+    )
+  }
   const itemId = equip.itemId
-  if (itemId === undefined) throw new Error(`Enka artifact in slot ${slot} does not declare an item ID`)
+  if (itemId === undefined) {
+    throw new ShowcaseAvatarNormalizationError(
+      "invalid_avatar_data",
+      `Enka artifact in slot ${slot} does not declare an item ID`
+    )
+  }
   const artifactMetadata = getShowcaseArtifactMetadata(itemId)
-  if (!artifactMetadata) throw new Error(`Unsupported Enka artifact item ID: ${itemId}`)
+  if (!artifactMetadata) {
+    throw new ShowcaseAvatarNormalizationError("unsupported_equipment", `Unsupported Enka artifact item ID: ${itemId}`)
+  }
   return {
     id: `showcase-${uid}-${avatarId}-${slot}`,
     level: Math.max(requireNumber(equip.reliquary?.level, `${slot} level`) - 1, 0),
@@ -156,21 +186,33 @@ function normalizeAvatar(
   importedAt: string
 ): CharacterBuild {
   const avatarId = avatar.avatarId
-  if (avatarId === undefined) throw new Error("Enka avatar does not declare an avatar ID")
+  if (avatarId === undefined) {
+    throw new ShowcaseAvatarNormalizationError("invalid_avatar_data", "Enka avatar does not declare an avatar ID")
+  }
   const mapping = getShowcaseCharacterMetadata(avatarId, avatar.skillDepotId)
   if (!mapping) {
-    throw new Error(
+    throw new ShowcaseAvatarNormalizationError(
+      "unsupported_character",
       `Unsupported Enka avatar metadata: avatarId=${avatarId}, skillDepotId=${avatar.skillDepotId ?? "missing"}`
     )
   }
   const weaponEquip = avatar.equipList?.find((equip) => equip.flat?.itemType === "ITEM_WEAPON")
   if (!weaponEquip?.weapon || weaponEquip.itemId === undefined) {
-    throw new Error(`Enka avatar ${avatarId} does not declare a complete equipped weapon`)
+    throw new ShowcaseAvatarNormalizationError(
+      "incomplete_equipment",
+      `Enka avatar ${avatarId} does not declare a complete equipped weapon`
+    )
   }
   const weaponMetadata = getShowcaseWeaponMetadata(weaponEquip.itemId)
-  if (!weaponMetadata) throw new Error(`Unsupported Enka weapon item ID: ${weaponEquip.itemId}`)
+  if (!weaponMetadata) {
+    throw new ShowcaseAvatarNormalizationError(
+      "unsupported_equipment",
+      `Unsupported Enka weapon item ID: ${weaponEquip.itemId}`
+    )
+  }
   if (weaponMetadata.weaponType !== mapping.weaponType) {
-    throw new Error(
+    throw new ShowcaseAvatarNormalizationError(
+      "unsupported_equipment",
       `Enka avatar ${avatarId} cannot equip ${weaponMetadata.weaponId}: expected ${mapping.weaponType}, got ${weaponMetadata.weaponType}`
     )
   }
@@ -178,7 +220,10 @@ function normalizeAvatar(
     .map((equip) => normalizeArtifact(equip, uid, avatarId))
     .filter((artifact): artifact is ArtifactPiece => artifact !== undefined)
   if (artifacts.length !== 5) {
-    throw new Error(`Enka avatar ${avatarId} has ${artifacts.length} equipped artifacts; exactly five are required`)
+    throw new ShowcaseAvatarNormalizationError(
+      "incomplete_equipment",
+      `Enka avatar ${avatarId} has ${artifacts.length} equipped artifacts; exactly five are required`
+    )
   }
   const [normalId, skillId, burstId] = mapping.skillIds
   const skillLevelMap = avatar.skillLevelMap ?? {}
@@ -214,9 +259,21 @@ export function normalizeEnkaShowcase(
   gameDataVersion: string,
   importedAt = new Date().toISOString()
 ): ShowcaseImportResponse {
+  const builds: CharacterBuild[] = []
+  const skippedCounts = new Map<ShowcaseSkippedBuildReason, number>()
+  for (const avatar of payload.avatarInfoList ?? []) {
+    try {
+      builds.push(normalizeAvatar(avatar, uid, gameDataVersion, importedAt))
+    } catch (error) {
+      if (!(error instanceof ShowcaseAvatarNormalizationError)) throw error
+      skippedCounts.set(error.reason, (skippedCounts.get(error.reason) ?? 0) + 1)
+    }
+  }
+
   return {
-    builds: (payload.avatarInfoList ?? []).map((avatar) => normalizeAvatar(avatar, uid, gameDataVersion, importedAt)),
+    builds,
     ...(payload.playerInfo?.nickname ? { nickname: payload.playerInfo.nickname } : {}),
+    skipped: [...skippedCounts].map(([reason, count]) => ({ count, reason })),
     ttl: Math.max(payload.ttl ?? 0, 0),
     uid
   }

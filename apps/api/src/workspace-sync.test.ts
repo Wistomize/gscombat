@@ -15,11 +15,13 @@ const databasePath = join(temporaryDirectory, "workspaces.sqlite")
 
 let firstInvite: CreatedWorkspaceInvite
 let secondInvite: CreatedWorkspaceInvite
+let nicknameInvite: CreatedWorkspaceInvite
 
 const setupStore = new WorkspaceStore(databasePath, tokenSecret)
 try {
   firstInvite = setupStore.createInvite("朋友一号")
   secondInvite = setupStore.createInvite("朋友二号")
+  nicknameInvite = setupStore.createInvite("旧昵称")
 } finally {
   setupStore.close()
 }
@@ -145,5 +147,53 @@ describe("invite-scoped workspace sync", () => {
 
     const response = await app.inject({ headers: { cookie }, method: "GET", url: "/v1/workspace" })
     expect(response.statusCode).toBe(401)
+  })
+
+  it("persists a renamed workspace nickname for the current invitation only", async () => {
+    const anonymous = await app.inject({
+      method: "PATCH",
+      payload: { label: "旅行者" },
+      url: "/v1/session/label"
+    })
+    expect(anonymous.statusCode).toBe(401)
+
+    const loginResponse = await app.inject({
+      method: "POST",
+      payload: { code: nicknameInvite.code },
+      url: "/v1/session/invite"
+    })
+    expect(loginResponse.statusCode).toBe(200)
+    expect(loginResponse.json()).toEqual({ authenticated: true, label: "旧昵称" })
+    const cookie = sessionCookie(loginResponse.headers["set-cookie"])
+
+    const invalid = await app.inject({
+      headers: { cookie },
+      method: "PATCH",
+      payload: { label: "   " },
+      url: "/v1/session/label"
+    })
+    expect(invalid.statusCode).toBe(400)
+    expect(invalid.json()).toMatchObject({ code: "nickname_invalid" })
+
+    const renamed = await app.inject({
+      headers: { cookie },
+      method: "PATCH",
+      payload: { label: "旅行者   " },
+      url: "/v1/session/label"
+    })
+    expect(renamed.statusCode).toBe(200)
+    expect(renamed.json()).toEqual({ authenticated: true, label: "旅行者" })
+
+    const currentSession = await app.inject({ headers: { cookie }, method: "GET", url: "/v1/session" })
+    expect(currentSession.statusCode).toBe(200)
+    expect(currentSession.json()).toEqual({ authenticated: true, label: "旅行者" })
+
+    const secondDeviceLogin = await app.inject({
+      method: "POST",
+      payload: { code: nicknameInvite.code },
+      url: "/v1/session/invite"
+    })
+    expect(secondDeviceLogin.statusCode).toBe(200)
+    expect(secondDeviceLogin.json()).toEqual({ authenticated: true, label: "旅行者" })
   })
 })

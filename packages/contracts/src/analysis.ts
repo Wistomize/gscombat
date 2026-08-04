@@ -603,9 +603,26 @@ export const ShowcaseImportRequestSchema = Type.Object({
 
 export type ShowcaseImportRequest = Type.Static<typeof ShowcaseImportRequestSchema>
 
+export const ShowcaseSkippedBuildReasonSchema = Type.Union([
+  Type.Literal("incomplete_equipment"),
+  Type.Literal("invalid_avatar_data"),
+  Type.Literal("unsupported_character"),
+  Type.Literal("unsupported_equipment")
+])
+
+export type ShowcaseSkippedBuildReason = Type.Static<typeof ShowcaseSkippedBuildReasonSchema>
+
+export const ShowcaseSkippedBuildSchema = Type.Object({
+  count: Type.Integer({ minimum: 1 }),
+  reason: ShowcaseSkippedBuildReasonSchema
+})
+
+export type ShowcaseSkippedBuild = Type.Static<typeof ShowcaseSkippedBuildSchema>
+
 export const ShowcaseImportResponseSchema = Type.Object({
   builds: Type.Array(CharacterBuildSchema),
   nickname: Type.Optional(Type.String()),
+  skipped: Type.Optional(Type.Array(ShowcaseSkippedBuildSchema)),
   ttl: Type.Integer({ minimum: 0 }),
   uid: Type.String()
 })

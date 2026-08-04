@@ -27,6 +27,7 @@ import {
   loadCloudWorkspace,
   loginToWorkspace,
   logoutWorkspace,
+  renameWorkspaceNickname,
   saveCloudWorkspace,
   WorkspaceApiError
 } from "../lib/workspace-api"
@@ -53,6 +54,8 @@ interface PendingWorkspaceMigration {
 
 type CloudSessionStatus = "anonymous" | "authenticated" | "checking"
 
+const legacyWorkspaceNicknameLabels = new Set(["个人测试", "朋友测试"])
+
 const selectableElements: readonly { readonly id: CharacterElement; readonly label: string }[] = [
   { id: "pyro", label: "火元素" },
   { id: "hydro", label: "水元素" },
@@ -75,6 +78,10 @@ function getSourceLabel(build: CharacterBuild): string {
   return "手动配置"
 }
 
+function getWorkspaceNicknameDisplay(label: string): string {
+  return !label || legacyWorkspaceNicknameLabels.has(label) ? "未设置昵称" : label
+}
+
 function downloadWorkspace(builds: readonly CharacterBuild[]): void {
   const payload = createBuildWorkspaceExport(builds)
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" })
@@ -84,6 +91,16 @@ function downloadWorkspace(builds: readonly CharacterBuild[]): void {
   anchor.download = "gscombat-character-builds.json"
   anchor.click()
   URL.revokeObjectURL(url)
+}
+
+async function getShowcaseImportError(response: Response): Promise<string> {
+  try {
+    const payload = await response.json() as { readonly message?: unknown }
+    if (typeof payload.message === "string" && payload.message.trim()) return payload.message
+  } catch {
+    // Fall back to the HTTP status when an upstream proxy returns a non-JSON error body.
+  }
+  return `展示柜接口返回 HTTP ${response.status}`
 }
 
 export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialScenario }: ConfigurationWorkspaceProps) {
@@ -101,6 +118,9 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
   const [bootstrapVersion, setBootstrapVersion] = useState(0)
   const [inviteCode, setInviteCode] = useState("")
   const [sessionLabel, setSessionLabel] = useState("")
+  const [sessionNicknameDraft, setSessionNicknameDraft] = useState("")
+  const [renamingSessionNickname, setRenamingSessionNickname] = useState(false)
+  const [savingSessionNickname, setSavingSessionNickname] = useState(false)
   const [pendingMigration, setPendingMigration] = useState<PendingWorkspaceMigration | null>(null)
   const [importPanel, setImportPanel] = useState<ImportPanel>(null)
   const [showcaseUid, setShowcaseUid] = useState("")
@@ -351,8 +371,43 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
     } finally {
       setReady(false)
       setSessionLabel("")
+      setSessionNicknameDraft("")
+      setRenamingSessionNickname(false)
       setCloudSessionStatus("anonymous")
       setStatus("已退出当前工作空间，本机缓存仍保留")
+    }
+  }
+
+  const startRenamingSessionNickname = () => {
+    setError("")
+    setSessionNicknameDraft(sessionLabel)
+    setRenamingSessionNickname(true)
+  }
+
+  const cancelRenamingSessionNickname = () => {
+    setSessionNicknameDraft(sessionLabel)
+    setRenamingSessionNickname(false)
+  }
+
+  const saveSessionNickname = async () => {
+    const nickname = sessionNicknameDraft.trim()
+    if (!nickname) {
+      setError("昵称不能为空")
+      return
+    }
+
+    setError("")
+    setSavingSessionNickname(true)
+    try {
+      const session = await renameWorkspaceNickname(nickname)
+      setSessionLabel(session.label)
+      setSessionNicknameDraft(session.label)
+      setRenamingSessionNickname(false)
+      setStatus("昵称已更新")
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "昵称更新失败")
+    } finally {
+      setSavingSessionNickname(false)
     }
   }
 
@@ -420,10 +475,15 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
         headers: { "Content-Type": "application/json" },
         method: "POST"
       })
-      if (!response.ok) throw new Error(`展示柜接口返回 HTTP ${response.status}`)
+      if (!response.ok) throw new Error(await getShowcaseImportError(response))
       const imported = (await response.json()) as ShowcaseImportResponse
       if (imported.builds.length === 0) throw new Error("展示柜中没有可识别且完整的角色配置")
-      importBuilds(imported.builds, `已导入 ${imported.nickname ?? showcaseUid} 的 ${imported.builds.length} 份配置`)
+      const skippedCount = imported.skipped?.reduce((total, entry) => total + entry.count, 0) ?? 0
+      const skippedSummary = skippedCount ? `，跳过 ${skippedCount} 个不完整或暂不支持角色` : ""
+      importBuilds(
+        imported.builds,
+        `已导入 ${imported.nickname ?? showcaseUid} 的 ${imported.builds.length} 份配置${skippedSummary}`
+      )
     } catch (caught) {
       setStatus("展示柜导入失败")
       setError(caught instanceof Error ? caught.message : "展示柜导入失败")
@@ -601,7 +661,28 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
         </div>
         {cloudEnabled ? (
           <div className="workspaceSession">
-            <span>{sessionLabel}</span>
+            {renamingSessionNickname ? (
+              <form
+                className="workspaceSessionRename"
+                onSubmit={(event) => { event.preventDefault(); void saveSessionNickname() }}
+              >
+                <input
+                  aria-label="昵称"
+                  autoFocus
+                  maxLength={80}
+                  name="nickname"
+                  value={sessionNicknameDraft}
+                  onChange={(event) => setSessionNicknameDraft(event.target.value)}
+                />
+                <button disabled={savingSessionNickname} type="submit">保存</button>
+                <button disabled={savingSessionNickname} type="button" onClick={cancelRenamingSessionNickname}>取消</button>
+              </form>
+            ) : (
+              <>
+                <span className="workspaceNickname">{getWorkspaceNicknameDisplay(sessionLabel)}</span>
+                <button type="button" onClick={startRenamingSessionNickname}>改名</button>
+              </>
+            )}
             <button type="button" onClick={() => void signOut()}>退出</button>
           </div>
         ) : null}

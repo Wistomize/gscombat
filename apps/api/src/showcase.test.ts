@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { normalizeEnkaShowcase } from "./showcase.js"
+import { buildApp } from "./app.js"
+import { EnkaShowcaseClient, normalizeEnkaShowcase } from "./showcase.js"
 import { showcaseCharacterMetadata, showcaseWeaponMetadata } from "./showcase-metadata.js"
 
 const artifactSlots = [
@@ -132,9 +133,113 @@ describe("Enka showcase normalization", () => {
     })
   })
 
-  it("reports stale metadata instead of silently dropping an avatar", () => {
-    expect(() =>
-      normalizeEnkaShowcase({ avatarInfoList: [{ avatarId: 19999999 }] }, "123456789", "6.7")
-    ).toThrow("Unsupported Enka avatar metadata")
+  it("retains complete builds while summarizing incomplete equipped avatars", () => {
+    const gorou = showcaseCharacterMetadata.find((entry) => entry.avatarId === 10000055)
+    const weapon = showcaseWeaponMetadata.find((entry) => entry.weaponType === gorou?.weaponType)
+    if (!gorou || !weapon) throw new Error("Missing generated Gorou showcase fixture")
+
+    const result = normalizeEnkaShowcase(
+      {
+        avatarInfoList: [
+          {
+            avatarId: 10000052,
+            equipList: [
+              {
+                flat: { itemType: "ITEM_WEAPON" },
+                itemId: 13509,
+                weapon: { affixMap: { 1: 0 }, level: 90, promoteLevel: 6 }
+              },
+              ...createArtifactEquips()
+            ],
+            propMap: { 1002: { val: "6" }, 4001: { val: "90" } },
+            skillLevelMap: { 10521: 6, 10522: 9, 10525: 10 },
+            talentIdList: []
+          },
+          {
+            avatarId: gorou.avatarId,
+            equipList: [
+              {
+                flat: { itemType: "ITEM_WEAPON" },
+                itemId: weapon.itemId,
+                weapon: { affixMap: { 1: 0 }, level: 90, promoteLevel: 6 }
+              },
+              ...createArtifactEquips().slice(0, 4)
+            ]
+          }
+        ]
+      },
+      "249548209",
+      "6.7"
+    )
+
+    expect(result.builds).toHaveLength(1)
+    expect(result.builds[0]?.characterId).toBe("RaidenShogun")
+    expect(result.skipped).toEqual([{ count: 1, reason: "incomplete_equipment" }])
+  })
+
+  it("summarizes unsupported avatars without leaking their upstream identifiers", () => {
+    const result = normalizeEnkaShowcase({ avatarInfoList: [{ avatarId: 19999999 }] }, "123456789", "6.7")
+
+    expect(result).toMatchObject({ builds: [], skipped: [{ count: 1, reason: "unsupported_character" }] })
+  })
+
+  it("returns 200 from the import endpoint when Enka includes an incomplete avatar", async () => {
+    const gorou = showcaseCharacterMetadata.find((entry) => entry.avatarId === 10000055)
+    const bow = showcaseWeaponMetadata.find((entry) => entry.weaponType === gorou?.weaponType)
+    if (!gorou || !bow) throw new Error("Missing generated Gorou showcase fixture")
+    const payload = {
+      avatarInfoList: [
+        {
+          avatarId: 10000052,
+          equipList: [
+            {
+              flat: { itemType: "ITEM_WEAPON" },
+              itemId: 13509,
+              weapon: { affixMap: { 1: 0 }, level: 90, promoteLevel: 6 }
+            },
+            ...createArtifactEquips()
+          ],
+          propMap: { 1002: { val: "6" }, 4001: { val: "90" } },
+          skillLevelMap: { 10521: 6, 10522: 9, 10525: 10 },
+          talentIdList: []
+        },
+        {
+          avatarId: gorou.avatarId,
+          equipList: [
+            {
+              flat: { itemType: "ITEM_WEAPON" },
+              itemId: bow.itemId,
+              weapon: { affixMap: { 1: 0 }, level: 90, promoteLevel: 6 }
+            },
+            ...createArtifactEquips().slice(0, 4)
+          ]
+        }
+      ],
+      ttl: 60
+    }
+    const app = buildApp({
+      showcaseImporter: new EnkaShowcaseClient({
+        baseUrl: "https://enka.example/api/uid",
+        fetch: async () => new Response(JSON.stringify(payload), { status: 200 })
+      })
+    })
+
+    try {
+      const response = await app.inject({
+        method: "POST",
+        payload: { uid: "249548209" },
+        url: "/v1/showcase/import"
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json()).toMatchObject({
+        builds: [{ characterId: "RaidenShogun" }],
+        skipped: [{ count: 1, reason: "incomplete_equipment" }],
+        ttl: 60,
+        uid: "249548209"
+      })
+    } finally {
+      await app.close()
+    }
   })
 })

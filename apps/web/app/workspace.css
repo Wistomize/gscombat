@@ -123,6 +123,31 @@
   gap: 10px;
 }
 
+.workspaceSession .workspaceNickname {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspaceSessionRename {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.workspaceSessionRename input {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: inherit;
+  min-height: 32px;
+  padding: 4px 8px;
+  width: min(180px, 26vw);
+}
+
 .workspaceSession button {
   background: #ffffff;
   border: 1px solid var(--border);

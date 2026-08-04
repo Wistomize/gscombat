@@ -29,6 +29,12 @@ export const SessionResponseSchema = Type.Object({
 
 export type SessionResponse = Type.Static<typeof SessionResponseSchema>
 
+export const SessionLabelUpdateRequestSchema = Type.Object({
+  label: Type.String({ maxLength: 80, minLength: 1 })
+})
+
+export type SessionLabelUpdateRequest = Type.Static<typeof SessionLabelUpdateRequestSchema>
+
 export const LoggedOutResponseSchema = Type.Object({
   authenticated: Type.Literal(false)
 })

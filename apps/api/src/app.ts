@@ -46,6 +46,7 @@ import {
   ShowcaseImportRequestSchema,
   ShowcaseImportResponseSchema,
   SessionResponseSchema,
+  SessionLabelUpdateRequestSchema,
   SupportMetricEvaluationRequestSchema,
   SupportMetricEvaluationResponseSchema,
   WorkspaceResponseSchema,
@@ -66,6 +67,7 @@ import {
   type ShowcaseImportRequest,
   type ShowcaseImportResponse,
   type SessionResponse,
+  type SessionLabelUpdateRequest,
   type SupportMetricEvaluationRequest,
   type SupportMetricEvaluationResponse,
   type SupportMetricFormula,
@@ -485,6 +487,32 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       const session = getWorkspaceSession(request)
       if (!session) return reply.code(401).send({ code: "session_required", message: "请先输入邀请码" })
       return { authenticated: true, label: session.label }
+    }
+  )
+
+  app.patch<{ Body: SessionLabelUpdateRequest; Reply: ApiErrorResponse | SessionResponse }>(
+    "/v1/session/label",
+    {
+      schema: {
+        body: SessionLabelUpdateRequestSchema,
+        response: {
+          200: SessionResponseSchema,
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema
+        }
+      }
+    },
+    async (request, reply) => {
+      reply.header("Cache-Control", "no-store")
+      const session = getWorkspaceSession(request)
+      if (!session) return reply.code(401).send({ code: "session_required", message: "邀请码会话已失效" })
+
+      const label = request.body.label.trim()
+      if (!label) return reply.code(400).send({ code: "nickname_invalid", message: "昵称不能为空" })
+
+      const updated = workspaceStore.updateInviteLabel(session.inviteId, session.workspaceId, label)
+      if (!updated) return reply.code(401).send({ code: "session_required", message: "邀请码会话已失效" })
+      return { authenticated: true, label: updated.label }
     }
   )
 

@@ -43,6 +43,16 @@ export async function loginToWorkspace(code: string): Promise<SessionResponse> {
   return parseResponse<SessionResponse>(response)
 }
 
+/** Updates the nickname displayed for the currently signed-in workspace. */
+export async function renameWorkspaceNickname(label: string): Promise<SessionResponse> {
+  const response = await fetch("/api/backend/v1/session/label", {
+    body: JSON.stringify({ label }),
+    headers: { "Content-Type": "application/json" },
+    method: "PATCH"
+  })
+  return parseResponse<SessionResponse>(response)
+}
+
 /** Clears the current invitation session. */
 export async function logoutWorkspace(): Promise<void> {
   const response = await fetch("/api/backend/v1/session/logout", { method: "POST" })

@@ -128,6 +128,20 @@ export class WorkspaceStore {
     return row ? { inviteId: row.id, label: row.label, workspaceId: row.workspace_id } : undefined
   }
 
+  /** Updates the display label for one active invitation. */
+  public updateInviteLabel(inviteId: string, workspaceId: string, label: string): WorkspaceInviteSession | undefined {
+    const normalizedLabel = label.trim()
+    if (!normalizedLabel || normalizedLabel.length > 80) return undefined
+
+    const result = this.#database.prepare(`
+      UPDATE invite_codes
+      SET label = ?
+      WHERE id = ? AND workspace_id = ? AND revoked_at IS NULL
+    `).run(normalizedLabel, inviteId, workspaceId)
+    if (result.changes !== 1) return undefined
+    return { inviteId, label: normalizedLabel, workspaceId }
+  }
+
   /** Returns one workspace aggregate and its optimistic-concurrency revision. */
   public getWorkspace(workspaceId: string): WorkspaceResponse | undefined {
     const row = this.#database.prepare(`
