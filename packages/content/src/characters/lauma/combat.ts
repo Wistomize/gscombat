@@ -249,6 +249,32 @@ export const laumaCombatCoverage: CharacterCombatCoverage = {
       status: "verified",
       target: "friendly_recipient",
       unit: "damage"
+    },
+    {
+      characterId: "Lauma",
+      id: "lauma.burst.pale_hymn.lunar_bloom_flat_damage_addition",
+      kind: "scalar",
+      label: "苍色祷歌 / 月绽放固定伤害增加值",
+      ratioParameter: {
+        reference: {
+          groupId: "burst",
+          id: "lunar-bloom-reaction-damage-increase",
+          parameterIndex: 3,
+          source: "talent",
+          talentSlot: "burst"
+        },
+        snapshotChecks: [
+          { expectedValue: 2.2224, talentLevel: 1 },
+          { expectedValue: 4.00032, talentLevel: 10 }
+        ]
+      },
+      recipientRequirements: [],
+      scalingStat: "elementalMastery",
+      semantic: "lunar_bloom_flat_damage_bonus",
+      sourceActionId: "lauma.burst.pale_hymn",
+      status: "verified",
+      target: "friendly_recipient",
+      unit: "damage"
     }
   ],
   detail:

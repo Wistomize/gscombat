@@ -27,6 +27,7 @@ describe("character combat coverage registry", () => {
       "elemental_mastery_buff",
       "elemental_normal_attack_damage_bonus",
       "geo_damage_flat_bonus",
+      "lunar_bloom_flat_damage_bonus",
       "lunar_crystallize_base_damage_bonus",
       "lunar_crystallize_flat_damage_bonus",
       "normal_attack_flat_damage_bonus",

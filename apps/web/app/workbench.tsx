@@ -122,8 +122,7 @@ const traceStageMeta: Readonly<Record<PipelineStage, { readonly hint: string; re
   reaction_coefficient: { hint: "月曜或星超导反应的固定系数", label: "反应系数" },
   base_damage_bonus: { hint: "特殊反应基础伤害的独立加成", label: "基础伤害加成" },
   reaction_damage_bonus: { hint: "元素精通与特殊反应伤害加成", label: "反应伤害加成" },
-  big_power: { hint: "特殊反应的独立大权倍率", label: "大权区" },
-  flat_damage_addition: { hint: "特殊反应大力出奇迹后的固定伤害", label: "固定伤害加成" },
+  flat_damage_addition: { hint: "反应乘区结算后的独立固定伤害增加", label: "固定伤害加成" },
   crit: { hint: "暴击率折算后的期望倍率", label: "暴击区" },
   defense: { hint: "等级、防御降低与无视防御", label: "防御区" },
   resistance: { hint: "敌人抗性与抗性降低", label: "抗性区" },
@@ -163,7 +162,6 @@ const actionEffectTargetLabels: Readonly<Record<AppliedActionEffect["target"], s
   transformativeReactionFlatDamageAddition: "剧变反应基础伤害增加值",
   specialReactionBaseDamageFlat: "月曜/星烁反应基础伤害增加值",
   specialReactionBaseDamageBonus: "月曜/星烁反应基础伤害加成",
-  specialReactionBigPowerBonus: "月曜/星烁反应专属倍率",
   specialReactionDamageBonus: "月曜/星烁反应伤害加成",
   specialReactionElevation: "月曜/星烁反应伤害擢升",
   specialReactionFlatDamageAddition: "月曜/星烁反应固定伤害增加值",
@@ -938,18 +936,6 @@ function SpecialReactionTraceFormula({
       </div>
     )
   }
-  if (formula.kind === "special_reaction_big_power") {
-    return (
-      <div className="formulaLines">
-        <FormulaEquation label="大权倍率">
-          <FormulaValue stage={previousStage}>{formatFormulaNumber(before)}</FormulaValue> ×{" "}
-          <FormulaValue stage="big_power">{formatFormulaPercent(formula.multiplier)}</FormulaValue> ={" "}
-          <FormulaValue stage="big_power">{formatFormulaNumber(after)}</FormulaValue>
-        </FormulaEquation>
-        <ActionEffectSources effects={effects} targets={["specialReactionBigPowerBonus"]} />
-      </div>
-    )
-  }
   if (formula.kind === "special_reaction_flat_damage_addition") {
     return (
       <div className="formulaLines">
@@ -1041,7 +1027,6 @@ function TraceFormula({
     formula.kind === "special_reaction_coefficient" ||
     formula.kind === "special_reaction_base_damage_bonus" ||
     formula.kind === "special_reaction_damage_bonus" ||
-    formula.kind === "special_reaction_big_power" ||
     formula.kind === "special_reaction_flat_damage_addition" ||
     formula.kind === "special_reaction_ascension"
   ) {
@@ -1880,8 +1865,13 @@ function OrderedDamageReport({
 }) {
   const rotationTraceEvents = analysis.evaluation.rotation.events.filter((event) => event.trace.length > 0)
   const usesRotationTrace = analysis.evaluation.formulaAuthority === "rotation_events" && rotationTraceEvents.length > 0
+  const tracePresentation = targetAction?.tracePresentation
+  const focusedTraceEvents = tracePresentation
+    ? rotationTraceEvents.filter((event) => event.id.endsWith(`.${tracePresentation.focusEventId}`))
+    : rotationTraceEvents
+  const displayedRotationTraceEvents = focusedTraceEvents.length > 0 ? focusedTraceEvents : rotationTraceEvents
   const traceLegendStages: readonly PipelineStage[] = usesRotationTrace
-    ? [...new Set(rotationTraceEvents.flatMap((event) => event.trace.map(getRotationTraceStage)))]
+    ? [...new Set(displayedRotationTraceEvents.flatMap((event) => event.trace.map(getRotationTraceStage)))]
     : analysis.evaluation.result.trace.map((entry) => entry.stage)
 
   return (
@@ -1919,13 +1909,13 @@ function OrderedDamageReport({
       </article>
 
       <article className="wideReport traceReport">
-        <div className="cardTitle"><span>DAMAGE PIPELINE</span><strong>结算轨迹</strong><small>从基础伤害到反应、抗性与命中段数</small></div>
+        <div className="cardTitle"><span>DAMAGE PIPELINE</span><strong>结算轨迹</strong><small>{tracePresentation ? `总结果：${tracePresentation.totalLabel}；轨迹展示：${tracePresentation.focusLabel}` : "从基础伤害到反应、抗性与命中段数"}</small></div>
         <div className="traceLegend" aria-label="伤害乘区颜色图例">
           {traceLegendStages.map((stage) => <span className={`traceLegendItem traceLegendItem--${stage}`} key={stage}><i aria-hidden="true" />{traceStageMeta[stage].label}</span>)}
         </div>
         <div className="traceSteps">
           {usesRotationTrace
-            ? rotationTraceEvents.map((event, eventIndex) => (
+            ? displayedRotationTraceEvents.map((event, eventIndex) => (
                 <section className="traceEvent" key={event.id}>
                   <div className="traceEventTitle"><strong>{`EVENT ${String(eventIndex + 1).padStart(2, "0")} · ${event.id}`}</strong><small>{`${getRotationEventElementSummary(event)} · ${event.time.toFixed(2)}s · ${event.hitCount} 段`}</small></div>
                   {event.trace.map((entry, index) => {

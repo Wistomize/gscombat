@@ -91,8 +91,6 @@ export interface ResolvedCombatActionEffects {
   readonly specialReactionBaseDamageFlat: number
   /** Adds to the selected special-reaction event's independent base-damage-bonus stage. */
   readonly specialReactionBaseDamageBonus: number
-  /** Adds to the selected direct special-reaction event's independent big-power multiplier as a ratio. */
-  readonly specialReactionBigPowerBonus: number
   readonly specialReactionFlatDamageAddition: number
   /** Adds to the selected special-reaction event's final elevation stage. */
   readonly specialReactionElevation: number
@@ -145,7 +143,6 @@ export const EMPTY_COMBAT_ACTION_EFFECTS: ResolvedCombatActionEffects = {
   specialReactionDamageBonus: 0,
   specialReactionBaseDamageFlat: 0,
   specialReactionBaseDamageBonus: 0,
-  specialReactionBigPowerBonus: 0,
   specialReactionFlatDamageAddition: 0,
   specialReactionElevation: 0,
   defenseFlat: 0,
@@ -714,7 +711,6 @@ function resolveCombatActionEffectsForCandidates(
     specialReactionDamageBonus: sumEffectTarget(appliedEffects, "specialReactionDamageBonus"),
     specialReactionBaseDamageFlat: sumEffectTarget(appliedEffects, "specialReactionBaseDamageFlat"),
     specialReactionBaseDamageBonus: sumEffectTarget(appliedEffects, "specialReactionBaseDamageBonus"),
-    specialReactionBigPowerBonus: sumEffectTarget(appliedEffects, "specialReactionBigPowerBonus"),
     specialReactionFlatDamageAddition: sumEffectTarget(appliedEffects, "specialReactionFlatDamageAddition"),
     specialReactionElevation: sumEffectTarget(appliedEffects, "specialReactionElevation"),
     defenseFlat: sumEffectTarget(appliedEffects, "defenseFlat"),
@@ -820,7 +816,6 @@ function isCombatActionEffectCompatibleWithAdditionalDamageEvent(effect: CombatA
     effect.target === "specialReactionDamageBonus" ||
     effect.target === "specialReactionBaseDamageFlat" ||
     effect.target === "specialReactionBaseDamageBonus" ||
-    effect.target === "specialReactionBigPowerBonus" ||
     effect.target === "specialReactionFlatDamageAddition" ||
     effect.target === "specialReactionElevation"
   ) {

@@ -95,7 +95,6 @@ const SpecialReactionTraceFormulaSchema = Type.Union([
     masteryBonus: Type.Number(),
     multiplier: Type.Number()
   }),
-  Type.Object({ kind: Type.Literal("special_reaction_big_power"), multiplier: Type.Number() }),
   Type.Object({ kind: Type.Literal("special_reaction_flat_damage_addition"), flatDamageAddition: Type.Number() }),
   Type.Object({
     ascensionBonus: Type.Number(),
@@ -111,7 +110,6 @@ const SpecialReactionTraceStageSchema = Type.Union([
   Type.Literal("reaction_coefficient"),
   Type.Literal("base_damage_bonus"),
   Type.Literal("reaction_damage_bonus"),
-  Type.Literal("big_power"),
   Type.Literal("flat_damage_addition"),
   Type.Literal("crit"),
   Type.Literal("resistance"),
@@ -216,7 +214,6 @@ export const TraceEntrySchema = Type.Object({
     Type.Literal("reaction_coefficient"),
     Type.Literal("base_damage_bonus"),
     Type.Literal("reaction_damage_bonus"),
-    Type.Literal("big_power"),
     Type.Literal("flat_damage_addition"),
     Type.Literal("ascension")
   ])
@@ -497,7 +494,6 @@ export const AnalysisResponseSchema = Type.Object({
           Type.Literal("transformativeReactionFlatDamageAddition"),
           Type.Literal("specialReactionBaseDamageFlat"),
           Type.Literal("specialReactionBaseDamageBonus"),
-          Type.Literal("specialReactionBigPowerBonus"),
           Type.Literal("specialReactionDamageBonus"),
           Type.Literal("specialReactionFlatDamageAddition"),
           Type.Literal("specialReactionElevation"),

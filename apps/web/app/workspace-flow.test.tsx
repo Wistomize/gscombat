@@ -653,6 +653,60 @@ describe("team-first workspace integration", () => {
     expect(refinedPayload.weaponComparisonRefinements).toEqual({ EngulfingLightning: 5 })
   })
 
+  it("uses action-owned trace presentation to show Nefer's final phantom hit while preserving the five-hit total", async () => {
+    const nefer = {
+      ...raidenNationalBuiltinScenario.primary,
+      buildId: "test.nefer.trace-presentation",
+      characterId: "Nefer",
+      label: "奈芙尔 · 轨迹展示",
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "FavoniusCodex" }
+    }
+    const eventTemplate = analysisResponse.evaluation.rotation.events[0]
+    if (!eventTemplate) throw new Error("Expected one reusable rotation event")
+    const eventIds = [
+      "phantom-performance-self-first-hit",
+      "phantom-performance-self-second-hit",
+      "phantom-performance-shade-first-hit",
+      "phantom-performance-shade-second-hit",
+      "phantom-performance-shade-third-hit"
+    ]
+    const neferAnalysis: AnalysisResponse = {
+      ...analysisResponse,
+      evaluation: {
+        ...analysisResponse.evaluation,
+        rotation: {
+          ...analysisResponse.evaluation.rotation,
+          events: eventIds.map((eventId) => ({
+            ...eventTemplate,
+            id: `nefer.skill.senet_strategy.phantom_performance.second_hit.${eventId}`
+          }))
+        }
+      }
+    }
+    saveBuildLibrary(window.localStorage, [nefer])
+    saveParty(window.localStorage, { memberBuildIds: [nefer.buildId] })
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(neferAnalysis), {
+      headers: { "Content-Type": "application/json" },
+      status: 200
+    })))
+
+    await render(createElement(TeamCalculationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      initialScenario: { ...raidenNationalBuiltinScenario, primary: nefer, teammates: [] }
+    }))
+
+    await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
+    await click(findButton("弈术·千夜一舞 / 自身两段 + 幻影三次命中期望伤害"))
+    await click(findButton("开始计算"))
+
+    const traceEvents = document.querySelectorAll<HTMLElement>(".traceReport .traceEvent")
+    expect(traceEvents).toHaveLength(1)
+    expect(traceEvents[0]?.textContent).toContain("phantom-performance-shade-third-hit")
+    expect(traceEvents[0]?.textContent).not.toContain("phantom-performance-self-first-hit")
+    expect(document.querySelector(".traceReport")?.textContent).toContain("自身两段伤害 + 幻影三次月绽放伤害")
+    expect(document.querySelector(".damageHero")?.textContent).toContain("自身两段 + 幻影三次命中期望伤害")
+  })
+
   it("offers mutually exclusive Widsith themes and sends only the selected theme", async () => {
     const widsithBuild = {
       ...raidenNationalBuiltinScenario.primary,

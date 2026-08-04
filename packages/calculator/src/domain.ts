@@ -137,7 +137,6 @@ export type DamageStage =
   | "reaction_coefficient"
   | "base_damage_bonus"
   | "reaction_damage_bonus"
-  | "big_power"
   | "flat_damage_addition"
   | "ascension"
 
@@ -148,7 +147,6 @@ export type SpecialReactionTraceStage = Extract<
   | "reaction_coefficient"
   | "base_damage_bonus"
   | "reaction_damage_bonus"
-  | "big_power"
   | "flat_damage_addition"
   | "crit"
   | "resistance"
@@ -243,7 +241,6 @@ export type TraceFormula =
       readonly masteryBonus: number
       readonly multiplier: number
     }
-  | { readonly kind: "special_reaction_big_power"; readonly multiplier: number }
   | { readonly flatDamageAddition: number; readonly kind: "special_reaction_flat_damage_addition" }
   | { readonly ascensionBonus: number; readonly kind: "special_reaction_ascension"; readonly multiplier: number }
 
@@ -254,7 +251,6 @@ export type SpecialReactionTraceFormula = Extract<
   | { readonly kind: "special_reaction_coefficient" }
   | { readonly kind: "special_reaction_base_damage_bonus" }
   | { readonly kind: "special_reaction_damage_bonus" }
-  | { readonly kind: "special_reaction_big_power" }
   | { readonly kind: "special_reaction_flat_damage_addition" }
   | { readonly kind: "expected_crit" }
   | { readonly kind: "resistance" }

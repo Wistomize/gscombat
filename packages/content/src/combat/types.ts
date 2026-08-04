@@ -60,9 +60,7 @@ export interface CombatTransformativeReactionConfig {
 export interface CombatDirectSpecialReactionConfig {
   /** Additive ratio in the special-reaction base-damage-bonus stage. */
   readonly baseDamageBonus?: number
-  /** Multiplicative direct special-reaction big-power stage. */
-  readonly bigPowerMultiplier?: number
-  /** Additive direct special-reaction feather damage after the big-power stage. */
+  /** Additive direct special-reaction fixed damage after reaction multipliers and before CRIT. */
   readonly flatDamageAddition?: number
   readonly kind: DirectSpecialReactionKind
   /** Additive ratio in the special-reaction reaction-damage-bonus stage. */
@@ -322,6 +320,13 @@ export interface CombatActionTimeline {
   readonly duration: number
 }
 
+/** Content-owned presentation for an aggregate action whose formula should focus on one representative event. */
+export interface CombatActionTracePresentation {
+  readonly focusEventId: string
+  readonly focusLabel: string
+  readonly totalLabel: string
+}
+
 /** References a value in the versioned snapshot instead of copying a talent coefficient into content code. */
 export type CombatParameterReference =
   | {
@@ -416,6 +421,7 @@ export type CombatScalarMetricSemantic =
   | "elemental_normal_attack_damage_bonus"
   | "elemental_mastery_buff"
   | "geo_damage_flat_bonus"
+  | "lunar_bloom_flat_damage_bonus"
   | "lunar_crystallize_base_damage_bonus"
   | "lunar_crystallize_flat_damage_bonus"
   | "normal_attack_flat_damage_bonus"
@@ -586,8 +592,6 @@ export type CombatActionEffectTarget =
   | "specialReactionBaseDamageFlat"
   /** Adds to an eligible Moon or Stellar action's independent base-damage-bonus stage. */
   | "specialReactionBaseDamageBonus"
-  /** Adds to an eligible direct Moon or Stellar action's independent big-power multiplier as a ratio. */
-  | "specialReactionBigPowerBonus"
   /** Adds after the independent Moon or Stellar reaction multipliers, before critical expectation. */
   | "specialReactionFlatDamageAddition"
   /** Adds to an eligible Moon or Stellar action's final damage-elevation stage. */
@@ -1017,6 +1021,8 @@ export interface CombatActionMetadata {
   readonly transformativeReaction?: CombatTransformativeReactionConfig
   /** Optional explicit event timing; omitted legacy declarations compile every damage part at cast time. */
   readonly timeline?: CombatActionTimeline
+  /** Optional content-owned formula presentation for a multi-event action. */
+  readonly tracePresentation?: CombatActionTracePresentation
 }
 
 /** Content-level declaration for one character's combat coverage. */

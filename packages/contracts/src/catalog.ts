@@ -113,7 +113,14 @@ export const CatalogResponseSchema = Type.Object({
           id: Type.String(),
           label: Type.String(),
           scenarioEffects: Type.Optional(Type.Array(ActiveScenarioEffectOptionSchema, { maxItems: 100 })),
-          scenarioParameters: Type.Optional(Type.Array(CombatActionIntegerScenarioParameterSchema, { maxItems: 20 }))
+          scenarioParameters: Type.Optional(Type.Array(CombatActionIntegerScenarioParameterSchema, { maxItems: 20 })),
+          tracePresentation: Type.Optional(
+            Type.Object({
+              focusEventId: Type.String({ minLength: 1 }),
+              focusLabel: Type.String({ minLength: 1 }),
+              totalLabel: Type.String({ minLength: 1 })
+            })
+          )
         })
       ),
       primaryActionIds: Type.Array(Type.String()),

@@ -91,7 +91,6 @@ const CombatEventHitCountSchema = Type.Union([
 const CombatEventSpecialReactionConfigSchema = Type.Object({
   ascensionBonus: Type.Optional(Type.Number()),
   baseDamageBonus: Type.Optional(Type.Number()),
-  bigPowerMultiplier: Type.Optional(Type.Number({ minimum: 0 })),
   flatDamageAddition: Type.Optional(Type.Number()),
   kind: Type.Union([
     Type.Literal("lunar_bloom"),
@@ -148,6 +147,12 @@ const CombatActionTimelineSchema = Type.Object({
   duration: Type.Number({ exclusiveMinimum: 0 })
 })
 
+const CombatActionTracePresentationSchema = Type.Object({
+  focusEventId: Type.String({ minLength: 1 }),
+  focusLabel: Type.String({ minLength: 1 }),
+  totalLabel: Type.String({ minLength: 1 })
+})
+
 const AmplifyingReactionSchema = Type.Object({
   bonus: Type.Number(),
   kind: Type.Union([
@@ -190,7 +195,6 @@ const DirectSpecialReactionKindSchema = Type.Union([
 const CombatDirectSpecialReactionConfigSchema = Type.Object({
   ascensionBonus: Type.Optional(Type.Number()),
   baseDamageBonus: Type.Optional(Type.Number()),
-  bigPowerMultiplier: Type.Optional(Type.Number({ minimum: 0 })),
   flatDamageAddition: Type.Optional(Type.Number()),
   kind: DirectSpecialReactionKindSchema,
   reactionDamageBonus: Type.Optional(Type.Number()),
@@ -330,6 +334,7 @@ export const CombatActionMetadataSchema = Type.Object({
     Type.Literal("constellation")
   ]),
   timeline: Type.Optional(CombatActionTimelineSchema),
+  tracePresentation: Type.Optional(CombatActionTracePresentationSchema),
   transformativeReaction: Type.Optional(TransformativeReactionSchema)
 })
 

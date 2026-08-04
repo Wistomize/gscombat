@@ -13,7 +13,6 @@ describe("special reaction damage", () => {
       ascensionBonus: 0.2,
       baseDamage: 1000,
       baseDamageBonus: 0.2,
-      bigPowerMultiplier: 1.5,
       critDamage: 1,
       critRate: 0.5,
       elementalMastery: 200,
@@ -27,7 +26,7 @@ describe("special reaction damage", () => {
     const afterReactionCoefficient = 1000 * 3
     const afterBaseDamageBonus = afterReactionCoefficient * 1.2
     const afterReactionDamageBonus = afterBaseDamageBonus * (1 + (6 * 200) / (200 + 2000) + 0.1)
-    const beforeCrit = afterReactionDamageBonus * 1.5 + 100
+    const beforeCrit = afterReactionDamageBonus + 100
 
     expect(result.nonCritDamage).toBeCloseTo(beforeCrit * 0.95 * 1.2)
     expect(result.critDamage).toBeCloseTo(beforeCrit * 2 * 0.95 * 1.2)
@@ -37,7 +36,6 @@ describe("special reaction damage", () => {
       "reaction_coefficient",
       "base_damage_bonus",
       "reaction_damage_bonus",
-      "big_power",
       "flat_damage_addition",
       "crit",
       "resistance",

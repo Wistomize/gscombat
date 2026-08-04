@@ -127,9 +127,7 @@ interface DirectSpecialReactionDamageInputBase {
   readonly baseDamageTerms?: readonly SpecialReactionBaseDamageTerm[]
   /** Additive ratio in the special-reaction base-damage-bonus stage. */
   readonly baseDamageBonus?: number
-  /** Multiplicative special-reaction big-power stage. */
-  readonly bigPowerMultiplier?: number
-  /** Additive direct special-reaction feather damage after the big-power stage. */
+  /** Additive direct special-reaction fixed damage after reaction multipliers and before CRIT. */
   readonly flatDamageAddition?: number
   /** Additive ratio in the special-reaction reaction-damage-bonus stage. */
   readonly reactionDamageBonus?: number
@@ -147,7 +145,6 @@ interface ResolvedSpecialReactionDamageInput {
   readonly baseDamage: number
   readonly baseDamageTerms?: readonly (SpecialReactionBaseDamageTerm & { readonly contribution: number })[]
   readonly baseDamageBonus: number
-  readonly bigPowerMultiplier?: number
   readonly critDamage: number
   readonly critRate: number
   readonly elementalMastery: number
@@ -197,10 +194,6 @@ export function calculateDirectSpecialReactionDamage(
   const baseDamage = requireNonNegativeFinite("Special-reaction base damage", input.baseDamage)
   const baseDamageTerms = resolveSpecialReactionBaseDamageTerms(input.baseDamageTerms, baseDamage)
   const elementalMastery = requireNonNegativeFinite("Special-reaction elemental mastery", input.elementalMastery)
-  const bigPowerMultiplier = requireNonNegativeFinite(
-    "Special-reaction big-power multiplier",
-    input.bigPowerMultiplier ?? 1
-  )
   const reactionCoefficient = resolveDirectReactionCoefficient(input)
 
   return calculateSpecialReactionDamage({
@@ -208,7 +201,6 @@ export function calculateDirectSpecialReactionDamage(
     baseDamage,
     ...(baseDamageTerms === undefined ? {} : { baseDamageTerms }),
     baseDamageBonus: requireFinite("Special-reaction base damage bonus", input.baseDamageBonus ?? 0),
-    bigPowerMultiplier,
     critDamage: requireNonNegativeFinite("Special-reaction crit damage", input.critDamage),
     critRate: requireFinite("Special-reaction crit rate", input.critRate),
     elementalMastery,
@@ -311,10 +303,7 @@ function calculateSpecialReactionDamage(input: ResolvedSpecialReactionDamageInpu
   const masteryBonus = (6 * input.elementalMastery) / (input.elementalMastery + 2000)
   const reactionDamageBonusMultiplier = 1 + masteryBonus + input.reactionDamageBonus
   const afterReactionDamageBonus = afterBaseDamageBonus * reactionDamageBonusMultiplier
-  const afterBigPower = input.mode === "direct"
-    ? afterReactionDamageBonus * (input.bigPowerMultiplier ?? 1)
-    : afterReactionDamageBonus
-  const beforeCrit = afterBigPower + input.flatDamageAddition
+  const beforeCrit = afterReactionDamageBonus + input.flatDamageAddition
   const critRate = clamp(input.critRate, 0, 1)
   const expectedCritMultiplier = 1 + critRate * input.critDamage
   const expectedBeforeResistance = beforeCrit * expectedCritMultiplier
@@ -369,21 +358,10 @@ function calculateSpecialReactionDamage(input: ResolvedSpecialReactionDamageInpu
         multiplier: reactionDamageBonusMultiplier
       }
     ),
-    ...(input.mode === "direct"
-      ? [
-          createSpecialReactionTraceEntry(
-            "big_power",
-            "direct_special_reaction_big_power",
-            afterReactionDamageBonus,
-            afterBigPower,
-            { kind: "special_reaction_big_power", multiplier: input.bigPowerMultiplier ?? 1 }
-          )
-        ]
-      : []),
     createSpecialReactionTraceEntry(
       "flat_damage_addition",
       input.mode === "direct" ? "direct_special_reaction_flat_damage" : "reaction_lunar_flat_damage",
-      afterBigPower,
+      afterReactionDamageBonus,
       beforeCrit,
       { flatDamageAddition: input.flatDamageAddition, kind: "special_reaction_flat_damage_addition" }
     ),

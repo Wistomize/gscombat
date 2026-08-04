@@ -183,6 +183,7 @@ export const SupportMetricResultSchema = Type.Cyclic(
           Type.Literal("elemental_normal_attack_damage_bonus"),
           Type.Literal("elemental_mastery_buff"),
           Type.Literal("geo_damage_flat_bonus"),
+          Type.Literal("lunar_bloom_flat_damage_bonus"),
           Type.Literal("lunar_crystallize_base_damage_bonus"),
           Type.Literal("lunar_crystallize_flat_damage_bonus"),
           Type.Literal("normal_attack_flat_damage_bonus"),

@@ -37,7 +37,6 @@ describe("declared special-reaction scenario actions", () => {
     const action = createSpecialAction("test.lunar-charged.direct", {
       ascensionBonus: 0.15,
       baseDamageBonus: 0.1,
-      bigPowerMultiplier: 1.25,
       flatDamageAddition: 50,
       kind: "lunar_charged",
       reactionDamageBonus: 0.2
@@ -85,14 +84,13 @@ describe("declared special-reaction scenario actions", () => {
     })
     expect(baseline.rotation.events).toHaveLength(1)
     expect(baseline.rotation.events[0]?.trace.map((entry) => entry.kind)).toEqual(
-      Array(9).fill("special_reaction")
+      Array(8).fill("special_reaction")
     )
     expect(baseline.result.trace.map((entry) => entry.stage)).toEqual([
       "base_damage",
       "reaction_coefficient",
       "base_damage_bonus",
       "reaction_damage_bonus",
-      "big_power",
       "flat_damage_addition",
       "crit",
       "resistance",

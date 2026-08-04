@@ -36,6 +36,8 @@ export interface CharacterPrimaryAction {
   readonly label: string
   /** Optional manual snapshot inputs that the selected action validates. */
   readonly scenarioParameters?: readonly CombatActionIntegerScenarioParameter[]
+  /** Optional formula-display instruction inherited from the maintained action declaration. */
+  readonly tracePresentation?: NonNullable<CombatActionMetadata["tracePresentation"]>
 }
 
 /** A selectable verified output that is intentionally not converted into damage. */
@@ -200,7 +202,8 @@ function createPrimaryAction(action: CombatActionMetadata, metricLabel?: string)
     label: getPrimaryActionLabel(action, metricLabel),
     ...(action.scenarioParameters?.length
       ? { scenarioParameters: action.scenarioParameters.map(cloneScenarioParameter) }
-      : {})
+      : {}),
+    ...(action.tracePresentation ? { tracePresentation: { ...action.tracePresentation } } : {})
   }
 }
 

@@ -1322,7 +1322,6 @@ function resolveDirectSpecialReactionInput(
     | "appliedEffects"
     | "specialReactionBaseDamageBonus"
     | "specialReactionBaseDamageFlat"
-    | "specialReactionBigPowerBonus"
     | "specialReactionDamageBonus"
     | "specialReactionElevation"
     | "specialReactionFlatDamageAddition"
@@ -1346,7 +1345,6 @@ function resolveDirectSpecialReactionInput(
     baseDamage: baseDamage + actionEffects.specialReactionBaseDamageFlat,
     baseDamageTerms: resolvedBaseDamageTerms,
     baseDamageBonus: (config.baseDamageBonus ?? 0) + actionEffects.specialReactionBaseDamageBonus,
-    bigPowerMultiplier: (config.bigPowerMultiplier ?? 1) * (1 + actionEffects.specialReactionBigPowerBonus),
     critDamage: stats.critDamage,
     critRate: stats.critRate,
     elementalMastery: stats.elementalMastery,
@@ -1382,7 +1380,6 @@ function isSpecialReactionStatEffect(effect: AppliedCombatActionEffect): boolean
     effect.target === "elementalMastery" ||
     effect.target === "specialReactionBaseDamageFlat" ||
     effect.target === "specialReactionBaseDamageBonus" ||
-    effect.target === "specialReactionBigPowerBonus" ||
     effect.target === "specialReactionDamageBonus" ||
     effect.target === "specialReactionFlatDamageAddition" ||
     effect.target === "specialReactionElevation" ||

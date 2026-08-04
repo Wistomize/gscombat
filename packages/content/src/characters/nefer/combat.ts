@@ -263,6 +263,11 @@ export const neferCombatCoverage: CharacterCombatCoverage = {
       status: "verified",
       scalingStat: "elementalMastery",
       talentSlot: "skill",
+      tracePresentation: {
+        focusEventId: "phantom-performance-shade-third-hit",
+        focusLabel: "幻影第三次月绽放伤害",
+        totalLabel: "自身两段伤害 + 幻影三次月绽放伤害"
+      },
       timeline: {
         damageEvents: [
           {
@@ -386,7 +391,7 @@ export const neferCombatCoverage: CharacterCombatCoverage = {
       characterId: "Nefer",
       id: "nefer.skill.senet_strategy.phantom_performance.second_hit",
       kind: "damage",
-      label: "弈术·千夜一舞 / 幻戏完整五段命中期望伤害",
+      label: "弈术·千夜一舞 / 自身两段 + 幻影三次命中期望伤害",
       sourceActionId: "nefer.skill.senet_strategy.phantom_performance.second_hit",
       status: "verified",
       target: "enemy"
