@@ -133,7 +133,7 @@ describe("Enka showcase normalization", () => {
     })
   })
 
-  it("retains complete builds while summarizing incomplete equipped avatars", () => {
+  it("imports builds with partial equipped artifact collections", () => {
     const gorou = showcaseCharacterMetadata.find((entry) => entry.avatarId === 10000055)
     const weapon = showcaseWeaponMetadata.find((entry) => entry.weaponType === gorou?.weaponType)
     if (!gorou || !weapon) throw new Error("Missing generated Gorou showcase fixture")
@@ -172,9 +172,41 @@ describe("Enka showcase normalization", () => {
       "6.7"
     )
 
-    expect(result.builds).toHaveLength(1)
+    expect(result.builds).toHaveLength(2)
     expect(result.builds[0]?.characterId).toBe("RaidenShogun")
-    expect(result.skipped).toEqual([{ count: 1, reason: "incomplete_equipment" }])
+    expect(result.builds[1]).toMatchObject({ characterId: "Gorou" })
+    expect(result.builds[1]?.artifacts).toHaveLength(4)
+    expect(result.skipped).toEqual([])
+  })
+
+  it("imports builds with no equipped artifacts", () => {
+    const gorou = showcaseCharacterMetadata.find((entry) => entry.avatarId === 10000055)
+    const weapon = showcaseWeaponMetadata.find((entry) => entry.weaponType === gorou?.weaponType)
+    if (!gorou || !weapon) throw new Error("Missing generated Gorou showcase fixture")
+
+    const result = normalizeEnkaShowcase(
+      {
+        avatarInfoList: [
+          {
+            avatarId: gorou.avatarId,
+            equipList: [
+              {
+                flat: { itemType: "ITEM_WEAPON" },
+                itemId: weapon.itemId,
+                weapon: { affixMap: { 1: 0 }, level: 90, promoteLevel: 6 }
+              }
+            ]
+          }
+        ]
+      },
+      "249548209",
+      "6.7"
+    )
+
+    expect(result.builds).toHaveLength(1)
+    expect(result.builds[0]).toMatchObject({ characterId: "Gorou" })
+    expect(result.builds[0]?.artifacts).toEqual([])
+    expect(result.skipped).toEqual([])
   })
 
   it("summarizes unsupported avatars without leaking their upstream identifiers", () => {
@@ -183,7 +215,7 @@ describe("Enka showcase normalization", () => {
     expect(result).toMatchObject({ builds: [], skipped: [{ count: 1, reason: "unsupported_character" }] })
   })
 
-  it("returns 200 from the import endpoint when Enka includes an incomplete avatar", async () => {
+  it("returns 200 from the import endpoint when Enka includes a partial artifact collection", async () => {
     const gorou = showcaseCharacterMetadata.find((entry) => entry.avatarId === 10000055)
     const bow = showcaseWeaponMetadata.find((entry) => entry.weaponType === gorou?.weaponType)
     if (!gorou || !bow) throw new Error("Missing generated Gorou showcase fixture")
@@ -233,8 +265,8 @@ describe("Enka showcase normalization", () => {
 
       expect(response.statusCode).toBe(200)
       expect(response.json()).toMatchObject({
-        builds: [{ characterId: "RaidenShogun" }],
-        skipped: [{ count: 1, reason: "incomplete_equipment" }],
+        builds: [{ characterId: "RaidenShogun" }, { artifacts: [{}, {}, {}, {}], characterId: "Gorou" }],
+        skipped: [],
         ttl: 60,
         uid: "249548209"
       })

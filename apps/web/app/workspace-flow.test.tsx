@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { webCatalog } from "../lib/catalog"
 import { saveBuildLibrary, saveParty } from "../lib/workspace-config"
 import { ConfigurationWorkspace } from "./configuration-workspace"
-import { TeamCalculationWorkspace } from "./workbench"
+import { BuildEditor, TeamCalculationWorkspace } from "./workbench"
 
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }))
 
@@ -190,6 +190,19 @@ function findButton(label: string): HTMLButtonElement | undefined {
   return [...document.querySelectorAll<HTMLButtonElement>("button")].find((button) => button.textContent?.includes(label))
 }
 
+describe("build editor artifact display", () => {
+  it("identifies an imported build without equipped artifacts", async () => {
+    await render(createElement(BuildEditor, {
+      build: { ...raidenNationalBuiltinScenario.primary, artifacts: [] },
+      catalog: webCatalog as CatalogResponse,
+      onChange: vi.fn()
+    }))
+
+    expect(document.querySelector(".artifactsSection")?.textContent).toContain("未装备圣遗物")
+    expect(document.querySelector(".artifactsSection")?.textContent).toContain("当前配置没有已装备的圣遗物")
+  })
+})
+
 describe("invite workspace integration", () => {
   it("logs in, initializes an empty cloud workspace, and synchronizes party changes", async () => {
     let authenticated = false
@@ -294,6 +307,174 @@ describe("invite workspace integration", () => {
     expect(requests.at(-1)?.document?.party.memberBuildIds).toEqual([
       raidenNationalBuiltinScenario.primary.buildId
     ])
+  })
+
+  it("deletes one selected configuration, clears its party slot, and saves the complete cloud document", async () => {
+    const raidenBuild = raidenNationalBuiltinScenario.primary
+    const alternateRaidenBuild = {
+      ...raidenBuild,
+      buildId: "local.test.raiden-to-delete",
+      label: "雷电将军 · 待删除配置",
+      source: { kind: "local" as const }
+    }
+    const xianglingBuild = raidenNationalBuiltinScenario.teammates[0]!
+    let revision = 4
+    let cloudDocument: WorkspaceDocument = {
+      builds: [raidenBuild, alternateRaidenBuild, xianglingBuild],
+      party: { memberBuildIds: [alternateRaidenBuild.buildId, xianglingBuild.buildId] },
+      schemaVersion: 1
+    }
+    const savedDocuments: WorkspaceDocument[] = []
+    vi.stubGlobal("confirm", vi.fn(() => true))
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
+      const method = init?.method ?? "GET"
+      if (url.endsWith("/v1/session") && method === "GET") {
+        return new Response(JSON.stringify({ authenticated: true, label: "派蒙" }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200
+        })
+      }
+      if (url.endsWith("/v1/workspace") && method === "GET") {
+        return new Response(JSON.stringify({ document: cloudDocument, revision }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200
+        })
+      }
+      if (url.endsWith("/v1/workspace") && method === "PUT") {
+        const payload = JSON.parse(String(init?.body)) as { readonly document: WorkspaceDocument }
+        cloudDocument = payload.document
+        savedDocuments.push(payload.document)
+        revision += 1
+        return new Response(JSON.stringify({ document: cloudDocument, revision }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200
+        })
+      }
+      throw new Error(`Unexpected request: ${method} ${url}`)
+    }))
+
+    await render(createElement(ConfigurationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      cloudEnabled: true,
+      initialScenario: raidenNationalBuiltinScenario
+    }))
+    await flushAsyncWork()
+
+    const raidenCard = [...document.querySelectorAll<HTMLElement>(".buildGroup")].find((card) =>
+      card.textContent?.includes("雷电将军")
+    )
+    await click([...raidenCard?.querySelectorAll<HTMLButtonElement>("button") ?? []]
+      .find((button) => button.textContent === "查看配置"))
+    const deleteButton = document.querySelector<HTMLButtonElement>(
+      'button[aria-label="删除配置：雷电将军 · 待删除配置"]'
+    )
+    expect(deleteButton).not.toBeNull()
+
+    await click(deleteButton)
+    await flushAsyncWork(500)
+
+    expect(cloudDocument.builds.map((build) => build.buildId)).toEqual([
+      raidenBuild.buildId,
+      xianglingBuild.buildId
+    ])
+    expect(cloudDocument.party.memberBuildIds).toEqual([xianglingBuild.buildId])
+    expect(savedDocuments.at(-1)).toEqual(cloudDocument)
+    expect(document.querySelector(".partySlots")?.textContent).not.toContain("待删除配置")
+  })
+
+  it("preserves a queued deletion when an earlier cloud save fails", async () => {
+    const raidenBuild = raidenNationalBuiltinScenario.primary
+    const alternateRaidenBuild = {
+      ...raidenBuild,
+      buildId: "local.test.raiden-to-delete-after-failed-save",
+      label: "雷电将军 · 待删除失败重试",
+      source: { kind: "local" as const }
+    }
+    const xianglingBuild = raidenNationalBuiltinScenario.teammates[1]!
+    let revision = 5
+    let cloudDocument: WorkspaceDocument = {
+      builds: [raidenBuild, alternateRaidenBuild, xianglingBuild],
+      party: { memberBuildIds: [alternateRaidenBuild.buildId] },
+      schemaVersion: 1
+    }
+    const putDocuments: WorkspaceDocument[] = []
+    let rejectFirstPut: ((reason?: unknown) => void) | undefined
+    vi.stubGlobal("confirm", vi.fn(() => true))
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
+      const method = init?.method ?? "GET"
+      if (url.endsWith("/v1/session") && method === "GET") {
+        return new Response(JSON.stringify({ authenticated: true, label: "派蒙" }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200
+        })
+      }
+      if (url.endsWith("/v1/workspace") && method === "GET") {
+        return new Response(JSON.stringify({ document: cloudDocument, revision }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200
+        })
+      }
+      if (url.endsWith("/v1/workspace") && method === "PUT") {
+        const payload = JSON.parse(String(init?.body)) as { readonly document: WorkspaceDocument }
+        putDocuments.push(payload.document)
+        if (putDocuments.length === 1) {
+          return new Promise<Response>((_resolve, reject) => {
+            rejectFirstPut = reject
+          })
+        }
+        cloudDocument = payload.document
+        revision += 1
+        return new Response(JSON.stringify({ document: cloudDocument, revision }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200
+        })
+      }
+      throw new Error(`Unexpected request: ${method} ${url}`)
+    }))
+
+    await render(createElement(ConfigurationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      cloudEnabled: true,
+      initialScenario: raidenNationalBuiltinScenario
+    }))
+    await flushAsyncWork()
+
+    const xianglingCard = [...document.querySelectorAll<HTMLElement>(".buildGroup")].find((card) =>
+      card.textContent?.includes("香菱")
+    )
+    await click([...xianglingCard?.querySelectorAll<HTMLButtonElement>("button") ?? []]
+      .find((button) => button.textContent === "加入队伍"))
+    await flushAsyncWork(450)
+    expect(putDocuments).toHaveLength(1)
+    expect(putDocuments[0]?.party.memberBuildIds).toEqual([
+      alternateRaidenBuild.buildId,
+      xianglingBuild.buildId
+    ])
+
+    const raidenCard = [...document.querySelectorAll<HTMLElement>(".buildGroup")].find((card) =>
+      card.textContent?.includes("雷电将军")
+    )
+    await click([...raidenCard?.querySelectorAll<HTMLButtonElement>("button") ?? []]
+      .find((button) => button.textContent === "查看配置"))
+    const deleteButton = document.querySelector<HTMLButtonElement>(
+      'button[aria-label="删除配置：雷电将军 · 待删除失败重试"]'
+    )
+    expect(deleteButton).not.toBeNull()
+    await click(deleteButton)
+    await flushAsyncWork()
+
+    rejectFirstPut?.(new Error("temporary workspace failure"))
+    await flushAsyncWork(450)
+
+    expect(putDocuments).toHaveLength(2)
+    expect(putDocuments[1]?.builds.map((build) => build.buildId)).toEqual([
+      raidenBuild.buildId,
+      xianglingBuild.buildId
+    ])
+    expect(putDocuments[1]?.party.memberBuildIds).toEqual([xianglingBuild.buildId])
+    expect(cloudDocument).toEqual(putDocuments[1])
   })
 })
 

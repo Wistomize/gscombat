@@ -119,7 +119,7 @@ export const BuildSourceSchema = Type.Union([
 export type BuildSource = Type.Static<typeof BuildSourceSchema>
 
 export const CharacterBuildSchema = Type.Object({
-  artifacts: Type.Array(ArtifactPieceSchema, { maxItems: 5, minItems: 5 }),
+  artifacts: Type.Array(ArtifactPieceSchema, { maxItems: 5 }),
   ascension: Type.Integer({ minimum: 0, maximum: 6 }),
   buildId: Type.String({ minLength: 1, maxLength: 100 }),
   characterId: Type.String({ minLength: 1, maxLength: 100 }),
@@ -134,8 +134,6 @@ export const CharacterBuildSchema = Type.Object({
 })
 
 export type CharacterBuild = Type.Static<typeof CharacterBuildSchema>
-
-const requiredSlots: readonly ArtifactSlot[] = ["flower", "plume", "sands", "goblet", "circlet"]
 
 /** Performs cross-field validation that JSON Schema cannot express cleanly. */
 export function validateCharacterBuild(build: CharacterBuild): readonly string[] {
@@ -163,9 +161,6 @@ export function validateCharacterBuild(build: CharacterBuild): readonly string[]
     }
   }
 
-  for (const slot of requiredSlots) {
-    if (!slots.has(slot)) errors.push(`Missing artifact slot: ${slot}`)
-  }
   if (slots.size !== build.artifacts.length) errors.push("Artifact slots must be unique")
 
   for (const artifact of build.artifacts) {

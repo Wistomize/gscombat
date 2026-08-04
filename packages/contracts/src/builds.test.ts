@@ -47,6 +47,18 @@ describe("CharacterBuild", () => {
     expect(validateCharacterBuild(build)).toEqual([])
   })
 
+  it("accepts zero or partial equipped artifact collections", () => {
+    const builds = [
+      { ...build, artifacts: [] },
+      { ...build, artifacts: build.artifacts.slice(0, 3) }
+    ]
+
+    for (const incompleteBuild of builds) {
+      expect(Value.Check(CharacterBuildSchema, incompleteBuild)).toBe(true)
+      expect(validateCharacterBuild(incompleteBuild)).toEqual([])
+    }
+  })
+
   it("requires an explicit element and gender variant for Traveler builds", () => {
     const travelerVariant = { element: "pyro", gender: "male", kind: "traveler" } as const
     const travelerBuild: CharacterBuild = {
@@ -101,7 +113,6 @@ describe("CharacterBuild", () => {
     }
 
     expect(validateCharacterBuild(invalid)).toEqual([
-      "Missing artifact slot: circlet",
       "Artifact slots must be unique",
       "Artifact artifact-circlet contains duplicate substats"
     ])

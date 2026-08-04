@@ -190,7 +190,7 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
             setError("邀请码会话已失效，请重新登录")
             return
           }
-          pendingSyncRef.current = document
+          if (!pendingSyncRef.current) pendingSyncRef.current = document
           setError(caught instanceof Error ? caught.message : "云端配置同步失败")
           setStatus("云端同步失败，本机配置已保留")
           return
@@ -548,6 +548,20 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
     setStatus(`已保存 ${getCharacterLabel(catalog, saved.characterId)} 配置`)
   }
 
+  const deleteConfiguredBuild = (build: CharacterBuild) => {
+    const confirmed = window.confirm(`确定删除“${build.label}”吗？它也会从当前队伍中移除。`)
+    if (!confirmed) return
+
+    const hasRemainingBuildForCharacter = builds.some((candidate) =>
+      candidate.characterId === build.characterId && candidate.buildId !== build.buildId
+    )
+    setBuilds((current) => current.filter((candidate) => candidate.buildId !== build.buildId))
+    setPartyBuildIds((current) => current.filter((candidate) => candidate !== build.buildId))
+    if (!hasRemainingBuildForCharacter) setManagedCharacterId(null)
+    if (editingBuild?.buildId === build.buildId) setEditingBuild(null)
+    setStatus(`已删除 ${getCharacterLabel(catalog, build.characterId)} 的一份配置`)
+  }
+
   const removeBuildFromParty = (buildId: string) => {
     setPartyBuildIds((current) => current.filter((candidate) => candidate !== buildId))
     setStatus("已移出队伍")
@@ -806,7 +820,36 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
         <div className="workspaceDialogBackdrop" role="presentation">
           <section aria-modal="true" className="workspaceDialog" role="dialog">
             <div className="workspaceDialogHeading"><div><CharacterAvatar characterId={managedCharacterId} label={getCharacterLabel(catalog, managedCharacterId)} size="small" /><h2>{getCharacterLabel(catalog, managedCharacterId)}的配置</h2></div><button type="button" onClick={() => setManagedCharacterId(null)}>×</button></div>
-            <div className="configurationChoiceList">{managedBuilds.map((build) => <button key={build.buildId} type="button" onClick={() => { setEditingBuild(build); setManagedCharacterId(null) }}><CharacterAvatar characterId={build.characterId} label={getCharacterLabel(catalog, build.characterId)} size="small" /><span><strong>{getSourceLabel(build)}</strong><small>{build.label}</small></span><b>编辑</b></button>)}</div>
+            <div className="configurationChoiceList">
+              {managedBuilds.map((build) => (
+                <div className="configurationManagedBuild" key={build.buildId}>
+                  <button
+                    className="configurationEditButton"
+                    type="button"
+                    onClick={() => {
+                      setEditingBuild(build)
+                      setManagedCharacterId(null)
+                    }}
+                  >
+                    <CharacterAvatar
+                      characterId={build.characterId}
+                      label={getCharacterLabel(catalog, build.characterId)}
+                      size="small"
+                    />
+                    <span><strong>{getSourceLabel(build)}</strong><small>{build.label}</small></span>
+                    <b>编辑</b>
+                  </button>
+                  <button
+                    aria-label={`删除配置：${build.label}`}
+                    className="configurationDeleteButton"
+                    type="button"
+                    onClick={() => deleteConfiguredBuild(build)}
+                  >
+                    删除
+                  </button>
+                </div>
+              ))}
+            </div>
           </section>
         </div>
       ) : null}

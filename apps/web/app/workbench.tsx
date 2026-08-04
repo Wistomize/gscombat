@@ -1645,6 +1645,7 @@ function ArtifactEditor({
 export function BuildEditor({ build, catalog, onChange }: BuildEditorProps) {
   const character = catalog.characters.find((candidate) => candidate.characterId === build.characterId)
   const weapons = catalog.weapons.filter((weapon) => weapon.weaponType === character?.weaponType)
+  const artifactSectionLabel = build.artifacts.length === 0 ? "未装备圣遗物" : `${build.artifacts.length} 件圣遗物`
   const updateWeapon = (weaponId: string) => {
     const weapon = weapons.find((candidate) => candidate.weaponId === weaponId)
     onChange({
@@ -1764,19 +1765,23 @@ export function BuildEditor({ build, catalog, onChange }: BuildEditorProps) {
       <div className="editorSection artifactsSection">
         <div className="editorSectionTitle">
           <span>ARTIFACTS</span>
-          <strong>五件圣遗物 · 原始值输入</strong>
+          <strong>{artifactSectionLabel} · 原始值输入</strong>
         </div>
         <p className="fieldHint">百分比直接输入面板数值，例如暴击率 31.1% 输入 31.1；展示柜导入会自动换算。</p>
-        <div className="artifactGrid">
-          {build.artifacts.map((artifact, index) => (
-            <ArtifactEditor
-              artifact={artifact}
-              catalog={catalog}
-              key={artifact.slot}
-              onChange={(updated) => updateArtifact(index, updated)}
-            />
-          ))}
-        </div>
+        {build.artifacts.length === 0 ? (
+          <p className="fieldHint">当前配置没有已装备的圣遗物，不会获得圣遗物属性或套装效果。</p>
+        ) : (
+          <div className="artifactGrid">
+            {build.artifacts.map((artifact, index) => (
+              <ArtifactEditor
+                artifact={artifact}
+                catalog={catalog}
+                key={artifact.slot}
+                onChange={(updated) => updateArtifact(index, updated)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1830,22 +1835,31 @@ function removeUnavailableResonanceConditions(
 }
 
 function ArtifactRawValueReport({ build, catalog }: { readonly build: CharacterBuild; readonly catalog: CatalogResponse }) {
+  const artifactDescription =
+    build.artifacts.length === 0
+      ? "当前角色未装备圣遗物，不参与圣遗物属性或套装效果计算"
+      : `当前 ${build.artifacts.length} 件圣遗物参与计算的主词条与副词条`
+
   return (
     <article className="wideReport rawArtifactReport">
       <div className="cardTitle">
         <span>ARTIFACT INPUT</span>
         <strong>圣遗物原始值输入</strong>
-        <small>当前五件圣遗物参与计算的主词条与副词条</small>
+        <small>{artifactDescription}</small>
       </div>
       <div className="rawArtifactRows">
-        {build.artifacts.map((artifact) => (
-          <div key={artifact.id}>
-            <ArtifactIcon label={catalog.artifactSets.find((set) => set.setId === artifact.setId)?.label ?? artifact.setId} setId={artifact.setId} slot={artifact.slot} />
-            <span className="rawArtifactIdentity"><strong>{slotLabels[artifact.slot]}</strong><small>{catalog.artifactSets.find((set) => set.setId === artifact.setId)?.label ?? artifact.setId}</small></span>
-            <span>{statLabels[artifact.mainStat.stat]} {toDisplayStatValue(artifact.mainStat.stat, artifact.mainStat.value).toFixed(1)}</span>
-            <small>{artifact.substats.map((substat) => `${statLabels[substat.stat]} ${toDisplayStatValue(substat.stat, substat.value).toFixed(1)}`).join(" · ") || "无副词条"}</small>
-          </div>
-        ))}
+        {build.artifacts.length === 0 ? (
+          <p className="emptyArtifactState">当前配置没有已装备的圣遗物。</p>
+        ) : (
+          build.artifacts.map((artifact) => (
+            <div key={artifact.id}>
+              <ArtifactIcon label={catalog.artifactSets.find((set) => set.setId === artifact.setId)?.label ?? artifact.setId} setId={artifact.setId} slot={artifact.slot} />
+              <span className="rawArtifactIdentity"><strong>{slotLabels[artifact.slot]}</strong><small>{catalog.artifactSets.find((set) => set.setId === artifact.setId)?.label ?? artifact.setId}</small></span>
+              <span>{statLabels[artifact.mainStat.stat]} {toDisplayStatValue(artifact.mainStat.stat, artifact.mainStat.value).toFixed(1)}</span>
+              <small>{artifact.substats.map((substat) => `${statLabels[substat.stat]} ${toDisplayStatValue(substat.stat, substat.value).toFixed(1)}`).join(" · ") || "无副词条"}</small>
+            </div>
+          ))
+        )}
       </div>
     </article>
   )

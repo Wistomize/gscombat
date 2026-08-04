@@ -627,6 +627,17 @@
   border-color: var(--positive);
 }
 
+.configurationManagedBuild {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.configurationManagedBuild .configurationDeleteButton {
+  color: #b42318;
+  display: block;
+}
+
 .configurationChoiceList button > span:nth-child(2) {
   display: flex;
   flex-direction: column;
@@ -1072,6 +1083,14 @@
   gap: 0;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   margin-top: 18px;
+}
+
+.rawArtifactRows .emptyArtifactState {
+  color: var(--muted);
+  font-size: 12px;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 12px;
 }
 
 .rawArtifactRows > div {

@@ -219,12 +219,6 @@ function normalizeAvatar(
   const artifacts = (avatar.equipList ?? [])
     .map((equip) => normalizeArtifact(equip, uid, avatarId))
     .filter((artifact): artifact is ArtifactPiece => artifact !== undefined)
-  if (artifacts.length !== 5) {
-    throw new ShowcaseAvatarNormalizationError(
-      "incomplete_equipment",
-      `Enka avatar ${avatarId} has ${artifacts.length} equipped artifacts; exactly five are required`
-    )
-  }
   const [normalId, skillId, burstId] = mapping.skillIds
   const skillLevelMap = avatar.skillLevelMap ?? {}
   return {
