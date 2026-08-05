@@ -368,6 +368,11 @@ describe("current-action equipment effects", () => {
     const nightsoulEffectId = "artifact.scroll-of-the-hero-of-cinder-city.4pc.reaction-element.pyro.nightsoul.damage-bonus"
     const hydroEffectId = "artifact.scroll-of-the-hero-of-cinder-city.4pc.reaction-element.hydro.standard.damage-bonus"
     const teammate = { ...withArtifactSet("ScrollOfTheHeroOfCinderCity"), buildId: "test.cinder-city" }
+    const nightsoulTeammate = {
+      ...teammate,
+      buildId: "test.cinder-city.xilonen",
+      characterId: "Xilonen"
+    }
     const baseInput = {
       action: requireAction("xiangling.burst.pyronado.reverse_vaporize"),
       baseEnergyRecharge: 1,
@@ -376,7 +381,11 @@ describe("current-action equipment effects", () => {
       teammates: [teammate]
     }
     const standard = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [standardEffectId] })
-    const nightsoul = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [nightsoulEffectId] })
+    const nightsoul = resolveCombatActionEffects({
+      ...baseInput,
+      activeEffectIds: [nightsoulEffectId],
+      teammates: [nightsoulTeammate]
+    })
     const wrongElement = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [hydroEffectId] })
 
     expect(standard.damageBonus).toBeCloseTo(0.12)
@@ -384,9 +393,16 @@ describe("current-action equipment effects", () => {
       expect.arrayContaining([expect.objectContaining({ id: standardEffectId, sourceId: teammate.buildId })])
     )
     expect(nightsoul.damageBonus).toBeCloseTo(0.4)
+    expect(nightsoul.appliedEffects).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: nightsoulEffectId, sourceId: nightsoulTeammate.buildId })])
+    )
     expect(wrongElement.damageBonus).toBe(0)
     expect(() =>
-      resolveCombatActionEffects({ ...baseInput, activeEffectIds: [standardEffectId, nightsoulEffectId] })
+      resolveCombatActionEffects({
+        ...baseInput,
+        activeEffectIds: [standardEffectId, nightsoulEffectId],
+        teammates: [teammate, nightsoulTeammate]
+      })
     ).toThrow("scroll-of-the-hero-of-cinder-city-reaction-element-pyro")
   })
 
@@ -518,10 +534,17 @@ describe("current-action equipment effects", () => {
         "artifact.nighttime-whispers-in-the-echoing-woods.4pc.crystallize-shield.extra-geo-damage-bonus"
       ]
     )
-    const obsidianCodex = resolveEffects("xiangling.skill.guoba.single_flame_breath", "ObsidianCodex", [
-      "artifact.obsidian-codex.2pc.nightsoul-blessing.damage-bonus",
-      "artifact.obsidian-codex.4pc.after-nightsoul-consumption.crit-rate"
-    ])
+    const obsidianCodex = resolveCombatActionEffects({
+      action: requireAction("xiangling.skill.guoba.single_flame_breath"),
+      activeEffectIds: [
+        "artifact.obsidian-codex.2pc.nightsoul-blessing.damage-bonus",
+        "artifact.obsidian-codex.4pc.after-nightsoul-consumption.crit-rate"
+      ],
+      baseEnergyRecharge: 1,
+      enemyCount: 1,
+      primary: { ...withArtifactSet("ObsidianCodex"), characterId: "Kachina" },
+      teammates: []
+    })
 
     expect(risingWinds.attackPercent).toBeCloseTo(0.43)
     expect(risingWinds.critRate).toBeCloseTo(0.2)
@@ -1539,9 +1562,7 @@ describe("current-action equipment effects", () => {
     ])
     const blazingSuns = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "AThousandBlazingSuns", [
       "weapon.a-thousand-blazing-suns.after-skill-or-burst.crit-damage",
-      "weapon.a-thousand-blazing-suns.after-skill-or-burst.attack-percent",
-      "weapon.a-thousand-blazing-suns.nightsoul.extra-crit-damage",
-      "weapon.a-thousand-blazing-suns.nightsoul.extra-attack-percent"
+      "weapon.a-thousand-blazing-suns.after-skill-or-burst.attack-percent"
     ])
     const mountainBracingBolt = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "MountainBracingBolt", [
       "weapon.mountain-bracing-bolt.after-teammate-skill.extra-skill-damage-bonus"

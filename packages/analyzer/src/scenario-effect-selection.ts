@@ -1,15 +1,17 @@
 import {
   getCombatActionDefinition,
   hasHexereiSecretRite,
+  canEnterNightsoulBlessing,
   isCombatActionEffectApplicable,
   listCombatActionEffects,
+  resolveMaximumNightsoulBurstTriggers,
   type CombatActionEffect,
   type CombatActionMetadata
 } from "@gscombat/content"
 import { type CharacterBuild, type EvaluationScenario } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 
-import { resolveDependentActiveEffectIds } from "./action-effects.js"
+import { getMaximumReachableEffectPriority, resolveDependentActiveEffectIds } from "./action-effects.js"
 import { countArtifactSet } from "./artifact-stats.js"
 import {
   resolveBuildElement,
@@ -27,10 +29,16 @@ function getEquipmentEffectSourceBuilds(
   const party = [scenario.primary, ...scenario.teammates]
   const candidates = source.kind === "character" || source.holder === "party_member" ? party : [scenario.primary]
   const matching = candidates.filter((build) => {
+    if (
+      effect.condition?.kind === "source_nightsoul_blessing" &&
+      canEnterNightsoulBlessing(build) !== effect.condition.required
+    ) return false
     if (source.kind === "weapon") return build.weapon.weaponId === source.weaponId
     if (source.kind === "artifact_set") return countArtifactSet(build, source.setId) >= source.minimumPieces
     return (
       build.characterId === source.characterId &&
+      (source.travelerElement === undefined ||
+        (build.variant?.kind === "traveler" && build.variant.element === source.travelerElement)) &&
       (source.minimumSourceAscension === undefined || build.ascension >= source.minimumSourceAscension) &&
       (source.minimumSourceConstellation === undefined || build.constellation >= source.minimumSourceConstellation)
     )
@@ -56,8 +64,17 @@ function isMaximumReachableEffectConditionSatisfied(
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
     return rank[teamState.moonsign.level] >= rank[condition.minimum]
   }
-  if (condition.kind === "primary_character_region") {
-    return gameData.getCharacter(scenario.primary.characterId)?.region === condition.region
+  if (condition.kind === "source_nightsoul_blessing") return true
+  if (condition.kind === "primary_nightsoul_blessing") {
+    return canEnterNightsoulBlessing(scenario.primary) === condition.required
+  }
+  if (condition.kind === "team_nightsoul_burst") {
+    return (
+      resolveMaximumNightsoulBurstTriggers(
+        [scenario.primary, ...scenario.teammates],
+        condition.windowSeconds
+      ) >= condition.minimumTriggers
+    )
   }
   if (condition.kind === "team_unique_element_count") {
     const count = resolveTeamUniqueElementCount([scenario.primary, ...scenario.teammates], gameData)
@@ -92,14 +109,6 @@ function isMaximumReachableEffectConditionSatisfied(
   return condition.maximum === undefined || scenario.conditions.enemyCount <= condition.maximum
 }
 
-function getMaximumReachableEffectPriority(effect: CombatActionEffect, declarationIndex: number): number {
-  const variant = effect.exclusivity?.variant ?? ""
-  const numericValues = [...variant.matchAll(/\d+/g)].map((match) => Number(match[0]))
-  const numericPriority = numericValues.length > 0 ? Math.max(...numericValues) * 1000 : 0
-  const namedPriority = /full|both|maximum|with-shield|three-stack/.test(variant) ? 100_000 : 0
-  return namedPriority + numericPriority + declarationIndex
-}
-
 function addMaximumReachableEquipmentEffects(
   selectedEffectIds: Set<string>,
   scenario: EvaluationScenario,
@@ -126,7 +135,8 @@ function addMaximumReachableEquipmentEffects(
       (effect.source.kind === "character" && effect.activation !== "maximum_reachable") ||
       effect.selectionMode === "optional" ||
       effect.target === "additionalDamageEvent" ||
-      effect.target === "matchedActionAdditiveDamageTerm" ||
+      (effect.target === "matchedActionAdditiveDamageTerm" &&
+        (effect.source.kind !== "character" || effect.activation !== "maximum_reachable")) ||
       effect.requiredActiveEffectIds !== undefined ||
       effect.deterministicSnapshotActivation !== undefined ||
       !isCombatActionEffectApplicable(effect, action) ||

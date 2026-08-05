@@ -635,6 +635,8 @@ function resolveMetricSourceCombatStats(
   const effects = resolveSelfAutomaticEquipmentEffects({
     action,
     baseEnergyRecharge: coreStats.energyRecharge,
+    gameData,
+    includeMaximumReachableCharacterStatEffects: true,
     ...(sourceContext?.enemyCount === undefined ? {} : { enemyCount: sourceContext.enemyCount }),
     primary: build,
     ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
@@ -670,8 +672,12 @@ function evaluateHealingMetric(
   const label = normalizeProjectedMetricLabel(metric.label)
   const stats = resolveMetricSourceCombatStats(metric, build, sourceContext, teammates, gameData)
   const percentage = resolveMetricParameter(metric, metric.percentageParameter, build, gameData)
-  const flatAmount = resolveMetricParameter(metric, metric.flatParameter, build, gameData)
-  if (percentage.talentLevel !== flatAmount.talentLevel) {
+  const flatParameter = metric.flatParameter
+  const resolvedFlatParameter = flatParameter
+    ? resolveMetricParameter(metric, flatParameter, build, gameData)
+    : undefined
+  const flatAmount = (metric.flat ?? 0) + (resolvedFlatParameter?.value ?? 0)
+  if (resolvedFlatParameter && percentage.talentLevel !== resolvedFlatParameter.talentLevel) {
     throw new Error(`Combat metric ${metric.id} resolves its healing parameters at inconsistent talent levels`)
   }
 
@@ -702,7 +708,10 @@ function evaluateHealingMetric(
   )
   const baseHealing = addFormula("基础单跳治疗", [
     sourceScaling,
-    talentParameterTerm("单跳固定治疗", metric.flatParameter, flatAmount),
+    ...(flatParameter && resolvedFlatParameter
+      ? [talentParameterTerm("单跳固定治疗", flatParameter, resolvedFlatParameter)]
+      : []),
+    ...(metric.flat === undefined ? [] : [constantTerm("单跳固定治疗", metric.flat)]),
     ...additionalScalingTerms.map((term) => term.formula),
     ...conditionalScalingBonuses
   ])
@@ -750,7 +759,7 @@ function evaluateHealingMetric(
           missingHp: recipient.missingHp
         }),
     conditions: [...sourceConditions, ...recipient.conditions],
-    flatAmount: flatAmount.value,
+    flatAmount,
     formula,
     healingBonus,
     id: metric.id,

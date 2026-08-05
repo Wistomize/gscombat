@@ -233,6 +233,16 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
   ],
   actionEffects: [
     {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 1 },
+      id: "mavuika.passive.gift_of_flaming_flowers.after_nightsoul_burst.attack_percent",
+      label: "固有天赋 · 炎花献礼（夜魂迸发后10秒，攻击力提高）",
+      source: { characterId: "Mavuika", kind: "character", minimumSourceAscension: 1 },
+      target: "attackPercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.3 }
+    },
+    {
       activation: "active",
       id: "mavuika.constellation.1.the-nights-lord.earned_fighting_spirit.attack_percent",
       label: "夜主的授记 · C1 已获得战意（攻击力提高40%，8秒）",
@@ -266,7 +276,7 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One uninfused first normal hit and The Named Moment's initial hit remain verified raw actions. The selected core hit is one Hour of Burning Skies Sunfell Slice: Attack × (burst[0] + Fighting Spirit × burst[2]). Fighting Spirit is an action-owned manual integer input from 100 through 200 and defaults to the full 200. At full Fighting Spirit, the pinned 6.7 snapshot resolves to 764.8% Attack at Burst Level 1 and 1376.64% at Level 10. The Fighting Spirit term is added to base damage before the shared damage multipliers, not treated as a damage-bonus percentage. At Ascension 4 or above, the initial Sunfell Slice also includes A4's 0.002 × Fighting Spirit Damage Bonus: 40% at the default full 200 Fighting Spirit. C1 can be selected only as a manual current snapshot after Fighting Spirit was gained and during its eight-second window; it adds 40% Attack without inferring its gain, duration, or the C1 Nightsoul-cap and gain-efficiency clauses. Its post-cast decay is deliberately excluded because this metric is one initial hit, not a timed burst window. Hydro-aura Vaporize and Cryo-aura Melt are mutually exclusive alternatives for this exact one hit, not a sequence. Nightsoul generation, the post-burst Flamestrider state and attacks, A1, other constellations, external effects, timing, and all other character states remain excluded.",
+    "One uninfused first normal hit and The Named Moment's initial hit remain verified raw actions. The selected core hit is one Hour of Burning Skies Sunfell Slice: Attack × (burst[0] + Fighting Spirit × burst[2]). Fighting Spirit is an action-owned manual integer input from 100 through 200 and defaults to the full 200. At full Fighting Spirit, the pinned 6.7 snapshot resolves to 764.8% Attack at Burst Level 1 and 1376.64% at Level 10. The Fighting Spirit term is added to base damage before the shared damage multipliers, not treated as a damage-bonus percentage. At Ascension 1+, Gift of Flaming Flowers automatically adds 30% Attack after a party-reachable Nightsoul Burst. At Ascension 4+, the initial Sunfell Slice includes Kiongozi's 0.002 × Fighting Spirit Damage Bonus: 40% at the default full 200 Fighting Spirit. C1 can be selected as a current snapshot after Fighting Spirit was gained and during its eight-second window. Hydro-aura Vaporize and Cryo-aura Melt are mutually exclusive alternatives for this exact one hit. Nightsoul generation, the post-burst Flamestrider attacks, other constellations, timing, and rotation behavior remain excluded.",
   label: mavuikaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

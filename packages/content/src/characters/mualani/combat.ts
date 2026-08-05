@@ -138,6 +138,60 @@ export const mualaniCombatCoverage: CharacterCombatCoverage = {
   ],
   actionEffects: [
     {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 1, windowSeconds: 20 },
+      exclusivity: { group: "mualani-wavechasers-exploits-stacks", variant: "1-stack" },
+      id: "mualani.passive.natlans_greatest_guide.wavechasers_exploits.one_stack.hp_additive_damage",
+      label: "固有天赋 · 纳塔最好的向导（逐浪心得1层，爆瀑飞弹生命值倍率加算15%）",
+      source: { characterId: "Mualani", kind: "character", minimumSourceAscension: 4 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: ["mualani.burst.boomsharka_laka.tracking_missile"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 0.15 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "hp"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 2, windowSeconds: 20 },
+      exclusivity: { group: "mualani-wavechasers-exploits-stacks", variant: "2-stack" },
+      id: "mualani.passive.natlans_greatest_guide.wavechasers_exploits.two_stacks.hp_additive_damage",
+      label: "固有天赋 · 纳塔最好的向导（逐浪心得2层，爆瀑飞弹生命值倍率加算30%）",
+      source: { characterId: "Mualani", kind: "character", minimumSourceAscension: 4 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: ["mualani.burst.boomsharka_laka.tracking_missile"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 0.3 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "hp"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 3, windowSeconds: 20 },
+      exclusivity: { group: "mualani-wavechasers-exploits-stacks", variant: "3-stack" },
+      id: "mualani.passive.natlans_greatest_guide.wavechasers_exploits.three_stacks.hp_additive_damage",
+      label: "固有天赋 · 纳塔最好的向导（逐浪心得3层，爆瀑飞弹生命值倍率加算45%）",
+      source: { characterId: "Mualani", kind: "character", minimumSourceAscension: 4 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: ["mualani.burst.boomsharka_laka.tracking_missile"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 0.45 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "hp"
+      }
+    },
+    {
       activation: "active",
       id: "mualani.constellation.1.relaxed_meztli.first_surfshark_bite.hp_additive_damage",
       label: "悠闲的「梅兹特利」… · C1 夜魂加持后的首次巨浪鲨鲨撕咬（生命值上限66%同一命中加算）",
@@ -165,10 +219,20 @@ export const mualaniCombatCoverage: CharacterCombatCoverage = {
       sourceActionId: "mualani.skill.surfshark_wavebreaker.sharkys_surging_bite.full_wave_momentum",
       status: "verified",
       target: "enemy"
+    },
+    {
+      actionId: "mualani.burst.boomsharka_laka.tracking_missile",
+      characterId: "Mualani",
+      id: "mualani.burst.boomsharka_laka.tracking_missile",
+      kind: "damage",
+      label: "爆瀑飞弹 / 飞弹伤害（逐浪心得按队伍最大可达层数）",
+      sourceActionId: "mualani.burst.boomsharka_laka.tracking_missile",
+      status: "verified",
+      target: "enemy"
     }
   ],
   detail:
-    "One first normal-attack hit and one Boomsharka-laka tracking missile are verified as baseline C0 direct hits. One full three-stack Wave Momentum Sharky's Surging Bite is verified as a single-target Nightsoul-aligned Hydro normal-attack hit that scales from max HP. Its hit event has no ICD and explicitly requires an active target Pyro aura in the selected scenario to resolve as forward Vaporize; without that aura it remains a Hydro hit. It resolves at hit time as 5 times skill[0]: base Bite plus three Wave Momentum bonuses and the Surging Bite bonus. C1 can be selected only for the first Bite after entering Nightsoul's Blessing and adds Max HP × 66% to that same hit, before its common multipliers; it does not create a second damage event and uses the selected full-wave state. The burst models only its single tracking missile as HP-scaling Hydro damage. Other Wave Momentum counts, target-count damage reduction, Shark Missiles, Puffer generation and Nightsoul restoration, full Nightsoul duration, A1/A4, reactions other than the explicitly configured Pyro-aura Vaporize, external infusions, timing outside the selected hit, other constellations, and character states remain unmodeled.",
+    "One full three-stack Wave Momentum Sharky's Surging Bite is verified as a single-target Nightsoul-aligned Hydro normal-attack hit that scales from max HP. Its hit event has no ICD and resolves as forward Vaporize only with an explicit Pyro aura. C1 adds Max HP × 66% to the first selected Bite after entering Nightsoul's Blessing. Boomsharka-laka's single tracking missile is also a selected HP-scaling Hydro metric; Natlan's Greatest Guide automatically adds 15%/30%/45% Max HP according to the maximum reachable Nightsoul Burst overlap in the configured party. Target-count reduction, Shark Missiles, Puffer recovery, other constellations, and rotation timing remain unmodeled.",
   label: mualaniDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

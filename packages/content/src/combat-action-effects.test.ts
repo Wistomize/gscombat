@@ -839,6 +839,7 @@ describe("combat action effects", () => {
 
     expect(standardEffect).toEqual({
       activation: "active",
+      condition: { kind: "source_nightsoul_blessing", required: false },
       exclusivity: { group: "scroll-of-the-hero-of-cinder-city-reaction-element-pyro", variant: "standard" },
       id: standardEffectId,
       label: "烬城勇者绘卷 · 火元素关联反应已触发（触发者未处于夜魂加持）",
@@ -854,6 +855,7 @@ describe("combat action effects", () => {
     })
     expect(nightsoulEffect).toEqual(
       expect.objectContaining({
+        condition: { kind: "source_nightsoul_blessing", required: true },
         exclusivity: { group: "scroll-of-the-hero-of-cinder-city-reaction-element-pyro", variant: "nightsoul" },
         value: { kind: "fixed", value: 0.4 }
       })

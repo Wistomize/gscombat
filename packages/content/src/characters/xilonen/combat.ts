@@ -138,6 +138,16 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
   ],
   actionEffects: [
     {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 1 },
+      id: "xilonen.passive.portable_armored_sheath.after_nightsoul_burst.defense_percent",
+      label: "固有天赋 · 便携铠装层（夜魂迸发后15秒，防御力提高）",
+      source: { characterId: "Xilonen", kind: "character", minimumSourceAscension: 4 },
+      target: "defensePercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.2 }
+    },
+    {
       activation: "automatic",
       condition: {
         elements: ["pyro", "hydro", "cryo", "electro"],
@@ -241,7 +251,7 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected support profile verifies active Source Sample resistance reduction, C2's 60% Cryo Crit DMG sample, and one healing-rhythm tick, including C3/C5 talent levels and recipient context. One first normal hit, skill dash, and burst initial Geo hit remain verified baseline damage actions. No infusion is modeled; additional beats, other C2 branches, Nightsoul states, C4/C6 effects, reactions, and timing remain unmodeled.",
+    "The selected support profile verifies active Source Sample resistance reduction, C2's 60% Cryo Crit DMG sample, and one healing-rhythm tick, including C3/C5 talent levels and recipient context. Portable Armored Sheath automatically adds 20% Defense after a party-reachable Nightsoul Burst, and Xilonen's independent 14-second trigger contributes to other characters' maximum reachable Nightsoul Burst stacks. One first normal hit, skill dash, and burst initial Geo hit remain verified baseline damage actions. No infusion is modeled; additional beats, other C2 branches, C4/C6 effects, reactions, and rotation timing remain unmodeled.",
   label: xilonenDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

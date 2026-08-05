@@ -51,6 +51,12 @@ const TeamStateSchema = Type.Object({
       Type.Literal("nascent_gleam"),
       Type.Literal("ascendant_gleam")
     ])
+  }),
+  nightsoulBurst: Type.Object({
+    characterBuildIds: Type.Array(Type.String({ minLength: 1, maxLength: 100 })),
+    characterCount: Type.Integer({ minimum: 0, maximum: 4 }),
+    cooldownSeconds: Type.Union([Type.Integer({ minimum: 9, maximum: 18 }), Type.Null()]),
+    hasXilonenIndependentTrigger: Type.Boolean()
   })
 })
 

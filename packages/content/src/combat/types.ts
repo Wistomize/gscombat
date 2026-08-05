@@ -464,7 +464,8 @@ export interface CombatScaledHealingMetricDefinition extends CombatFriendlyRecip
   readonly additionalScalingTerms?: readonly CombatHealingAdditionalScalingTerm[]
   /** Conditional source-stat healing terms that join the base healing before healing-bonus multipliers. */
   readonly conditionalScalingBonuses?: readonly CombatHealingConditionalScalingBonus[]
-  readonly flatParameter: CombatMetricTalentParameter
+  readonly flat?: number
+  readonly flatParameter?: CombatMetricTalentParameter
   readonly includeHealingBonus: boolean
   readonly kind: "healing"
   readonly percentageParameter: CombatMetricTalentParameter
@@ -673,10 +674,23 @@ export interface CombatActionEffectTeamElementCountCondition {
   readonly minimum: number
 }
 
-/** Requires the configured primary character to belong to one game-data region. */
-export interface CombatActionEffectPrimaryCharacterRegionCondition {
-  readonly kind: "primary_character_region"
-  readonly region: string
+/** Requires the resolved effect source to be able or unable to enter Nightsoul's Blessing. */
+export interface CombatActionEffectSourceNightsoulBlessingCondition {
+  readonly kind: "source_nightsoul_blessing"
+  readonly required: boolean
+}
+
+/** Requires the evaluated primary build to be able or unable to enter Nightsoul's Blessing. */
+export interface CombatActionEffectPrimaryNightsoulBlessingCondition {
+  readonly kind: "primary_nightsoul_blessing"
+  readonly required: boolean
+}
+
+/** Requires the configured party to reach a number of Nightsoul Burst triggers inside an optional overlap window. */
+export interface CombatActionEffectTeamNightsoulBurstCondition {
+  readonly kind: "team_nightsoul_burst"
+  readonly minimumTriggers: number
+  readonly windowSeconds?: number
 }
 
 /** Requires every configured party element to belong to one set and optionally requires specific elements. */
@@ -715,7 +729,9 @@ export type CombatActionEffectCondition =
   | CombatActionEffectEnemyCountCondition
   | CombatActionEffectHexereiSecretRiteCondition
   | CombatActionEffectMoonsignLevelCondition
-  | CombatActionEffectPrimaryCharacterRegionCondition
+  | CombatActionEffectPrimaryNightsoulBlessingCondition
+  | CombatActionEffectSourceNightsoulBlessingCondition
+  | CombatActionEffectTeamNightsoulBurstCondition
   | CombatActionEffectTeamElementCountCondition
   | CombatActionEffectTeamElementSubsetCondition
   | CombatActionEffectPrimaryDifferentElementTeammateCountCondition
@@ -756,6 +772,7 @@ export type CombatActionEffectSource =
       readonly kind: "character"
       readonly minimumSourceAscension?: number
       readonly minimumSourceConstellation?: number
+      readonly travelerElement?: TravelerElement
     }
   | {
       /** "party_member" permits an explicitly selected team-weapon snapshot such as Wolf's Gravestone. */

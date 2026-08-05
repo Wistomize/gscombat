@@ -129,6 +129,18 @@ export const kachinaCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "burst"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 1 },
+      id: "kachina.passive.mountain_echoes.after_nightsoul_burst.geo_damage_bonus",
+      label: "固有天赋 · 山的回声（夜魂迸发后12秒，岩元素伤害加成）",
+      source: { characterId: "Kachina", kind: "character", minimumSourceAscension: 1 },
+      target: "damageBonus",
+      targetFilter: { elements: ["geo"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.2 }
+    }
+  ],
   characterId: "Kachina",
   metrics: [
     {
@@ -163,7 +175,7 @@ export const kachinaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected profile separately verifies Turbo Twirly's DEF-scaling mounted and independent attacks plus the burst hit. At ascension 4+, A4 adds DEF × passive2[0] (20%) to both selected Turbo Twirly hit types before shared multipliers. C4 field DEF, Nightsoul state, timing, reactions, constellations, and additional hit behavior remain in progress.",
+    "The selected profile separately verifies Turbo Twirly's DEF-scaling mounted and independent attacks plus the burst hit. At Ascension 1+, Mountain Echoes automatically adds 20% Geo DMG Bonus after a party-reachable Nightsoul Burst. At Ascension 4+, The Weight of Stone adds DEF × passive2[0] (20%) to both selected Turbo Twirly hit types before shared multipliers. C4 field DEF, timing, reactions, and additional hit behavior remain in progress.",
   label: kachinaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

@@ -272,6 +272,35 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
       travelerElement: "pyro"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "traveler.pyro.constellation.1.starfires_flowing_light.active_character.damage_bonus",
+      label: "星火流转 · 火元素旅行者C1（流火剑界持续期间，场上角色伤害提高6%）",
+      source: {
+        characterId: "Traveler",
+        kind: "character",
+        minimumSourceConstellation: 1,
+        travelerElement: "pyro"
+      },
+      target: "damageBonus",
+      value: { kind: "fixed", value: 0.06 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "primary_nightsoul_blessing", required: true },
+      id: "traveler.pyro.constellation.1.starfires_flowing_light.nightsoul_active_character.extra_damage_bonus",
+      label: "星火流转 · 火元素旅行者C1（场上角色处于夜魂加持，额外伤害提高9%）",
+      source: {
+        characterId: "Traveler",
+        kind: "character",
+        minimumSourceConstellation: 1,
+        travelerElement: "pyro"
+      },
+      target: "damageBonus",
+      value: { kind: "fixed", value: 0.09 }
+    }
+  ],
   characterId: "Traveler",
   metrics: [
     {
@@ -346,7 +375,7 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "旅行者的六种元素形态互斥；每个动作均由当前构筑的元素变体筛选，并从该变体的性别专属天赋表动态解析参数，不固定 F/M owner。此处只维护 C0 的单次、单段命中：风涡剑初始爆风（skill[2]）、星陨剑爆炸（skill[0]）、雷轰电转施放命中（burst[0]）、草缘剑（skill[0]）、水纹剑点按喷发激流（skill[1]）与灼火燎原一次命中（burst[0]）。草缘剑在突破四后按当前配置的元素精通结算 A4 增伤 min(元素精通 × 0.15%, 15%)。水纹剑的 raw index 1 是 pinned sheet 映射；不含充盈、露滴或生命值消耗。灼火燎原的水底蒸发与冰底融化是同一单次命中的互斥替代项，基础无反应动作仅保留为底层声明、不展示为指标。未模拟循环、状态、元素吸收、层数、随机性、持续命中、天赋外效果、命座、外部增益或时序。",
+    "旅行者的六种元素形态互斥；动作和角色效果都按当前构筑的元素变体筛选，并从对应性别天赋表解析参数。火元素旅行者可进入夜魂加持，但不会增加队伍夜魂迸发人数。火元素C1在流火剑界持续期间自动为场上角色提供6%伤害加成；若计算对象可进入夜魂加持，再追加9%。其余动作仍按单次、单段指标结算，不模拟循环、持续命中、资源恢复和时序。",
   label: "旅行者",
   status: "draft",
   talentLevelConstellationBonuses: [

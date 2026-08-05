@@ -459,7 +459,6 @@ function resolveSourceFinalElementalMasteryByBuildId(
         activeEffectIds: [],
         baseEnergyRecharge: base.energyRecharge,
         enemyCount,
-        gameData,
         ...(primaryElement === null ? {} : { primaryElement }),
         primary: source,
         sourceFinalHpByBuildId,
@@ -630,6 +629,7 @@ function resolveSourceFinalAttackByBuildId(
         action,
         baseEnergyRecharge: base.energyRecharge,
         enemyCount,
+        gameData,
         ...(primaryElement === null ? {} : { primaryElement }),
         primary: source,
         ...(primaryDifferentElementTeammateCount === null

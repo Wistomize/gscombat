@@ -142,6 +142,30 @@ export const varesaCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "plunge"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 1, windowSeconds: 12 },
+      exclusivity: { group: "varesa-the-hero-twice-returned-stacks", variant: "1-stack" },
+      id: "varesa.passive.the_hero_twice_returned.after_nightsoul_burst.one_stack.attack_percent",
+      label: "固有天赋 · 英雄，二度归来！（夜魂迸发1层，攻击力提高35%）",
+      source: { characterId: "Varesa", kind: "character", minimumSourceAscension: 4 },
+      target: "attackPercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.35 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 2, windowSeconds: 12 },
+      exclusivity: { group: "varesa-the-hero-twice-returned-stacks", variant: "2-stack" },
+      id: "varesa.passive.the_hero_twice_returned.after_nightsoul_burst.two_stacks.attack_percent",
+      label: "固有天赋 · 英雄，二度归来！（夜魂迸发2层，攻击力提高70%）",
+      source: { characterId: "Varesa", kind: "character", minimumSourceAscension: 4 },
+      target: "attackPercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.7 }
+    }
+  ],
   characterId: "Varesa",
   metrics: [
     {
@@ -149,14 +173,14 @@ export const varesaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Varesa",
       id: "varesa.normal.fiery_passion.high_plunge.follow_up_strike",
       kind: "damage",
-      label: "炽热激情 / 高空下落冲击 + 燃烧的山丘上的彩虹（C0、无预设反应）",
+      label: "炽热激情 / 高空下落冲击 + 燃烧的山丘上的彩虹（无预设反应）",
       sourceActionId: "varesa.normal.fiery_passion.high_plunge.follow_up_strike",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One first normal-attack hit, one non-Fiery Passion tap Riding the Night-Rainbow rush, and Guardian of the Sacred Mountain's kick remain verified baseline C0 attack-scaling Electro hits. The selected core action is exactly one High Plunge impact while Fiery Passion is already active and the A1 Follow-Up Strike from The Rainbow Upon the Burning Mountain is fulfilled: Attack × [auto[15] + passive1[1]]. The pinned 6.7 snapshot gives auto[15] as 279.4334% Attack at Normal Talent Level 1 and 552.3683% at Level 10, and fixed passive1[1] as an additional 180% Attack. The fixed Genshin Optimizer sheet maps auto[15] to Fiery Passion's high plunge impact and applies passive1[1] to the same pre-multiplier. This is one named static precondition, not a state-machine or rotation. It does not preset a target aura or reaction. The burst's target count, Nightsoul restoration, Fiery Passion Flying Kick, Apex Drive, Volcano Kablam, A4, constellations, other Follow-Up Strike variants, timing, external effects, and other character states remain excluded.",
+    "One first normal-attack hit, one non-Fiery Passion tap Riding the Night-Rainbow rush, and Guardian of the Sacred Mountain's kick remain verified baseline attack-scaling Electro hits. The selected core action is one High Plunge impact while Fiery Passion and its Follow-Up Strike are fulfilled: Attack × [auto[15] + passive1[1]]. The Hero Twice-Returned automatically adds 35% Attack per Nightsoul Burst stack lasting 12 seconds, up to two independently timed stacks; the configured Natlan count and Xilonen's independent trigger determine the maximum reachable tier. No target aura or reaction is preset. Target count, other Fiery Passion attacks, Apex Drive, constellations, and rotation timing remain excluded.",
   label: varesaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

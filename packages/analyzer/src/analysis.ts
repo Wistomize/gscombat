@@ -1,9 +1,11 @@
 import {
+  canEnterNightsoulBlessing,
   getCharacterBurstEnergyCost,
   getCombatActionDefinition,
   hasHexereiSecretRite,
   isCombatActionEffectApplicable,
   listCombatActionEffects,
+  resolveMaximumNightsoulBurstTriggers,
   supportedWeapons,
   type CombatActionEffect
 } from "@gscombat/content"
@@ -221,8 +223,17 @@ function matchesEffectCondition(
     const moonsignLevel = resolveTeamState(scenario.primary, scenario.teammates, gameData).moonsign.level
     return rank[moonsignLevel] >= rank[effect.condition.minimum]
   }
-  if (effect.condition.kind === "primary_character_region") {
-    return gameData.getCharacter(scenario.primary.characterId)?.region === effect.condition.region
+  if (effect.condition.kind === "source_nightsoul_blessing") return true
+  if (effect.condition.kind === "primary_nightsoul_blessing") {
+    return canEnterNightsoulBlessing(scenario.primary) === effect.condition.required
+  }
+  if (effect.condition.kind === "team_nightsoul_burst") {
+    return (
+      resolveMaximumNightsoulBurstTriggers(
+        [scenario.primary, ...scenario.teammates],
+        effect.condition.windowSeconds
+      ) >= effect.condition.minimumTriggers
+    )
   }
   if (effect.condition.kind === "team_element_count") {
     const condition = effect.condition

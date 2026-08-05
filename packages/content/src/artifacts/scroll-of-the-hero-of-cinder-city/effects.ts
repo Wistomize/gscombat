@@ -22,6 +22,7 @@ function createReactionElementDamageBonusEffect(
   const isNightsoul = state === "nightsoul"
   return {
     activation: "active",
+    condition: { kind: "source_nightsoul_blessing", required: isNightsoul },
     exclusivity: {
       group: `scroll-of-the-hero-of-cinder-city-reaction-element-${element}`,
       variant: state

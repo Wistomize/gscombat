@@ -107,6 +107,12 @@ const analysisResponse: AnalysisResponse = {
         characterBuildIds: [raidenNationalBuiltinScenario.primary.buildId],
         characterCount: 2,
         level: "ascendant_gleam"
+      },
+      nightsoulBurst: {
+        characterBuildIds: [],
+        characterCount: 0,
+        cooldownSeconds: null,
+        hasXilonenIndependentTrigger: false
       }
     },
     stats: {

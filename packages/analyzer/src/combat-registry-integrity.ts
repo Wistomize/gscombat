@@ -381,7 +381,16 @@ function validateMetricDeclaration(
       issues
     )
     validateMetricTalentParameter(metric, metric.percentageParameter, availableTalentParameterOwnerIds, gameData, issues)
-    validateMetricTalentParameter(metric, metric.flatParameter, availableTalentParameterOwnerIds, gameData, issues)
+    if (metric.flatParameter) {
+      validateMetricTalentParameter(metric, metric.flatParameter, availableTalentParameterOwnerIds, gameData, issues)
+    }
+    if (metric.flat === undefined && metric.flatParameter === undefined) {
+      issues.push({
+        ...issueBase,
+        code: "invalid-healing-metric-extension",
+        message: `Healing metric ${metric.id} must declare a fixed value or talent flat parameter`
+      })
+    }
     validateHealingMetricExtensions(metric, issues)
     return
   }

@@ -1,4 +1,5 @@
 import {
+  canEnterNightsoulBlessing,
   getCharacterBurstEnergyCost,
   hasHexereiSecretRite,
   isCombatActionEffectApplicable,
@@ -6,6 +7,7 @@ import {
   listCharacterTalentLevelConstellationBonuses,
   listCombatActionEffects,
   listCombatElementOverrideEffects,
+  resolveMaximumNightsoulBurstTriggers,
   weaponInventory,
   type CombatActionAdditionalDamageEvent,
   type CombatActionEffectComputedScalar,
@@ -223,6 +225,10 @@ export interface ResolveSelfAutomaticEquipmentEffectsInput {
   readonly action: CombatActionMetadata
   /** Source energy recharge before any typed equipment effect is applied. */
   readonly baseEnergyRecharge: number
+  /** Pinned game data required by fixed character passives sourced from talent parameters. */
+  readonly gameData?: GameDataRepository
+  /** Include fixed maximum-reachable character stats when building a standalone support-metric source panel. */
+  readonly includeMaximumReachableCharacterStatEffects?: boolean
   /** Optional explicit source-action enemy count; when absent, enemy-count passives remain unapplied. */
   readonly enemyCount?: number
   /** Primary build's native element when a self-owned automatic effect needs it. */
@@ -358,34 +364,40 @@ export function resolveAdditionalDamageEventEffects(
 }
 
 /**
- * Resolves automatic effects owned by a metric source itself.
+ * Resolves automatic equipment effects and optional fixed maximum-reachable stats owned by a metric source itself.
  *
- * This intentionally excludes active snapshots, character effects, party-owned artifact effects, and effects that
- * read team burst costs. Enemy-count conditions resolve only when the caller supplies an explicit source context.
+ * This intentionally excludes selected active snapshots, party-owned artifact effects, source-stat-dependent character
+ * effects, and effects that read team burst costs. Character stats are opt-in because declared damage scenarios already
+ * apply them through the main current-action effect pipeline. Enemy-count conditions require explicit source context.
  */
 export function resolveSelfAutomaticEquipmentEffects(
   input: ResolveSelfAutomaticEquipmentEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(isSelfAutomaticEquipmentEffect)
-  return resolveCombatActionEffectsForCandidates(
-    {
-      action: input.action,
-      activeEffectIds: [],
-      baseEnergyRecharge: input.baseEnergyRecharge,
-      ...(input.enemyCount === undefined ? {} : { enemyCount: input.enemyCount }),
-      ...(input.primaryElement === undefined ? {} : { primaryElement: input.primaryElement }),
-      ...(input.primaryDifferentElementTeammateCount === undefined
-        ? {}
-        : { primaryDifferentElementTeammateCount: input.primaryDifferentElementTeammateCount }),
-      ...(input.primarySameElementTeammateCount === undefined
-        ? {}
-        : { primarySameElementTeammateCount: input.primarySameElementTeammateCount }),
-      ...(input.teamUniqueElementCount === undefined ? {} : { teamUniqueElementCount: input.teamUniqueElementCount }),
-      primary: input.primary,
-      teammates: input.teammates ?? []
-    },
-    candidates
+  const candidates = listCombatActionEffects().filter(
+    (effect) =>
+      isSelfAutomaticEquipmentEffect(effect) ||
+      (input.includeMaximumReachableCharacterStatEffects === true &&
+        isSelfMaximumReachableCharacterStatEffect(effect, input.primary))
   )
+  const candidateInput: ResolveCombatActionEffectCandidatesInput = {
+    action: input.action,
+    activeEffectIds: [],
+    baseEnergyRecharge: input.baseEnergyRecharge,
+    ...(input.gameData === undefined ? {} : { gameData: input.gameData }),
+    ...(input.enemyCount === undefined ? {} : { enemyCount: input.enemyCount }),
+    ...(input.primaryElement === undefined ? {} : { primaryElement: input.primaryElement }),
+    ...(input.primaryDifferentElementTeammateCount === undefined
+      ? {}
+      : { primaryDifferentElementTeammateCount: input.primaryDifferentElementTeammateCount }),
+    ...(input.primarySameElementTeammateCount === undefined
+      ? {}
+      : { primarySameElementTeammateCount: input.primarySameElementTeammateCount }),
+    ...(input.teamUniqueElementCount === undefined ? {} : { teamUniqueElementCount: input.teamUniqueElementCount }),
+    primary: input.primary,
+    teammates: input.teammates ?? []
+  }
+  const activeEffectIds = selectSelfMaximumReachableCharacterEffectIds(candidates, candidateInput)
+  return resolveCombatActionEffectsForCandidates({ ...candidateInput, activeEffectIds }, candidates)
 }
 
 /**
@@ -609,7 +621,12 @@ function listSourceCandidates(
     const builds = source.holder === "party_member" ? [primary, ...teammates] : [primary]
     return builds.filter((build) => countArtifactSet(build, source.setId) >= source.minimumPieces)
   }
-  return [primary, ...teammates].filter((build) => build.characterId === source.characterId)
+  return [primary, ...teammates].filter(
+    (build) =>
+      build.characterId === source.characterId &&
+      (source.travelerElement === undefined ||
+        (build.variant?.kind === "traveler" && build.variant.element === source.travelerElement))
+  )
 }
 
 function isSelfSnapshotOwnedBy(effect: CombatActionEffect, build: CharacterBuild): boolean {
@@ -620,7 +637,11 @@ function isSelfSnapshotOwnedBy(effect: CombatActionEffect, build: CharacterBuild
   if (source.kind === "artifact_set") {
     return countArtifactSet(build, source.setId) >= source.minimumPieces
   }
-  return build.characterId === source.characterId
+  return (
+    build.characterId === source.characterId &&
+    (source.travelerElement === undefined ||
+      (build.variant?.kind === "traveler" && build.variant.element === source.travelerElement))
+  )
 }
 
 function resolveCombatActionEffectsForCandidates(
@@ -767,6 +788,81 @@ function isSelfAutomaticEquipmentEffect(effect: CombatActionEffect): boolean {
   }
   if (effect.source.kind === "weapon") return effect.source.holder !== "party_member"
   return effect.source.kind === "artifact_set" && effect.source.holder !== "party_member"
+}
+
+/** Ranks mutually exclusive maximum-reachable variants by explicit stack/state strength and declaration order. */
+export function getMaximumReachableEffectPriority(effect: CombatActionEffect, declarationIndex: number): number {
+  const variant = effect.exclusivity?.variant ?? ""
+  const numericValues = [...variant.matchAll(/\d+/g)].map((match) => Number(match[0]))
+  const numericPriority = numericValues.length > 0 ? Math.max(...numericValues) * 1000 : 0
+  const namedPriority = /full|both|maximum|with-shield|three-stack/.test(variant) ? 100_000 : 0
+  return namedPriority + numericPriority + declarationIndex
+}
+
+function selectSelfMaximumReachableCharacterEffectIds(
+  candidates: readonly CombatActionEffect[],
+  input: ResolveCombatActionEffectCandidatesInput
+): readonly string[] {
+  const eligible = candidates.flatMap((effect, declarationIndex) => {
+    if (effect.source.kind !== "character" || effect.activation !== "maximum_reachable") return []
+    if (effect.source.minimumSourceAscension !== undefined && input.primary.ascension < effect.source.minimumSourceAscension) {
+      return []
+    }
+    if (
+      effect.source.minimumSourceConstellation !== undefined &&
+      input.primary.constellation < effect.source.minimumSourceConstellation
+    ) return []
+    if (!matchesEffectCondition(effect, input)) return []
+    return [{ declarationIndex, effect }]
+  })
+  const bestByGroup = new Map<string, (typeof eligible)[number]>()
+  const selectedIds = new Set<string>()
+  for (const candidate of eligible) {
+    const group = candidate.effect.exclusivity?.group
+    if (!group) {
+      selectedIds.add(candidate.effect.id)
+      continue
+    }
+    const current = bestByGroup.get(group)
+    if (
+      !current ||
+      getMaximumReachableEffectPriority(candidate.effect, candidate.declarationIndex) >
+        getMaximumReachableEffectPriority(current.effect, current.declarationIndex)
+    ) bestByGroup.set(group, candidate)
+  }
+  for (const candidate of eligible) {
+    const group = candidate.effect.exclusivity?.group
+    if (!group) continue
+    const selectedVariant = bestByGroup.get(group)?.effect.exclusivity?.variant
+    if (selectedVariant === candidate.effect.exclusivity?.variant) selectedIds.add(candidate.effect.id)
+  }
+  return [...selectedIds]
+}
+
+function isSelfMaximumReachableCharacterStatEffect(effect: CombatActionEffect, source: CharacterBuild): boolean {
+  if (!isCombatActionStatEffect(effect)) return false
+  if (
+    effect.activation !== "maximum_reachable" ||
+    effect.source.kind !== "character" ||
+    effect.source.characterId !== source.characterId ||
+    (effect.source.travelerElement !== undefined &&
+      (source.variant?.kind !== "traveler" || source.variant.element !== effect.source.travelerElement)) ||
+    effect.targetFilter?.recipientSourceRelation === "not_source" ||
+    !["fixed", "refinement_table", "talent_parameter"].includes(effect.value.kind)
+  ) return false
+  return [
+    "attackPercent",
+    "critDamage",
+    "critRate",
+    "defenseFlat",
+    "defensePercent",
+    "elementalMastery",
+    "energyRecharge",
+    "finalHpToFlatAttack",
+    "flatAttack",
+    "hpFlat",
+    "hpPercent"
+  ].includes(effect.target)
 }
 
 function isSelfMaximumReachableEquipmentStatEffect(effect: CombatActionEffect): boolean {
@@ -988,8 +1084,17 @@ function matchesEffectCondition(effect: CombatActionEffect, input: ResolveCombat
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
     return input.moonsignLevel !== undefined && rank[input.moonsignLevel] >= rank[effect.condition.minimum]
   }
-  if (effect.condition.kind === "primary_character_region") {
-    return input.gameData?.getCharacter(input.primary.characterId)?.region === effect.condition.region
+  if (effect.condition.kind === "source_nightsoul_blessing") return true
+  if (effect.condition.kind === "primary_nightsoul_blessing") {
+    return canEnterNightsoulBlessing(input.primary) === effect.condition.required
+  }
+  if (effect.condition.kind === "team_nightsoul_burst") {
+    return (
+      resolveMaximumNightsoulBurstTriggers(
+        [input.primary, ...input.teammates],
+        effect.condition.windowSeconds
+      ) >= effect.condition.minimumTriggers
+    )
   }
   if (effect.condition.kind === "team_element_count") {
     const condition = effect.condition
@@ -1038,9 +1143,14 @@ function resolveEffectSources(
   selectedSourceBuildId: string | undefined
 ): readonly CharacterBuild[] {
   const source = effect.source
+  const matchesSourceCondition = (build: CharacterBuild) =>
+    effect.condition?.kind !== "source_nightsoul_blessing" ||
+    canEnterNightsoulBlessing(build) === effect.condition.required
   if (source.kind === "weapon") {
     const sourceCandidates = source.holder === "party_member" ? [primary, ...teammates] : [primary]
-    const matchingSources = sourceCandidates.filter((build) => build.weapon.weaponId === source.weaponId)
+    const matchingSources = sourceCandidates.filter(
+      (build) => build.weapon.weaponId === source.weaponId && matchesSourceCondition(build)
+    )
     if (source.resolveAllMatchingPartySources === true && selectedSourceBuildId !== undefined) {
       throw new Error(`Effect ${effect.id} resolves every matching party source and cannot select only ${selectedSourceBuildId}`)
     }
@@ -1057,7 +1167,8 @@ function resolveEffectSources(
     return resolveEffectSourceCandidates(
       effect.id,
       sourceCandidates.filter(
-        (build) => countArtifactSet(build, artifactSource.setId) >= artifactSource.minimumPieces
+        (build) =>
+          countArtifactSet(build, artifactSource.setId) >= artifactSource.minimumPieces && matchesSourceCondition(build)
       ),
       selectedSourceBuildId,
       false
@@ -1065,7 +1176,11 @@ function resolveEffectSources(
   }
   const characterId = source.characterId
   const matchingSources = [primary, ...teammates].filter(
-    (build) => build.characterId === characterId
+    (build) =>
+      build.characterId === characterId &&
+      (source.travelerElement === undefined ||
+        (build.variant?.kind === "traveler" && build.variant.element === source.travelerElement)) &&
+      matchesSourceCondition(build)
   )
   return resolveEffectSourceCandidates(effect.id, matchingSources, selectedSourceBuildId, false, characterId)
 }

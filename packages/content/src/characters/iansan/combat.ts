@@ -7,6 +7,23 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
     {
       characterId: "Iansan",
       element: iansanDefinition.element,
+      id: "iansan.passive.kinetic_energy_gradient_test.warming_up.heal_tick",
+      kind: "support",
+      parameterReferences: [
+        {
+          groupId: "passive2",
+          id: "warming-up-healing-attack-ratio",
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "passive"
+        }
+      ],
+      status: "verified",
+      talentSlot: "passive"
+    },
+    {
+      characterId: "Iansan",
+      element: iansanDefinition.element,
       id: "iansan.burst.the_three_principles_of_power.kinetic_scale.high_nightsoul_attack_buff",
       kind: "support",
       parameterReferences: [
@@ -155,6 +172,16 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "maximum_reachable",
+      condition: { kind: "source_nightsoul_blessing", required: true },
+      id: "iansan.passive.enhanced_resistance_training.precise_movement.attack_percent",
+      label: "固有天赋 · 强化抗阻训练（精准走位期间，攻击力提高20%）",
+      source: { characterId: "Iansan", kind: "character", minimumSourceAscension: 1 },
+      target: "attackPercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.2 }
+    },
+    {
+      activation: "maximum_reachable",
       id: "iansan.burst.the_three_principles_of_power.kinetic_scale.high_nightsoul_attack_bonus",
       label: "动能标度 · 高夜魂值攻击力提升",
       source: { characterId: "Iansan", kind: "character" },
@@ -195,6 +222,29 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
   ],
   characterId: "Iansan",
   metrics: [
+    {
+      characterId: "Iansan",
+      flat: 0,
+      id: "iansan.passive.kinetic_energy_gradient_test.warming_up.heal_tick",
+      includeHealingBonus: true,
+      kind: "healing",
+      label: "固有天赋 · 动能梯度测试 / 夜魂迸发后恢复夜魂值触发的单次治疗量",
+      percentageParameter: {
+        reference: {
+          groupId: "passive2",
+          id: "warming-up-healing-attack-ratio",
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "passive"
+        },
+        snapshotChecks: [{ expectedValue: 0.6, talentLevel: 1 }]
+      },
+      recipientRequirements: [],
+      scalingStat: "attack",
+      sourceActionId: "iansan.passive.kinetic_energy_gradient_test.warming_up.heal_tick",
+      status: "verified",
+      target: "friendly_recipient"
+    },
     {
       characterId: "Iansan",
       id: "iansan.burst.the_three_principles_of_power.kinetic_scale.high_nightsoul_attack_bonus",
@@ -276,7 +326,7 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit, one Thunderbolt Rush initial hit, and The Three Principles of Power's initial stomp remain verified lower-level C0 attack-scaling damage actions from the pinned 6.7 Genshin Optimizer snapshot at commit 21c98eb60355160274a8c4cecfc5671e2151a073, but none is selected as Iansan's display output. The selected support metrics calculate Kinetic Scale's Attack bonus for one friendly recipient from Iansan's current Attack before the recipient's own modifiers: at Night Soul value 42 or above, Attack × burst[1]; at 1–41, Attack × burst[2] × the explicitly hand-filled current Night Soul value. Both branches are capped by burst[3], and C5 adds three Burst levels. C2 is a manual snapshot after Iansan has cast Burst, Standard Action remains active, and she is off field; it grants 30% Attack only to the evaluated on-field teammate. The active recipient, Kinetic Scale duration, Night Soul recovery and consumption, A1/C6 effects, the Burst's direct damage, reactions, external effects, and rotation behavior remain outside these source-owned outputs.",
+    "The selected support metrics calculate Kinetic Scale's Attack bonus for one friendly recipient from Iansan's current Attack: at 42 or more Nightsoul points, Attack × burst[1]; at 1–41, Attack × burst[2] × the hand-filled current Nightsoul value, capped by burst[3]. Enhanced Resistance Training automatically adds 20% Attack during the maximum-reachable Precise Movement state. Kinetic Energy Gradient Test also exposes one Warming Up heal after a reachable Nightsoul Burst: Iansan's Attack × passive2[1] (60%). C5 adds three Burst levels, while C2 remains a selected off-field 30% Attack snapshot. Repeated healing cadence, Nightsoul consumption, C6, and rotation timing remain outside these source-owned outputs.",
   label: iansanDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

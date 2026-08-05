@@ -6,7 +6,13 @@ import { AnalysisResponseSchema, getWeaponComparisonRefinement, type AnalysisRes
 const emptyTeamState = {
   activeResonanceIds: [],
   hexereiSecretRite: false,
-  moonsign: { characterBuildIds: [], characterCount: 0, level: "none" }
+  moonsign: { characterBuildIds: [], characterCount: 0, level: "none" },
+  nightsoulBurst: {
+    characterBuildIds: [],
+    characterCount: 0,
+    cooldownSeconds: null,
+    hasXilonenIndependentTrigger: false
+  }
 } as const
 
 describe("weapon comparison refinement", () => {

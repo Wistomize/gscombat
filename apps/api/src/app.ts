@@ -839,6 +839,12 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
               characterBuildIds: [...evaluation.teamState.moonsign.characterBuildIds],
               characterCount: evaluation.teamState.moonsign.characterCount,
               level: evaluation.teamState.moonsign.level
+            },
+            nightsoulBurst: {
+              characterBuildIds: [...evaluation.teamState.nightsoulBurst.characterBuildIds],
+              characterCount: evaluation.teamState.nightsoulBurst.characterCount,
+              cooldownSeconds: evaluation.teamState.nightsoulBurst.cooldownSeconds,
+              hasXilonenIndependentTrigger: evaluation.teamState.nightsoulBurst.hasXilonenIndependentTrigger
             }
           },
           stats: {

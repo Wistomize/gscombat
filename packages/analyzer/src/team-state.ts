@@ -2,6 +2,8 @@ import {
   elementalResonanceDefinitions,
   hasHexereiSecretRite,
   isMoonsignCharacter,
+  isNightsoulBurstCharacter,
+  resolveNightsoulBurstCooldown,
   resolveMoonsignLevel,
   type ElementalResonanceId,
   type MoonsignLevel
@@ -19,9 +21,15 @@ export interface ResolvedTeamState {
     readonly characterCount: number
     readonly level: MoonsignLevel
   }
+  readonly nightsoulBurst: {
+    readonly characterBuildIds: readonly string[]
+    readonly characterCount: number
+    readonly cooldownSeconds: number | null
+    readonly hasXilonenIndependentTrigger: boolean
+  }
 }
 
-/** Derives composition-only resonance and Moonsign states from the configured party. */
+/** Derives composition-owned resonance, Moonsign, and Nightsoul Burst states from the configured party. */
 export function resolveTeamState(
   primary: CharacterBuild,
   teammates: readonly CharacterBuild[],
@@ -29,6 +37,7 @@ export function resolveTeamState(
 ): ResolvedTeamState {
   const party = [primary, ...teammates]
   const moonsignBuilds = party.filter((build) => isMoonsignCharacter(build.characterId))
+  const nightsoulBurstBuilds = party.filter((build) => isNightsoulBurstCharacter(build.characterId))
   const activeResonanceIds: ElementalResonanceId[] = []
   if (party.length === 4) {
     const elements = party.flatMap((build) => {
@@ -51,6 +60,12 @@ export function resolveTeamState(
       characterBuildIds: moonsignBuilds.map((build) => build.buildId),
       characterCount: moonsignBuilds.length,
       level: resolveMoonsignLevel(moonsignBuilds.length)
+    },
+    nightsoulBurst: {
+      characterBuildIds: nightsoulBurstBuilds.map((build) => build.buildId),
+      characterCount: nightsoulBurstBuilds.length,
+      cooldownSeconds: resolveNightsoulBurstCooldown(nightsoulBurstBuilds.length),
+      hasXilonenIndependentTrigger: party.some((build) => build.characterId === "Xilonen" && build.ascension >= 4)
     }
   }
 }

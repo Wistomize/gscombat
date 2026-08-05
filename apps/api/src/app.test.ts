@@ -2164,16 +2164,23 @@ describe("API", () => {
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
     const xiangling = presetScenario.teammates.find((build: { readonly characterId: string }) => build.characterId === "Xiangling")
-    const cinderCityHolder = {
+    const standardHolder = {
       ...presetScenario.primary,
       artifacts: presetScenario.primary.artifacts.map((artifact: { readonly setId: string }) => ({
         ...artifact,
         setId: "ScrollOfTheHeroOfCinderCity"
       })),
-      buildId: "test.cinder-city-holder",
-      label: "烬城勇者绘卷持有者"
+      buildId: "test.cinder-city-standard-holder",
+      label: "烬城勇者绘卷普通状态持有者"
     }
-    const requestAnalysis = (activeEffectIds: readonly string[]) =>
+    const nightsoulHolder = {
+      ...standardHolder,
+      buildId: "test.cinder-city-nightsoul-holder",
+      characterId: "Xilonen",
+      label: "烬城勇者绘卷夜魂状态持有者",
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "FavoniusSword" }
+    }
+    const requestAnalysis = (activeEffectIds: readonly string[], holder = standardHolder) =>
       app.inject({
         method: "POST",
         payload: {
@@ -2182,25 +2189,25 @@ describe("API", () => {
           externalBuffs: [],
           primary: { ...xiangling, buildId: "test.xiangling.cinder-city-api" },
           targetActionId: "xiangling.burst.pyronado.reverse_vaporize",
-          teammates: [cinderCityHolder]
+          teammates: [holder]
         },
         url: "/v1/analysis"
       })
     const baselineResponse = await requestAnalysis([])
     const standardResponse = await requestAnalysis([standardEffectId])
-    const nightsoulResponse = await requestAnalysis([nightsoulEffectId])
+    const nightsoulResponse = await requestAnalysis([nightsoulEffectId], nightsoulHolder)
 
     expect(baselineResponse.statusCode).toBe(200)
     expect(standardResponse.statusCode).toBe(200)
     expect(nightsoulResponse.statusCode).toBe(200)
     expect(standardResponse.json().evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: standardEffectId, sourceId: cinderCityHolder.buildId, value: 0.12 })
+        expect.objectContaining({ id: standardEffectId, sourceId: standardHolder.buildId, value: 0.12 })
       ])
     )
     expect(nightsoulResponse.json().evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: nightsoulEffectId, sourceId: cinderCityHolder.buildId, value: 0.4 })
+        expect.objectContaining({ id: nightsoulEffectId, sourceId: nightsoulHolder.buildId, value: 0.4 })
       ])
     )
     expect(standardResponse.json().evaluation.rotation.dpr).toBeGreaterThan(baselineResponse.json().evaluation.rotation.dpr)

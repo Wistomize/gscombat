@@ -119,6 +119,18 @@ export const ifaCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "burst"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "team_nightsoul_burst", minimumTriggers: 1 },
+      id: "ifa.passive.mutual_aid_agreement.after_nightsoul_burst.elemental_mastery",
+      label: "固有天赋 · 互助救援协议（夜魂迸发后10秒，元素精通提高）",
+      source: { characterId: "Ifa", kind: "character", minimumSourceAscension: 4 },
+      target: "elementalMastery",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 80 }
+    }
+  ],
   characterId: "Ifa",
   metrics: [
     {
@@ -161,7 +173,7 @@ export const ifaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit, one Airborne Disease Prevention remedy bullet, and Compound Field of Refined Medicine's initial hit are locked to the pinned 6.7 game-data snapshot from Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073. The selected support metric is one Tonicshot hit's heal for one nearby party member: Ifa's Elemental Mastery × skill[1] plus skill[2], then Ifa's Healing Bonus and that recipient's Incoming Healing Bonus; C3 adds three Skill levels. The Tonicshot heals all nearby party members independently, so this per-recipient value has no fixed current-HP gate. It excludes Tonicshot damage, target count, Nightsoul state and duration, A1 Essentials reaction bonuses, A4's Elemental Mastery bonus, C4, C6, Burst damage, external effects, timing, and all other character states.",
+    "One first normal-attack hit, one Airborne Disease Prevention remedy bullet, and Compound Field of Refined Medicine's initial hit are locked to the pinned 6.7 game-data snapshot. The selected support metric is one Tonicshot hit's heal for one nearby party member: Ifa's Elemental Mastery × skill[1] plus skill[2], then source Healing Bonus and recipient Incoming Healing Bonus; C3 adds three Skill levels. Mutual Aid Agreement automatically adds 80 Elemental Mastery after a party-reachable Nightsoul Burst and therefore contributes to the heal. Rescue Essentials reaction bonuses, C4, C6, Burst damage, target count, and rotation timing remain unmodeled.",
   label: ifaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

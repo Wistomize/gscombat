@@ -69,7 +69,11 @@ function createSystemMetricScenario(build: CharacterBuild): EvaluationScenario {
 function getMetricTalentParameters(
   metric: Exclude<CombatMetricDefinition, { readonly kind: "damage" }>
 ): readonly CombatMetricTalentParameter[] {
-  if (metric.kind === "healing") return [metric.percentageParameter, metric.flatParameter]
+  if (metric.kind === "healing") {
+    return [metric.percentageParameter, metric.flatParameter].filter(
+      (parameter): parameter is CombatMetricTalentParameter => parameter !== undefined
+    )
+  }
   if (metric.kind === "stat_buff") return [metric.ratioParameter]
   return [metric.ratioParameter, metric.flatParameter, metric.maximumValueParameter].filter(
     (parameter): parameter is CombatMetricTalentParameter => parameter !== undefined

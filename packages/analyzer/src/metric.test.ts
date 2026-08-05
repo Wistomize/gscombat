@@ -967,6 +967,11 @@ describe("character metrics with explicit target context", () => {
         actionId: "mualani.skill.surfshark_wavebreaker.sharkys_surging_bite.full_wave_momentum",
         kind: "damage",
         label: "冲浪时光 / 满层鲨鲨撕咬（火底蒸发需火附着）"
+      }),
+      expect.objectContaining({
+        actionId: "mualani.burst.boomsharka_laka.tracking_missile",
+        kind: "damage",
+        label: "爆瀑飞弹 / 飞弹伤害（逐浪心得按队伍最大可达层数）"
       })
     ])
 
