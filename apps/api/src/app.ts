@@ -15,9 +15,7 @@ import {
 } from "@gscombat/calculator"
 import {
   createRaidenNationalFoundationInput,
-  getCombatActionDefinition,
   getCombatMetricDefinition,
-  listActiveScenarioEffectOptionsForAction,
   normalizeProjectedMetricLabel,
   type CombatActionMetadata,
   type CombatDamagePart,
@@ -32,6 +30,8 @@ import {
 import {
   AnalysisRequestSchema,
   AnalysisResponseSchema,
+  ActionEffectOptionsRequestSchema,
+  ActionEffectOptionsResponseSchema,
   ApiErrorResponseSchema,
   CatalogResponseSchema,
   CombatAuthoringAuditReportSchema,
@@ -53,6 +53,8 @@ import {
   WorkspaceUpdateRequestSchema,
   type AnalysisRequest,
   type AnalysisResponse,
+  type ActionEffectOptionsRequest,
+  type ActionEffectOptionsResponse,
   type ApiErrorResponse,
   type CatalogResponse,
   type CombatAuthoringAuditReport,
@@ -79,6 +81,7 @@ import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify"
 
 import { EnkaShowcaseClient, type ShowcaseImporter } from "./showcase.js"
+import { resolveActionEffectOptions } from "./action-effect-options.js"
 import {
   createWorkspaceSessionToken,
   readWorkspaceSession,
@@ -620,13 +623,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       characters: supportedCharacters.map((character) => ({
         ...character,
         primaryActions: character.primaryActions.map(({ scenarioParameters, ...action }) => {
-          const combatAction = getCombatActionDefinition(action.id)
-          const scenarioEffects = combatAction
-            ? listActiveScenarioEffectOptionsForAction(combatAction, character.weaponType)
-            : []
           return {
             ...action,
-            ...(scenarioEffects.length > 0 ? { scenarioEffects: [...scenarioEffects] } : {}),
             ...(scenarioParameters
               ? {
                   scenarioParameters: scenarioParameters.map(({
@@ -696,6 +694,29 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       })),
       weapons: [...supportedWeapons]
     })
+  )
+
+  app.post<{
+    Body: ActionEffectOptionsRequest
+    Reply: ActionEffectOptionsResponse | ApiErrorResponse
+  }>(
+    "/v1/action-effect-options",
+    {
+      schema: {
+        body: ActionEffectOptionsRequestSchema,
+        response: {
+          200: ActionEffectOptionsResponseSchema,
+          404: ApiErrorResponseSchema
+        }
+      }
+    },
+    async (request, reply) => {
+      const result = resolveActionEffectOptions(request.body)
+      if (!result) {
+        return reply.code(404).send({ code: "action_not_found", message: "目标动作不存在或不属于当前角色" })
+      }
+      return result
+    }
   )
 
   app.get<{ Reply: CombatCoverageReport }>(

@@ -148,6 +148,17 @@ const analysisResponse: AnalysisResponse = {
   }
 }
 
+function createCalculationFetchMock(
+  response: AnalysisResponse,
+  effectOptions: readonly Record<string, unknown>[] = []
+) {
+  return vi.fn(async (input: string | URL | Request, _init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
+    const body = url.includes("/v1/action-effect-options") ? { options: effectOptions } : response
+    return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" }, status: 200 })
+  })
+}
+
 let root: ReturnType<typeof createRoot> | undefined
 
 afterEach(async () => {
@@ -595,10 +606,7 @@ describe("team-first workspace integration", () => {
     root = undefined
     document.body.innerHTML = ""
 
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(analysisResponse), {
-      headers: { "Content-Type": "application/json" },
-      status: 200
-    }))
+    const fetchMock = createCalculationFetchMock(analysisResponse)
     vi.stubGlobal("fetch", fetchMock)
     await render(createElement(TeamCalculationWorkspace, {
       catalog: webCatalog as CatalogResponse,
@@ -608,6 +616,7 @@ describe("team-first workspace integration", () => {
     expect(document.querySelector('.calculationParty img[alt="雷电将军头像"]')).not.toBeNull()
     await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
     await click(document.querySelector<HTMLButtonElement>(".metricGroups button"))
+    await flushAsyncWork()
     const shieldToggle = [...document.querySelectorAll<HTMLLabelElement>("label")]
       .find((label) => label.textContent?.includes("角色处于护盾保护"))?.querySelector<HTMLInputElement>("input")
     const frozenToggle = [...document.querySelectorAll<HTMLLabelElement>("label")]
@@ -616,7 +625,11 @@ describe("team-first workspace integration", () => {
     expect(frozenToggle).toBeUndefined()
     await click(findButton("开始计算"))
 
-    const request = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined
+    const effectRequest = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined
+    const effectPayload = JSON.parse(String(effectRequest?.body)) as { actionId: string; primary: { buildId: string } }
+    expect(effectPayload.actionId).toBe("raiden.burst.initial_slash")
+    expect(effectPayload.primary.buildId).toBe(raidenNationalBuiltinScenario.primary.buildId)
+    const request = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
     const scenario = JSON.parse(String(request?.body)) as {
       conditions: { primaryShielded?: boolean; targetFrozen?: boolean }
       primary: { buildId: string }
@@ -652,7 +665,7 @@ describe("team-first workspace integration", () => {
     expect(refinementSelect?.querySelectorAll("option")).toHaveLength(5)
     await changeSelect(refinementSelect, "5")
     await flushAsyncWork()
-    const refinedRequest = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
+    const refinedRequest = fetchMock.mock.calls[2]?.[1] as RequestInit | undefined
     const refinedPayload = JSON.parse(String(refinedRequest?.body)) as {
       weaponComparisonRefinements: Record<string, number>
     }
@@ -691,10 +704,7 @@ describe("team-first workspace integration", () => {
     }
     saveBuildLibrary(window.localStorage, [nefer])
     saveParty(window.localStorage, { memberBuildIds: [nefer.buildId] })
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(neferAnalysis), {
-      headers: { "Content-Type": "application/json" },
-      status: 200
-    })))
+    vi.stubGlobal("fetch", createCalculationFetchMock(neferAnalysis))
 
     await render(createElement(TeamCalculationWorkspace, {
       catalog: webCatalog as CatalogResponse,
@@ -703,6 +713,7 @@ describe("team-first workspace integration", () => {
 
     await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
     await click(findButton("弈术·千夜一舞 / 自身两段 + 幻影三次命中期望伤害"))
+    await flushAsyncWork()
     await click(findButton("开始计算"))
 
     const traceEvents = document.querySelectorAll<HTMLElement>(".traceReport .traceEvent")
@@ -724,10 +735,29 @@ describe("team-first workspace integration", () => {
     const scenario = { ...raidenNationalBuiltinScenario, primary: widsithBuild, teammates: [] }
     saveBuildLibrary(window.localStorage, [widsithBuild])
     saveParty(window.localStorage, { memberBuildIds: [widsithBuild.buildId] })
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(analysisResponse), {
-      headers: { "Content-Type": "application/json" },
-      status: 200
-    }))
+    const fetchMock = createCalculationFetchMock(analysisResponse, [
+      {
+        exclusiveGroup: "weapon.the-widsith.theme",
+        id: "weapon.the-widsith.recitative.attack-percent",
+        label: "流浪乐章 · 登场主题：宣叙调",
+        selectionMode: "optional",
+        source: { kind: "weapon", weaponId: "TheWidsith" }
+      },
+      {
+        exclusiveGroup: "weapon.the-widsith.theme",
+        id: "weapon.the-widsith.aria.all-element-damage-bonus",
+        label: "流浪乐章 · 登场主题：咏叹调",
+        selectionMode: "optional",
+        source: { kind: "weapon", weaponId: "TheWidsith" }
+      },
+      {
+        exclusiveGroup: "weapon.the-widsith.theme",
+        id: "weapon.the-widsith.interlude.elemental-mastery",
+        label: "流浪乐章 · 登场主题：间奏曲",
+        selectionMode: "optional",
+        source: { kind: "weapon", weaponId: "TheWidsith" }
+      }
+    ])
     vi.stubGlobal("fetch", fetchMock)
 
     await render(createElement(TeamCalculationWorkspace, {
@@ -737,12 +767,13 @@ describe("team-first workspace integration", () => {
 
     await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
     await click(findButton("如水从平 / 衡平推裁单次命中"))
+    await flushAsyncWork()
     const themeSelect = document.querySelector<HTMLSelectElement>('select[aria-label="流浪乐章 · 登场主题"]')
     expect(themeSelect?.querySelectorAll("option")).toHaveLength(4)
     await changeSelect(themeSelect, "weapon.the-widsith.aria.all-element-damage-bonus")
     await click(findButton("开始计算"))
 
-    const request = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined
+    const request = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
     const payload = JSON.parse(String(request?.body)) as { conditions: { activeEffectIds: string[] } }
     expect(payload.conditions.activeEffectIds).toContain("weapon.the-widsith.aria.all-element-damage-bonus")
     expect(payload.conditions.activeEffectIds.filter((effectId) => effectId.startsWith("weapon.the-widsith."))).toHaveLength(1)

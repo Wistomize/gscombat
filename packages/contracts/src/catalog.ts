@@ -1,5 +1,6 @@
 import Type from "typebox"
 
+import { CharacterBuildSchema } from "./builds.js"
 import { CombatActionIntegerScenarioParameterSchema } from "./combat-coverage.js"
 import { ExternalBuffSchema } from "./scenarios.js"
 
@@ -30,7 +31,7 @@ const ActiveScenarioEffectOptionSourceSchema = Type.Union([
   })
 ])
 
-const ActiveScenarioEffectOptionSchema = Type.Object({
+export const ActiveScenarioEffectOptionSchema = Type.Object({
   exclusiveGroup: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
   id: Type.String({ minLength: 1, maxLength: 100 }),
   label: Type.String({ minLength: 1, maxLength: 120 }),
@@ -39,6 +40,22 @@ const ActiveScenarioEffectOptionSchema = Type.Object({
   selectionMode: Type.Optional(Type.Literal("optional")),
   source: ActiveScenarioEffectOptionSourceSchema
 })
+
+export type ActiveScenarioEffectOption = Type.Static<typeof ActiveScenarioEffectOptionSchema>
+
+export const ActionEffectOptionsRequestSchema = Type.Object({
+  actionId: Type.String({ minLength: 1, maxLength: 120 }),
+  primary: Type.Optional(CharacterBuildSchema),
+  teammates: Type.Optional(Type.Array(CharacterBuildSchema, { maxItems: 3 }))
+})
+
+export type ActionEffectOptionsRequest = Type.Static<typeof ActionEffectOptionsRequestSchema>
+
+export const ActionEffectOptionsResponseSchema = Type.Object({
+  options: Type.Array(ActiveScenarioEffectOptionSchema, { maxItems: 1000 })
+})
+
+export type ActionEffectOptionsResponse = Type.Static<typeof ActionEffectOptionsResponseSchema>
 
 const SupportMetricKindSchema = Type.Union([
   Type.Literal("healing"),
@@ -112,7 +129,6 @@ export const CatalogResponseSchema = Type.Object({
         Type.Object({
           id: Type.String(),
           label: Type.String(),
-          scenarioEffects: Type.Optional(Type.Array(ActiveScenarioEffectOptionSchema, { maxItems: 100 })),
           scenarioParameters: Type.Optional(Type.Array(CombatActionIntegerScenarioParameterSchema, { maxItems: 20 })),
           tracePresentation: Type.Optional(
             Type.Object({

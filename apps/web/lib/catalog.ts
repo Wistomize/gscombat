@@ -1,6 +1,4 @@
 import {
-  getCombatActionDefinition,
-  listActiveScenarioEffectOptionsForAction,
   supportedArtifactSets,
   supportedBuffPresets,
   supportedCharacters,
@@ -15,13 +13,8 @@ export const webCatalog: CatalogResponse = {
   characters: supportedCharacters.map((character) => ({
     ...character,
     primaryActions: character.primaryActions.map(({ scenarioParameters, ...action }) => {
-      const combatAction = getCombatActionDefinition(action.id)
-      const scenarioEffects = combatAction
-        ? listActiveScenarioEffectOptionsForAction(combatAction, character.weaponType)
-        : []
       return {
         ...action,
-        ...(scenarioEffects.length > 0 ? { scenarioEffects: [...scenarioEffects] } : {}),
         ...(scenarioParameters
           ? {
               scenarioParameters: scenarioParameters.map(({

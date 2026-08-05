@@ -1,5 +1,10 @@
 import { afterAll, describe, expect, it } from "vitest"
-import { listCombatActions, listCombatMetrics, supportedWeapons } from "@gscombat/content"
+import {
+  listCombatActions,
+  listCombatMetrics,
+  raidenNationalBuiltinScenario,
+  supportedWeapons
+} from "@gscombat/content"
 import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 
 import { buildApp, serializeCombatAction, serializeRotationEvent } from "./app.js"
@@ -10,6 +15,16 @@ function countSelectableWeapons(weaponType: (typeof supportedWeapons)[number]["w
   return supportedWeapons.filter(
     (weapon) => weapon.weaponType === weaponType && (weapon.rarity === 4 || weapon.rarity === 5)
   ).length
+}
+
+async function getProjectedActionEffects(actionId: string): Promise<readonly Record<string, unknown>[]> {
+  const response = await app.inject({
+    body: { actionId },
+    method: "POST",
+    url: "/v1/action-effect-options"
+  })
+  expect(response.statusCode).toBe(200)
+  return response.json().options
 }
 
 afterAll(async () => {
@@ -177,6 +192,58 @@ describe("API", () => {
       ])
     )
     expect(labels).not.toContain("已验证基础单段伤害")
+  })
+
+  it("keeps the startup catalog lightweight and excludes action effect snapshots", async () => {
+    const response = await app.inject({ method: "GET", url: "/v1/catalog" })
+
+    expect(response.statusCode).toBe(200)
+    expect(Buffer.byteLength(response.body, "utf8")).toBeLessThan(300_000)
+    expect(
+      response.json().characters.every((character: { primaryActions: readonly Record<string, unknown>[] }) =>
+        character.primaryActions.every((action) => !("scenarioEffects" in action))
+      )
+    ).toBe(true)
+  })
+
+  it("loads action effects on demand and filters them to the configured party sources", async () => {
+    const bennett = raidenNationalBuiltinScenario.teammates.find((build) => build.characterId === "Bennett")
+    if (!bennett) throw new Error("Expected the built-in Bennett build")
+    const primary = {
+      ...raidenNationalBuiltinScenario.primary,
+      buildId: "test.neuvillette.widsith",
+      characterId: "Neuvillette",
+      constellation: 0,
+      weapon: {
+        ...raidenNationalBuiltinScenario.primary.weapon,
+        refinement: 5,
+        weaponId: "TheWidsith"
+      }
+    }
+    const response = await app.inject({
+      body: {
+        actionId: "neuvillette.normal.charged_attack.equitable_judgment.single_tick",
+        primary,
+        teammates: [bennett]
+      },
+      method: "POST",
+      url: "/v1/action-effect-options"
+    })
+
+    expect(response.statusCode).toBe(200)
+    const options = response.json().options as readonly { id: string }[]
+    expect(options.map((option) => option.id)).toEqual(
+      expect.arrayContaining([
+        "bennett.burst.field",
+        "weapon.the-widsith.aria.all-element-damage-bonus"
+      ])
+    )
+    expect(options.map((option) => option.id)).not.toEqual(
+      expect.arrayContaining([
+        "weapon.wolfs-gravestone.after-low-health-target-hit.party-attack-percent",
+        "weapon.thrilling-tales-of-dragon-slayers.after-switch.party-attack-percent"
+      ])
+    )
   })
 
   it("exposes the complete combat coverage graph without relying on a character-by-character fixture list", async () => {
@@ -368,16 +435,10 @@ describe("API", () => {
     })
   })
 
-  it("projects content-owned Xiangling snapshots into the browser catalog", async () => {
-    const response = await app.inject({ method: "GET", url: "/v1/catalog" })
+  it("projects content-owned Xiangling snapshots through the action effect endpoint", async () => {
+    const scenarioEffects = await getProjectedActionEffects("xiangling.burst.pyronado.reverse_vaporize")
 
-    expect(response.statusCode).toBe(200)
-    const xiangling = response.json().characters.find((character: { characterId: string }) => character.characterId === "Xiangling")
-    const pyronado = xiangling?.primaryActions.find(
-      (action: { id: string }) => action.id === "xiangling.burst.pyronado.reverse_vaporize"
-    )
-
-    expect(pyronado?.scenarioEffects).toEqual(
+    expect(scenarioEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: "xiangling.guoba.chili.attack",
@@ -392,14 +453,10 @@ describe("API", () => {
     )
   })
 
-  it("projects equipment-owned current-action snapshots into the browser catalog", async () => {
-    const response = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const xiangling = response.json().characters.find((character: { characterId: string }) => character.characterId === "Xiangling")
-    const pyronado = xiangling?.primaryActions.find(
-      (action: { id: string }) => action.id === "xiangling.burst.pyronado.reverse_vaporize"
-    )
+  it("projects equipment-owned current-action snapshots through the action effect endpoint", async () => {
+    const scenarioEffects = await getProjectedActionEffects("xiangling.burst.pyronado.reverse_vaporize")
 
-    expect(pyronado?.scenarioEffects).toEqual(
+    expect(scenarioEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: "weapon.wolfs-gravestone.after-low-health-target-hit.party-attack-percent",
@@ -430,7 +487,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(pyronado?.scenarioEffects).not.toEqual(
+    expect(scenarioEffects).not.toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: "weapon.engulfing-lightning.post-burst-energy-recharge" })
       ])
@@ -454,13 +511,11 @@ describe("API", () => {
   })
 
   it("projects Skyward Spine's cooldown-ready Vacuum Blade only for eligible normal or charged targets", async () => {
-    const response = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const huTao = response.json().characters.find((character: { characterId: string }) => character.characterId === "HuTao")
-    const chargedAttack = huTao?.primaryActions.find(
-      (action: { id: string }) => action.id === "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize"
+    const scenarioEffects = await getProjectedActionEffects(
+      "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize"
     )
 
-    expect(chargedAttack?.scenarioEffects).toEqual(
+    expect(scenarioEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: "weapon.skyward-spine.vacuum-blade",
@@ -2437,14 +2492,9 @@ describe("API", () => {
   it("applies Kuki Shinobu C6's selected low-HP mastery snapshot to single Hyperbloom through the public endpoint", async () => {
     const actionId = "kuki_shinobu.skill.sanctifying_ring.grass_ring.single_hyperbloom"
     const effectId = "kuki_shinobu.constellation.6.to_ward_weakness.low_hp.elemental_mastery"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const catalogKuki = catalogResponse.json().characters.find(
-      (character: { readonly characterId: string }) => character.characterId === "KukiShinobu"
-    )
-    const hyperbloom = catalogKuki?.primaryActions.find((action: { readonly id: string }) => action.id === actionId)
+    const scenarioEffects = await getProjectedActionEffects(actionId)
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(hyperbloom?.scenarioEffects).toEqual(
+    expect(scenarioEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: effectId,
@@ -2525,17 +2575,12 @@ describe("API", () => {
     const albedoEffectId = "albedo.constellation.4.descent_of_divinity.plunge_damage_bonus"
     const ventiActionId = "venti.skill.skyward_sonnet.press"
     const gamingPlungeActionId = "gaming.skill.bestial_ascent.plunging_attack_charmed_cloudstrider"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const catalog = catalogResponse.json()
-    const ventiAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Venti")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === ventiActionId)
-    const gamingPlunge = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Gaming")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === gamingPlungeActionId)
+    const [ventiEffects, gamingPlungeEffects] = await Promise.all([
+      getProjectedActionEffects(ventiActionId),
+      getProjectedActionEffects(gamingPlungeActionId)
+    ])
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(ventiAction?.scenarioEffects).toEqual(
+    expect(ventiEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: ventiEffectId,
@@ -2544,7 +2589,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(gamingPlunge?.scenarioEffects).toEqual(
+    expect(gamingPlungeEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: albedoEffectId,
@@ -2674,17 +2719,12 @@ describe("API", () => {
     const barbaraEffectId = "barbara.let_the_show_begin.c2.current_character.hydro_damage_bonus"
     const xianglingActionId = "xiangling.burst.pyronado.reverse_vaporize"
     const xingqiuActionId = "xingqiu.burst.raincutter.rain_sword.single_volley"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const catalog = catalogResponse.json()
-    const xianglingAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Xiangling")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === xianglingActionId)
-    const xingqiuAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Xingqiu")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === xingqiuActionId)
+    const [xianglingEffects, xingqiuEffects] = await Promise.all([
+      getProjectedActionEffects(xianglingActionId),
+      getProjectedActionEffects(xingqiuActionId)
+    ])
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(xianglingAction?.scenarioEffects).toEqual(
+    expect(xianglingEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: sucroseEffectId,
@@ -2692,7 +2732,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(xingqiuAction?.scenarioEffects).toEqual(
+    expect(xingqiuEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: barbaraEffectId,
@@ -2827,23 +2867,13 @@ describe("API", () => {
     const tartagliaNormalActionId = "tartaglia.skill.foul_legacy_raging_tide.melee_normal.first_hit"
     const xianglingPyronadoActionId = "xiangling.burst.pyronado.reverse_vaporize"
     const kukiHyperbloomActionId = "kuki_shinobu.skill.sanctifying_ring.grass_ring.single_hyperbloom"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const catalog = catalogResponse.json()
-    const catalogTartaglia = catalog.characters.find(
-      (character: { readonly characterId: string }) => character.characterId === "Tartaglia"
-    )
-    const tartagliaNormal = catalogTartaglia?.primaryActions.find(
-      (action: { readonly id: string }) => action.id === tartagliaNormalActionId
-    )
-    const xianglingPyronado = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Xiangling")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === xianglingPyronadoActionId)
-    const kukiHyperbloom = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "KukiShinobu")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === kukiHyperbloomActionId)
+    const [tartagliaNormalEffects, xianglingPyronadoEffects, kukiHyperbloomEffects] = await Promise.all([
+      getProjectedActionEffects(tartagliaNormalActionId),
+      getProjectedActionEffects(xianglingPyronadoActionId),
+      getProjectedActionEffects(kukiHyperbloomActionId)
+    ])
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(tartagliaNormal?.scenarioEffects).toEqual(
+    expect(tartagliaNormalEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: yunJinEffectId,
@@ -2851,7 +2881,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(xianglingPyronado?.scenarioEffects).toEqual(
+    expect(xianglingPyronadoEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: kiraraEffectId,
@@ -2859,7 +2889,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(kukiHyperbloom?.scenarioEffects).toEqual(
+    expect(kukiHyperbloomEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: colleiEffectId,
@@ -3051,20 +3081,13 @@ describe("API", () => {
     const xianglingActionId = "xiangling.burst.pyronado.reverse_vaporize"
     const razorActionId = "razor.burst.lightning_fang.normal.fourth_hit"
     const yoimiyaActionId = "yoimiya.normal.niwabi_fire_dance.fifth_hit.hydro_aura_vaporize"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const catalog = catalogResponse.json()
-    const xianglingAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Xiangling")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === xianglingActionId)
-    const razorAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Razor")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === razorActionId)
-    const yoimiyaAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Yoimiya")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === yoimiyaActionId)
+    const [xianglingEffects, razorEffects, yoimiyaEffects] = await Promise.all([
+      getProjectedActionEffects(xianglingActionId),
+      getProjectedActionEffects(razorActionId),
+      getProjectedActionEffects(yoimiyaActionId)
+    ])
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(xianglingAction?.scenarioEffects).toEqual(
+    expect(xianglingEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: lyneyEffectId,
@@ -3072,7 +3095,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(razorAction?.scenarioEffects).toEqual(
+    expect(razorEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: razorEffectId,
@@ -3081,7 +3104,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(yoimiyaAction?.scenarioEffects).toEqual(
+    expect(yoimiyaEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: yoimiyaEffectId,
@@ -3244,20 +3267,13 @@ describe("API", () => {
     const xianglingActionId = "xiangling.burst.pyronado.reverse_vaporize"
     const colleiActionId = "collei.burst.trump_card_kitty.leap_tick"
     const xingqiuActionId = "xingqiu.burst.raincutter.rain_sword.single_volley"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const catalog = catalogResponse.json()
-    const xianglingAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Xiangling")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === xianglingActionId)
-    const colleiAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Collei")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === colleiActionId)
-    const xingqiuAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Xingqiu")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === xingqiuActionId)
+    const [xianglingEffects, colleiEffects, xingqiuEffects] = await Promise.all([
+      getProjectedActionEffects(xianglingActionId),
+      getProjectedActionEffects(colleiActionId),
+      getProjectedActionEffects(xingqiuActionId)
+    ])
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(xianglingAction?.scenarioEffects).toEqual(
+    expect(xianglingEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: huTaoEffectId,
@@ -3266,7 +3282,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(colleiAction?.scenarioEffects).toEqual(
+    expect(colleiEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: yaoyaoEffectId,
@@ -3274,7 +3290,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(xingqiuAction?.scenarioEffects).toEqual(
+    expect(xingqiuEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: sigewinneEffectId,
@@ -3457,23 +3473,14 @@ describe("API", () => {
     const yanfeiActionId = "yanfei.normal.charged_attack.three_scarlet_seals.hydro_aura_vaporize"
     const razorActionId = "razor.burst.lightning_fang.normal.fourth_hit"
     const kukiActionId = "kuki_shinobu.skill.sanctifying_ring.grass_ring.single_hyperbloom"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const catalog = catalogResponse.json()
-    const amberAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Amber")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === amberActionId)
-    const yanfeiAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Yanfei")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === yanfeiActionId)
-    const razorAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Razor")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === razorActionId)
-    const kukiAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "KukiShinobu")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === kukiActionId)
+    const [amberEffects, yanfeiEffects, razorEffects, kukiEffects] = await Promise.all([
+      getProjectedActionEffects(amberActionId),
+      getProjectedActionEffects(yanfeiActionId),
+      getProjectedActionEffects(razorActionId),
+      getProjectedActionEffects(kukiActionId)
+    ])
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(amberAction?.scenarioEffects).toEqual(
+    expect(amberEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: amberEffectId,
@@ -3482,7 +3489,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(yanfeiAction?.scenarioEffects).toEqual(
+    expect(yanfeiEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: yanfeiEffectId,
@@ -3491,7 +3498,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(razorAction?.scenarioEffects).toEqual(
+    expect(razorEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: razorEffectId,
@@ -3500,7 +3507,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(kukiAction?.scenarioEffects).toEqual(
+    expect(kukiEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: baizhuEffectId,
@@ -3655,17 +3662,12 @@ describe("API", () => {
     const huTaoEffectId = "hu_tao.constellation.6.butterflys_rest.post_trigger.crit_rate"
     const dilucActionId = "diluc.skill.searing_onslaught.third_hit.hydro_aura_vaporize"
     const huTaoActionId = "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const catalog = catalogResponse.json()
-    const dilucAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "Diluc")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === dilucActionId)
-    const huTaoAction = catalog.characters
-      .find((character: { readonly characterId: string }) => character.characterId === "HuTao")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === huTaoActionId)
+    const [dilucEffects, huTaoEffects] = await Promise.all([
+      getProjectedActionEffects(dilucActionId),
+      getProjectedActionEffects(huTaoActionId)
+    ])
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(dilucAction?.scenarioEffects).toEqual(
+    expect(dilucEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: dilucEffectId,
@@ -3674,7 +3676,7 @@ describe("API", () => {
         })
       ])
     )
-    expect(huTaoAction?.scenarioEffects).toEqual(
+    expect(huTaoEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: huTaoEffectId,
@@ -3773,14 +3775,9 @@ describe("API", () => {
   it("derives Gorou C6's three-Geo crit snapshot from the public team configuration", async () => {
     const effectId = "gorou.constellation.6.valorous_hound.three_or_more_geo.crit_damage"
     const actionId = "albedo.skill.transient_blossom"
-    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
-    const albedoAction = catalogResponse
-      .json()
-      .characters.find((character: { readonly characterId: string }) => character.characterId === "Albedo")
-      ?.primaryActions.find((action: { readonly id: string }) => action.id === actionId)
+    const scenarioEffects = await getProjectedActionEffects(actionId)
 
-    expect(catalogResponse.statusCode).toBe(200)
-    expect(albedoAction?.scenarioEffects).toEqual(
+    expect(scenarioEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: effectId,

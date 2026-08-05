@@ -2,6 +2,9 @@
 
 import {
   getWeaponComparisonRefinement,
+  type ActionEffectOptionsRequest,
+  type ActionEffectOptionsResponse,
+  type ActiveScenarioEffectOption,
   type AnalysisResponse,
   type ArtifactPiece,
   type ArtifactStat,
@@ -90,7 +93,7 @@ type SpecialReactionKind = Extract<
 type CatalogPrimaryAction = CatalogResponse["characters"][number]["primaryActions"][number]
 type CatalogSupportMetric = CatalogResponse["characters"][number]["supportMetrics"][number]
 type CatalogScenarioParameter = NonNullable<CatalogSupportMetric["scenarioParameters"]>[number]
-type ScenarioEffectOption = NonNullable<CatalogPrimaryAction["scenarioEffects"]>[number]
+type ScenarioEffectOption = ActiveScenarioEffectOption
 type AppliedScenarioBuff = AnalysisResponse["evaluation"]["appliedBuffs"][number]
 type AppliedActionEffect = AnalysisResponse["evaluation"]["appliedEffects"][number]
 type ActiveResonanceId = AnalysisResponse["evaluation"]["teamState"]["activeResonanceIds"][number]
@@ -328,56 +331,10 @@ function getScenarioEffectSourceBuilds(
   return sourceBuilds
 }
 
-function isScenarioEffectSourceAvailable(
-  effect: ScenarioEffectOption,
-  primary: CharacterBuild,
-  teammates: readonly CharacterBuild[]
-): boolean {
-  return getScenarioEffectSourceBuilds(effect, primary, teammates).length > 0
-}
-
-function getScenarioEffectOptions(
-  action: CatalogPrimaryAction | undefined,
-  primary: CharacterBuild,
-  teammates: readonly CharacterBuild[]
-): readonly ScenarioEffectOption[] {
-  if (!action) return []
-  const contentOptions = (action.scenarioEffects ?? []).filter((effect) =>
-    isScenarioEffectSourceAvailable(effect, primary, teammates)
-  )
-  const temporaryOptions: readonly ScenarioEffectOption[] = [
-    ...(action.id === "raiden.burst.initial_slash"
-      ? [
-          {
-            id: "raiden.skill.eye",
-            label: "雷罚恶曜之眼",
-            source: { characterId: "RaidenShogun", kind: "character" as const }
-          }
-        ]
-      : []),
-    ...(teammates.some((build) => build.characterId === "Bennett")
-      ? [
-          {
-            id: "bennett.burst.field",
-            label: "班尼特领域",
-            source: { characterId: "Bennett", kind: "character" as const }
-          }
-        ]
-      : [])
-  ]
-  return [
-    ...temporaryOptions.filter((effect) => isScenarioEffectSourceAvailable(effect, primary, teammates)),
-    ...contentOptions
-  ]
-}
-
 function reconcileScenarioEffectIds(
   activeEffectIds: readonly string[],
-  action: CatalogPrimaryAction | undefined,
-  primary: CharacterBuild,
-  teammates: readonly CharacterBuild[]
+  effectOptions: readonly ScenarioEffectOption[]
 ): string[] {
-  const effectOptions = getScenarioEffectOptions(action, primary, teammates)
   const effectsById = new Map(effectOptions.map((effect) => [effect.id, effect]))
   const selectedEffectIds = new Set(
     activeEffectIds.filter((effectId) => {
@@ -1774,20 +1731,14 @@ export function BuildEditor({ build, catalog, onChange }: BuildEditorProps) {
 
 function getMaximumReachableConditions(
   conditions: EvaluationScenario["conditions"],
-  action: CatalogPrimaryAction | undefined,
+  effectOptions: readonly ScenarioEffectOption[],
   primary: CharacterBuild,
   teammates: readonly CharacterBuild[],
   selectedCharacterEffectIds: readonly string[]
 ): EvaluationScenario["conditions"] {
-  const activeEffectIds = reconcileScenarioEffectIds(
-    selectedCharacterEffectIds,
-    action,
-    primary,
-    teammates
-  )
-  const options = getScenarioEffectOptions(action, primary, teammates)
+  const activeEffectIds = reconcileScenarioEffectIds(selectedCharacterEffectIds, effectOptions)
   const activeEffectSourceBuildIds = Object.fromEntries(
-    options.flatMap((effect) => {
+    effectOptions.flatMap((effect) => {
       if (!activeEffectIds.includes(effect.id)) return []
       const sourceBuilds = [...getScenarioEffectSourceBuilds(effect, primary, teammates)]
       if (sourceBuilds.length < 2) return []
@@ -1971,6 +1922,10 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   const [enemy, setEnemy] = useState(initialScenario.enemy)
   const [buffs, setBuffs] = useState([...initialScenario.externalBuffs])
   const [selectedCharacterEffectIds, setSelectedCharacterEffectIds] = useState<string[]>([])
+  const [scenarioEffectOptions, setScenarioEffectOptions] = useState<ScenarioEffectOption[]>([])
+  const [scenarioEffectOptionsStatus, setScenarioEffectOptionsStatus] = useState<"error" | "idle" | "loading" | "ready">("idle")
+  const [scenarioEffectOptionsError, setScenarioEffectOptionsError] = useState("")
+  const [scenarioEffectReloadVersion, setScenarioEffectReloadVersion] = useState(0)
   const [weaponComparisonRefinements, setWeaponComparisonRefinements] = useState<Record<string, number>>({})
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null)
   const [supportMetricResponse, setSupportMetricResponse] = useState<SupportMetricEvaluationResponse | null>(null)
@@ -2010,13 +1965,27 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   const targetAction = targetCharacter?.primaryActions.find((action) => action.id === targetActionId)
   const selectedSupportMetric = targetCharacter?.supportMetrics.find((metric) => metric.id === supportMetricId)
   const teammates = targetBuild ? partyBuilds.filter((build) => build.buildId !== targetBuild.buildId) : []
+  const actionEffectRequest = useMemo<ActionEffectOptionsRequest | null>(() => {
+    if (!targetActionId || !targetBuildId) return null
+    const requestParty = partyBuildIds.flatMap((buildId) => {
+      const build = builds.find((candidate) => candidate.buildId === buildId)
+      return build ? [build] : []
+    })
+    const primary = requestParty.find((build) => build.buildId === targetBuildId)
+    if (!primary) return null
+    return {
+      actionId: targetActionId,
+      primary,
+      teammates: requestParty.filter((build) => build.buildId !== primary.buildId)
+    }
+  }, [builds, partyBuildIds, targetActionId, targetBuildId])
   const characterEffectOptions = targetBuild
-    ? getScenarioEffectOptions(targetAction, targetBuild, teammates).filter(
+    ? scenarioEffectOptions.filter(
         (effect) => effect.source.kind === "character" && effect.requiredActiveEffectIds === undefined
       )
     : []
   const optionalEffectGroups = targetBuild
-    ? [...getScenarioEffectOptions(targetAction, targetBuild, teammates)
+    ? [...scenarioEffectOptions
         .filter((effect) => effect.selectionMode === "optional")
         .reduce((groups, effect) => {
           const group = effect.exclusiveGroup ?? effect.id
@@ -2024,6 +1993,44 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
           return groups
         }, new Map<string, ScenarioEffectOption[]>())]
     : []
+
+  useEffect(() => {
+    if (!actionEffectRequest) {
+      setScenarioEffectOptions([])
+      setScenarioEffectOptionsError("")
+      setScenarioEffectOptionsStatus("idle")
+      return
+    }
+
+    const controller = new AbortController()
+    setScenarioEffectOptions([])
+    setScenarioEffectOptionsError("")
+    setScenarioEffectOptionsStatus("loading")
+    void (async () => {
+      try {
+        const response = await fetch("/api/backend/v1/action-effect-options", {
+          body: JSON.stringify(actionEffectRequest),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+          signal: controller.signal
+        })
+        if (!response.ok) {
+          const body = (await response.json().catch(() => ({}))) as { message?: string }
+          throw new Error(body.message ?? `动作效果接口返回 HTTP ${response.status}`)
+        }
+        const body = (await response.json()) as ActionEffectOptionsResponse
+        if (!Array.isArray(body.options)) throw new Error("动作效果接口返回格式无效")
+        setScenarioEffectOptions([...body.options])
+        setSelectedCharacterEffectIds((current) => reconcileScenarioEffectIds(current, body.options))
+        setScenarioEffectOptionsStatus("ready")
+      } catch (caught) {
+        if (controller.signal.aborted) return
+        setScenarioEffectOptionsError(caught instanceof Error ? caught.message : "动作效果加载失败")
+        setScenarioEffectOptionsStatus("error")
+      }
+    })()
+    return () => controller.abort()
+  }, [actionEffectRequest, scenarioEffectReloadVersion])
 
   useEffect(() => {
     setConditions((current) => {
@@ -2121,12 +2128,16 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
       setError("请选择目标指标")
       return
     }
+    if (scenarioEffectOptionsStatus !== "ready") {
+      setError("当前指标的可用效果尚未加载完成")
+      return
+    }
 
     setStatus("正在计算指标与边际收益…")
     try {
       const effectiveConditions = getMaximumReachableConditions(
         removeUnavailableResonanceConditions(conditions, hasCryoResonance, hasGeoResonance),
-        targetAction,
+        scenarioEffectOptions,
         targetBuild,
         teammates,
         selectedCharacterEffectIds
@@ -2271,10 +2282,12 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
                   })}
                   {catalog.buffPresets.map((preset) => <label className="toggleRow" key={preset.id}><span>{preset.label}</span><input checked={buffs.some((buff) => buff.sourceId === preset.id)} type="checkbox" onChange={() => toggleBuffPreset(preset.id)} /></label>)}
                 </div>
+                {scenarioEffectOptionsStatus === "loading" ? <p className="automaticEffectsNote">正在加载当前队伍可用的角色、武器与圣遗物效果…</p> : null}
+                {scenarioEffectOptionsStatus === "error" ? <div className="effectOptionsError"><span>{scenarioEffectOptionsError}</span><button type="button" onClick={() => setScenarioEffectReloadVersion((current) => current + 1)}>重新加载</button></div> : null}
                 <p className="automaticEffectsNote">武器与圣遗物效果由系统按照当前角色、队伍和目标动作自动取可达到的最大值。</p>
               </>
             )}
-            <button className="workspacePrimaryButton calculateButton" type="button" onClick={() => void runAnalysis()}>开始计算</button>
+            <button className="workspacePrimaryButton calculateButton" disabled={Boolean(targetAction) && scenarioEffectOptionsStatus !== "ready"} type="button" onClick={() => void runAnalysis()}>{scenarioEffectOptionsStatus === "loading" ? "正在加载可用效果…" : "开始计算"}</button>
           </div>
         ) : null}
       </section>

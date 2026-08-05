@@ -1051,12 +1051,39 @@
   padding: 10px 12px;
 }
 
+.effectOptionsError {
+  align-items: center;
+  background: #fff4f2;
+  border: 1px solid #d6a59f;
+  color: #8c2f25;
+  display: flex;
+  font-size: 12px;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding: 10px 12px;
+}
+
+.effectOptionsError button {
+  background: #ffffff;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  color: inherit;
+  cursor: pointer;
+  padding: 5px 9px;
+}
+
 .calculateButton {
   border-radius: 4px;
   cursor: pointer;
   margin-top: 20px;
   min-height: 42px;
   padding: 9px 22px;
+}
+
+.calculateButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .calculationResults {
