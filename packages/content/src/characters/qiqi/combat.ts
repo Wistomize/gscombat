@@ -119,6 +119,54 @@ export const qiqiCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "normal"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "qiqi.locked_passive.superconduct_damage_bonus",
+      label: "七宝奉真 · 辉映·星超导（超导反应伤害提高50%）",
+      source: { characterId: "Qiqi", kind: "character" },
+      target: "reactionDamageBonus",
+      targetFilter: { reactionKinds: ["superconduct"] },
+      value: { kind: "fixed", value: 0.5 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "qiqi.locked_passive.stellar_superconduct_damage_bonus",
+      label: "七宝奉真 · 辉映·星超导（星超导反应伤害提高50%）",
+      source: { characterId: "Qiqi", kind: "character" },
+      target: "specialReactionDamageBonus",
+      targetFilter: { specialReactionKinds: ["stellar_superconduct"] },
+      value: { kind: "fixed", value: 0.5 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "qiqi.constellation.2.radiance.attack_percent",
+      label: "冰寒蚀骨 · C2 辉映·星超导（七七攻击力提高50%）",
+      source: { characterId: "Qiqi", kind: "character", minimumSourceConstellation: 2 },
+      target: "attackPercent",
+      targetFilter: {
+        recipientSourceRelation: "source",
+        specialReactionKinds: ["stellar_superconduct"]
+      },
+      value: { kind: "fixed", value: 0.5 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "qiqi.constellation.6.profound_mystery.stellar_superconduct_base_damage",
+      label: "起死回骸 · C6 洞玄（本次星超导基础伤害增加七七攻击力的600%）",
+      source: { characterId: "Qiqi", kind: "character", minimumSourceConstellation: 6 },
+      target: "specialReactionBaseDamageFlat",
+      targetFilter: {
+        recipientSourceRelation: "not_source",
+        specialReactionKinds: ["stellar_superconduct"]
+      },
+      value: {
+        kind: "source_final_attack",
+        multiplier: { kind: "fixed", value: 6 },
+        sourceAttackSnapshotEffectIds: ["qiqi.constellation.2.radiance.attack_percent"]
+      }
+    }
+  ],
   characterId: "Qiqi",
   metrics: [
     {
@@ -163,7 +211,7 @@ export const qiqiCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "Adeptus Art: Preserver of Fortune's initial hit and one initial Herald of Frost skill hit are verified as baseline attack-scaling Cryo hits. Their raw parameter bindings are locked to the pinned 6.7 Genshin Optimizer localization encoding: Preserver of Fortune Skill DMG is burst[2] (2.848 at talent level one and 5.1264 at level ten), while Herald of Frost Skill DMG is skill[7] (0.96 and 1.728). The selected support metric verifies one Herald of Frost continuous-regeneration tick as Qiqi's ATK times skill[2] plus skill[3], then Qiqi's Healing Bonus and the selected active recipient's Incoming Healing Bonus; skill[2] is 0.696 and 1.2528, and skill[3] is 450.5507 and 991.2866. It requires the selected current on-field recipient to be within the Herald's follow range and emits no damage or reaction event. It excludes the Normal/Charged-Attack on-hit party healing, the burst Fortune-Preserving Talisman healing that requires a marked opponent to take damage, Herald follow-up and coordinated attacks, duration and timing, the A1 reaction-based Incoming Healing Bonus, passive talisman chance, C1 Energy, C6 revival, elemental infusions, reactions, and other character states.",
+    "Adeptus Art: Preserver of Fortune's initial hit and one initial Herald of Frost skill hit are verified as baseline attack-scaling Cryo hits. Their raw parameter bindings are locked to the pinned 6.7 Genshin Optimizer localization encoding: Preserver of Fortune Skill DMG is burst[2] (2.848 at talent level one and 5.1264 at level ten), while Herald of Frost Skill DMG is skill[7] (0.96 and 1.728). The selected support metric verifies one Herald of Frost continuous-regeneration tick as Qiqi's ATK times skill[2] plus skill[3], then Qiqi's Healing Bonus and the selected active recipient's Incoming Healing Bonus; skill[2] is 0.696 and skill[3] is 450.5507 at talent level one, rising to 1.2528 and 991.2866 at level ten. Under Radiance: Stellar-Conduct, Seven Curios of the Faithful grants the party 50% Superconduct and Stellar-Superconduct reaction damage, C2 grants Qiqi 50% Attack, and the first eligible non-Qiqi Stellar-Superconduct hit after C6 Burst receives a Shenhe-style base-damage addition equal to 600% of Qiqi's final Attack. It excludes stack ordering beyond the selected first eligible hit, Normal/Charged-Attack party healing, follow-up attack timing, Energy restoration, revival, elemental infusions, and rotation behavior.",
   label: qiqiDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

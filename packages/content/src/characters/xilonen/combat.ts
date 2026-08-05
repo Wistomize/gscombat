@@ -171,6 +171,67 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
       }
     },
     {
+      activation: "automatic",
+      condition: {
+        elements: ["pyro", "hydro", "cryo", "electro"],
+        kind: "team_element_count",
+        maximum: 1,
+        minimum: 0
+      },
+      id: "xilonen.constellation.2.geo.always_active.resistance_reduction",
+      label: "献予灼原的五重奏 · C2 岩元素原音采样始终保持活跃（岩元素抗性降低）",
+      source: { characterId: "Xilonen", kind: "character", minimumSourceConstellation: 2 },
+      target: "enemyResistanceReduction",
+      targetFilter: { elements: ["geo"] },
+      value: {
+        kind: "talent_parameter",
+        parameter: {
+          groupId: "skill",
+          id: "source-sample-resistance-reduction",
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      }
+    },
+    {
+      activation: "automatic",
+      id: "xilonen.constellation.2.geo.damage_bonus",
+      label: "献予灼原的五重奏 · C2 岩元素原音采样（造成的伤害提高50%）",
+      source: { characterId: "Xilonen", kind: "character", minimumSourceConstellation: 2 },
+      target: "damageBonus",
+      targetFilter: { elements: ["geo"] },
+      value: { kind: "fixed", value: 0.5 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: {
+        elements: ["pyro", "hydro", "cryo", "electro"],
+        kind: "team_element_count",
+        minimum: 2
+      },
+      id: "xilonen.constellation.2.pyro.attack_percent",
+      label: "献予灼原的五重奏 · C2 火元素原音采样（攻击力提高45%）",
+      source: { characterId: "Xilonen", kind: "character", minimumSourceConstellation: 2 },
+      target: "attackPercent",
+      targetFilter: { elements: ["pyro"] },
+      value: { kind: "fixed", value: 0.45 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: {
+        elements: ["pyro", "hydro", "cryo", "electro"],
+        kind: "team_element_count",
+        minimum: 2
+      },
+      id: "xilonen.constellation.2.hydro.hp_percent",
+      label: "献予灼原的五重奏 · C2 水元素原音采样（生命值上限提高45%）",
+      source: { characterId: "Xilonen", kind: "character", minimumSourceConstellation: 2 },
+      target: "hpPercent",
+      targetFilter: { elements: ["hydro"] },
+      value: { kind: "fixed", value: 0.45 }
+    },
+    {
       activation: "maximum_reachable",
       condition: {
         elements: ["pyro", "hydro", "cryo", "electro"],
@@ -251,7 +312,7 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected support profile verifies active Source Sample resistance reduction, C2's 60% Cryo Crit DMG sample, and one healing-rhythm tick, including C3/C5 talent levels and recipient context. Portable Armored Sheath automatically adds 20% Defense after a party-reachable Nightsoul Burst, and Xilonen's independent 14-second trigger contributes to other characters' maximum reachable Nightsoul Burst stacks. One first normal hit, skill dash, and burst initial Geo hit remain verified baseline damage actions. No infusion is modeled; additional beats, other C2 branches, C4/C6 effects, reactions, and rotation timing remain unmodeled.",
+    "The selected support profile verifies active Source Sample resistance reduction, every damage-relevant C2 branch (Geo damage and always-active Geo resistance reduction, Pyro Attack, Hydro Max HP, and Cryo Crit DMG), and one healing-rhythm tick, including C3/C5 talent levels and recipient context. The Electro C2 branch changes Burst Energy and cooldown only, so it is not converted into a single-hit damage stat. Portable Armored Sheath automatically adds 20% Defense after a party-reachable Nightsoul Burst, and Xilonen's independent 14-second trigger contributes to other characters' maximum reachable Nightsoul Burst stacks. One first normal hit, skill dash, and burst initial Geo hit remain verified baseline damage actions. No infusion is modeled; additional beats, C4/C6 effects, reactions, and rotation timing remain unmodeled.",
   label: xilonenDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

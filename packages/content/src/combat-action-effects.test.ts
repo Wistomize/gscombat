@@ -1158,9 +1158,12 @@ describe("combat action effects", () => {
     }
   })
 
-  it("limits Yae Miko's C6 defense ignore to the declared level-three Sesshou Sakura bolt", () => {
+  it("limits Yae Miko's C6 defense ignore to the declared level-three Sesshou Sakura metrics", () => {
     const levelOneBolt = requireAction("yae_miko.skill.yakan_evocation.sesshou_sakura.level_one_bolt")
     const levelThreeBolt = requireAction("yae_miko.skill.yakan_evocation.sesshou_sakura.level_three_bolt")
+    const levelThreeAggravate = requireAction(
+      "yae_miko.skill.yakan_evocation.sesshou_sakura.level_three_bolt.aggravate"
+    )
     const normalAttack = requireAction("yae_miko.normal.auto.first_hit")
     const effect = listCombatActionEffects().find(
       (entry) => entry.id === "yae_miko.constellation.6.sesshou_sakura.level_three.enemy_defense_ignore"
@@ -1171,12 +1174,13 @@ describe("combat action effects", () => {
         activation: "automatic",
         source: { characterId: "YaeMiko", kind: "character", minimumSourceConstellation: 6 },
         target: "enemyDefenseIgnore",
-        targetFilter: { actionIds: [levelThreeBolt.id] },
+        targetFilter: { actionIds: [levelThreeBolt.id, levelThreeAggravate.id] },
         value: { kind: "fixed", value: 0.6 }
       })
     )
     expect(effect).toBeDefined()
     expect(isCombatActionEffectApplicable(effect!, levelThreeBolt)).toBe(true)
+    expect(isCombatActionEffectApplicable(effect!, levelThreeAggravate)).toBe(true)
     expect(isCombatActionEffectApplicable(effect!, levelOneBolt)).toBe(false)
     expect(isCombatActionEffectApplicable(effect!, normalAttack)).toBe(false)
   })
