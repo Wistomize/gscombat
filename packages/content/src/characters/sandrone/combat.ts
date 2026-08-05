@@ -106,33 +106,187 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
       },
       status: "verified",
       talentSlot: "skill"
+    },
+    {
+      attackKind: "charged",
+      characterId: "Sandrone",
+      damageKind: "special_reaction",
+      damageParts: [
+        {
+          coefficientParameterId: "condensation-ray-stellar-superconduct-damage",
+          id: "condensation-ray-stellar-superconduct",
+          snapshotChecks: [
+            { expectedCoefficient: 0.817, talentLevel: 1 },
+            { expectedCoefficient: 1.615, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: sandroneDefinition.element,
+      evaluator: "declared_special_reaction",
+      id: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "auto",
+          id: "condensation-ray-stellar-superconduct-damage",
+          parameterIndex: 5,
+          source: "talent",
+          talentSlot: "normal"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          defaultValue: 0,
+          id: "stored-elemental-applications",
+          label: "手填：当前极星辉域已储存元素附着次数（0–12次）",
+          maximumValue: 12,
+          minimumValue: 0
+        }
+      ],
+      specialReaction: {
+        kind: "stellar_superconduct",
+        stellarStoredElementalApplicationsParameterId: "stored-elemental-applications"
+      },
+      status: "verified",
+      talentSlot: "normal"
+    },
+    {
+      characterId: "Sandrone",
+      damageKind: "special_reaction",
+      damageParts: [
+        {
+          id: "negative-temperature-beam-stellar-superconduct",
+          scalingTerms: [
+            {
+              coefficientParameterId: "negative-temperature-beam-stellar-superconduct-damage",
+              snapshotChecks: [
+                { expectedCoefficient: 2.205333, talentLevel: 1 },
+                { expectedCoefficient: 3.9696, talentLevel: 10 }
+              ],
+              stat: "attack"
+            },
+            {
+              coefficientMultiplierParameterId:
+                "negative-temperature-beam-damage-increase-per-improved-tactics-stack",
+              coefficientMultiplierScenarioParameterId: "improved-tactics-stacks",
+              coefficientMultiplierSnapshotChecks: [
+                { expectedCoefficient: 0.1, talentLevel: 1 },
+                { expectedCoefficient: 0.1, talentLevel: 10 }
+              ],
+              coefficientParameterId: "negative-temperature-beam-stellar-superconduct-damage",
+              snapshotChecks: [
+                { expectedCoefficient: 2.205333, talentLevel: 1 },
+                { expectedCoefficient: 3.9696, talentLevel: 10 }
+              ],
+              stat: "attack"
+            }
+          ]
+        }
+      ],
+      element: sandroneDefinition.element,
+      evaluator: "declared_special_reaction",
+      id: "sandrone.burst.phenomenon_calculus.negative_temperature_beam.stellar_superconduct",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "burst",
+          id: "negative-temperature-beam-stellar-superconduct-damage",
+          parameterIndex: 2,
+          source: "talent",
+          talentSlot: "burst"
+        },
+        {
+          groupId: "passive1",
+          id: "negative-temperature-beam-damage-increase-per-improved-tactics-stack",
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "passive"
+        }
+      ],
+      scenarioParameters: [
+        {
+          defaultValue: 0,
+          id: "stored-elemental-applications",
+          label: "手填：当前极星辉域已储存元素附着次数（0–12次）",
+          maximumValue: 12,
+          minimumValue: 0
+        },
+        {
+          defaultValue: 10,
+          id: "improved-tactics-stacks",
+          label: "悠久的演算机关 · 改进战术层数",
+          maximumValue: 10,
+          minimumValue: 0
+        }
+      ],
+      specialReaction: {
+        kind: "stellar_superconduct",
+        stellarStoredElementalApplicationsParameterId: "stored-elemental-applications"
+      },
+      status: "verified",
+      talentSlot: "burst"
+    }
+  ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "sandrone.passive.stellar_superconduct_base_damage_bonus",
+      label: "星耀祝礼·唯理为光 · 星超导基础伤害加成",
+      source: { characterId: "Sandrone", kind: "character" },
+      target: "specialReactionBaseDamageBonus",
+      targetFilter: { specialReactionKinds: ["stellar_superconduct"] },
+      value: {
+        kind: "source_final_attack",
+        maximumValue: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive3",
+            id: "stellar-superconduct-base-damage-bonus-maximum",
+            parameterIndex: 1,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        },
+        multiplier: {
+          kind: "talent_parameter",
+          multiplier: 0.01,
+          parameter: {
+            groupId: "passive3",
+            id: "stellar-superconduct-base-damage-bonus-per-100-attack",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        }
+      }
     }
   ],
   characterId: "Sandrone",
   metrics: [
     {
-      actionId: "sandrone.skill.phenomenon_calculus.prism_bullet",
+      actionId: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
       characterId: "Sandrone",
-      id: "sandrone.skill.phenomenon_calculus.prism_bullet",
+      id: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
       kind: "damage",
-      label: "事象数式·游衍解析 / 棱晶弹单次命中（C0，无预设反应）",
-      sourceActionId: "sandrone.skill.phenomenon_calculus.prism_bullet",
+      label: "自明演绎 / 重击冷凝射线星超导单次命中",
+      sourceActionId: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
       status: "verified",
       target: "enemy"
     },
     {
-      actionId: "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct",
+      actionId: "sandrone.burst.phenomenon_calculus.negative_temperature_beam.stellar_superconduct",
       characterId: "Sandrone",
-      id: "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct",
+      id: "sandrone.burst.phenomenon_calculus.negative_temperature_beam.stellar_superconduct",
       kind: "damage",
-      label: "事象数式·游衍解析 / 棱晶弹星超导单次命中（手填附着次数，非完整循环）",
-      sourceActionId: "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct",
+      label: "事象数式·万理证毕 / 负温聚能光束星超导单次命中",
+      sourceActionId: "sandrone.burst.phenomenon_calculus.negative_temperature_beam.stellar_superconduct",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One first normal-attack hit and one Phenomenon Calculation prism bullet are locked to the pinned 6.7 game-data snapshot from Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073. The default C0 metric is one prism bullet against one target: Skill parameter skill[0], or 32.4% Attack at Talent Level 1 and 58.32% at Level 10. A secondary selectable metric is its Stellar-Superconduct prism hit: Skill parameter skill[1], or 21.6% Attack at Talent Level 1 and 38.88% at Level 10. Its 0–12 stored elemental-application count is always a manual current-window snapshot, never inferred from timing or a full rotation. The A1 Decoding multiplier, burst bombardment and ray payloads, charged-attack variants, passives, all constellations, external infusions, and other character states remain unmodeled.",
+    "The maintained metrics are one charged Condensation Ray Stellar-Superconduct hit and one Burst Negative-Temperature Beam Stellar-Superconduct hit. Both read the manual 0–12 stored-application snapshot. The Burst defaults to ten Improved Tactics stacks and applies the pinned 10% multiplier per stack. Sandrone's final-Attack-derived, capped 14% Stellar-Superconduct base-damage bonus applies to eligible party actions. Prism bullets and one normal hit remain registered as lower-level actions; bombardment, other passives, constellations, timing, and rotations remain unmodeled.",
   label: sandroneDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

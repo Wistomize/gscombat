@@ -25,6 +25,7 @@ export const aThousandBlazingSunsCombatActionEffects: readonly CombatActionEffec
   },
   {
     activation: "active",
+    condition: { kind: "primary_character_region", region: "natlan" },
     id: "weapon.a-thousand-blazing-suns.nightsoul.extra-crit-damage",
     label: "焚曜千阳 · 夜魂加持下焚光的额外暴击伤害",
     source: { kind: "weapon", weaponId: "AThousandBlazingSuns" },
@@ -33,6 +34,7 @@ export const aThousandBlazingSunsCombatActionEffects: readonly CombatActionEffec
   },
   {
     activation: "active",
+    condition: { kind: "primary_character_region", region: "natlan" },
     id: "weapon.a-thousand-blazing-suns.nightsoul.extra-attack-percent",
     label: "焚曜千阳 · 夜魂加持下焚光的额外攻击力",
     source: { kind: "weapon", weaponId: "AThousandBlazingSuns" },

@@ -93,6 +93,7 @@ describe("derived team state", () => {
   it("derives initial and full Moonsign and applies the full-state bonus only to Moon reactions", () => {
     const primary: CharacterBuild = {
       ...createBuild("Zibai", 0),
+      constellation: 0,
       weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "LightbearingMoonshard" }
     }
     const createLunarScenario = (teammateCharacterIds: readonly [string, string, string]): EvaluationScenario => ({

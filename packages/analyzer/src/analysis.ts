@@ -221,13 +221,17 @@ function matchesEffectCondition(
     const moonsignLevel = resolveTeamState(scenario.primary, scenario.teammates, gameData).moonsign.level
     return rank[moonsignLevel] >= rank[effect.condition.minimum]
   }
+  if (effect.condition.kind === "primary_character_region") {
+    return gameData.getCharacter(scenario.primary.characterId)?.region === effect.condition.region
+  }
   if (effect.condition.kind === "team_element_count") {
     const condition = effect.condition
     const elements = [scenario.primary, ...scenario.teammates].flatMap((build) => {
       const element = resolveBuildElement(build, gameData)
       return element === null ? [] : [element]
     })
-    return elements.filter((element) => condition.elements.some((candidate) => candidate === element)).length >= condition.minimum
+    const count = elements.filter((element) => condition.elements.some((candidate) => candidate === element)).length
+    return count >= condition.minimum && (condition.maximum === undefined || count <= condition.maximum)
   }
   if (effect.condition.kind === "team_element_subset") {
     const condition = effect.condition

@@ -97,6 +97,47 @@ export const columbinaCombatCoverage: CharacterCombatCoverage = {
   ],
   actionEffects: [
     {
+      activation: "maximum_reachable",
+      id: "columbina.burst.lunar_domain.lunar_reaction_damage_bonus",
+      label: "她的乡愁 · 月之领域内月曜反应伤害提升",
+      source: { characterId: "Columbina", kind: "character" },
+      target: "specialReactionDamageBonus",
+      targetFilter: { specialReactionKinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"] },
+      value: {
+        kind: "talent_parameter",
+        parameter: {
+          groupId: "burst",
+          id: "lunar-domain-lunar-reaction-damage-bonus",
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "burst"
+        }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "columbina.passive.lunar_reaction_base_damage_bonus",
+      label: "月兆祝赐·借汝月光 · 月曜反应基础伤害加成",
+      source: { characterId: "Columbina", kind: "character" },
+      target: "specialReactionBaseDamageBonus",
+      targetFilter: { specialReactionKinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"] },
+      value: {
+        kind: "final_hp",
+        maximumValue: { kind: "fixed", value: 0.07 },
+        multiplier: {
+          kind: "talent_parameter",
+          multiplier: 0.001,
+          parameter: {
+            groupId: "passive3",
+            id: "lunar-reaction-base-damage-bonus-per-1000-hp",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        }
+      }
+    },
+    {
       activation: "active",
       id: "columbina.constellation.2.illumine_the_night.gravity_interference.radiant_moon.hp_percent",
       label: "为夜增辉，与君遥伴 · C2 引力干涉触发后的皎辉（生命值上限提高40%，8秒）",
@@ -132,7 +173,7 @@ export const columbinaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One Eternal Tides initial hit and one Gravity Ripple tick are verified C0 max-health-scaling Hydro actions. The selected no-reaction metric is one Gravity Ripple tick against one target: Skill parameter skill[1], or 9.36% Max HP at Talent Level 1 and 16.848% at Level 10. C2 can be selected after Gravity Interference triggers while its eight-second Radiant Moon state remains: it adds 40% Max HP to this tick only. C6 can be selected after a Moon Reaction involving Hydro triggers within the Lunar Domain: it adds 80% Crit DMG to Hydro damage for eight seconds, without inferring either prerequisite or the separate non-Hydro teammate branches. It excludes initial-hit aggregation, Gravity Ripple cadence and target count, Moon Sign and Lunar-reaction-derived Gravity and its damage variants, elemental aura and reactions, passives, other constellations, external buffs, timing, and rotation behavior. One first normal-attack hit remains separately verified as baseline C0 damage.",
+    "One Eternal Tides initial hit and one Gravity Ripple tick are verified max-health-scaling Hydro actions. The selected no-reaction metric is one Gravity Ripple tick against one target. Her Lunar Domain's talent-level Moon-reaction damage bonus and the capped 7% final-HP-derived Moon-reaction base-damage bonus apply to eligible party actions. C2 can be selected after Gravity Interference triggers while its eight-second Radiant Moon state remains; C6 can be selected after a Moon Reaction involving Hydro triggers within the Lunar Domain. Gravity cadence, target count, other reaction variants, remaining constellations, timing, and rotations remain unmodeled.",
   label: columbinaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

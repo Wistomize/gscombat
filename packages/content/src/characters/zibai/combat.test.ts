@@ -32,8 +32,11 @@ describe("Zibai combat content", () => {
     expect(zibaiCombatCoverage.metrics).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          actionId: "zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize",
+          status: "verified"
+        }),
+        expect.objectContaining({
           actionId: "zibai.burst.tri_sphere_eminence.second_hit.lunar_crystallize",
-          label: expect.stringContaining("非完整循环"),
           status: "verified"
         })
       ])

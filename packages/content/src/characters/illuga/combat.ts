@@ -160,6 +160,71 @@ export const illugaCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "maximum_reachable",
+      id: "illuga.passive.lightkeepers_oath.geo.crit_rate",
+      label: "铸灯者的盟约 · 执灯之誓（岩元素伤害暴击率提高5%）",
+      source: { characterId: "Illuga", kind: "character", minimumSourceAscension: 1 },
+      target: "critRate",
+      targetFilter: { elements: ["geo"], recipientSourceRelation: "not_source" },
+      value: { kind: "fixed", value: 0.05 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "illuga.passive.lightkeepers_oath.geo.crit_damage",
+      label: "铸灯者的盟约 · 执灯之誓（岩元素伤害暴击伤害提高10%）",
+      source: { characterId: "Illuga", kind: "character", minimumSourceAscension: 1 },
+      target: "critDamage",
+      targetFilter: { elements: ["geo"], recipientSourceRelation: "not_source" },
+      value: { kind: "fixed", value: 0.1 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
+      id: "illuga.passive.lightkeepers_oath.full_moonsign.elemental_mastery",
+      label: "铸灯者的盟约 · 满辉执灯之誓（元素精通提高50点）",
+      source: { characterId: "Illuga", kind: "character", minimumSourceAscension: 1 },
+      target: "elementalMastery",
+      targetFilter: { recipientSourceRelation: "not_source" },
+      value: { kind: "fixed", value: 50 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "illuga.constellation.4.active_character.defense",
+      label: "逐日之狼 · C4 魇夜的莺歌期间当前场上角色防御力提高200点",
+      source: { characterId: "Illuga", kind: "character", minimumSourceConstellation: 4 },
+      target: "defenseFlat",
+      targetFilter: { recipientSourceRelation: "not_source" },
+      value: { kind: "fixed", value: 200 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "illuga.constellation.6.lightkeepers_oath.geo.extra_crit_rate",
+      label: "魇夜之莺 · C6 执灯之誓额外岩元素伤害暴击率提高5%",
+      source: { characterId: "Illuga", kind: "character", minimumSourceConstellation: 6 },
+      target: "critRate",
+      targetFilter: { elements: ["geo"], recipientSourceRelation: "not_source" },
+      value: { kind: "fixed", value: 0.05 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "illuga.constellation.6.lightkeepers_oath.geo.extra_crit_damage",
+      label: "魇夜之莺 · C6 执灯之誓额外岩元素伤害暴击伤害提高20%",
+      source: { characterId: "Illuga", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { elements: ["geo"], recipientSourceRelation: "not_source" },
+      value: { kind: "fixed", value: 0.2 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
+      id: "illuga.constellation.6.lightkeepers_oath.full_moonsign.extra_elemental_mastery",
+      label: "魇夜之莺 · C6 满辉执灯之誓额外元素精通提高30点",
+      source: { characterId: "Illuga", kind: "character", minimumSourceConstellation: 6 },
+      target: "elementalMastery",
+      targetFilter: { recipientSourceRelation: "not_source" },
+      value: { kind: "fixed", value: 30 }
+    },
+    {
+      activation: "maximum_reachable",
       id: "illuga.burst.song_of_the_nightbird.single_geo_damage_bonus",
       label: "夜莺之歌 · 单次岩元素伤害增加值",
       source: { characterId: "Illuga", kind: "character" },
@@ -199,6 +264,39 @@ export const illugaCombatCoverage: CharacterCombatCoverage = {
           }
         }
       }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { elements: ["geo", "hydro"], kind: "team_element_count", maximum: 1, minimum: 1 },
+      exclusivity: { group: "illuga-passive-lunar-crystallize-tier", variant: "one-character" },
+      id: "illuga.passive.hunters_dusk.lunar_crystallize.one_character",
+      label: "狩魔者的黄昏 · 1名水/岩元素角色（月结晶额外增加叶洛亚元素精通的48%）",
+      source: { characterId: "Illuga", kind: "character", minimumSourceAscension: 4 },
+      target: "specialReactionFlatDamageAddition",
+      targetFilter: { recipientSourceRelation: "not_source", specialReactionKinds: ["lunar_crystallize"] },
+      value: { kind: "final_elemental_mastery", multiplier: { kind: "fixed", value: 0.48 } }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { elements: ["geo", "hydro"], kind: "team_element_count", maximum: 2, minimum: 2 },
+      exclusivity: { group: "illuga-passive-lunar-crystallize-tier", variant: "two-characters" },
+      id: "illuga.passive.hunters_dusk.lunar_crystallize.two_characters",
+      label: "狩魔者的黄昏 · 2名水/岩元素角色（月结晶额外增加叶洛亚元素精通的96%）",
+      source: { characterId: "Illuga", kind: "character", minimumSourceAscension: 4 },
+      target: "specialReactionFlatDamageAddition",
+      targetFilter: { recipientSourceRelation: "not_source", specialReactionKinds: ["lunar_crystallize"] },
+      value: { kind: "final_elemental_mastery", multiplier: { kind: "fixed", value: 0.96 } }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { elements: ["geo", "hydro"], kind: "team_element_count", minimum: 3 },
+      exclusivity: { group: "illuga-passive-lunar-crystallize-tier", variant: "three-or-more-characters" },
+      id: "illuga.passive.hunters_dusk.lunar_crystallize.three_or_more_characters",
+      label: "狩魔者的黄昏 · 3名及以上水/岩元素角色（月结晶额外增加叶洛亚元素精通的160%）",
+      source: { characterId: "Illuga", kind: "character", minimumSourceAscension: 4 },
+      target: "specialReactionFlatDamageAddition",
+      targetFilter: { recipientSourceRelation: "not_source", specialReactionKinds: ["lunar_crystallize"] },
+      value: { kind: "final_elemental_mastery", multiplier: { kind: "fixed", value: 1.6 } }
     }
   ],
   characterId: "Illuga",
@@ -267,7 +365,7 @@ export const illugaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected profile verifies Nightbird's Song's Elemental-Mastery-plus-DEF cast damage and its separate source-Elemental-Mastery-scaled bonuses for one Geo hit and one Lunar-Crystallize hit. Dawnbearing Songbird remains a verified baseline C0 dual-scaling action. Song pool consumption, Moon Sign, crit buffs, hold aiming, infusion, reactions, timing, passives, constellations, and character states remain in progress.",
+    "The selected profile verifies Nightbird's Song's Elemental-Mastery-plus-DEF cast damage and its separate source-Elemental-Mastery-scaled bonuses for one Geo hit and one Lunar-Crystallize hit. Lightkeeper's Oath applies its Geo Crit Rate/Crit DMG and Full-Moonsign Elemental Mastery to nearby teammates; C6 raises those totals to 10%/30% and 80 EM, while C4 supplies 200 flat DEF. Hunter's Dusk adds the reviewed 48%/96%/160% source-EM Lunar-Crystallize tier. Song pool consumption, hold aiming, timing, and rotations remain in progress.",
   label: illugaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

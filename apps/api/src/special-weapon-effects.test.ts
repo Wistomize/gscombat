@@ -98,7 +98,7 @@ describe("special-reaction weapon effects API", () => {
         method: "POST",
         payload: createScenario(
           sandrone,
-          "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct",
+          "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
           [],
           { "stored-elemental-applications": 12 }
         ),
@@ -121,7 +121,7 @@ describe("special-reaction weapon effects API", () => {
     }[]
     expect(characters.find((character) => character.characterId === "Sandrone")?.primaryActions).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct" })
+        expect.objectContaining({ id: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct" })
       ])
     )
     expect(characters.find((character) => character.characterId === "Zibai")?.primaryActions).toEqual(

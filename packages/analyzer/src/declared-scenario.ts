@@ -30,7 +30,7 @@ import type {
   CombatDirectSpecialReactionConfig,
   MoonsignLevel
 } from "@gscombat/content"
-import { supportedCharacters, supportedWeapons } from "@gscombat/content"
+import { listCombatActionEffects, supportedCharacters, supportedWeapons } from "@gscombat/content"
 import type { ArtifactStat, CharacterBuild, EnemyConfig, EvaluationScenario, ExternalBuff } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 
@@ -504,6 +504,15 @@ function resolveSourceFinalDefenseByBuildId(
 ): ReadonlyMap<string, number> {
   const party = [primary, ...teammates]
   const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
+  const selectedCharacterDefenseEffectIds = new Set(
+    listCombatActionEffects().flatMap((effect) =>
+      activeEffectIds.includes(effect.id) &&
+      effect.source.kind === "character" &&
+      (effect.target === "defenseFlat" || effect.target === "defensePercent")
+        ? [effect.id]
+        : []
+    )
+  )
   return new Map(
     party.map((source) => {
       const sourceDefenseSnapshotActivationEffectIds = listSelectedSourceDefenseSnapshotActivationEffectIds({
@@ -545,9 +554,15 @@ function resolveSourceFinalDefenseByBuildId(
       )
       const sourceDefenseEffects = resolveCombatActionDefenseEffects({
         action,
-        activeEffectIds: sourceDefenseSnapshotActivationEffectIds,
+        activeEffectIds: [
+          ...new Set([
+            ...activeEffectIds.filter((effectId) => selectedCharacterDefenseEffectIds.has(effectId)),
+            ...sourceDefenseSnapshotActivationEffectIds
+          ])
+        ],
         baseEnergyRecharge: base.energyRecharge,
         enemyCount,
+        gameData,
         ...(primaryElement === null ? {} : { primaryElement }),
         primary: source,
         ...(primaryDifferentElementTeammateCount === null
@@ -555,6 +570,7 @@ function resolveSourceFinalDefenseByBuildId(
           : { primaryDifferentElementTeammateCount }),
         ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
         ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
+        teamElements: resolvePartyElements(source, sourceTeammates, gameData),
         teammates: sourceTeammates
       })
       const isPrimary = source.buildId === primary.buildId
@@ -1312,6 +1328,16 @@ function resolveSpecialReactionScalingValue(stats: RotationStats, stat: ScalingS
   return stats.hp
 }
 
+function resolveDeclaredScenarioSpecialReactionScalingValue(
+  stats: ResolvedDeclaredScenarioStats,
+  stat: ScalingStat
+): number {
+  if (stat === "attack") return stats.effectiveAttack
+  if (stat === "defense") return stats.effectiveDefense
+  if (stat === "elementalMastery") return stats.elementalMastery
+  return stats.effectiveHp
+}
+
 function resolveDirectSpecialReactionInput(
   config: CombatDirectSpecialReactionConfig,
   baseDamage: number,
@@ -1333,12 +1359,16 @@ function resolveDirectSpecialReactionInput(
 ): DirectSpecialReactionDamageInput {
   const baseDamageEffectTerms = actionEffects.appliedEffects
     .filter((effect) => effect.target === "specialReactionBaseDamageFlat")
-    .map((effect) => ({
-      coefficient: stats.elementalMastery === 0 ? 1 : effect.value / stats.elementalMastery,
-      label: effect.label,
-      stat: "elementalMastery" as const,
-      value: stats.elementalMastery === 0 ? effect.value : stats.elementalMastery
-    }))
+    .map((effect) => {
+      const stat = effect.scalingStat ?? "elementalMastery"
+      const value = effect.scalingStatValue ?? resolveDeclaredScenarioSpecialReactionScalingValue(stats, stat)
+      return {
+        coefficient: value === 0 ? 1 : effect.value / value,
+        label: effect.label,
+        stat,
+        value: value === 0 ? effect.value : value
+      }
+    })
   const resolvedBaseDamageTerms = [...baseDamageTerms, ...baseDamageEffectTerms]
   const common = {
     ascensionBonus: (config.ascensionBonus ?? 0) + actionEffects.specialReactionElevation,

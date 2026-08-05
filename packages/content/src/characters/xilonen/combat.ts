@@ -159,6 +159,20 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
           talentSlot: "skill"
         }
       }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: {
+        elements: ["pyro", "hydro", "cryo", "electro"],
+        kind: "team_element_count",
+        minimum: 2
+      },
+      id: "xilonen.constellation.2.cryo.crit_damage",
+      label: "献予灼原的五重奏 · C2 冰元素原音采样（暴击伤害提高60%）",
+      source: { characterId: "Xilonen", kind: "character", minimumSourceConstellation: 2 },
+      target: "critDamage",
+      targetFilter: { elements: ["cryo"] },
+      value: { kind: "fixed", value: 0.6 }
     }
   ],
   characterId: "Xilonen",
@@ -227,7 +241,7 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected support profile verifies active Source Sample resistance reduction and one healing-rhythm tick, including C3/C5 talent levels and recipient context. One first normal hit, skill dash, and burst initial Geo hit remain verified baseline damage actions. No infusion is modeled; additional beats, Nightsoul states, C2/C4/C6 effects, reactions, and timing remain unmodeled.",
+    "The selected support profile verifies active Source Sample resistance reduction, C2's 60% Cryo Crit DMG sample, and one healing-rhythm tick, including C3/C5 talent levels and recipient context. One first normal hit, skill dash, and burst initial Geo hit remain verified baseline damage actions. No infusion is modeled; additional beats, other C2 branches, Nightsoul states, C4/C6 effects, reactions, and timing remain unmodeled.",
   label: xilonenDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

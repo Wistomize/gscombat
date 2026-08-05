@@ -94,16 +94,258 @@ export const zibaiCombatCoverage: CharacterCombatCoverage = {
       specialReaction: { kind: "lunar_crystallize" },
       status: "verified",
       talentSlot: "burst"
+    },
+    {
+      characterId: "Zibai",
+      damageKind: "special_reaction",
+      damageParts: [
+        {
+          coefficientParameterId: "spirit-steed-stride-second-hit-lunar-crystallize-damage",
+          id: "spirit-steed-stride-second-hit-lunar-crystallize",
+          snapshotChecks: [
+            { expectedCoefficient: 0.521007, talentLevel: 1 },
+            { expectedCoefficient: 0.937813, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: zibaiDefinition.element,
+      evaluator: "declared_special_reaction",
+      id: "zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "spirit-steed-stride-second-hit-lunar-crystallize-damage",
+          parameterIndex: 6,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "defense",
+      specialReaction: { kind: "lunar_crystallize" },
+      status: "verified",
+      talentSlot: "skill"
+    }
+  ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "primary_same_element_teammate_count", minimum: 1 },
+      id: "zibai.passive.other_geo.defense_percent.stack_1",
+      label: "叠嶂峦岫出云 · 第1名其他岩元素角色（防御力提高15%）",
+      source: { characterId: "Zibai", kind: "character", minimumSourceAscension: 4 },
+      target: "defensePercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: {
+        kind: "talent_parameter",
+        parameter: {
+          groupId: "passive2",
+          id: "defense-percent-per-other-geo-character",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "passive"
+        }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "primary_same_element_teammate_count", minimum: 2 },
+      id: "zibai.passive.other_geo.defense_percent.stack_2",
+      label: "叠嶂峦岫出云 · 第2名其他岩元素角色（防御力提高15%）",
+      source: { characterId: "Zibai", kind: "character", minimumSourceAscension: 4 },
+      target: "defensePercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: {
+        kind: "talent_parameter",
+        parameter: {
+          groupId: "passive2",
+          id: "defense-percent-per-other-geo-character",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "passive"
+        }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "primary_same_element_teammate_count", minimum: 3 },
+      id: "zibai.passive.other_geo.defense_percent.stack_3",
+      label: "叠嶂峦岫出云 · 第3名其他岩元素角色（防御力提高15%）",
+      source: { characterId: "Zibai", kind: "character", minimumSourceAscension: 4 },
+      target: "defensePercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: {
+        kind: "talent_parameter",
+        parameter: {
+          groupId: "passive2",
+          id: "defense-percent-per-other-geo-character",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "passive"
+        }
+      }
+    },
+    ...[1, 2, 3].map((stack) => ({
+      activation: "maximum_reachable" as const,
+      condition: { elements: ["hydro" as const], kind: "team_element_count" as const, minimum: stack },
+      id: `zibai.passive.hydro_teammate.elemental_mastery.stack_${stack}`,
+      label: `叠嶂峦岫出云 · 第${stack}名水元素角色（元素精通提高60点）`,
+      source: { characterId: "Zibai", kind: "character" as const, minimumSourceAscension: 4 },
+      target: "elementalMastery" as const,
+      targetFilter: { recipientSourceRelation: "source" as const },
+      value: {
+        kind: "talent_parameter" as const,
+        parameter: {
+          groupId: "passive2" as const,
+          id: "elemental-mastery-per-hydro-character",
+          parameterIndex: 1,
+          source: "talent" as const,
+          talentSlot: "passive" as const
+        }
+      }
+    })),
+    {
+      activation: "maximum_reachable",
+      id: "zibai.passive.lunar_crystallize_base_damage_bonus",
+      label: "月兆祝赐·浮明若流 · 月结晶基础伤害加成",
+      source: { characterId: "Zibai", kind: "character" },
+      target: "specialReactionBaseDamageBonus",
+      targetFilter: { specialReactionKinds: ["lunar_crystallize"] },
+      value: {
+        kind: "source_final_defense",
+        maximumValue: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive3",
+            id: "lunar-crystallize-base-damage-bonus-maximum",
+            parameterIndex: 1,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        },
+        multiplier: {
+          kind: "talent_parameter",
+          multiplier: 0.01,
+          parameter: {
+            groupId: "passive3",
+            id: "lunar-crystallize-base-damage-bonus-per-100-defense",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        },
+        sourceDefenseSnapshotEffectIds: [
+          "zibai.passive.other_geo.defense_percent.stack_1",
+          "zibai.passive.other_geo.defense_percent.stack_2",
+          "zibai.passive.other_geo.defense_percent.stack_3",
+          "illuga.constellation.4.active_character.defense"
+        ]
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "zibai.passive.selenic_descent.spirit_steed_second_hit.base_damage",
+      label: "月下素娥降仙 · 太阴降（灵驹飞踏第二段增加60%防御力基础伤害）",
+      source: { characterId: "Zibai", kind: "character", minimumSourceAscension: 1 },
+      target: "specialReactionBaseDamageFlat",
+      targetFilter: {
+        actionIds: ["zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize"],
+        recipientSourceRelation: "source",
+        specialReactionKinds: ["lunar_crystallize"]
+      },
+      value: {
+        kind: "source_final_defense",
+        multiplier: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive1",
+            id: "spirit-steed-second-hit-defense-addition",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        },
+        sourceDefenseSnapshotEffectIds: [
+          "zibai.passive.other_geo.defense_percent.stack_1",
+          "zibai.passive.other_geo.defense_percent.stack_2",
+          "zibai.passive.other_geo.defense_percent.stack_3",
+          "illuga.constellation.4.active_character.defense"
+        ]
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
+      id: "zibai.constellation.2.full_moonsign.spirit_steed_second_hit.base_damage",
+      label: "化于生而死于尸 · C2 满辉太阴降（灵驹飞踏第二段额外增加550%防御力基础伤害）",
+      source: { characterId: "Zibai", kind: "character", minimumSourceConstellation: 2 },
+      target: "specialReactionBaseDamageFlat",
+      targetFilter: {
+        actionIds: ["zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize"],
+        recipientSourceRelation: "source",
+        specialReactionKinds: ["lunar_crystallize"]
+      },
+      value: {
+        kind: "source_final_defense",
+        multiplier: { kind: "fixed", value: 5.5 },
+        sourceDefenseSnapshotEffectIds: [
+          "zibai.passive.other_geo.defense_percent.stack_1",
+          "zibai.passive.other_geo.defense_percent.stack_2",
+          "zibai.passive.other_geo.defense_percent.stack_3",
+          "illuga.constellation.4.active_character.defense"
+        ]
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "zibai.constellation.1.first_spirit_steed_stride.lunar_crystallize_damage_bonus",
+      label: "出勃然而入寥然 · C1 每次月转时隙首次灵驹飞踏第二段月结晶反应伤害提升220%",
+      source: { characterId: "Zibai", kind: "character", minimumSourceConstellation: 1 },
+      target: "specialReactionDamageBonus",
+      targetFilter: {
+        actionIds: ["zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize"],
+        recipientSourceRelation: "source",
+        specialReactionKinds: ["lunar_crystallize"]
+      },
+      value: { kind: "fixed", value: 2.2 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "zibai.constellation.2.lunar_phase_shift.lunar_crystallize_damage_bonus",
+      label: "化于生而死于尸 · C2 月转时隙期间月结晶反应伤害提升30%",
+      source: { characterId: "Zibai", kind: "character", minimumSourceConstellation: 2 },
+      target: "specialReactionDamageBonus",
+      targetFilter: { recipientSourceRelation: "source", specialReactionKinds: ["lunar_crystallize"] },
+      value: { kind: "fixed", value: 0.3 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "zibai.constellation.6.maximum_time_gap.lunar_crystallize_elevation",
+      label: "天地忽如一远行 · C6 消耗100点时隙浮光（月结晶反应伤害擢升48%）",
+      source: { characterId: "Zibai", kind: "character", minimumSourceConstellation: 6 },
+      target: "specialReactionElevation",
+      targetFilter: { recipientSourceRelation: "source", specialReactionKinds: ["lunar_crystallize"] },
+      value: { kind: "fixed", value: 0.48 }
     }
   ],
   characterId: "Zibai",
   metrics: [
     {
+      actionId: "zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize",
+      characterId: "Zibai",
+      id: "zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize",
+      kind: "damage",
+      label: "天地忽然身 / 灵驹飞踏第二段月结晶单次命中",
+      sourceActionId: "zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize",
+      status: "verified",
+      target: "enemy"
+    },
+    {
       actionId: "zibai.burst.tri_sphere_eminence.first_hit",
       characterId: "Zibai",
       id: "zibai.burst.tri_sphere_eminence.first_hit",
       kind: "damage",
-      label: "三垣威仪法 / 第一段单次命中（C0，无预设反应）",
+      label: "三垣威仪法 / 第一段岩元素单次命中",
       sourceActionId: "zibai.burst.tri_sphere_eminence.first_hit",
       status: "verified",
       target: "enemy"
@@ -113,14 +355,14 @@ export const zibaiCombatCoverage: CharacterCombatCoverage = {
       characterId: "Zibai",
       id: "zibai.burst.tri_sphere_eminence.second_hit.lunar_crystallize",
       kind: "damage",
-      label: "三垣威仪法 / 第二段月结晶单次命中（手填快照，非完整循环）",
+      label: "三垣威仪法 / 第二段月结晶单次命中",
       sourceActionId: "zibai.burst.tri_sphere_eminence.second_hit.lunar_crystallize",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One first normal-attack hit and Tri-Sphere Eminence's first Geo hit are verified as baseline C0 hits. The default C0 metric reuses one Tri-Sphere Eminence first hit against one enemy: the pinned 6.7 Genshin Optimizer localization encoding maps Skill 1-Hit DMG to burst[0], or 1.2696 Defense at Talent Level 1 and 2.28528 at Level 10. A secondary selectable metric uses the burst's second Lunar-Crystallize hit: burst[1], or 1.77744 Defense at Talent Level 1 and 3.199392 at Level 10. It is one manually selected hit, never a full-rotation or reaction-timing inference. Lunar Phase Shift extension, Moon Sign, passives, constellations, external effects, and other character states remain unmodeled. No infusion is modeled.",
+    "The primary metric is Spirit Steed's Stride second-hit Lunar-Crystallize damage. It includes the 60% DEF Selenic Descent base addition, C2's Full-Moonsign 550% DEF addition when configured, Zibai's Geo/Hydro teammate stat passive, her capped 14% Lunar-Crystallize base-damage bonus, C1's first-use 220% and C2's 30% reaction-damage bonuses, and C6's maximum 48% elevation snapshot. Tri-Sphere Eminence's direct first hit and Lunar-Crystallize second hit remain selectable secondary metrics. C4's later fourth-normal hit, timing, and rotations remain unmodeled.",
   label: zibaiDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

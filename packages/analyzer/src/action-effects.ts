@@ -33,6 +33,8 @@ export interface AppliedCombatActionEffect {
   readonly label: string
   /** Present only for a stat term that is added to the selected hit before shared multipliers. */
   readonly scalingStat?: ScalingStat
+  /** Source-stat snapshot retained for an auditable special-reaction base-damage term. */
+  readonly scalingStatValue?: number
   readonly sourceId: string
   readonly target: CombatActionEffectTarget | "flatAttack" | "talentLevel"
   readonly targetFilter?: CombatActionEffectTargetFilter
@@ -659,6 +661,7 @@ function resolveCombatActionEffectsForCandidates(
   const finalEnergyRecharge = input.baseEnergyRecharge + sumValues(energyRechargeValues.values())
   const appliedEffects = eligibleEffects.map(({ effect, source }) => {
     const finalHpMaximumValue = resolveFinalHpMaximumValue(effect, source)
+    const scalingSnapshot = resolveSpecialReactionBaseDamageScalingSnapshot(effect, input, source)
     return {
       ...(effect.target !== "additionalDamageEvent" &&
       effect.target !== "matchedActionAdditiveDamageTerm" &&
@@ -682,6 +685,7 @@ function resolveCombatActionEffectsForCandidates(
                 : effect.target,
       ...(finalHpMaximumValue === undefined ? {} : { finalHpMaximumValue }),
       ...(effect.target === "matchedActionAdditiveDamageTerm" ? { scalingStat: effect.value.scalingStat } : {}),
+      ...(scalingSnapshot === undefined ? {} : scalingSnapshot),
       ...(effect.targetFilter === undefined ? {} : { targetFilter: effect.targetFilter }),
       value:
         effect.target === "additionalDamageEvent"
@@ -729,6 +733,31 @@ function resolveCombatActionEffectsForCandidates(
     hpPercent: sumEffectTarget(appliedEffects, "hpPercent"),
     matchedActionAdditiveDamageTerms
   }
+}
+
+function resolveSpecialReactionBaseDamageScalingSnapshot(
+  effect: CombatActionEffect,
+  input: ResolveCombatActionEffectCandidatesInput,
+  source: CharacterBuild
+): { readonly scalingStat: ScalingStat; readonly scalingStatValue: number } | undefined {
+  if (effect.target !== "specialReactionBaseDamageFlat") return undefined
+  if (effect.value.kind === "source_final_defense") {
+    const value = input.sourceFinalDefenseByBuildId?.get(source.buildId)
+    return value === undefined ? undefined : { scalingStat: "defense", scalingStatValue: value }
+  }
+  if (effect.value.kind === "source_final_attack") {
+    const value = input.sourceFinalAttackByBuildId?.get(source.buildId)
+    return value === undefined ? undefined : { scalingStat: "attack", scalingStatValue: value }
+  }
+  if (effect.value.kind === "final_elemental_mastery") {
+    const value = input.sourceFinalElementalMasteryByBuildId?.get(source.buildId)
+    return value === undefined ? undefined : { scalingStat: "elementalMastery", scalingStatValue: value }
+  }
+  if (effect.value.kind === "final_hp") {
+    const value = input.sourceFinalHpByBuildId?.get(source.buildId)
+    return value === undefined ? undefined : { scalingStat: "hp", scalingStatValue: value }
+  }
+  return undefined
 }
 
 function isSelfAutomaticEquipmentEffect(effect: CombatActionEffect): boolean {
@@ -959,10 +988,15 @@ function matchesEffectCondition(effect: CombatActionEffect, input: ResolveCombat
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
     return input.moonsignLevel !== undefined && rank[input.moonsignLevel] >= rank[effect.condition.minimum]
   }
+  if (effect.condition.kind === "primary_character_region") {
+    return input.gameData?.getCharacter(input.primary.characterId)?.region === effect.condition.region
+  }
   if (effect.condition.kind === "team_element_count") {
     const condition = effect.condition
     const elements = input.teamElements
-    return elements !== undefined && elements.filter((element) => condition.elements.includes(element)).length >= condition.minimum
+    if (elements === undefined) return false
+    const count = elements.filter((element) => condition.elements.includes(element)).length
+    return count >= condition.minimum && (condition.maximum === undefined || count <= condition.maximum)
   }
   if (effect.condition.kind === "team_element_subset") {
     const condition = effect.condition

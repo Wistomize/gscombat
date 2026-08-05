@@ -56,6 +56,9 @@ function isMaximumReachableEffectConditionSatisfied(
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
     return rank[teamState.moonsign.level] >= rank[condition.minimum]
   }
+  if (condition.kind === "primary_character_region") {
+    return gameData.getCharacter(scenario.primary.characterId)?.region === condition.region
+  }
   if (condition.kind === "team_unique_element_count") {
     const count = resolveTeamUniqueElementCount([scenario.primary, ...scenario.teammates], gameData)
     return count !== null && count >= condition.minimum
@@ -65,7 +68,8 @@ function isMaximumReachableEffectConditionSatisfied(
       const element = resolveBuildElement(build, gameData)
       return element === null ? [] : [element]
     })
-    return elements.filter((element) => condition.elements.some((candidate) => candidate === element)).length >= condition.minimum
+    const count = elements.filter((element) => condition.elements.some((candidate) => candidate === element)).length
+    return count >= condition.minimum && (condition.maximum === undefined || count <= condition.maximum)
   }
   if (condition.kind === "team_element_subset") {
     const elements = [scenario.primary, ...scenario.teammates].flatMap((build) => {

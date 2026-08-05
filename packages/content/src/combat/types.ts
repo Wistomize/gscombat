@@ -669,7 +669,14 @@ export interface CombatActionEffectTeamUniqueElementCountCondition {
 export interface CombatActionEffectTeamElementCountCondition {
   readonly elements: readonly Exclude<Element, "physical">[]
   readonly kind: "team_element_count"
+  readonly maximum?: number
   readonly minimum: number
+}
+
+/** Requires the configured primary character to belong to one game-data region. */
+export interface CombatActionEffectPrimaryCharacterRegionCondition {
+  readonly kind: "primary_character_region"
+  readonly region: string
 }
 
 /** Requires every configured party element to belong to one set and optionally requires specific elements. */
@@ -708,6 +715,7 @@ export type CombatActionEffectCondition =
   | CombatActionEffectEnemyCountCondition
   | CombatActionEffectHexereiSecretRiteCondition
   | CombatActionEffectMoonsignLevelCondition
+  | CombatActionEffectPrimaryCharacterRegionCondition
   | CombatActionEffectTeamElementCountCondition
   | CombatActionEffectTeamElementSubsetCondition
   | CombatActionEffectPrimaryDifferentElementTeammateCountCondition

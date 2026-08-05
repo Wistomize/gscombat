@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { sandroneCombatCoverage } from "./combat.js"
 
 describe("Sandrone combat content", () => {
-  it("declares the Stellar-Superconduct prism branch as a selectable manual-snapshot action", () => {
+  it("keeps the prism branch registered while selecting charged and burst Stellar-Superconduct metrics", () => {
     const action = sandroneCombatCoverage.actions.find(
       (candidate) => candidate.id === "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct"
     )
@@ -42,8 +42,11 @@ describe("Sandrone combat content", () => {
     expect(sandroneCombatCoverage.metrics).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          actionId: "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct",
-          label: expect.stringContaining("非完整循环"),
+          actionId: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
+          status: "verified"
+        }),
+        expect.objectContaining({
+          actionId: "sandrone.burst.phenomenon_calculus.negative_temperature_beam.stellar_superconduct",
           status: "verified"
         })
       ])
