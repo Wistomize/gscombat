@@ -1942,7 +1942,7 @@ function OrderedDamageReport({
       <ArtifactRawValueReport build={build} catalog={catalog} />
 
       <article className="wideReport substatReport">
-        <div className="cardTitle"><span>ONE AVERAGE ROLL</span><strong>词条增加的边际收益</strong><small>额外增加一个五星圣遗物平均档</small></div>
+        <div className="cardTitle"><span>ONE AVERAGE ROLL</span><strong>词条增加的边际收益</strong><small>副词条增加一个五星平均档 · 对应伤害加成增加 5%</small></div>
         <div className="gainBars">{analysis.analysis.marginalSubstats.map((result) => <div className="gainBar" key={result.stat}><span>{result.label}</span><div><i style={{ width: `${Math.max(result.weight * 100, 1)}%` }} /></div><b>{formatMarginalPercent(result.gainRatio)}</b></div>)}</div>
         {analysis.analysis.progressionGains.length > 0 ? <><div className="gainGroupTitle">角色成长</div><div className="gainBars">{analysis.analysis.progressionGains.map((result) => <div className="gainBar" key={result.id}><span>{result.label}</span><div><i style={{ width: `${Math.max(result.weight * 100, 1)}%` }} /></div><b>{formatMarginalPercent(result.gainRatio)}</b></div>)}</div></> : null}
       </article>

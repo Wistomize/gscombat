@@ -1,3 +1,4 @@
+import type { Element } from "@gscombat/calculator"
 import {
   canEnterNightsoulBlessing,
   getCharacterBurstEnergyCost,
@@ -23,6 +24,12 @@ import {
 
 interface AnalyzableSubstat {
   readonly gameDataStat: string
+  readonly label: string
+  readonly stat: ArtifactStat
+}
+
+interface MarginalStatCandidate {
+  readonly averageRoll: number
   readonly label: string
   readonly stat: ArtifactStat
 }
@@ -87,6 +94,17 @@ const analyzableSubstats: readonly AnalyzableSubstat[] = [
   { gameDataStat: "critDMG_", label: "暴击伤害", stat: "crit_damage" }
 ]
 
+const elementalDamageBonusMarginals: Readonly<Record<Element, Omit<MarginalStatCandidate, "averageRoll">>> = {
+  anemo: { label: "风元素伤害加成", stat: "anemo_damage_bonus" },
+  cryo: { label: "冰元素伤害加成", stat: "cryo_damage_bonus" },
+  dendro: { label: "草元素伤害加成", stat: "dendro_damage_bonus" },
+  electro: { label: "雷元素伤害加成", stat: "electro_damage_bonus" },
+  geo: { label: "岩元素伤害加成", stat: "geo_damage_bonus" },
+  hydro: { label: "水元素伤害加成", stat: "hydro_damage_bonus" },
+  physical: { label: "物理伤害加成", stat: "physical_damage_bonus" },
+  pyro: { label: "火元素伤害加成", stat: "pyro_damage_bonus" }
+}
+
 function average(values: readonly number[]): number {
   if (values.length === 0) throw new Error("Cannot calculate an average from an empty list")
   return values.reduce((total, value) => total + value, 0) / values.length
@@ -104,8 +122,13 @@ function analyzeMarginalSubstats(
   baselineExpectedDamage: number,
   averageRolls: ReadonlyMap<ArtifactStat, number>
 ): readonly MarginalSubstatResult[] {
-  const rawResults = analyzableSubstats.map(({ label, stat }) => {
-    const averageRoll = averageRolls.get(stat) ?? 0
+  const action = getCombatActionDefinition(scenario.targetActionId)
+  if (!action) throw new Error(`Target action ${scenario.targetActionId} is not registered`)
+  const candidates: readonly MarginalStatCandidate[] = [
+    ...analyzableSubstats.map(({ label, stat }) => ({ averageRoll: averageRolls.get(stat) ?? 0, label, stat })),
+    { averageRoll: 0.05, ...elementalDamageBonusMarginals[action.element] }
+  ]
+  const rawResults = candidates.map(({ averageRoll, label, stat }) => {
     const expectedDamage = evaluateScenario(scenario, gameData, {
       artifactStatDeltas: { [stat]: averageRoll }
     }).actionExpectedDamage

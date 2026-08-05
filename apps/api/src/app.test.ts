@@ -654,7 +654,12 @@ describe("API", () => {
     expect(response.json().evaluation.rotation.events).toHaveLength(1)
     expect(response.json().evaluation.rotation.dpr).toBeCloseTo(response.json().analysis.baselineExpectedDamage)
     expect(response.json().analysis.weapons).toHaveLength(countSelectableWeapons("polearm"))
-    expect(response.json().analysis.marginalSubstats).toHaveLength(10)
+    expect(response.json().analysis.marginalSubstats).toHaveLength(11)
+    const elementalDamageBonus = response.json().analysis.marginalSubstats.find(
+      (result: { stat: string }) => result.stat === "electro_damage_bonus"
+    )
+    expect(elementalDamageBonus).toMatchObject({ averageRoll: 0.05, label: "雷元素伤害加成" })
+    expect(elementalDamageBonus.gainRatio).toBeGreaterThan(0)
   })
 
   it("returns Xiangling's one-hit Hydro-aura Vaporize Pyronado through the same analysis path", async () => {
@@ -727,6 +732,11 @@ describe("API", () => {
       response.json().analysis.marginalSubstats.find((result: { stat: string }) => result.stat === "elemental_mastery")
         ?.gainRatio
     ).toBeGreaterThan(0)
+    const elementalDamageBonus = response.json().analysis.marginalSubstats.find(
+      (result: { stat: string }) => result.stat === "pyro_damage_bonus"
+    )
+    expect(elementalDamageBonus).toMatchObject({ averageRoll: 0.05, label: "火元素伤害加成" })
+    expect(elementalDamageBonus.gainRatio).toBeGreaterThan(0)
   })
 
   it("automatically derives Engulfing Lightning's post-burst state for Xiangling Pyronado", async () => {
