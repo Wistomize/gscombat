@@ -4,3 +4,4 @@ export {
   A_THOUSAND_FLOATING_DREAMS_SAME_ELEMENT_ELEMENTAL_MASTERY_BY_REFINEMENT,
   aThousandFloatingDreamsCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

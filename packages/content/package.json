@@ -8,15 +8,21 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./authoring-catalog": {
+      "types": "./dist/authoring-catalog.d.ts",
+      "import": "./dist/authoring-catalog.js"
+    },
     "./weapon-names": {
       "types": "./dist/weapon-names.d.ts",
       "import": "./dist/weapon-names.js"
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "build": "pnpm registries:check && tsc -p tsconfig.build.json",
+    "registries:check": "node --experimental-strip-types tools/generate-registries.ts --check",
+    "registries:generate": "node --experimental-strip-types tools/generate-registries.ts",
+    "test": "pnpm registries:check && vitest run",
+    "typecheck": "pnpm registries:check && tsc --noEmit"
   },
   "dependencies": {
     "@gscombat/calculator": "workspace:*",

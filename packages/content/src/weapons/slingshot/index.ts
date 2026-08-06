@@ -3,3 +3,4 @@ export {
   SLINGSHOT_WITHIN_POINT_THREE_SECONDS_DAMAGE_BONUS,
   slingshotCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -3,3 +3,4 @@ export {
   DODOCO_TALES_CHARGED_DAMAGE_BONUS_BY_REFINEMENT,
   dodocoTalesCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -3,3 +3,4 @@ export {
   LITHIC_BLADE_CRIT_RATE_PER_LIYUE_CHARACTER,
   lithicBladeCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

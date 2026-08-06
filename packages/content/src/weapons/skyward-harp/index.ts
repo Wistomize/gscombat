@@ -4,3 +4,4 @@ export {
   SKYWARD_HARP_TRIGGER_PROBABILITY,
   skywardHarpCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

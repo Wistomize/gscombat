@@ -33,18 +33,41 @@ unreviewed data may be incomplete. The API exposes coverage and authoring audits
 apps/
 ├── api/          Fastify API, invite sessions, SQLite workspaces, showcase import
 ├── web/          Next.js website
-└── mini/         Taro WeChat Mini Program foundation
+└── mini/         Paused Taro WeChat Mini Program shell
 packages/
 ├── analyzer/     Scenario orchestration, effect resolution, counterfactual analysis
 ├── calculator/   Character-independent typed damage pipeline
-├── content/      Semantic characters, weapons, artifacts, and playstyles
+├── content/      Semantic characters, weapons, artifacts, and rules
 ├── contracts/    TypeBox domain and HTTP contracts
 └── game-data/    Pinned, read-only game-data SQLite snapshots
 ```
 
 Character actions, passives, constellations, and support metrics live under
-`packages/content/src/characters/<character>/`. Weapon and artifact effects belong to their own content directories;
-`playstyles/` only composes reusable entities. The calculator imports no character or equipment content.
+`packages/content/src/characters/<character>/`. Weapon and artifact effects belong to their own content directories,
+and party rules belong under `rules/`. The calculator imports no character or equipment content. The Mini Program
+does not run an independent calculation path while its product work is paused.
+
+## Maintaining Content declarations
+
+Content uses entity-owned declarations with build-time static aggregation:
+
+- A character's `definition.ts` owns catalog identity, official Chinese label, weapon type, and exceptional action
+  labels. `combat.ts` owns actions, metrics, and character effects; reviewed multi-scaling mappings use optional
+  `evidence.ts`.
+- Every inventory weapon and artifact-set directory contains `effects.ts`, `coverage.ts`, and `index.ts`. An item with
+  no current core-action effect exports a typed empty effect array and explains its status in coverage clauses.
+- `packages/content/src/registry/*.generated.ts` contains tool-generated explicit imports. Do not edit these files or
+  scan the filesystem at runtime.
+
+After adding or moving a Content entity, run:
+
+```bash
+pnpm --filter @gscombat/content registries:generate
+pnpm --filter @gscombat/content registries:check
+```
+
+Content `build`, `test`, and `typecheck` all run the freshness check first and fail on missing or stale registries.
+See [ADR 0015](docs/adr/0015-generate-content-registries-from-entity-owned-declarations.md) for the decision record.
 
 ## Local development
 

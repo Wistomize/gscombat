@@ -6,3 +6,4 @@ export {
   ASTRAL_VULTURES_CRIMSON_PLUMAGE_TWO_DIFFERENT_CHARGED_DAMAGE_BONUS,
   astralVulturesCrimsonPlumageCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

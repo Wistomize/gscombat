@@ -4,3 +4,4 @@ export {
   VIVID_NOTIONS_DUSK_PLUNGE_CRIT_DAMAGE,
   vividNotionsCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

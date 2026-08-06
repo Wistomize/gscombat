@@ -1,7 +1,7 @@
 import { raidenNationalBuiltinScenario } from "@gscombat/content"
 
-import { ConfigurationWorkspace } from "./configuration-workspace"
 import { webCatalog } from "../lib/catalog"
+import { ConfigurationWorkspace } from "../features/configuration-workspace/configuration-workspace"
 
 export default function HomePage() {
   return (

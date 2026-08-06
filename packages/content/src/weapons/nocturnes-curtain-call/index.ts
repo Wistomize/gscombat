@@ -3,3 +3,4 @@ export {
   NOCTURNES_CURTAIN_CALL_HP_PERCENT,
   nocturnesCurtainCallCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

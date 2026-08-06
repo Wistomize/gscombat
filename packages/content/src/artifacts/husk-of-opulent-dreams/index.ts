@@ -4,3 +4,4 @@ export {
   HUSK_OF_OPULENT_DREAMS_DEFENSE_PERCENT,
   huskOfOpulentDreamsCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -4,3 +4,4 @@ export {
   THE_WIDSITH_RECITATIVE_ATTACK_PERCENT,
   theWidsithCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

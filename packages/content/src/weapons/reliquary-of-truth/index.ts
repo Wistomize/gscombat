@@ -6,3 +6,4 @@ export {
   RELIQUARY_OF_TRUTH_CRIT_RATE,
   reliquaryOfTruthCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

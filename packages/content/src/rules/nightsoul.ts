@@ -35,6 +35,13 @@ export function resolveNightsoulBurstCooldown(characterCount: number): number | 
   return null
 }
 
+/** Returns whether the configured party owns an independently triggered Nightsoul Burst source. */
+export function hasIndependentNightsoulBurstTrigger(
+  builds: readonly Pick<CharacterBuild, "ascension" | "characterId">[]
+): boolean {
+  return builds.some((build) => build.characterId === "Xilonen" && build.ascension >= 4)
+}
+
 /** Resolves the maximum number of Nightsoul Burst triggers that can overlap inside one effect window. */
 export function resolveMaximumNightsoulBurstTriggers(
   builds: readonly Pick<CharacterBuild, "ascension" | "characterId">[],
@@ -45,9 +52,6 @@ export function resolveMaximumNightsoulBurstTriggers(
   if (cooldown === null) return 0
   if (windowSeconds === undefined) return 1
   const sharedTriggers = Math.floor(windowSeconds / cooldown) + 1
-  const hasXilonenIndependentTrigger = builds.some(
-    (build) => build.characterId === "Xilonen" && build.ascension >= 4
-  )
-  const xilonenTriggers = hasXilonenIndependentTrigger ? Math.floor(windowSeconds / 14) + 1 : 0
-  return sharedTriggers + xilonenTriggers
+  const independentTriggers = hasIndependentNightsoulBurstTrigger(builds) ? Math.floor(windowSeconds / 14) + 1 : 0
+  return sharedTriggers + independentTriggers
 }

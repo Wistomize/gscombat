@@ -5,8 +5,11 @@ import { fileURLToPath } from "node:url"
 
 import { EnvHttpProxyAgent, fetch } from "undici"
 
-import { characterCatalogPresentation } from "../../../packages/content/src/catalog-presentation.js"
-import { artifactSetInventory, weaponInventory } from "../../../packages/content/src/equipment-inventory.js"
+import {
+  artifactSetInventory,
+  characterCatalogPresentation,
+  weaponInventory
+} from "@gscombat/content/authoring-catalog"
 
 interface EnkaAvatarMetadata {
   readonly NameTextMapHash?: number
@@ -257,7 +260,14 @@ const generatedSource = [
   ""
 ].join("\n")
 
-const outputPath = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "showcase-metadata.generated.ts")
+const outputPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "src",
+  "services",
+  "showcase",
+  "metadata.generated.ts"
+)
 writeFileSync(outputPath, generatedSource)
 console.log(
   `Generated ${characterMetadata.length} character variants, ${weaponMetadata.length} weapons, and ` +

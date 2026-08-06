@@ -4,3 +4,4 @@ export {
   BLACKCLIFF_LONGSWORD_TWO_STACK_ATTACK_PERCENT,
   blackcliffLongswordCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

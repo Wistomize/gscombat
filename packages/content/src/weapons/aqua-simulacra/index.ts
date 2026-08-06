@@ -3,3 +3,4 @@ export {
   AQUA_SIMULACRA_HP_PERCENT_BY_REFINEMENT,
   aquaSimulacraCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -4,3 +4,4 @@ export {
   FREEDOM_SWORN_FULL_SIGIL_NORMAL_CHARGED_PLUNGE_DAMAGE_BONUS,
   freedomSwornCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

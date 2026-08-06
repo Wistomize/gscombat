@@ -3,3 +3,4 @@ export {
   TALKING_STICK_PYRO_ATTACHMENT_ATTACK_PERCENT,
   talkingStickCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -4,3 +4,4 @@ export {
   BLIZZARD_STRAYER_FROZEN_CRIT_RATE,
   blizzardStrayerCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

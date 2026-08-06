@@ -3,3 +3,4 @@ export {
   FRUITFUL_HOOK_PLUNGE_CRIT_RATE,
   fruitfulHookCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

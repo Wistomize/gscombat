@@ -4,3 +4,4 @@ export {
   CRIMSON_WITCH_OF_FLAMES_TRANSFORMATIVE_REACTION_DAMAGE_BONUS,
   crimsonWitchOfFlamesCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

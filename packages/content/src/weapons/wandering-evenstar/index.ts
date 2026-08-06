@@ -3,3 +3,4 @@ export {
   WANDERING_EVENSTAR_OTHER_PARTY_ATTACK_FROM_ELEMENTAL_MASTERY_BY_REFINEMENT,
   wanderingEvenstarCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

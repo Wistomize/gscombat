@@ -3,3 +3,4 @@ export {
   SCROLL_OF_THE_HERO_OF_CINDER_CITY_REACTION_ELEMENT_DAMAGE_BONUS,
   scrollOfTheHeroOfCinderCityCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

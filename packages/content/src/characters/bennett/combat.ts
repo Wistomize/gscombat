@@ -339,6 +339,12 @@ export const bennettCombatCoverage: CharacterCombatCoverage = {
       target: "friendly_recipient"
     }
   ],
+  scenarioEffectOptions: [
+    {
+      id: BENNETT_BURST_FIELD_EFFECT_ID,
+      label: "班尼特领域"
+    }
+  ],
   detail:
     "The burst initial hit, one Passion Overload press hit, and a Level-one hold first hit are verified as baseline direct actions. One uninfused normal first hit is separately verified as baseline Physical damage. Long-press later hits and explosions remain unmodeled. C2's self-only 30% Energy Recharge below 70% HP is an explicit current-action snapshot; it is intentionally not inferred from a health timeline. The metric profile verifies Inspiration Field's one-tick healing and flat attack contribution, including source C1 and C5 changes plus selected-recipient eligibility. C6's field-gated Pyro infusion is implemented for currently declared eligible melee normal attacks through an explicit selected snapshot; its charged/plunging infusions and the 15% Pyro damage-bonus recipient rules remain unmodeled.",
   label: bennettDefinition.name,

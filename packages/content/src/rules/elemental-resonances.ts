@@ -1,4 +1,4 @@
-import type { Element, Modifier } from "@gscombat/calculator"
+import type { Element } from "@gscombat/calculator"
 
 export type ElementalResonanceId =
   | "resonance.anemo"
@@ -69,9 +69,3 @@ export const elementalResonanceDefinitions: readonly ElementalResonanceDefinitio
     requiresUniqueElements: 4
   }
 ]
-
-export const pyroResonanceModifier: Modifier = {
-  kind: "attack_percent",
-  source: "elemental_resonance.pyro",
-  value: 0.25
-}

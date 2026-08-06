@@ -3,3 +3,4 @@ export {
   SKYWARD_BLADE_PHYSICAL_COEFFICIENT,
   skywardBladeCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

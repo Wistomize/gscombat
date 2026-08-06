@@ -1,7 +1,5 @@
 import Type from "typebox"
 
-import { TraceEntrySchema } from "./analysis.js"
-
 export * from "./analysis.js"
 export * from "./builds.js"
 export * from "./combat-authoring-audit.js"
@@ -10,29 +8,6 @@ export * from "./combat-coverage.js"
 export * from "./scenarios.js"
 export * from "./support-metrics.js"
 export * from "./workspace.js"
-
-export const PresetIdSchema = Type.Literal("raiden-national.initial-slash")
-
-export const EvaluationRequestSchema = Type.Object({
-  additionalAttackPercent: Type.Optional(Type.Number({ minimum: 0 })),
-  presetId: PresetIdSchema
-})
-
-export type EvaluationRequest = Type.Static<typeof EvaluationRequestSchema>
-
-export const EvaluationResponseSchema = Type.Object({
-  contentVersion: Type.String(),
-  engineVersion: Type.String(),
-  presetVersion: Type.String(),
-  result: Type.Object({
-    critDamage: Type.Number(),
-    expectedDamage: Type.Number(),
-    nonCritDamage: Type.Number(),
-    trace: Type.Array(TraceEntrySchema)
-  })
-})
-
-export type EvaluationResponse = Type.Static<typeof EvaluationResponseSchema>
 
 export const HealthResponseSchema = Type.Object({
   status: Type.Literal("ok")

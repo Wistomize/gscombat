@@ -3,3 +3,4 @@ export {
   DAWNING_FROST_AFTER_SKILL_HIT_ELEMENTAL_MASTERY,
   dawningFrostCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -1,4 +1,3 @@
-import type { DamageBonusModifier, Modifier } from "@gscombat/calculator"
 import type { CombatActionEffect } from "../../combat/types.js"
 
 export const EMBLEM_ENERGY_RECHARGE_BONUS = 0.2
@@ -28,21 +27,3 @@ export const emblemOfSeveredFateCombatActionEffects: readonly CombatActionEffect
     }
   }
 ]
-
-/** Returns the four-piece burst bonus from current energy recharge. */
-export function createEmblemBurstModifier(energyRecharge: number, pieceCount: number): DamageBonusModifier | undefined {
-  if (pieceCount < 4) return undefined
-  return {
-    filter: { talent: "burst" },
-    kind: "damage_bonus",
-    source: "artifact.emblem.4pc",
-    value: Math.min(energyRecharge * 0.25, 0.75)
-  }
-}
-
-export const illustrativeEmblemBurstModifier: Modifier = {
-  filter: { talent: "burst" },
-  kind: "damage_bonus",
-  source: "emblem_of_severed_fate.four_piece_illustrative",
-  value: 0.65
-}

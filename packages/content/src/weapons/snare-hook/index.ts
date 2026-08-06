@@ -3,3 +3,4 @@ export {
   SNARE_HOOK_AFTER_REACTION_FULL_MOON_ELEMENTAL_MASTERY,
   snareHookCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

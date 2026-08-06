@@ -5,3 +5,4 @@ export {
   PEAK_PATROL_SONG_PARTY_DAMAGE_BONUS_PER_DEFENSE,
   peakPatrolSongCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

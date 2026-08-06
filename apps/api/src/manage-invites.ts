@@ -1,4 +1,4 @@
-import { WorkspaceStore } from "./workspace-store.js"
+import { WorkspaceStore } from "./services/workspace/store.js"
 
 const databasePath = process.env.WORKSPACE_DATA_PATH
 const tokenSecret = process.env.INVITE_TOKEN_SECRET

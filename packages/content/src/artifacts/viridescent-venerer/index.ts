@@ -4,3 +4,4 @@ export {
   VIRIDESCENT_VENERER_SWIRLED_ELEMENT_RESISTANCE_REDUCTION,
   viridescentVenererCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

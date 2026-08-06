@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { listHealingEquipmentEffects } from "./artifacts/healing-bonus/effects.js"
-import { listRecipientEquipmentEffects } from "./artifacts/recipient-bonus/effects.js"
+import { listHealingEquipmentEffects } from "./rules/equipment/healing/effects.js"
+import { listRecipientEquipmentEffects } from "./rules/equipment/recipient/effects.js"
 import {
   CELESTIAL_GIFT_CELESTIAL_GUIDANCE_DAMAGE_BONUS,
   CELESTIAL_GIFT_MORTAL_HYMN_DAMAGE_BONUS

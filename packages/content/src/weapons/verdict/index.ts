@@ -3,3 +3,4 @@ export {
   VERDICT_SKILL_DAMAGE_BONUS_PER_STACK,
   verdictCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

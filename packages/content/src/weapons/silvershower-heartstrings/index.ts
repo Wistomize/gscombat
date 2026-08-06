@@ -5,3 +5,4 @@ export {
   SILVERSHOWER_HEARTSTRINGS_TWO_STACK_HP_PERCENT,
   silvershowerHeartstringsCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

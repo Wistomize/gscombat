@@ -4,3 +4,4 @@ export {
   SNOW_TOMBED_STARSILVER_TRIGGER_PROBABILITY,
   snowTombedStarsilverCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

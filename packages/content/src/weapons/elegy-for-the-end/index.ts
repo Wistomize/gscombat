@@ -4,3 +4,4 @@ export {
   ELEGY_FOR_THE_END_FULL_SIGIL_PARTY_ELEMENTAL_MASTERY,
   elegyForTheEndCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

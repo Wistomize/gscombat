@@ -4,3 +4,4 @@ export {
   NYMPHS_DREAM_MIRRORED_NYMPH_HYDRO_DAMAGE_BONUS_BY_STACK,
   nymphsDreamCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

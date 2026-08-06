@@ -15,7 +15,6 @@ const rawBaseUrl = `https://raw.githubusercontent.com/frzyc/genshin-optimizer/${
 const treeUrl = `https://api.github.com/repos/frzyc/genshin-optimizer/git/trees/${upstreamCommit}?recursive=1`
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const repositoryRoot = resolve(packageRoot, "../..")
-const publicRoot = join(packageRoot, "public", "icons")
 const generatedPath = join(packageRoot, "lib", "visual-assets.generated.json")
 const gameDataPath = join(repositoryRoot, "packages", "game-data", "snapshots", "6.7", "game-data.sqlite")
 

@@ -3,3 +3,4 @@ export {
   BERSERKER_TWO_PIECE_CRIT_RATE,
   berserkerCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

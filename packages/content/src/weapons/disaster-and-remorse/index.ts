@@ -3,3 +3,4 @@ export {
   DISASTER_AND_REMORSE_MAGIC_DAMAGE_BONUS,
   disasterAndRemorseCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

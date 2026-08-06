@@ -4,3 +4,4 @@ export {
   A_DAY_CARVED_FROM_RISING_WINDS_COMPLETED_TRIAL_CRIT_RATE,
   aDayCarvedFromRisingWindsCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

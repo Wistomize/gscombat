@@ -4,3 +4,4 @@ export {
   THUNDERING_FURY_TRANSFORMATIVE_REACTION_DAMAGE_BONUS,
   thunderingFuryCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

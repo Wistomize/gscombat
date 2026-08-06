@@ -3,3 +3,4 @@ export {
   HEART_OF_DEPTH_HYDRO_DAMAGE_BONUS,
   heartOfDepthCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

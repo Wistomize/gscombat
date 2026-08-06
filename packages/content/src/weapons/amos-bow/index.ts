@@ -3,3 +3,4 @@ export {
   AMOS_BOW_PROJECTILE_FLIGHT_TIME_DAMAGE_BONUS_PER_STACK,
   amosBowCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

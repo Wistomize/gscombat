@@ -3,3 +3,4 @@ export {
   RUST_NORMAL_DAMAGE_BONUS_BY_REFINEMENT,
   rustCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

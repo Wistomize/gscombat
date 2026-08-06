@@ -4,3 +4,4 @@ export {
   VERMILLION_HEREAFTER_ATTACK_PERCENT,
   vermillionHereafterCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

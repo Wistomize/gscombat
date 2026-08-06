@@ -3,3 +3,4 @@ export {
   SERENITYS_CALL_AFTER_REACTION_HP_PERCENT,
   serenitysCallCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

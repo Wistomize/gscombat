@@ -4,3 +4,4 @@ export {
   SUNNY_MORNING_SLEEP_IN_AFTER_SWIRL_ELEMENTAL_MASTERY,
   sunnyMorningSleepInCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

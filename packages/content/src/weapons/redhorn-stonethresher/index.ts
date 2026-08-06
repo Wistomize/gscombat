@@ -3,3 +3,4 @@ export {
   REDHORN_STONETHRESHER_NORMAL_CHARGED_DEFENSE_ADDITIVE_DAMAGE,
   redhornStonethresherCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

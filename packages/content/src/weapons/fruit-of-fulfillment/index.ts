@@ -3,3 +3,4 @@ export {
   FRUIT_OF_FULFILLMENT_ELEMENTAL_MASTERY_PER_STACK,
   fruitOfFulfillmentCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

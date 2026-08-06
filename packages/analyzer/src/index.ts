@@ -1,60 +1,61 @@
-export { analyzeScenario } from "./analysis.js"
+export {
+  BENNETT_BURST_FIELD_EFFECT_ID as EFFECT_BENNETT_BURST_FIELD,
+  RAIDEN_SKILL_EYE_EFFECT_ID as EFFECT_RAIDEN_SKILL_EYE
+} from "@gscombat/content"
+export { analyzeScenario } from "./analysis/analyze.js"
 export type {
   EffectiveArtifactResult,
   MarginalSubstatResult,
   ScenarioAnalysis,
   WeaponComparisonResult
-} from "./analysis.js"
-export { resolveBaseCombatStats, resolveCoreCombatStats } from "./base-stats.js"
-export type { ResolvedBaseCombatStats, ResolvedCoreCombatStats } from "./base-stats.js"
-export { createCombatCoverageReport } from "./coverage.js"
-export type { CharacterCombatReadiness, CombatCoverageReport } from "./coverage.js"
-export { createCombatAuthoringAuditReport } from "./combat-authoring-audit.js"
+} from "./analysis/analyze.js"
+export { createCombatAuthoringAuditReport } from "./audit/authoring.js"
 export type {
   CharacterCombatAuthoringWorkItem,
   CombatAuthoringAuditReport,
   CombatAuthoringCoreTalentGroups,
   CombatAuthoringReadiness,
   CombatAuthoringTalentParameterOwner
-} from "./combat-authoring-audit.js"
+} from "./audit/authoring.js"
+export { createCombatCoverageReport } from "./audit/coverage.js"
+export type { CharacterCombatReadiness, CombatCoverageReport } from "./audit/coverage.js"
+export { assertCombatRegistryIntegrity, validateCombatRegistryIntegrity } from "./audit/registry-integrity.js"
+export type {
+  CombatRegistryIntegrityIssue,
+  CombatRegistryIntegrityIssueCode,
+  CombatRegistryIntegrityReport,
+  ValidateCombatRegistryIntegrityInput
+} from "./audit/registry-integrity.js"
+export { aggregateArtifactStats, countArtifactSet } from "./core/artifact-stats.js"
+export { resolveBaseCombatStats, resolveCoreCombatStats } from "./core/base-stats.js"
+export type { ResolvedBaseCombatStats, ResolvedCoreCombatStats } from "./core/base-stats.js"
+export {
+  evaluateDeclaredDirectTalentAction,
+  resolveDeclaredTalentCoefficient,
+  resolveDeclaredTalentCoefficientValue
+} from "./evaluators/declared-action.js"
+export type {
+  DeclaredDirectTalentActionEvaluation,
+  DeclaredDirectTalentActionInput,
+  DeclaredTalentCoefficientInput,
+  ResolvedDeclaredTalentCoefficient
+} from "./evaluators/declared-action.js"
 export {
   evaluateDeclaredDirectScenarioAction,
   evaluateDeclaredSpecialReactionScenarioAction
-} from "./declared-scenario.js"
+} from "./evaluators/declared-scenario.js"
 export type {
   DeclaredDirectActionPartEvaluation,
   DeclaredDirectScenarioEvaluation,
   DeclaredDirectScenarioInput,
   DeclaredSpecialReactionScenarioEvaluation,
   ResolvedDeclaredScenarioStats
-} from "./declared-scenario.js"
-export { assertCombatRegistryIntegrity, validateCombatRegistryIntegrity } from "./combat-registry-integrity.js"
-export type {
-  CombatRegistryIntegrityIssue,
-  CombatRegistryIntegrityIssueCode,
-  CombatRegistryIntegrityReport,
-  ValidateCombatRegistryIntegrityInput
-} from "./combat-registry-integrity.js"
-export {
-  evaluateDeclaredDirectTalentAction,
-  resolveDeclaredTalentCoefficient,
-  resolveDeclaredTalentCoefficientValue
-} from "./declared-action.js"
-export type {
-  DeclaredDirectTalentActionEvaluation,
-  DeclaredDirectTalentActionInput,
-  DeclaredTalentCoefficientInput,
-  ResolvedDeclaredTalentCoefficient
-} from "./declared-action.js"
-export { aggregateArtifactStats, countArtifactSet } from "./artifact-stats.js"
-export { evaluateCombatMetric } from "./metric.js"
+} from "./evaluators/declared-scenario.js"
+export { evaluateCombatMetric } from "./metrics/evaluate.js"
 export type {
   CombatDamageMetricEvaluation,
   CombatDamageMetricFormula,
-  CombatFlatStatBuffMetricEvaluation,
-  CombatMetricConditionEvaluation,
-  CombatHealingMetricEvaluation,
-  CombatMetricEvaluation,
+  CombatFlatStatBuffMetricEvaluation, CombatHealingMetricEvaluation, CombatMetricConditionEvaluation, CombatMetricEvaluation,
   CombatMetricEvaluationContext,
   CombatMetricFormula,
   CombatMetricFormulaAdd,
@@ -69,13 +70,8 @@ export type {
   CombatMetricSourceContext,
   CombatScalarMetricEvaluation,
   EvaluateCombatMetricInput
-} from "./metric.js"
-export {
-  EFFECT_BENNETT_BURST_FIELD,
-  EFFECT_RAIDEN_SKILL_EYE,
-  evaluateScenario,
-  raidenNationalBuiltinScenario
-} from "./scenario.js"
-export type { AppliedScenarioBuff, ScenarioEvaluation, ScenarioIntervention } from "./scenario.js"
-export { resolveTeamState } from "./team-state.js"
-export type { ResolvedTeamState } from "./team-state.js"
+} from "./metrics/evaluate.js"
+export { evaluateScenario, raidenNationalBuiltinScenario } from "./scenario/evaluate.js"
+export type { AppliedScenarioBuff, ScenarioEvaluation, ScenarioIntervention } from "./scenario/evaluate.js"
+export { resolveTeamState } from "./scenario/team-state.js"
+export type { ResolvedTeamState } from "./scenario/team-state.js"

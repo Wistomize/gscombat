@@ -5,3 +5,4 @@ export {
   A_THOUSAND_BLAZING_SUNS_NIGHTSOUL_CRIT_DAMAGE,
   aThousandBlazingSunsCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -1,9 +1,9 @@
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
-import { raidenBurstInitialSlash } from "./actions.js"
 import { raidenDefinition } from "./definition.js"
 
 export const RAIDEN_SKILL_EYE_EFFECT_ID = "raiden.skill.eye"
+const RAIDEN_BURST_INITIAL_SLASH_ACTION_ID = "raiden.burst.initial_slash"
 
 export const raidenCombatCoverage: CharacterCombatCoverage = {
   actions: [
@@ -35,9 +35,9 @@ export const raidenCombatCoverage: CharacterCombatCoverage = {
         }
       ],
       deterministicSnapshotCapabilities: ["after_primary_burst"],
-      element: raidenBurstInitialSlash.tags.element,
+      element: raidenDefinition.element,
       evaluator: "declared_direct",
-      id: raidenBurstInitialSlash.tags.actionId,
+      id: RAIDEN_BURST_INITIAL_SLASH_ACTION_ID,
       kind: "damage",
       parameterReferences: [
         {
@@ -65,7 +65,7 @@ export const raidenCombatCoverage: CharacterCombatCoverage = {
         }
       ],
       status: "verified",
-      talentSlot: raidenBurstInitialSlash.tags.talent,
+      talentSlot: "burst",
       timeline: {
         damageEvents: [{ at: 0, damagePartId: "initial-slash", id: "initial-slash", snapshot: "cast" }],
         duration: 1
@@ -160,14 +160,21 @@ export const raidenCombatCoverage: CharacterCombatCoverage = {
   characterId: "RaidenShogun",
   metrics: [
     {
-      actionId: "raiden.burst.initial_slash",
+      actionId: RAIDEN_BURST_INITIAL_SLASH_ACTION_ID,
       characterId: "RaidenShogun",
-      id: "raiden.burst.initial_slash",
+      id: RAIDEN_BURST_INITIAL_SLASH_ACTION_ID,
       kind: "damage",
       label: "奥义 · 梦想真说 / 初始一刀",
-      sourceActionId: "raiden.burst.initial_slash",
+      sourceActionId: RAIDEN_BURST_INITIAL_SLASH_ACTION_ID,
       status: "verified",
       target: "enemy"
+    }
+  ],
+  scenarioEffectOptions: [
+    {
+      actionIds: [RAIDEN_BURST_INITIAL_SLASH_ACTION_ID],
+      id: RAIDEN_SKILL_EYE_EFFECT_ID,
+      label: "雷罚恶曜之眼"
     }
   ],
   detail:

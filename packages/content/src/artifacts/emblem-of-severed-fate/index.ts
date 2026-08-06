@@ -1,6 +1,5 @@
 export {
-  createEmblemBurstModifier,
   EMBLEM_ENERGY_RECHARGE_BONUS,
-  emblemOfSeveredFateCombatActionEffects,
-  illustrativeEmblemBurstModifier
+  emblemOfSeveredFateCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

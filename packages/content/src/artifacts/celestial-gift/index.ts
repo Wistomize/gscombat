@@ -4,3 +4,4 @@ export {
   CELESTIAL_GIFT_MORTAL_HYMN_DAMAGE_BONUS,
   celestialGiftCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

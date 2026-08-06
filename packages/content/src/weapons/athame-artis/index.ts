@@ -6,3 +6,4 @@ export {
   ATHAME_ARTIS_MAGIC_DAYLIGHT_BLADE_OTHER_CURRENT_CHARACTER_EXTRA_ATTACK_PERCENT,
   athameArtisCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

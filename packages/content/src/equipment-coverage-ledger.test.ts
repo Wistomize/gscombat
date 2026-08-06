@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { listHealingEquipmentEffects } from "./artifacts/healing-bonus/effects.js"
-import { listRecipientEquipmentEffects } from "./artifacts/recipient-bonus/effects.js"
+import { listHealingEquipmentEffects } from "./rules/equipment/healing/effects.js"
+import { listRecipientEquipmentEffects } from "./rules/equipment/recipient/effects.js"
 import { listCombatActionEffects } from "./combat-action-effects.js"
 import { supportedArtifactSets, supportedWeapons } from "./catalog.js"
 import {

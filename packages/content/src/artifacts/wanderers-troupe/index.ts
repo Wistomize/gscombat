@@ -3,3 +3,4 @@ export {
   WANDERERS_TROUPE_TWO_PIECE_ELEMENTAL_MASTERY,
   wanderersTroupeCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

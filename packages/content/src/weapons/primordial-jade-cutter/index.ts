@@ -3,3 +3,4 @@ export {
   PRIMORDIAL_JADE_CUTTER_HP_PERCENT,
   primordialJadeCutterCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

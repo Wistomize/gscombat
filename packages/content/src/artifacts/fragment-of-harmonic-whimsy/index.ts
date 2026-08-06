@@ -3,3 +3,4 @@ export {
   FRAGMENT_OF_HARMONIC_WHIMSY_DAMAGE_BONUS_PER_STACK,
   fragmentOfHarmonicWhimsyCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

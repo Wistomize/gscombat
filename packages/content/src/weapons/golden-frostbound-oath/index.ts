@@ -4,3 +4,4 @@ export {
   GOLDEN_FROSTBOUND_OATH_OTHER_PARTY_GEO_DAMAGE_BONUS,
   goldenFrostboundOathCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -3,3 +3,4 @@ export {
   BLOODSTAINED_PHYSICAL_DAMAGE_BONUS,
   bloodstainedChivalryCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -4,3 +4,4 @@ export {
   BLACKCLIFF_AGATE_TWO_STACK_ATTACK_PERCENT,
   blackcliffAgateCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

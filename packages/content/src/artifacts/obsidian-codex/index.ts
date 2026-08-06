@@ -3,3 +3,4 @@ export {
   OBSIDIAN_CODEX_NIGHTSOUL_DAMAGE_BONUS,
   obsidianCodexCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

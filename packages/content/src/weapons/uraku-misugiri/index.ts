@@ -4,3 +4,4 @@ export {
   URAKU_MISUGIRI_SKILL_DAMAGE_BONUS,
   urakuMisugiriCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

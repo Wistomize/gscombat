@@ -3,3 +3,4 @@ export {
   NIGHTWEAVERS_LOOKING_GLASS_AFTER_LUNAR_BLOOM_ELEMENTAL_MASTERY,
   nightweaversLookingGlassCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -5,3 +5,4 @@ export {
   MISTSPLITTER_REFORGED_TWO_EMBLEM_DAMAGE_BONUS,
   mistsplitterReforgedCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

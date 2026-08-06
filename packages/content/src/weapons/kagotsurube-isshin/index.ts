@@ -3,3 +3,4 @@ export {
   KAGOTSURUBE_ISSHIN_PHYSICAL_COEFFICIENT,
   kagotsurubeIsshinCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

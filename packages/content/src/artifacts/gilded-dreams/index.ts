@@ -4,3 +4,4 @@ export {
   GILDED_DREAMS_TWO_PIECE_ELEMENTAL_MASTERY,
   gildedDreamsCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

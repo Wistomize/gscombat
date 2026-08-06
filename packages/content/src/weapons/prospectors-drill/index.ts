@@ -3,3 +3,4 @@ export {
   PROSPECTORS_DRILL_ATTACK_PERCENT_PER_CONSUMED_MARK,
   prospectorsDrillCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

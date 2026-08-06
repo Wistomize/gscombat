@@ -4,3 +4,4 @@ export {
   DRAGONSPINE_SPEAR_TRIGGER_PROBABILITY,
   dragonspineSpearCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

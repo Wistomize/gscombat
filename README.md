@@ -26,18 +26,38 @@ GSCombat 是一个类型安全、可审计的原神角色指标与战斗伤害�
 apps/
 ├── api/          Fastify API、邀请码会话、SQLite 工作空间、展示柜导入
 ├── web/          Next.js 网站
-└── mini/         Taro 微信小程序基础工程
+└── mini/         暂停独立功能的 Taro 微信小程序壳
 packages/
 ├── analyzer/     场景编排、效果解析、反事实收益分析
 ├── calculator/   与角色无关的类型化伤害流水线
-├── content/      characters / weapons / artifacts / playstyles 等语义内容
+├── content/      characters / weapons / artifacts / rules 等语义内容
 ├── contracts/    TypeBox 请求、响应和领域契约
 └── game-data/    固定版本、只读的游戏数据 SQLite 快照
 ```
 
 角色的动作、固有天赋、命座和辅助指标放在
-`packages/content/src/characters/<character>/`。武器与圣遗物效果分别属于 `weapons/` 和 `artifacts/`；
-`playstyles/` 只组合这些实体。`calculator` 不导入任何角色或装备内容。
+`packages/content/src/characters/<character>/`。武器与圣遗物效果分别属于 `weapons/` 和 `artifacts/`，队伍规则
+属于 `rules/`。`calculator` 不导入任何角色或装备内容。小程序恢复开发前不运行独立计算逻辑。
+
+## Content 声明维护
+
+Content 采用“实体自有声明、构建期静态聚合”：
+
+- 角色目录的 `definition.ts` 维护目录中文名、游戏数据 ID、武器类型和特殊动作展示名，`combat.ts` 维护动作、
+  指标和角色效果，有多倍率审阅记录时增加 `evidence.ts`；
+- 每个 inventory 中的武器和圣遗物目录都包含 `effects.ts`、`coverage.ts` 和 `index.ts`；没有当前核心动作收益时，
+  `effects.ts` 明确导出类型化空数组，原因写在 coverage 条款中；
+- `packages/content/src/registry/*.generated.ts` 由工具生成，禁止手工编辑，运行时只使用这些静态 import，不扫描目录。
+
+新增或移动 Content 实体后运行：
+
+```bash
+pnpm --filter @gscombat/content registries:generate
+pnpm --filter @gscombat/content registries:check
+```
+
+Content 的 `build`、`test` 和 `typecheck` 都会先执行新鲜度检查，陈旧或缺失的生成注册表会直接失败。完整决策见
+[ADR 0015](docs/adr/0015-generate-content-registries-from-entity-owned-declarations.md)。
 
 ## 本地开发
 

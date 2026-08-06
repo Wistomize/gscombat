@@ -5,3 +5,4 @@ export {
   FLOWER_OF_PARADISE_LOST_TWO_PIECE_ELEMENTAL_MASTERY,
   flowerOfParadiseLostCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

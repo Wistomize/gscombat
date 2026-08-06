@@ -4,3 +4,4 @@ export {
   FADING_TWILIGHT_EVENING_GLOW_DAMAGE_BONUS,
   fadingTwilightCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -3,3 +3,4 @@ export {
   BRAVE_HEART_ENEMY_ABOVE_HALF_HEALTH_DAMAGE_BONUS,
   braveHeartCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

@@ -3,3 +3,4 @@ export {
   ABSOLUTION_CRIT_DAMAGE,
   absolutionCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

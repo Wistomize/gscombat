@@ -3,3 +3,4 @@ export {
   MARTIAL_ARTIST_TWO_PIECE_NORMAL_CHARGED_DAMAGE_BONUS,
   martialArtistCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

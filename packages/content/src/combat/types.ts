@@ -1009,6 +1009,15 @@ export interface CombatElementOverrideEffect {
   readonly target: RotationElementOverrideTarget
 }
 
+/** One character-owned current-action state that may be selected when its source build is in the party. */
+export interface CombatCharacterScenarioEffectOption {
+  /** Omitted when the state can affect any selected action. */
+  readonly actionIds?: readonly string[]
+  readonly id: string
+  readonly label: string
+  readonly minimumSourceConstellation?: number
+}
+
 /** Metadata for one prospective rotation action, independent from its numeric calculation. */
 export interface CombatActionMetadata {
   readonly additiveReaction?: AdditiveReactionConfig
@@ -1062,6 +1071,8 @@ export interface CharacterCombatCoverage {
   readonly label: string
   /** Default source-owned outputs; any friendly recipient is selected at evaluation time, never hard-coded here. */
   readonly metrics?: readonly CombatMetricDefinition[]
+  /** Character-owned selectable states projected to scenario controls by the content layer. */
+  readonly scenarioEffectOptions?: readonly CombatCharacterScenarioEffectOption[]
   readonly status: CombatCoverageStatus
   /** Character-owned talent-level constellations shared by actions and support metrics. */
   readonly talentLevelConstellationBonuses?: readonly CombatCharacterTalentLevelConstellationBonus[]

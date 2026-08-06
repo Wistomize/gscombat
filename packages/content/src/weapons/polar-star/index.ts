@@ -6,3 +6,4 @@ export {
   POLAR_STAR_TWO_STACK_ATTACK_PERCENT,
   polarStarCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

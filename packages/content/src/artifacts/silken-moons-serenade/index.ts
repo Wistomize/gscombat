@@ -4,3 +4,4 @@ export {
   SILKEN_MOONS_SERENADE_INITIAL_MOONSIGN_PARTY_ELEMENTAL_MASTERY,
   silkenMoonsSerenadeCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

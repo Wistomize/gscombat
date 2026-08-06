@@ -3,3 +3,4 @@ export {
   DEEPWOOD_DENDRO_RESISTANCE_REDUCTION,
   deepwoodMemoriesCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

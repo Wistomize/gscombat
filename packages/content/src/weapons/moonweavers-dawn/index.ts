@@ -4,3 +4,4 @@ export {
   MOONWEAVERS_DAWN_BURST_DAMAGE_BONUS,
   moonweaversDawnCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

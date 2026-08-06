@@ -4,3 +4,4 @@ export {
   VOURUKASHAS_GLOW_SKILL_BURST_DAMAGE_BONUS_PER_DAMAGE_TAKEN_STACK,
   vourukashasGlowCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

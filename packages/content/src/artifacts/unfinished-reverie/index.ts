@@ -4,3 +4,4 @@ export {
   UNFINISHED_REVERIE_POST_BURNING_GRACE_EXPIRY_STATES,
   unfinishedReverieCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"

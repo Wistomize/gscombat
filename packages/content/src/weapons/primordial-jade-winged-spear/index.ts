@@ -3,3 +3,4 @@ export {
   PRIMORDIAL_JADE_WINGED_SPEAR_SEVEN_STACK_DAMAGE_BONUS,
   primordialJadeWingedSpearCombatActionEffects
 } from "./effects.js"
+export { equipmentCoverage } from "./coverage.js"
