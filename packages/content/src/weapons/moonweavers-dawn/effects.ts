@@ -16,7 +16,8 @@ export const moonweaversDawnCombatActionEffects: readonly CombatActionEffect[] =
     value: { kind: "refinement_table", values: MOONWEAVERS_DAWN_BURST_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    condition: { kind: "primary_burst_energy_cost", maximum: 60, minimum: 41 },
     exclusivity: { group: "moonweavers-dawn-energy-cap", variant: "at-most-sixty" },
     id: "weapon.moonweavers-dawn.at-most-sixty-energy.extra-burst-damage-bonus",
     label: "织月者的曙色 · 元素能量上限不超过60时的额外元素爆发伤害",
@@ -26,7 +27,8 @@ export const moonweaversDawnCombatActionEffects: readonly CombatActionEffect[] =
     value: { kind: "refinement_table", values: MOONWEAVERS_DAWN_AT_MOST_SIXTY_ENERGY_EXTRA_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    condition: { kind: "primary_burst_energy_cost", maximum: 40 },
     exclusivity: { group: "moonweavers-dawn-energy-cap", variant: "at-most-forty" },
     id: "weapon.moonweavers-dawn.at-most-forty-energy.extra-burst-damage-bonus",
     label: "织月者的曙色 · 元素能量上限不超过40时的额外元素爆发伤害",

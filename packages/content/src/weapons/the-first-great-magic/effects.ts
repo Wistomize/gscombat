@@ -14,8 +14,14 @@ function getAttackPercentValues(sameElementCharacterCount: number): readonly num
 function createSameElementCharacterEffect(
   sameElementCharacterCount: (typeof sameElementCharacterCounts)[number]
 ): CombatActionEffect {
+  const sameElementTeammateCount = sameElementCharacterCount - 1
   return {
-    activation: "active",
+    activation: "automatic",
+    condition: {
+      kind: "primary_same_element_teammate_count",
+      ...(sameElementCharacterCount === 3 ? {} : { maximum: sameElementTeammateCount }),
+      minimum: sameElementTeammateCount
+    },
     exclusivity: { group: "the-first-great-magic-same-element-party", variant: `${sameElementCharacterCount}-character` },
     id: `weapon.the-first-great-magic.same-element-party.${sameElementCharacterCount}-character.attack-percent`,
     label: `最初的大魔术 · ${sameElementCharacterCount}名同元素角色的攻击力`,

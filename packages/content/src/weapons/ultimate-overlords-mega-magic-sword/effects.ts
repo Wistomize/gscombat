@@ -24,6 +24,7 @@ function createMelusineEffect(melusineCount: (typeof melusineCounts)[number]): C
     },
     id: "weapon.ultimate-overlords-mega-magic-sword.melusine." + melusineCount + "-stack.attack-percent",
     label: "「究极霸王超级魔剑」· 梅露辛" + melusineCount + "层额外攻击力",
+    selectionMode: "optional",
     source: { kind: "weapon", weaponId: "UltimateOverlordsMegaMagicSword" },
     target: "attackPercent",
     value: { kind: "refinement_table", values: getMelusineAttackPercentValues(melusineCount) }

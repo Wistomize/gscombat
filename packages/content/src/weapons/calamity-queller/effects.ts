@@ -18,6 +18,7 @@ function createConsumptionStackEffect(
   const stateLabel = state === "on-field" ? "前台" : "后台"
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "calamity-queller-consumption", variant: `${state}-${stackCount}-stack` },
     id: `weapon.calamity-queller.consumption.${state}.${stackCount}-stack.attack-percent`,
     label: `息灾 · 圆顿${stateLabel}${stackCount}层攻击力`,

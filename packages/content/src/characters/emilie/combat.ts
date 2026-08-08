@@ -182,7 +182,7 @@ export const emilieCombatCoverage: CharacterCombatCoverage = {
       characterId: "Emilie",
       id: "emilie.skill.extraction_of_lacelight.lumidouce_case.level_two.attack",
       kind: "damage",
-      label: "撷萃调香 / 燃烧条件下柔灯之匣·二阶攻击（两次命中，C0，无预设反应）",
+      label: "撷萃调香 / 燃烧条件下柔灯之匣·二阶攻击（两次命中，C0，无反应）",
       sourceActionId: "emilie.skill.extraction_of_lacelight.lumidouce_case.level_two.attack",
       status: "verified",
       target: "enemy"

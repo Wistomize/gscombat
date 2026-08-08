@@ -141,7 +141,7 @@ export const durinCombatCoverage: CharacterCombatCoverage = {
       characterId: "Durin",
       id: "durin.skill.binary_formula.purity_transformation",
       kind: "damage",
-      label: "二元式·聚分熔炼 / 转变·白化之是单次命中（C0，无预设反应）",
+      label: "二元式·聚分熔炼 / 转变·白化之是单次命中（C0，无反应）",
       sourceActionId: "durin.skill.binary_formula.purity_transformation",
       status: "verified",
       target: "enemy"

@@ -125,7 +125,7 @@ export const keqingCombatCoverage: CharacterCombatCoverage = {
       characterId: "Keqing",
       id: "keqing.skill.stellar_restoration.recast_slash",
       kind: "damage",
-      label: "星斗归位 / 回刺斩（C0，无预设反应）",
+      label: "星斗归位 / 回刺斩（C0，无反应）",
       sourceActionId: "keqing.skill.stellar_restoration.recast_slash",
       status: "verified",
       target: "enemy"

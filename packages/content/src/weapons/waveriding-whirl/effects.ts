@@ -17,7 +17,13 @@ function createHydroCharacterCountEffect(
   hydroCharacterCount: (typeof hydroCharacterCounts)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    condition: {
+      elements: ["hydro"],
+      kind: "team_element_count",
+      ...(hydroCharacterCount === 2 ? {} : { maximum: hydroCharacterCount }),
+      minimum: hydroCharacterCount
+    },
     exclusivity: {
       group: "waveriding-whirl-hydro-character-count",
       variant: hydroCharacterCount + "-hydro-character"

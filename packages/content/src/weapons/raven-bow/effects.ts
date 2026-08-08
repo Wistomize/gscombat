@@ -6,6 +6,7 @@ export const RAVEN_BOW_DAMAGE_BONUS_BY_REFINEMENT = [0.12, 0.15, 0.18, 0.21, 0.2
 export const ravenBowCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.raven-bow.hydro-or-pyro-aura.damage-bonus",
     label: "鸦羽弓 · 当前目标受水元素或火元素影响",
     source: { kind: "weapon", weaponId: "RavenBow" },

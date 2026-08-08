@@ -5,7 +5,7 @@ export const kinichDefinition: CharacterDefinition = {
     characterId: "Kinich",
     label: "基尼奇",
     primaryActionLabels: {
-      "kinich.skill.scalespiker_cannon.single_hit": "悬猎·游骋高狩 / 迴猎贯鳞炮单次命中（满夜魂值，C0，无预设反应）"
+      "kinich.skill.scalespiker_cannon.single_hit": "悬猎·游骋高狩 / 迴猎贯鳞炮单次命中（满夜魂值，C0，无反应）"
     },
     weaponType: "claymore"
   },

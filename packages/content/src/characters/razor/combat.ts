@@ -241,7 +241,7 @@ export const razorCombatCoverage: CharacterCombatCoverage = {
       characterId: "Razor",
       id: "razor.burst.lightning_fang.normal.fourth_hit",
       kind: "damage",
-      label: "雷牙 / 状态普通攻击四段（C0、无预设反应）",
+      label: "雷牙 / 状态普通攻击四段（C0、无反应）",
       sourceActionId: "razor.burst.lightning_fang.normal.fourth_hit",
       status: "verified",
       target: "enemy"

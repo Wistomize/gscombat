@@ -191,7 +191,7 @@ export const kinichCombatCoverage: CharacterCombatCoverage = {
       characterId: "Kinich",
       id: "kinich.skill.scalespiker_cannon.single_hit",
       kind: "damage",
-      label: "悬猎·游骋高狩 / 迴猎贯鳞炮单次命中（满夜魂值，无预设反应）",
+      label: "悬猎·游骋高狩 / 迴猎贯鳞炮单次命中（满夜魂值，无反应）",
       sourceActionId: "kinich.skill.scalespiker_cannon.single_hit",
       status: "verified",
       target: "enemy"
@@ -201,7 +201,7 @@ export const kinichCombatCoverage: CharacterCombatCoverage = {
       characterId: "Kinich",
       id: "kinich.burst.hail_to_the_almighty_dragonlord.dragonlord_breath.single_tick",
       kind: "damage",
-      label: "向伟大圣龙致意 / 龙息单次命中（无预设反应）",
+      label: "向伟大圣龙致意 / 龙息单次命中（无反应）",
       sourceActionId: "kinich.burst.hail_to_the_almighty_dragonlord.dragonlord_breath.single_tick",
       status: "verified",
       target: "enemy"

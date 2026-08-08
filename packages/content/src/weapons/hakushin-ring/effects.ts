@@ -16,6 +16,7 @@ function createReactionEffect(
 ): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "hakushin-ring-reaction", variant: reaction.id },
     id: `weapon.hakushin-ring.${reaction.id}-related-element-damage-bonus`,
     label: `白辰之环 · 持有者触发${reaction.label}后的关联元素伤害`,

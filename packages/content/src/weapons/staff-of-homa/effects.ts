@@ -24,6 +24,7 @@ export const staffOfHomaCombatActionEffects: readonly CombatActionEffect[] = [
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack",
     label: "护摩之杖 · 当前生命值低于50%时的额外固定攻击力",
     source: { holder: "primary", kind: "weapon", weaponId: "StaffOfHoma" },

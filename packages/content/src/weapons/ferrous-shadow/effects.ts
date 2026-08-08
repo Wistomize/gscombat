@@ -6,6 +6,7 @@ export const FERROUS_SHADOW_LOW_HP_CHARGED_DAMAGE_BONUS = [0.3, 0.35, 0.4, 0.45,
 export const ferrousShadowCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.ferrous-shadow.low-hp.charged-damage-bonus",
     label: "铁影阔剑 · 当前生命值低于精炼阈值时的重击伤害",
     source: { kind: "weapon", weaponId: "FerrousShadow" },

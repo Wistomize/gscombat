@@ -12,11 +12,18 @@ function getAttackPercentValues(qualifyingCharacterCount: number): readonly numb
 function createQualifyingCharacterEffects(
   qualifyingCharacterCount: (typeof qualifyingCharacterCounts)[number]
 ): readonly CombatActionEffect[] {
+  const condition = {
+    kind: "primary_different_element_or_region_party_count" as const,
+    ...(qualifyingCharacterCount === 4 ? {} : { maximum: qualifyingCharacterCount }),
+    minimum: qualifyingCharacterCount,
+    region: "natlan"
+  }
   const effectSuffix = `${qualifyingCharacterCount}-character`
   const exclusivity = { group: "chain-breaker-qualifying-party", variant: effectSuffix }
   const effects: CombatActionEffect[] = [
     {
-      activation: "active",
+      activation: "automatic",
+      condition,
       exclusivity,
       id: `weapon.chain-breaker.qualifying-party.${effectSuffix}.attack-percent`,
       label: `碎链 · ${qualifyingCharacterCount}名符合条件角色的攻击力`,
@@ -27,7 +34,8 @@ function createQualifyingCharacterEffects(
   ]
   if (qualifyingCharacterCount >= 3) {
     effects.push({
-      activation: "active",
+      activation: "automatic",
+      condition,
       exclusivity,
       id: `weapon.chain-breaker.qualifying-party.${effectSuffix}.elemental-mastery`,
       label: `碎链 · ${qualifyingCharacterCount}名符合条件角色的元素精通`,

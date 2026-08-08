@@ -173,7 +173,7 @@ export const varesaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Varesa",
       id: "varesa.normal.fiery_passion.high_plunge.follow_up_strike",
       kind: "damage",
-      label: "炽热激情 / 高空下落冲击 + 燃烧的山丘上的彩虹（无预设反应）",
+      label: "炽热激情 / 高空下落冲击 + 燃烧的山丘上的彩虹（无反应）",
       sourceActionId: "varesa.normal.fiery_passion.high_plunge.follow_up_strike",
       status: "verified",
       target: "enemy"

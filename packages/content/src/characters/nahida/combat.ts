@@ -305,7 +305,7 @@ export const nahidaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Nahida",
       id: "nahida.skill.all_schemes_to_know.tri_karma_purification.single_hit",
       kind: "damage",
-      label: "所闻遍计 / 灭净三业单次触发（后台，无预设反应）",
+      label: "所闻遍计 / 灭净三业单次触发 · 无反应",
       sourceActionId: "nahida.skill.all_schemes_to_know.tri_karma_purification.single_hit",
       status: "verified",
       target: "enemy"

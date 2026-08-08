@@ -8,6 +8,7 @@ export const BLACKCLIFF_POLE_THREE_STACK_ATTACK_PERCENT = [0.36, 0.45, 0.54, 0.6
 export const blackcliffPoleCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "blackcliff-pole-defeated-enemy", variant: "one-stack" },
     id: "weapon.blackcliff-pole.defeated-enemy.1-stack.attack-percent",
     label: "黑岩刺枪 · 击败敌人后的1层攻击力",
@@ -17,6 +18,7 @@ export const blackcliffPoleCombatActionEffects: readonly CombatActionEffect[] = 
   },
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "blackcliff-pole-defeated-enemy", variant: "two-stack" },
     id: "weapon.blackcliff-pole.defeated-enemy.2-stack.attack-percent",
     label: "黑岩刺枪 · 击败敌人后的2层攻击力",
@@ -26,6 +28,7 @@ export const blackcliffPoleCombatActionEffects: readonly CombatActionEffect[] = 
   },
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "blackcliff-pole-defeated-enemy", variant: "three-stack" },
     id: "weapon.blackcliff-pole.defeated-enemy.3-stack.attack-percent",
     label: "黑岩刺枪 · 击败敌人后的3层攻击力",

@@ -39,10 +39,11 @@ function resolveSourceSelfMaximumReachableEquipmentStatEffects(
   primaryElement: CombatActionMetadata["element"] | null,
   primaryDifferentElementTeammateCount: number | null,
   primarySameElementTeammateCount: number | null,
-  teamUniqueElementCount: number | null
+  teamUniqueElementCount: number | null,
+  selectedEffectIds: readonly string[]
 ): ResolvedCombatActionEffects {
   const sourceScenario: EvaluationScenario = {
-    conditions: { activeEffectIds: [], enemyCount, equipmentEffectMode: "maximum_reachable" },
+    conditions: { activeEffectIds: [...selectedEffectIds], enemyCount, equipmentEffectMode: "maximum_reachable" },
     enemy: { defenseReduction: 0, level: 100, name: "来源属性快照", resistance: 0.1 },
     externalBuffs: [],
     gameDataVersion: gameData.getManifest().gameVersion,
@@ -76,19 +77,47 @@ function resolveSourceSelfMaximumReachableEquipmentStatEffects(
   })
 }
 
-/** Resolves every party member's source-owned maximum-reachable equipment state once for one action evaluation. */
+function listSelectedSelfEquipmentEffectIds(
+  source: CharacterBuild,
+  isScenarioPrimary: boolean,
+  activeEffectIds: readonly string[],
+  activeEffectSourceBuildIds: Readonly<Record<string, string>>
+): readonly string[] {
+  const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
+  return activeEffectIds.filter((effectId) => {
+    const effect = effectsById.get(effectId)
+    if (!effect || effect.source.kind === "character" || effect.source.holder === "party_member") return false
+    const effectSource = effect.source
+    const selectedSourceBuildId = activeEffectSourceBuildIds[effectId]
+    if (selectedSourceBuildId !== undefined && selectedSourceBuildId !== source.buildId) return false
+    if (selectedSourceBuildId === undefined && !isScenarioPrimary) return false
+    if (effectSource.kind === "weapon") return source.weapon.weaponId === effectSource.weaponId
+    const pieceCount = source.artifacts.filter((artifact) => artifact.setId === effectSource.setId).length
+    return pieceCount >= effectSource.minimumPieces
+  })
+}
+
+/** Resolves every party member's selected and maximum-reachable self-equipment state for one action evaluation. */
 export function resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
   primary: CharacterBuild,
   teammates: readonly CharacterBuild[],
   action: CombatActionMetadata,
   gameData: GameDataRepository,
-  enemyCount: number
+  enemyCount: number,
+  activeEffectIds: readonly string[] = [],
+  activeEffectSourceBuildIds: Readonly<Record<string, string>> = {}
 ): ReadonlyMap<string, ResolvedCombatActionEffects> {
   const party = [primary, ...teammates]
   const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
   return new Map(
     party.map((source) => {
       const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
+      const selectedEffectIds = listSelectedSelfEquipmentEffectIds(
+        source,
+        source.buildId === primary.buildId,
+        activeEffectIds,
+        activeEffectSourceBuildIds
+      )
       const base = resolveBaseCombatStats(source, gameData, action.element)
       const primaryElement = resolveBuildElement(source, gameData)
       const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
@@ -113,7 +142,8 @@ export function resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
           primaryElement,
           primaryDifferentElementTeammateCount,
           primarySameElementTeammateCount,
-          teamUniqueElementCount
+          teamUniqueElementCount,
+          selectedEffectIds
         )
       ] as const
     })
@@ -464,7 +494,9 @@ export function resolveScenarioSourceStatMaps(input: {
     input.teammates,
     input.action,
     input.gameData,
-    input.enemyCount
+    input.enemyCount,
+    input.activeEffectIds,
+    input.activeEffectSourceBuildIds
   )
   const sourceFinalHpByBuildId = resolveSourceFinalHpByBuildId(
     input.primary,

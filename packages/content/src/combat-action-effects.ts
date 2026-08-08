@@ -34,12 +34,13 @@ export type CombatActionEffectOptionSource =
 /** A JSON-safe active snapshot choice that a UI can validate against the configured team. */
 export interface CombatActionEffectOption {
   readonly exclusiveGroup?: string
+  readonly exclusiveVariant?: string
   readonly id: string
   readonly label: string
   readonly recipientSourceRelation?: "not_source" | "source"
   /** IDs whose active selection derives this option instead of exposing an independent snapshot toggle. */
   readonly requiredActiveEffectIds?: string[]
-  readonly selectionMode?: "optional"
+  readonly selectionMode?: "optional" | "required"
   readonly source: CombatActionEffectOptionSource
 }
 
@@ -149,6 +150,7 @@ export function listActiveCombatActionEffectOptionsForAction(
     .filter((effect) => effect.deterministicSnapshotActivation === undefined)
     .map((effect) => ({
       ...(effect.exclusivity === undefined ? {} : { exclusiveGroup: effect.exclusivity.group }),
+      ...(effect.exclusivity === undefined ? {} : { exclusiveVariant: effect.exclusivity.variant }),
       id: effect.id,
       label: effect.label,
       ...(effect.requiredActiveEffectIds === undefined

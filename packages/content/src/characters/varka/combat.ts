@@ -83,7 +83,7 @@ export const varkaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Varka",
       id: "varka.skill.windbound_execution.press",
       kind: "damage",
-      label: "烈风终坠 / 点按单次命中（C0，无预设反应）",
+      label: "烈风终坠 / 点按单次命中（C0，无反应）",
       sourceActionId: "varka.skill.windbound_execution.press",
       status: "verified",
       target: "enemy"

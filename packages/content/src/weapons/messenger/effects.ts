@@ -6,6 +6,7 @@ export const MESSENGER_WEAK_POINT_PHYSICAL_COEFFICIENT = [1, 1.25, 1.5, 1.75, 2]
 export const messengerCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.messenger.weak-point-guaranteed-crit.additional-damage",
     label: "信使 · 本次瞄准射击命中要害且冷却已就绪，触发必定暴击的物理附加伤害",
     source: { holder: "primary", kind: "weapon", weaponId: "Messenger" },

@@ -14,6 +14,7 @@ function getDamageBonusValues(stackCount: number): readonly number[] {
 function createBondOfLifeIncreaseEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "absolution-bond-of-life-increase", variant: `${stackCount}-stack` },
     id: `weapon.absolution.bond-of-life-increase.${stackCount}-stack.damage-bonus`,
     label: `赦罪 · 本次命中前已持有的${stackCount}层生命之契数值增加伤害提升（6秒内）`,

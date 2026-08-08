@@ -7,6 +7,8 @@ export const CALAMITY_OF_ESHU_SHIELDED_NORMAL_CHARGED_CRIT_RATE = [0.08, 0.1, 0.
 export const calamityOfEshuCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
+    exclusivity: { group: "calamity-of-eshu-shield-state", variant: "shielded" },
     id: "weapon.calamity-of-eshu.shielded.normal-charged-damage-bonus",
     label: "厄水之祸 · 当前角色处于护盾庇护下（普通攻击与重击伤害）",
     source: { kind: "weapon", weaponId: "CalamityOfEshu" },
@@ -16,6 +18,8 @@ export const calamityOfEshuCombatActionEffects: readonly CombatActionEffect[] = 
   },
   {
     activation: "active",
+    selectionMode: "optional",
+    exclusivity: { group: "calamity-of-eshu-shield-state", variant: "shielded" },
     id: "weapon.calamity-of-eshu.shielded.normal-charged-crit-rate",
     label: "厄水之祸 · 当前角色处于护盾庇护下（普通攻击与重击暴击率）",
     source: { kind: "weapon", weaponId: "CalamityOfEshu" },

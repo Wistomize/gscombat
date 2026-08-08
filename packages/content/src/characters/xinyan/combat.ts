@@ -149,7 +149,7 @@ export const xinyanCombatCoverage: CharacterCombatCoverage = {
       characterId: "Xinyan",
       id: "xinyan.burst.riff_revolution.initial_strum",
       kind: "damage",
-      label: "叛逆刮弦 / 开场单次物理命中（C0，无预设反应）",
+      label: "叛逆刮弦 / 开场单次物理命中（C0，无反应）",
       sourceActionId: "xinyan.burst.riff_revolution.initial_strum",
       status: "verified",
       target: "enemy"

@@ -102,7 +102,7 @@ export const kavehCombatCoverage: CharacterCombatCoverage = {
       characterId: "Kaveh",
       id: "kaveh.burst.painted_dome.normal_attack.first_hit",
       kind: "damage",
-      label: "繁绘隅穹状态普攻一段（C0，无预设反应）",
+      label: "繁绘隅穹状态普攻一段（C0，无反应）",
       sourceActionId: "kaveh.burst.painted_dome.normal_attack.first_hit",
       status: "verified",
       target: "enemy"

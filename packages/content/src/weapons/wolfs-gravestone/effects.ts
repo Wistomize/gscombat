@@ -15,6 +15,7 @@ export const wolfsGravestoneCombatActionEffects: readonly CombatActionEffect[] =
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.wolfs-gravestone.after-low-health-target-hit.party-attack-percent",
     label: "狼的末路 · 命中生命值低于30%的敌人后12秒内（当前动作前已生效）",
     source: { holder: "party_member", kind: "weapon", weaponId: "WolfsGravestone" },

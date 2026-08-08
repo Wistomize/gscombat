@@ -164,7 +164,7 @@ export const tartagliaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Tartaglia",
       id: "tartaglia.skill.foul_legacy_raging_tide.melee_normal.first_hit",
       kind: "damage",
-      label: "魔王武装·狂澜 / 近战一段（C0，无预设反应）",
+      label: "魔王武装·狂澜 / 近战一段（C0，无反应）",
       sourceActionId: "tartaglia.skill.foul_legacy_raging_tide.melee_normal.first_hit",
       status: "verified",
       target: "enemy"

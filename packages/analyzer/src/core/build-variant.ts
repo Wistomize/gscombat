@@ -96,6 +96,37 @@ export function resolveBuildElement(build: CharacterBuild, gameData: GameDataRep
   return element as Element
 }
 
+/** Resolves one build's maintained home region, or null when the snapshot does not declare one. */
+export function resolveBuildRegion(build: CharacterBuild, gameData: GameDataRepository): string | null {
+  assertValidCharacterBuild(build)
+  return gameData.getCharacter(build.characterId)?.region ?? null
+}
+
+/** Counts configured party members whose maintained home region matches the requested region. */
+export function resolveTeamRegionCount(
+  builds: readonly CharacterBuild[],
+  region: string,
+  gameData: GameDataRepository
+): number {
+  return builds.filter((build) => resolveBuildRegion(build, gameData) === region).length
+}
+
+/** Counts party members who either match one region or differ elementally from the primary character. */
+export function resolvePrimaryDifferentElementOrRegionPartyCount(
+  primary: CharacterBuild,
+  teammates: readonly CharacterBuild[],
+  region: string,
+  gameData: GameDataRepository
+): number | null {
+  const primaryElement = resolveBuildElement(primary, gameData)
+  const party = [primary, ...teammates]
+  const elements = party.map((build) => resolveBuildElement(build, gameData))
+  if (primaryElement === null || elements.some((element) => element === null)) return null
+  return party.filter((build, index) =>
+    resolveBuildRegion(build, gameData) === region || elements[index] !== primaryElement
+  ).length
+}
+
 /** Counts distinct configured party elements, or returns null when any member lacks a known element. */
 export function resolveTeamUniqueElementCount(
   builds: readonly CharacterBuild[],

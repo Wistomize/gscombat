@@ -12,6 +12,7 @@ function getDamageBonusValues(stackCount: number): readonly number[] {
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "mappa-mare-infusion-scroll", variant: `${stackCount}-stack` },
     id: `weapon.mappa-mare.infusion-scroll.${stackCount}-stack.all-element-damage-bonus`,
     label: `万国诸海图谱 · 触发元素反应后的${stackCount}层所有元素伤害`,

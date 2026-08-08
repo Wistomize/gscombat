@@ -11,6 +11,7 @@ function getOffFieldStackValues(values: readonly number[], stackCount: number): 
 function createOffFieldStackEffect(stackCount: (typeof offFieldStackCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "alley-hunter-off-field", variant: `${stackCount}-stack` },
     id: `weapon.alley-hunter.off-field.${stackCount}-stack.damage-bonus`,
     label: `暗巷猎手 · 当前核心动作前已持有${stackCount}层伤害提升（最多10层）`,

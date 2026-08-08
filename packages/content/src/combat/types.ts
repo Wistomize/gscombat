@@ -714,6 +714,29 @@ export interface CombatActionEffectPrimarySameElementTeammateCountCondition {
   readonly minimum: number
 }
 
+/** Requires the equipped primary character's maintained Burst Energy cost to fall in one range. */
+export interface CombatActionEffectPrimaryBurstEnergyCostCondition {
+  readonly kind: "primary_burst_energy_cost"
+  readonly maximum?: number
+  readonly minimum?: number
+}
+
+/** Counts configured party members belonging to one maintained character region. */
+export interface CombatActionEffectTeamRegionCountCondition {
+  readonly kind: "team_region_count"
+  readonly maximum?: number
+  readonly minimum: number
+  readonly region: string
+}
+
+/** Counts party members who either belong to one region or differ elementally from the primary character. */
+export interface CombatActionEffectPrimaryDifferentElementOrRegionPartyCountCondition {
+  readonly kind: "primary_different_element_or_region_party_count"
+  readonly maximum?: number
+  readonly minimum: number
+  readonly region: string
+}
+
 /** Requires the party-derived Moonsign state to reach at least the declared level. */
 export interface CombatActionEffectMoonsignLevelCondition {
   readonly kind: "moonsign_level"
@@ -729,11 +752,14 @@ export type CombatActionEffectCondition =
   | CombatActionEffectEnemyCountCondition
   | CombatActionEffectHexereiSecretRiteCondition
   | CombatActionEffectMoonsignLevelCondition
+  | CombatActionEffectPrimaryBurstEnergyCostCondition
+  | CombatActionEffectPrimaryDifferentElementOrRegionPartyCountCondition
   | CombatActionEffectPrimaryNightsoulBlessingCondition
   | CombatActionEffectSourceNightsoulBlessingCondition
   | CombatActionEffectTeamNightsoulBurstCondition
   | CombatActionEffectTeamElementCountCondition
   | CombatActionEffectTeamElementSubsetCondition
+  | CombatActionEffectTeamRegionCountCondition
   | CombatActionEffectPrimaryDifferentElementTeammateCountCondition
   | CombatActionEffectPrimarySameElementTeammateCountCondition
   | CombatActionEffectTeamUniqueElementCountCondition
@@ -902,8 +928,8 @@ export interface CombatActionMatchedAdditiveDamageTerm {
 /** Shared activation metadata for a typed current-action effect. */
 interface CombatActionEffectActivation {
   readonly activation: "active" | "automatic" | "maximum_reachable"
-  /** Keeps a reachable active effect out of automatic maximum selection and exposes it as an optional UI choice. */
-  readonly selectionMode?: "optional"
+  /** Keeps a reachable active effect out of automatic maximum selection and exposes it as an explicit UI choice. */
+  readonly selectionMode?: "optional" | "required"
   /**
    * Active snapshot IDs that must be selected before this effect can apply. Scenario evaluation derives the effect
    * automatically once every requirement and its own source constraints are satisfied.

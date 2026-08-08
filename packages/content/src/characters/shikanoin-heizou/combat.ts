@@ -203,7 +203,7 @@ export const shikanoinHeizouCombatCoverage: CharacterCombatCoverage = {
       characterId: "ShikanoinHeizou",
       id: "shikanoin_heizou.skill.heartstopper_strike.four_declension_conviction",
       kind: "damage",
-      label: "勠心拳 / 四层变格·正论（C0，无预设反应）",
+      label: "勠心拳 / 四层变格·正论（C0，无反应）",
       sourceActionId: "shikanoin_heizou.skill.heartstopper_strike.four_declension_conviction",
       status: "verified",
       target: "enemy"

@@ -124,7 +124,7 @@ export const colleiCombatCoverage: CharacterCombatCoverage = {
       characterId: "Collei",
       id: "collei.burst.trump_card_kitty.leap_tick",
       kind: "damage",
-      label: "猫猫秘宝 / 柯里安巴单次跃动伤害（C0、无预设反应）",
+      label: "猫猫秘宝 / 柯里安巴单次跃动伤害（C0、无反应）",
       sourceActionId: "collei.burst.trump_card_kitty.leap_tick",
       status: "verified",
       target: "enemy"

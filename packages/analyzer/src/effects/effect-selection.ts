@@ -1,5 +1,6 @@
 import {
   canEnterNightsoulBlessing,
+  getCharacterBurstEnergyCost,
   getCombatActionDefinition,
   hasHexereiSecretRite,
   isCombatActionEffectApplicable,
@@ -14,8 +15,10 @@ import type { GameDataRepository } from "@gscombat/game-data"
 import { countArtifactSet } from "../core/artifact-stats.js"
 import {
   resolveBuildElement,
+  resolvePrimaryDifferentElementOrRegionPartyCount,
   resolvePrimaryDifferentElementTeammateCount,
   resolvePrimarySameElementTeammateCount,
+  resolveTeamRegionCount,
   resolveTeamUniqueElementCount
 } from "../core/build-variant.js"
 import type { ResolvedTeamState } from "../scenario/team-state.js"
@@ -105,6 +108,24 @@ function isMaximumReachableEffectConditionSatisfied(
     const count = resolvePrimarySameElementTeammateCount(scenario.primary, scenario.teammates, gameData)
     return count !== null && count >= condition.minimum && (condition.maximum === undefined || count <= condition.maximum)
   }
+  if (condition.kind === "primary_burst_energy_cost") {
+    const energyCost = getCharacterBurstEnergyCost(scenario.primary)
+    if (energyCost === undefined || (condition.minimum !== undefined && energyCost < condition.minimum)) return false
+    return condition.maximum === undefined || energyCost <= condition.maximum
+  }
+  if (condition.kind === "team_region_count") {
+    const count = resolveTeamRegionCount([scenario.primary, ...scenario.teammates], condition.region, gameData)
+    return count >= condition.minimum && (condition.maximum === undefined || count <= condition.maximum)
+  }
+  if (condition.kind === "primary_different_element_or_region_party_count") {
+    const count = resolvePrimaryDifferentElementOrRegionPartyCount(
+      scenario.primary,
+      scenario.teammates,
+      condition.region,
+      gameData
+    )
+    return count !== null && count >= condition.minimum && (condition.maximum === undefined || count <= condition.maximum)
+  }
   if (condition.minimum !== undefined && scenario.conditions.enemyCount < condition.minimum) return false
   return condition.maximum === undefined || scenario.conditions.enemyCount <= condition.maximum
 }
@@ -133,7 +154,7 @@ function addMaximumReachableEquipmentEffects(
     if (
       (effect.activation !== "active" && effect.activation !== "maximum_reachable") ||
       (effect.source.kind === "character" && effect.activation !== "maximum_reachable") ||
-      effect.selectionMode === "optional" ||
+      effect.selectionMode !== undefined ||
       effect.target === "additionalDamageEvent" ||
       (effect.target === "matchedActionAdditiveDamageTerm" &&
         (effect.source.kind !== "character" || effect.activation !== "maximum_reachable")) ||

@@ -140,7 +140,7 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
       characterId: "Fischl",
       id: "fischl.skill.nightrider.oz.level_one_bolt",
       kind: "damage",
-      label: "夜巡影翼 / 奥兹单次攻击（后台，C0，无预设反应）",
+      label: "夜巡影翼 / 奥兹单次攻击（后台，C0，无反应）",
       sourceActionId: "fischl.skill.nightrider.oz.level_one_bolt",
       status: "verified",
       target: "enemy"

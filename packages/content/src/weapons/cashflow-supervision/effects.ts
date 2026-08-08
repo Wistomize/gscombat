@@ -25,6 +25,7 @@ function createHpChangeStackEffect(
   const actionLabel = attackKind === "normal" ? "普通攻击" : "重击"
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "cashflow-supervision-hp-change", variant: `${stackCount}-stack` },
     id: `weapon.cashflow-supervision.hp-change.${stackCount}-stack.${attackKind}-damage-bonus`,
     label: `金流监督 · 生命值变化后的${stackCount}层${actionLabel}伤害`,
@@ -40,6 +41,7 @@ function createHpChangeStellarSuperconductStackEffect(
 ): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "cashflow-supervision-hp-change", variant: `${stackCount}-stack` },
     id: `weapon.cashflow-supervision.hp-change.${stackCount}-stack.star-superconduct-damage-bonus`,
     label: `金流监督 · 生命值变化后的${stackCount}层星超导伤害`,

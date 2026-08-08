@@ -143,7 +143,7 @@ export const rosariaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Rosaria",
       id: "rosaria.skill.ravaging_confession.second_hit",
       kind: "damage",
-      label: "噬罪的告解 / 第二段伤害（C0，无预设反应）",
+      label: "噬罪的告解 / 第二段伤害（C0，无反应）",
       sourceActionId: "rosaria.skill.ravaging_confession.second_hit",
       status: "verified",
       target: "enemy"

@@ -84,7 +84,7 @@ export const kaeyaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Kaeya",
       id: "kaeya.skill.frostgnaw.single_hit",
       kind: "damage",
-      label: "霜袭 / 单次伤害（C0，无预设反应）",
+      label: "霜袭 / 单次伤害（C0，无反应）",
       sourceActionId: "kaeya.skill.frostgnaw",
       status: "verified",
       target: "enemy"

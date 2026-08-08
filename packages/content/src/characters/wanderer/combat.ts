@@ -118,7 +118,7 @@ export const wandererCombatCoverage: CharacterCombatCoverage = {
       characterId: "Wanderer",
       id: "wanderer.skill.hanega_song_of_the_wind.windfavored.normal.first_hit",
       kind: "damage",
-      label: "羽画·风姿华歌 / 风行状态普攻一段（C0，无预设反应）",
+      label: "羽画·风姿华歌 / 风行状态普攻一段（C0，无反应）",
       sourceActionId: "wanderer.skill.hanega_song_of_the_wind.windfavored.normal.first_hit",
       status: "verified",
       target: "enemy"

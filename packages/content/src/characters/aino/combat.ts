@@ -139,7 +139,7 @@ export const ainoCombatCoverage: CharacterCombatCoverage = {
       characterId: "Aino",
       id: "aino.burst.precision_hydronic_cooler.water_ball",
       kind: "damage",
-      label: "精密水冷仪 / 单颗水球伤害（C0，无预设反应）",
+      label: "精密水冷仪 / 单颗水球伤害（C0，无反应）",
       sourceActionId: "aino.burst.precision_hydronic_cooler.water_ball",
       status: "verified",
       target: "enemy"

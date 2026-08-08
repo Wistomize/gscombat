@@ -124,7 +124,7 @@ export const yelanCombatCoverage: CharacterCombatCoverage = {
       characterId: "Yelan",
       id: "yelan.skill.lingering_lifeline.explosion",
       kind: "damage",
-      label: "萦络纵命索 / 生命之线爆发（C0、无预设反应）",
+      label: "萦络纵命索 / 生命之线爆发（C0、无反应）",
       sourceActionId: "yelan.skill.lingering_lifeline.explosion",
       status: "verified",
       target: "enemy"

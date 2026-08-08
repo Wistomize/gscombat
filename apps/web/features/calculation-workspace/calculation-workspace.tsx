@@ -114,15 +114,19 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         (effect) => effect.source.kind === "character" && effect.requiredActiveEffectIds === undefined
       )
     : []
-  const optionalEffectGroups = targetBuild
+  const selectableEffectGroups = targetBuild
     ? [...scenarioEffectOptions
-        .filter((effect) => effect.selectionMode === "optional")
+        .filter((effect) => effect.selectionMode !== undefined)
         .reduce((groups, effect) => {
           const group = effect.exclusiveGroup ?? effect.id
           groups.set(group, [...(groups.get(group) ?? []), effect])
           return groups
         }, new Map<string, ScenarioEffectOption[]>())]
     : []
+  const hasUnselectedRequiredEffect = selectableEffectGroups.some(([, effects]) =>
+    effects[0]?.selectionMode === "required" &&
+    !effects.some((effect) => selectedCharacterEffectIds.includes(effect.id))
+  )
 
   useEffect(() => {
     if (!actionEffectRequest) {
@@ -262,6 +266,10 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
       setError("当前指标的可用效果尚未加载完成")
       return
     }
+    if (hasUnselectedRequiredEffect) {
+      setError("请先选择所有必选 Buff")
+      return
+    }
 
     setStatus("正在计算指标与边际收益…")
     try {
@@ -321,12 +329,19 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
       : [...current, effectId])
   }
 
-  const selectOptionalEffect = (groupEffects: readonly ScenarioEffectOption[], effectId: string) => {
+  const selectScenarioEffect = (groupEffects: readonly ScenarioEffectOption[], effectId: string) => {
     clearResults()
     const groupIds = new Set(groupEffects.map((effect) => effect.id))
+    const selectedEffect = groupEffects.find((effect) => effect.id === effectId)
+    const selectedVariantIds = selectedEffect
+      ? groupEffects
+          .filter((effect) => (effect.exclusiveVariant ?? effect.id) ===
+            (selectedEffect.exclusiveVariant ?? selectedEffect.id))
+          .map((effect) => effect.id)
+      : []
     setSelectedCharacterEffectIds((current) => [
       ...current.filter((candidate) => !groupIds.has(candidate)),
-      ...(effectId ? [effectId] : [])
+      ...selectedVariantIds
     ])
   }
 
@@ -366,7 +381,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
             enemy={enemy}
             hasCryoResonance={hasCryoResonance}
             hasGeoResonance={hasGeoResonance}
-            optionalEffectGroups={optionalEffectGroups}
+            hasUnselectedRequiredEffect={hasUnselectedRequiredEffect}
             partyBuilds={partyBuilds}
             scenarioEffectOptionsError={scenarioEffectOptionsError}
             scenarioEffectOptionsStatus={scenarioEffectOptionsStatus}
@@ -385,7 +400,8 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
               clearResults()
               setEnemy(update)
             }}
-            onOptionalEffectSelect={selectOptionalEffect}
+            selectableEffectGroups={selectableEffectGroups}
+            onScenarioEffectSelect={selectScenarioEffect}
             onReloadEffects={() => setScenarioEffectReloadVersion((current) => current + 1)}
             onRunAnalysis={() => runAnalysis()}
             onSupportMetricContextChange={setSupportMetricContext}

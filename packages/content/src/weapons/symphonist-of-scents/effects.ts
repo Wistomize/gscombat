@@ -16,6 +16,7 @@ export const symphonistOfScentsCombatActionEffects: readonly CombatActionEffect[
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.symphonist-of-scents.off-field.extra-attack-percent",
     label: "香韵奏者 · 后台时的额外攻击力",
     source: { kind: "weapon", weaponId: "SymphonistOfScents" },
@@ -24,6 +25,7 @@ export const symphonistOfScentsCombatActionEffects: readonly CombatActionEffect[
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.symphonist-of-scents.sweet-echoes.self.attack-percent",
     label: "香韵奏者 · 持有者治疗后自身甘美回奏（3秒内）",
     source: { kind: "weapon", weaponId: "SymphonistOfScents" },
@@ -32,6 +34,7 @@ export const symphonistOfScentsCombatActionEffects: readonly CombatActionEffect[
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.symphonist-of-scents.sweet-echoes.healed-recipient.attack-percent",
     label: "香韵奏者 · 持有者治疗当前主角色后的甘美回奏（3秒内）",
     source: { holder: "party_member", kind: "weapon", weaponId: "SymphonistOfScents" },

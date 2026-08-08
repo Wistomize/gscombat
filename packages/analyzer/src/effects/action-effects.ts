@@ -1,6 +1,7 @@
 import type { ScalingStat } from "@gscombat/calculator"
 import {
   canEnterNightsoulBlessing, hasHexereiSecretRite,
+  getCharacterBurstEnergyCost,
   isCombatActionEffectApplicable,
   isCombatActionEffectDeterministicallyActive, listCombatActionEffects,
   listCombatElementOverrideEffects,
@@ -12,6 +13,11 @@ import {
 import type { CharacterBuild } from "@gscombat/contracts"
 
 import { countArtifactSet } from "../core/artifact-stats.js"
+import {
+  resolveBuildElement,
+  resolvePrimaryDifferentElementOrRegionPartyCount,
+  resolveTeamRegionCount
+} from "../core/build-variant.js"
 
 import {
   type AppliedCombatActionEffect,
@@ -596,6 +602,23 @@ function resolveEligibleActionEffect(
   }
   const isSelectedActiveEffect = input.activeEffectIds.includes(effect.id)
   if (effect.activation !== "automatic" && !isSelectedActiveEffect) return []
+  const selectedSourceBuildId = input.activeEffectSourceBuildIds?.[effect.id]
+  const effectSource = effect.source
+  const selectedTeammateSource = input.teammates.find((build) => build.buildId === selectedSourceBuildId)
+  const selectedTeammateOwnsSelfEffect =
+    selectedTeammateSource !== undefined &&
+    (effectSource.kind === "weapon"
+      ? selectedTeammateSource.weapon.weaponId === effectSource.weaponId
+      : effectSource.kind === "artifact_set"
+        ? countArtifactSet(selectedTeammateSource, effectSource.setId) >= effectSource.minimumPieces
+        : false)
+  if (
+    effectSource.kind !== "character" &&
+    effectSource.holder !== "party_member" &&
+    selectedTeammateOwnsSelfEffect
+  ) {
+    return []
+  }
   const sources = resolveEffectSources(
     effect,
     input.primary,
@@ -685,7 +708,13 @@ function matchesEffectCondition(effect: CombatActionEffect, input: ResolveCombat
   }
   if (effect.condition.kind === "team_element_count") {
     const condition = effect.condition
-    const elements = input.teamElements
+    const gameData = input.gameData
+    const elements = input.teamElements ?? (gameData
+      ? [input.primary, ...input.teammates].flatMap((build) => {
+          const element = resolveBuildElement(build, gameData)
+          return element === null || element === "physical" ? [] : [element]
+        })
+      : undefined)
     if (elements === undefined) return false
     const count = elements.filter((element) => condition.elements.includes(element)).length
     return count >= condition.minimum && (condition.maximum === undefined || count <= condition.maximum)
@@ -708,6 +737,29 @@ function matchesEffectCondition(effect: CombatActionEffect, input: ResolveCombat
   if (effect.condition.kind === "primary_same_element_teammate_count") {
     const count = input.primarySameElementTeammateCount
     if (count === undefined || count < effect.condition.minimum) return false
+    return effect.condition.maximum === undefined || count <= effect.condition.maximum
+  }
+  if (effect.condition.kind === "primary_burst_energy_cost") {
+    const energyCost = getCharacterBurstEnergyCost(input.primary)
+    if (energyCost === undefined || (effect.condition.minimum !== undefined && energyCost < effect.condition.minimum)) {
+      return false
+    }
+    return effect.condition.maximum === undefined || energyCost <= effect.condition.maximum
+  }
+  if (effect.condition.kind === "team_region_count") {
+    if (input.gameData === undefined) return false
+    const count = resolveTeamRegionCount([input.primary, ...input.teammates], effect.condition.region, input.gameData)
+    return count >= effect.condition.minimum && (effect.condition.maximum === undefined || count <= effect.condition.maximum)
+  }
+  if (effect.condition.kind === "primary_different_element_or_region_party_count") {
+    if (input.gameData === undefined) return false
+    const count = resolvePrimaryDifferentElementOrRegionPartyCount(
+      input.primary,
+      input.teammates,
+      effect.condition.region,
+      input.gameData
+    )
+    if (count === null || count < effect.condition.minimum) return false
     return effect.condition.maximum === undefined || count <= effect.condition.maximum
   }
   if (input.enemyCount === undefined) return false

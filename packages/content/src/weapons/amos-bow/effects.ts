@@ -14,6 +14,7 @@ function createProjectileFlightStackEffect(
 ): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "amos-bow-projectile-flight-time", variant: `${stackCount}-stack` },
     id: `weapon.amos-bow.projectile-flight-time.${stackCount}-stack.damage-bonus`,
     label: `阿莫斯之弓 · 本次箭矢命中前已累计${stackCount}层伤害提升（每0.1秒，最多5层）`,

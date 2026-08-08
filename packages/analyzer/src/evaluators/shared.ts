@@ -931,7 +931,9 @@ export function resolveScenarioActionEffectContext(input: {
     input.teammates,
     input.action,
     input.gameData,
-    input.enemyCount
+    input.enemyCount,
+    resolvedActiveEffectIds,
+    input.activeEffectSourceBuildIds
   )
   const sourceFinalHpByBuildId = resolveSourceFinalHpByBuildId(
     input.build,

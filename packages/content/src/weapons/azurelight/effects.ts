@@ -19,6 +19,7 @@ export const azurelightCombatActionEffects: readonly CombatActionEffect[] = [
     label: "苍耀 · 元素能量为0时的额外攻击力",
     source: { kind: "weapon", weaponId: "Azurelight" },
     target: "attackPercent",
+    targetFilter: { recipientCharacterIds: ["Skirk"] },
     value: { kind: "refinement_table", values: AZURELIGHT_AFTER_SKILL_ATTACK_PERCENT }
   },
   {
@@ -27,6 +28,7 @@ export const azurelightCombatActionEffects: readonly CombatActionEffect[] = [
     label: "苍耀 · 元素能量为0时的暴击伤害",
     source: { kind: "weapon", weaponId: "Azurelight" },
     target: "critDamage",
+    targetFilter: { recipientCharacterIds: ["Skirk"] },
     value: { kind: "refinement_table", values: AZURELIGHT_ZERO_ENERGY_CRIT_DAMAGE }
   }
 ]

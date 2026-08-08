@@ -9,6 +9,7 @@ export const SILVERSHOWER_HEARTSTRINGS_THREE_STACK_BURST_CRIT_RATE = [0.28, 0.35
 export const silvershowerHeartstringsCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "silvershower-heartstrings-bond", variant: "one-stack" },
     id: "weapon.silvershower-heartstrings.bond.1-stack.hp-percent",
     label: "白雨心弦 · 一层生命之契生命值",
@@ -18,6 +19,7 @@ export const silvershowerHeartstringsCombatActionEffects: readonly CombatActionE
   },
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "silvershower-heartstrings-bond", variant: "two-stack" },
     id: "weapon.silvershower-heartstrings.bond.2-stack.hp-percent",
     label: "白雨心弦 · 两层生命之契生命值",
@@ -27,6 +29,7 @@ export const silvershowerHeartstringsCombatActionEffects: readonly CombatActionE
   },
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "silvershower-heartstrings-bond", variant: "three-stack" },
     id: "weapon.silvershower-heartstrings.bond.3-stack.hp-percent",
     label: "白雨心弦 · 三层生命之契生命值",
@@ -36,6 +39,7 @@ export const silvershowerHeartstringsCombatActionEffects: readonly CombatActionE
   },
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "silvershower-heartstrings-bond", variant: "three-stack" },
     id: "weapon.silvershower-heartstrings.bond.3-stack.burst-crit-rate",
     label: "白雨心弦 · 三层生命之契元素爆发暴击率",

@@ -18,6 +18,13 @@ type ScenarioConditions = EvaluationScenario["conditions"]
 type ScenarioEnemy = EvaluationScenario["enemy"]
 type ScenarioBuffs = EvaluationScenario["externalBuffs"]
 
+function splitEffectOptionLabel(label: string): readonly [string, string] {
+  const separator = label.includes(" · ") ? " · " : label.includes("·") ? "·" : "："
+  const separatorIndex = label.indexOf(separator)
+  if (separatorIndex < 0) return [label, label]
+  return [label.slice(0, separatorIndex), label.slice(separatorIndex + separator.length)]
+}
+
 interface CalculationScenarioProps {
   readonly buffs: ScenarioBuffs
   readonly catalog: CatalogResponse
@@ -26,12 +33,13 @@ interface CalculationScenarioProps {
   readonly enemy: ScenarioEnemy
   readonly hasCryoResonance: boolean
   readonly hasGeoResonance: boolean
-  readonly optionalEffectGroups: readonly (readonly [string, readonly ScenarioEffectOption[]])[]
+  readonly hasUnselectedRequiredEffect: boolean
   readonly partyBuilds: readonly CharacterBuild[]
   readonly scenarioEffectOptionsError: string
   readonly scenarioEffectOptionsStatus: "error" | "idle" | "loading" | "ready"
   readonly selectedCharacterEffectIds: readonly string[]
   readonly selectedSupportMetric: CatalogSupportMetric | undefined
+  readonly selectableEffectGroups: readonly (readonly [string, readonly ScenarioEffectOption[]])[]
   readonly supportMetricContext: SupportMetricContextDraft
   readonly targetAction: CatalogPrimaryAction | undefined
   readonly targetBuild: CharacterBuild
@@ -39,7 +47,7 @@ interface CalculationScenarioProps {
   readonly onCharacterEffectToggle: (effectId: string) => void
   readonly onConditionsChange: (update: (current: ScenarioConditions) => ScenarioConditions) => void
   readonly onEnemyChange: (update: (current: ScenarioEnemy) => ScenarioEnemy) => void
-  readonly onOptionalEffectSelect: (effects: readonly ScenarioEffectOption[], effectId: string) => void
+  readonly onScenarioEffectSelect: (effects: readonly ScenarioEffectOption[], effectId: string) => void
   readonly onReloadEffects: () => void
   readonly onRunAnalysis: () => Promise<void>
   readonly onSupportMetricContextChange: (
@@ -56,12 +64,13 @@ export function CalculationScenario({
   enemy,
   hasCryoResonance,
   hasGeoResonance,
-  optionalEffectGroups,
+  hasUnselectedRequiredEffect,
   partyBuilds,
   scenarioEffectOptionsError,
   scenarioEffectOptionsStatus,
   selectedCharacterEffectIds,
   selectedSupportMetric,
+  selectableEffectGroups,
   supportMetricContext,
   targetAction,
   targetBuild,
@@ -69,7 +78,7 @@ export function CalculationScenario({
   onCharacterEffectToggle,
   onConditionsChange,
   onEnemyChange,
-  onOptionalEffectSelect,
+  onScenarioEffectSelect,
   onReloadEffects,
   onRunAnalysis,
   onSupportMetricContextChange
@@ -283,19 +292,29 @@ export function CalculationScenario({
                 />
               </label>
             ))}
-            {optionalEffectGroups.map(([group, effects]) => {
-              const label = effects[0]?.label.split("：")[0] ?? "可选效果"
+            {selectableEffectGroups.map(([group, effects]) => {
+              const variants = [...effects.reduce((byVariant, effect) => {
+                const variant = effect.exclusiveVariant ?? effect.id
+                if (!byVariant.has(variant)) byVariant.set(variant, effect)
+                return byVariant
+              }, new Map<string, ScenarioEffectOption>()).values()]
+              const label = effects[0] ? splitEffectOptionLabel(effects[0].label)[0] : "可选效果"
+              const required = effects[0]?.selectionMode === "required"
+              const selectedVariant = variants.find((variant) => effects.some((effect) =>
+                (effect.exclusiveVariant ?? effect.id) === (variant.exclusiveVariant ?? variant.id) &&
+                selectedCharacterEffectIds.includes(effect.id)
+              ))
               return (
                 <label className="optionalEffectSelect" key={group}>
                   <span>{label}</span>
                   <select
                     aria-label={label}
-                    value={effects.find((effect) => selectedCharacterEffectIds.includes(effect.id))?.id ?? ""}
-                    onChange={(event) => onOptionalEffectSelect(effects, event.target.value)}
+                    value={selectedVariant?.id ?? ""}
+                    onChange={(event) => onScenarioEffectSelect(effects, event.target.value)}
                   >
-                    <option value="">不触发</option>
-                    {effects.map((effect) => (
-                      <option key={effect.id} value={effect.id}>{effect.label.split("：").at(-1)}</option>
+                    <option disabled={required} value="">{required ? "请选择" : "不触发"}</option>
+                    {variants.map((effect) => (
+                      <option key={effect.id} value={effect.id}>{splitEffectOptionLabel(effect.label)[1]}</option>
                     ))}
                   </select>
                 </label>
@@ -328,11 +347,16 @@ export function CalculationScenario({
       )}
       <button
         className="workspacePrimaryButton calculateButton"
-        disabled={Boolean(targetAction) && scenarioEffectOptionsStatus !== "ready"}
+        disabled={Boolean(targetAction) &&
+          (scenarioEffectOptionsStatus !== "ready" || hasUnselectedRequiredEffect)}
         type="button"
         onClick={() => void onRunAnalysis()}
       >
-        {scenarioEffectOptionsStatus === "loading" ? "正在加载可用效果…" : "开始计算"}
+        {scenarioEffectOptionsStatus === "loading"
+          ? "正在加载可用效果…"
+          : hasUnselectedRequiredEffect
+            ? "请先完成必选 Buff"
+            : "开始计算"}
       </button>
     </div>
   )

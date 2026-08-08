@@ -33,11 +33,12 @@ const ActiveScenarioEffectOptionSourceSchema = Type.Union([
 
 export const ActiveScenarioEffectOptionSchema = Type.Object({
   exclusiveGroup: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
+  exclusiveVariant: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
   id: Type.String({ minLength: 1, maxLength: 100 }),
   label: Type.String({ minLength: 1, maxLength: 120 }),
   recipientSourceRelation: Type.Optional(Type.Union([Type.Literal("not_source"), Type.Literal("source")])),
   requiredActiveEffectIds: Type.Optional(Type.Array(Type.String({ minLength: 1, maxLength: 100 }), { minItems: 1, maxItems: 20 })),
-  selectionMode: Type.Optional(Type.Literal("optional")),
+  selectionMode: Type.Optional(Type.Union([Type.Literal("optional"), Type.Literal("required")])),
   source: ActiveScenarioEffectOptionSourceSchema
 })
 

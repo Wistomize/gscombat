@@ -6,6 +6,7 @@ export const PROTOTYPE_CRESCENT_AFTER_WEAK_POINT_ATTACK_PERCENT = [0.36, 0.45, 0
 export const prototypeCrescentCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.prototype-crescent.after-weak-point-hit.attack-percent",
     label: "试作澹月 · 重击命中要害后10秒内（当前动作前已生效）",
     source: { kind: "weapon", weaponId: "PrototypeCrescent" },

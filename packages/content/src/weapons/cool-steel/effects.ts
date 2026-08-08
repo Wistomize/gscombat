@@ -6,6 +6,7 @@ export const COOL_STEEL_HYDRO_OR_CRYO_AURA_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.2
 export const coolSteelCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.cool-steel.hydro-or-cryo-aura.damage-bonus",
     label: "冷刃 · 当前目标受水元素或冰元素影响时的伤害",
     source: { kind: "weapon", weaponId: "CoolSteel" },

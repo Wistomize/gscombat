@@ -90,7 +90,7 @@ export const cynoCombatCoverage: CharacterCombatCoverage = {
       characterId: "Cyno",
       id: "cyno.burst.sacred_rite_wolfs_swiftness.pactsworn_pathclearer.normal.first_hit",
       kind: "damage",
-      label: "圣仪·煟煌随狼行 / 启途誓使状态普攻一段（C0，无预设反应）",
+      label: "圣仪·煟煌随狼行 / 启途誓使状态普攻一段（C0，无反应）",
       sourceActionId: "cyno.burst.sacred_rite_wolfs_swiftness.pactsworn_pathclearer.normal.first_hit",
       status: "verified",
       target: "enemy"

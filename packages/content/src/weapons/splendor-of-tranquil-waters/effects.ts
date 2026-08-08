@@ -13,6 +13,7 @@ function getValues(values: readonly number[], stackCount: number): readonly numb
 function createSelfHpChangeEffect(stackCount: (typeof selfHpChangeStackCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "splendor-of-tranquil-waters-self-hp-change", variant: `${stackCount}-stack` },
     id: `weapon.splendor-of-tranquil-waters.self-hp-change.${stackCount}-stack.skill-damage-bonus`,
     label: `静水流涌之辉 · 自身生命值变动后的${stackCount}层元素战技伤害`,
@@ -29,6 +30,7 @@ function createSelfHpChangeEffect(stackCount: (typeof selfHpChangeStackCounts)[n
 function createTeammateHpChangeEffect(stackCount: (typeof teammateHpChangeStackCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "splendor-of-tranquil-waters-teammate-hp-change", variant: `${stackCount}-stack` },
     id: `weapon.splendor-of-tranquil-waters.teammate-hp-change.${stackCount}-stack.hp-percent`,
     label: `静水流涌之辉 · 其他队友生命值变动后的${stackCount}层生命值`,

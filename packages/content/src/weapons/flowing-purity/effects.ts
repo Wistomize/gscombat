@@ -24,6 +24,7 @@ function createBondOfLifeClearDamageBonusEffect(
   const clearedBondOfLife = completeThousandPointClearCount * 1000
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: {
       group: "flowing-purity-bond-of-life-cleared",
       variant: `${completeThousandPointClearCount}-thousand-points`
@@ -41,6 +42,7 @@ function createBondOfLifeClearDamageBonusEffect(
 export const flowingPurityCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.flowing-purity.after-skill.all-element-damage-bonus",
     label: "纯水流华 · 施放元素战技后的所有元素伤害",
     source: { kind: "weapon", weaponId: "FlowingPurity" },

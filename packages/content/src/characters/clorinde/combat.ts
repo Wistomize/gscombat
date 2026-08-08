@@ -120,7 +120,7 @@ export const clorindeCombatCoverage: CharacterCombatCoverage = {
       characterId: "Clorinde",
       id: "clorinde.skill.hunter_vigil.night_vigil.normal_attack",
       kind: "damage",
-      label: "狩夜之巡 / 夜巡状态普通攻击（C0，无预设反应）",
+      label: "狩夜之巡 / 夜巡状态普通攻击（C0，无反应）",
       sourceActionId: "clorinde.skill.hunter_vigil.night_vigil.normal_attack",
       status: "verified",
       target: "enemy"

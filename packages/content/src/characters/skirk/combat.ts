@@ -103,7 +103,7 @@ export const skirkCombatCoverage: CharacterCombatCoverage = {
       characterId: "Skirk",
       id: "skirk.skill.seven_phase_flash.normal.fifth_hit",
       kind: "damage",
-      label: "七相闪 / 第五段普攻（C0、无预设反应）",
+      label: "七相闪 / 第五段普攻（C0、无反应）",
       sourceActionId: "skirk.skill.seven_phase_flash.normal.fifth_hit",
       status: "verified",
       target: "enemy"

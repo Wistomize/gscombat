@@ -72,7 +72,7 @@ export const aloyCombatCoverage: CharacterCombatCoverage = {
       characterId: "Aloy",
       id: "aloy.burst.prophecies_of_dawn.explosion",
       kind: "damage",
-      label: "曙光预言 / 单次爆炸（C0，无预设反应）",
+      label: "曙光预言 / 单次爆炸（C0，无反应）",
       sourceActionId: "aloy.burst.prophecies_of_dawn.explosion",
       status: "verified",
       target: "enemy"

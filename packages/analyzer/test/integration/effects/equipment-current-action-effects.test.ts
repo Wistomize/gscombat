@@ -68,6 +68,35 @@ function resolveWeaponEffects(
 }
 
 describe("current-action equipment effects", () => {
+  it("limits Azurelight's zero-energy bonuses to a holder without Elemental Energy", () => {
+    const effectIds = [
+      "weapon.azurelight.after-skill.attack-percent",
+      "weapon.azurelight.after-skill.zero-energy.extra-attack-percent",
+      "weapon.azurelight.after-skill.zero-energy.crit-damage"
+    ]
+    const kaeya = resolveCombatActionEffects({
+      action: requireAction("kaeya.skill.frostgnaw"),
+      activeEffectIds: effectIds,
+      baseEnergyRecharge: 1,
+      enemyCount: 1,
+      primary: { ...withWeapon("Azurelight"), characterId: "Kaeya" },
+      teammates: []
+    })
+    const skirk = resolveCombatActionEffects({
+      action: requireAction("skirk.skill.seven_phase_flash.normal.fifth_hit"),
+      activeEffectIds: effectIds,
+      baseEnergyRecharge: 1,
+      enemyCount: 1,
+      primary: { ...withWeapon("Azurelight"), characterId: "Skirk" },
+      teammates: []
+    })
+
+    expect(kaeya.attackPercent).toBeCloseTo(0.24)
+    expect(kaeya.critDamage).toBe(0)
+    expect(skirk.attackPercent).toBeCloseTo(0.48)
+    expect(skirk.critDamage).toBeCloseTo(0.4)
+  })
+
   it("resolves fully reviewed passive artifact clauses without inventing a rotation state", () => {
     const gambler = resolveEffects("xiangling.skill.guoba.single_flame_breath", "Gambler")
     const exile = resolveEffects("xiangling.skill.guoba.single_flame_breath", "TheExile")
@@ -516,16 +545,25 @@ describe("current-action equipment effects", () => {
       "artifact.a-day-carved-from-rising-winds.4pc.after-hit.attack-percent",
       "artifact.a-day-carved-from-rising-winds.4pc.completed-magical-trial.crit-rate"
     ])
-    const deepGalleriesCharged = resolveEffects(
-      "ganyu.normal.frostflake_arrow.level_two.hit_and_bloom",
-      "FinaleOfTheDeepGalleries",
-      ["artifact.finale-of-the-deep-galleries.4pc.zero-energy.normal-damage-bonus"]
+    const deepGalleriesNormalEffectId =
+      "artifact.finale-of-the-deep-galleries.4pc.zero-energy.normal-damage-bonus"
+    const resolveDeepGalleriesNormal = (actionId: string, characterId: string) => resolveCombatActionEffects({
+      action: requireAction(actionId),
+      activeEffectIds: [deepGalleriesNormalEffectId],
+      baseEnergyRecharge: 1,
+      enemyCount: 1,
+      primary: { ...withArtifactSet("FinaleOfTheDeepGalleries"), characterId },
+      teammates: []
+    })
+    const deepGalleriesOrdinaryEnergyNormal = resolveDeepGalleriesNormal(
+      "wriothesley.normal.auto.first_hit",
+      "Wriothesley"
     )
-    const deepGalleriesNormal = resolveEffects(
+    const deepGalleriesSkirkNormal = resolveDeepGalleriesNormal(
       "skirk.skill.seven_phase_flash.normal.fifth_hit",
-      "FinaleOfTheDeepGalleries",
-      ["artifact.finale-of-the-deep-galleries.4pc.zero-energy.normal-damage-bonus"]
+      "Skirk"
     )
+    const deepGalleriesMavuikaNormal = resolveDeepGalleriesNormal("mavuika.normal.auto.first_hit", "Mavuika")
     const nighttimeWhispers = resolveEffects(
       "ningguang.normal.charged_attack.with_star_jades",
       "NighttimeWhispersInTheEchoingWoods",
@@ -548,14 +586,14 @@ describe("current-action equipment effects", () => {
 
     expect(risingWinds.attackPercent).toBeCloseTo(0.43)
     expect(risingWinds.critRate).toBeCloseTo(0.2)
-    expect(deepGalleriesCharged.damageBonus).toBeCloseTo(0.15)
-    expect(deepGalleriesCharged.appliedEffects.map((effect) => effect.id)).not.toContain(
+    expect(deepGalleriesOrdinaryEnergyNormal.damageBonus).toBeCloseTo(0.15)
+    expect(deepGalleriesOrdinaryEnergyNormal.appliedEffects.map((effect) => effect.id)).not.toContain(
       "artifact.finale-of-the-deep-galleries.4pc.zero-energy.normal-damage-bonus"
     )
-    expect(deepGalleriesNormal.damageBonus).toBeCloseTo(0.75)
-    expect(deepGalleriesNormal.appliedEffects.map((effect) => effect.id)).toContain(
-      "artifact.finale-of-the-deep-galleries.4pc.zero-energy.normal-damage-bonus"
-    )
+    expect(deepGalleriesSkirkNormal.damageBonus).toBeCloseTo(0.75)
+    expect(deepGalleriesSkirkNormal.appliedEffects.map((effect) => effect.id)).toContain(deepGalleriesNormalEffectId)
+    expect(deepGalleriesMavuikaNormal.damageBonus).toBeCloseTo(0.6)
+    expect(deepGalleriesMavuikaNormal.appliedEffects.map((effect) => effect.id)).toContain(deepGalleriesNormalEffectId)
     expect(nighttimeWhispers.attackPercent).toBeCloseTo(0.18)
     expect(nighttimeWhispers.damageBonus).toBeCloseTo(0.5)
     expect(obsidianCodex.damageBonus).toBeCloseTo(0.15)
@@ -1553,10 +1591,14 @@ describe("current-action equipment effects", () => {
       "weapon.sacrificial-jade.after-off-field.hp-percent",
       "weapon.sacrificial-jade.after-off-field.elemental-mastery"
     ])
-    const talkingStick = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "TalkingStick", [
-      "weapon.talking-stick.pyro-attachment.attack-percent",
-      "weapon.talking-stick.hydro-cryo-electro-dendro-attachment.elemental-damage-bonus"
+    const talkingStickPyro = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "TalkingStick", [
+      "weapon.talking-stick.pyro-attachment.attack-percent"
     ])
+    const talkingStickOtherElement = resolveWeaponEffects(
+      "xiangling.skill.guoba.single_flame_breath",
+      "TalkingStick",
+      ["weapon.talking-stick.hydro-cryo-electro-dendro-attachment.elemental-damage-bonus"]
+    )
     const urakuMisugiri = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "UrakuMisugiri", [
       "weapon.uraku-misugiri.after-geo-hit.extra-skill-damage-bonus"
     ])
@@ -1603,8 +1645,8 @@ describe("current-action equipment effects", () => {
     )
     expect(sacrificialJade.hpPercent).toBeCloseTo(0.32)
     expect(sacrificialJade.elementalMastery).toBeCloseTo(40)
-    expect(talkingStick.attackPercent).toBeCloseTo(0.16)
-    expect(talkingStick.damageBonus).toBeCloseTo(0.12)
+    expect(talkingStickPyro.attackPercent).toBeCloseTo(0.16)
+    expect(talkingStickOtherElement.damageBonus).toBeCloseTo(0.12)
     expect(urakuMisugiri.defensePercent).toBeCloseTo(0.2)
     expect(urakuMisugiri.damageBonus).toBeCloseTo(0.48)
     expect(blazingSuns.attackPercent).toBeCloseTo(0.28)
@@ -1613,8 +1655,8 @@ describe("current-action equipment effects", () => {
     expect(mountainBracingBolt.damageBonus).toBeCloseTo(0.24)
     expect(fruitfulHook.critRate).toBeCloseTo(0.16)
     expect(fruitfulHook.damageBonus).toBeCloseTo(0.16)
-    expect(azurelight.attackPercent).toBeCloseTo(0.48)
-    expect(azurelight.critDamage).toBeCloseTo(0.4)
+    expect(azurelight.attackPercent).toBeCloseTo(0.24)
+    expect(azurelight.critDamage).toBe(0)
     expect(disasterAndRemorse.damageBonus).toBeCloseTo(0.7)
     expect(crimsonMoonLowBond.damageBonus).toBeCloseTo(0.12)
     expect(crimsonMoonHighBond.damageBonus).toBeCloseTo(0.36)
@@ -1715,14 +1757,6 @@ describe("current-action equipment effects", () => {
     const cashflowCharged = resolveWeaponEffects("ningguang.normal.charged_attack.with_star_jades", "CashflowSupervision", [
       "weapon.cashflow-supervision.hp-change.3-stack.charged-damage-bonus"
     ])
-    const chainBreakerThree = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "ChainBreaker", [
-      "weapon.chain-breaker.qualifying-party.3-character.attack-percent",
-      "weapon.chain-breaker.qualifying-party.3-character.elemental-mastery"
-    ])
-    const chainBreakerFour = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "ChainBreaker", [
-      "weapon.chain-breaker.qualifying-party.4-character.attack-percent",
-      "weapon.chain-breaker.qualifying-party.4-character.elemental-mastery"
-    ])
     const cloudforged = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "Cloudforged", [
       "weapon.cloudforged.energy-reduced.2-stack.elemental-mastery"
     ])
@@ -1738,10 +1772,6 @@ describe("current-action equipment effects", () => {
     expect(cashflowNormal.attackPercent).toBeCloseTo(0.16)
     expect(cashflowNormal.damageBonus).toBeCloseTo(0.48)
     expect(cashflowCharged.damageBonus).toBeCloseTo(0.42)
-    expect(chainBreakerThree.attackPercent).toBeCloseTo(0.144)
-    expect(chainBreakerThree.elementalMastery).toBeCloseTo(24)
-    expect(chainBreakerFour.attackPercent).toBeCloseTo(0.192)
-    expect(chainBreakerFour.elementalMastery).toBeCloseTo(24)
     expect(cloudforged.elementalMastery).toBeCloseTo(80)
     expect(compoundBow.attackPercent).toBeCloseTo(0.16)
     expect(() =>
@@ -1750,12 +1780,6 @@ describe("current-action equipment effects", () => {
         "weapon.blackcliff-pole.defeated-enemy.3-stack.attack-percent"
       ])
     ).toThrow("blackcliff-pole-defeated-enemy")
-    expect(() =>
-      resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "ChainBreaker", [
-        "weapon.chain-breaker.qualifying-party.3-character.attack-percent",
-        "weapon.chain-breaker.qualifying-party.4-character.attack-percent"
-      ])
-    ).toThrow("chain-breaker-qualifying-party")
   })
 
   it("resolves P7 current-action snapshots without inferring their trigger histories", () => {
@@ -1938,14 +1962,6 @@ describe("current-action equipment effects", () => {
       "xiangling.skill.guoba.single_flame_breath",
       "LightbearingMoonshard"
     )
-    const lithicBlade = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "LithicBlade", [
-      "weapon.lithic-blade.liyue-party.4-character.attack-percent",
-      "weapon.lithic-blade.liyue-party.4-character.crit-rate"
-    ])
-    const lithicSpear = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "LithicSpear", [
-      "weapon.lithic-spear.liyue-party.3-character.attack-percent",
-      "weapon.lithic-spear.liyue-party.3-character.crit-rate"
-    ])
     const lostPrayer = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "LostPrayerToTheSacredWinds", [
       "weapon.lost-prayer-to-the-sacred-winds.movement.4-stack.all-element-damage-bonus"
     ])
@@ -1969,9 +1985,7 @@ describe("current-action equipment effects", () => {
       "MistsplitterReforged",
       ["weapon.mistsplitter-reforged.emblem.hydro.3-stack.damage-bonus"]
     )
-    const moonweaversDawn = resolveWeaponEffects("raiden.burst.initial_slash", "MoonweaversDawn", [
-      "weapon.moonweavers-dawn.at-most-forty-energy.extra-burst-damage-bonus"
-    ])
+    const moonweaversDawn = resolveWeaponEffects("raiden.burst.initial_slash", "MoonweaversDawn")
     const nightweaversLookingGlass = resolveWeaponEffects(
       "xiangling.skill.guoba.single_flame_breath",
       "NightweaversLookingGlass",
@@ -1982,10 +1996,6 @@ describe("current-action equipment effects", () => {
     )
 
     expect(lightbearingMoonshard.defensePercent).toBeCloseTo(0.2)
-    expect(lithicBlade.attackPercent).toBeCloseTo(0.28)
-    expect(lithicBlade.critRate).toBeCloseTo(0.12)
-    expect(lithicSpear.attackPercent).toBeCloseTo(0.21)
-    expect(lithicSpear.critRate).toBeCloseTo(0.09)
     expect(lostPrayer.damageBonus).toBeCloseTo(0.32)
     expect(lumidouceElegy.attackPercent).toBeCloseTo(0.15)
     expect(lumidouceElegy.damageBonus).toBeCloseTo(0.36)
@@ -1994,14 +2004,8 @@ describe("current-action equipment effects", () => {
     expect(memoryOfDust.attackPercent).toBeCloseTo(0.4)
     expect(mistsplitter.damageBonus).toBeCloseTo(0.4)
     expect(mistsplitterWrongElement.damageBonus).toBeCloseTo(0.12)
-    expect(moonweaversDawn.damageBonus).toBeCloseTo(0.48)
+    expect(moonweaversDawn.damageBonus).toBeCloseTo(0.2)
     expect(nightweaversLookingGlass.elementalMastery).toBeCloseTo(120)
-    expect(() =>
-      resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "LithicBlade", [
-        "weapon.lithic-blade.liyue-party.3-character.attack-percent",
-        "weapon.lithic-blade.liyue-party.4-character.attack-percent"
-      ])
-    ).toThrow("lithic-blade-liyue-party")
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "MasterKey", [
         "weapon.master-key.after-reaction.elemental-mastery",
@@ -2271,8 +2275,7 @@ describe("current-action equipment effects", () => {
     )
     const theFirstGreatMagic = resolveWeaponEffects(
       "ningguang.normal.charged_attack.with_star_jades",
-      "TheFirstGreatMagic",
-      ["weapon.the-first-great-magic.same-element-party.3-character.attack-percent"]
+      "TheFirstGreatMagic"
     )
     const theFluteR4 = resolveCombatActionEffects({
       action: requireAction("xiangling.normal.auto.first_hit"),
@@ -2296,7 +2299,7 @@ describe("current-action equipment effects", () => {
     expect(theBell.damageBonus).toBeCloseTo(0.12)
     expect(theDaybreakChronicles.damageBonus).toBeCloseTo(0.6)
     expect(theDockhandsAssistant.elementalMastery).toBeCloseTo(120)
-    expect(theFirstGreatMagic.attackPercent).toBeCloseTo(0.48)
+    expect(theFirstGreatMagic.attackPercent).toBe(0)
     expect(theFirstGreatMagic.damageBonus).toBeCloseTo(0.16)
     expect(theFluteR4.additionalDamageEvents).toEqual(
       expect.arrayContaining([expect.objectContaining({ coefficient: 1.75, element: "physical" })])
@@ -2399,9 +2402,6 @@ describe("current-action equipment effects", () => {
     const vortexVanquisher = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "VortexVanquisher", [
       "weapon.vortex-vanquisher.golden-majesty.shielded.5-stack.attack-percent"
     ])
-    const waveridingWhirl = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "WaveridingWhirl", [
-      "weapon.waveriding-whirl.hydro-character-count.2.hp-percent"
-    ])
     const whiteblind = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "Whiteblind", [
       "weapon.whiteblind.infusion-blade.4-stack.attack-percent",
       "weapon.whiteblind.infusion-blade.4-stack.defense-percent"
@@ -2419,7 +2419,6 @@ describe("current-action equipment effects", () => {
     expect(vividNotions.attackPercent).toBeCloseTo(0.28)
     expect(vividNotions.critDamage).toBeCloseTo(0.68)
     expect(vortexVanquisher.attackPercent).toBeCloseTo(0.4)
-    expect(waveridingWhirl.hpPercent).toBeCloseTo(0.44)
     expect(whiteblind.attackPercent).toBeCloseTo(0.24)
     expect(whiteblind.defensePercent).toBeCloseTo(0.24)
     expect(() =>

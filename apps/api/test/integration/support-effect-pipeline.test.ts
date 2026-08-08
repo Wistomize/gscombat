@@ -55,13 +55,20 @@ interface SupportPipelineEvaluation {
 async function evaluate(
   primary: CharacterBuild,
   teammates: readonly CharacterBuild[],
-  targetActionId: string
+  targetActionId: string,
+  activeEffectIds: readonly string[] = [],
+  activeEffectSourceBuildIds: Readonly<Record<string, string>> = {}
 ): Promise<SupportPipelineEvaluation> {
   const response = await app.inject({
     method: "POST",
     payload: {
       ...raidenNationalBuiltinScenario,
-      conditions: { activeEffectIds: [], enemyCount: 1, equipmentEffectMode: "maximum_reachable" },
+      conditions: {
+        activeEffectIds,
+        activeEffectSourceBuildIds,
+        enemyCount: 1,
+        equipmentEffectMode: "maximum_reachable"
+      },
       externalBuffs: [],
       primary,
       targetActionId,
@@ -202,12 +209,18 @@ describe("support effect pipeline API integration", () => {
     }))
   })
 
-  it("uses a support's own maximum-reachable weapon stat state for source-final-attack without buffing the recipient", async () => {
+  it("uses a support's selected weapon stat state for source-final-attack without buffing the recipient", async () => {
     const ayaka = createBuild("KamisatoAyaka", "FavoniusSword", "support-pipeline.ayaka-calamity-recipient")
     const shenhe = createBuild("Shenhe", "CalamityQueller", "support-pipeline.shenhe-calamity")
     const actionId = "kamisato_ayaka.burst.kamisato_art_soumetsu.cutting"
     const baseline = await evaluate(ayaka, [], actionId)
-    const evaluation = await evaluate(ayaka, [shenhe], actionId)
+    const evaluation = await evaluate(
+      ayaka,
+      [shenhe],
+      actionId,
+      ["weapon.calamity-queller.consumption.off-field.6-stack.attack-percent"],
+      { "weapon.calamity-queller.consumption.off-field.6-stack.attack-percent": shenhe.buildId }
+    )
     const icyQuill = evaluation.appliedEffects.find(
       (effect) => effect.id === "shenhe.skill.spring_spirit_summoning.icy_quill.single_cryo_flat_damage_increase"
     )

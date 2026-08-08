@@ -630,7 +630,7 @@ describe("team-first workspace integration", () => {
     const effectPayload = JSON.parse(String(effectRequest?.body)) as { actionId: string; primary: { buildId: string } }
     expect(effectPayload.actionId).toBe("raiden.burst.initial_slash")
     expect(effectPayload.primary.buildId).toBe(raidenNationalBuiltinScenario.primary.buildId)
-    const request = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
+    const request = fetchMock.mock.calls.at(-1)?.[1] as RequestInit | undefined
     const scenario = JSON.parse(String(request?.body)) as {
       conditions: { primaryShielded?: boolean; targetFrozen?: boolean }
       primary: { buildId: string }
@@ -769,14 +769,141 @@ describe("team-first workspace integration", () => {
     await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
     await click(findButton("如水从平 / 衡平推裁单次命中"))
     await flushAsyncWork()
-    const themeSelect = document.querySelector<HTMLSelectElement>('select[aria-label="流浪乐章 · 登场主题"]')
+    const themeSelect = document.querySelector<HTMLSelectElement>('select[aria-label="流浪乐章"]')
     expect(themeSelect?.querySelectorAll("option")).toHaveLength(4)
     await changeSelect(themeSelect, "weapon.the-widsith.aria.all-element-damage-bonus")
     await click(findButton("开始计算"))
 
-    const request = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
+    const request = fetchMock.mock.calls.at(-1)?.[1] as RequestInit | undefined
     const payload = JSON.parse(String(request?.body)) as { conditions: { activeEffectIds: string[] } }
     expect(payload.conditions.activeEffectIds).toContain("weapon.the-widsith.aria.all-element-damage-bonus")
     expect(payload.conditions.activeEffectIds.filter((effectId) => effectId.startsWith("weapon.the-widsith."))).toHaveLength(1)
+  })
+
+  it("selects every stat contribution belonging to one weapon Buff variant", async () => {
+    const cashflowBuild = {
+      ...raidenNationalBuiltinScenario.primary,
+      buildId: "test.neuvillette.cashflow",
+      characterId: "Neuvillette",
+      label: "那维莱特 · 金流监督",
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "CashflowSupervision" }
+    }
+    const scenario = { ...raidenNationalBuiltinScenario, primary: cashflowBuild, teammates: [] }
+    saveBuildLibrary(window.localStorage, [cashflowBuild])
+    saveParty(window.localStorage, { memberBuildIds: [cashflowBuild.buildId] })
+    const twoStackId = "weapon.cashflow-supervision.hp-change.2-stack.charged-damage-bonus"
+    const threeStackChargedId = "weapon.cashflow-supervision.hp-change.3-stack.charged-damage-bonus"
+    const threeStackStellarId = "weapon.cashflow-supervision.hp-change.3-stack.star-superconduct-damage-bonus"
+    const fetchMock = createCalculationFetchMock(analysisResponse, [
+      {
+        exclusiveGroup: "cashflow-supervision-hp-change",
+        exclusiveVariant: "2-stack",
+        id: twoStackId,
+        label: "金流监督：生命值变化后的2层收益",
+        selectionMode: "optional",
+        source: { kind: "weapon", weaponId: "CashflowSupervision" }
+      },
+      {
+        exclusiveGroup: "cashflow-supervision-hp-change",
+        exclusiveVariant: "3-stack",
+        id: threeStackChargedId,
+        label: "金流监督：生命值变化后的3层收益",
+        selectionMode: "optional",
+        source: { kind: "weapon", weaponId: "CashflowSupervision" }
+      },
+      {
+        exclusiveGroup: "cashflow-supervision-hp-change",
+        exclusiveVariant: "3-stack",
+        id: threeStackStellarId,
+        label: "金流监督：生命值变化后的3层星超导收益",
+        selectionMode: "optional",
+        source: { kind: "weapon", weaponId: "CashflowSupervision" }
+      }
+    ])
+    vi.stubGlobal("fetch", fetchMock)
+
+    await render(createElement(TeamCalculationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      initialScenario: scenario
+    }))
+
+    await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
+    await click(findButton("如水从平 / 衡平推裁单次命中"))
+    await flushAsyncWork()
+    const stackSelect = document.querySelector<HTMLSelectElement>('select[aria-label="金流监督"]')
+    expect(stackSelect?.querySelectorAll("option")).toHaveLength(3)
+    await changeSelect(stackSelect, threeStackChargedId)
+    await flushAsyncWork()
+    expect(stackSelect?.value).toBe(threeStackChargedId)
+    await click(findButton("开始计算"))
+
+    const request = fetchMock.mock.calls.at(-1)?.[1] as RequestInit | undefined
+    const payload = JSON.parse(String(request?.body)) as { conditions: { activeEffectIds: string[] } }
+    expect(payload.conditions.activeEffectIds).toEqual(expect.arrayContaining([
+      threeStackChargedId,
+      threeStackStellarId
+    ]))
+    expect(payload.conditions.activeEffectIds).not.toContain(twoStackId)
+  })
+
+  it("requires a Slingshot holder to choose the arrow flight-time Buff before calculation", async () => {
+    const tighnariBuild = {
+      ...raidenNationalBuiltinScenario.primary,
+      buildId: "test.tighnari.slingshot",
+      characterId: "Tighnari",
+      label: "提纳里 · 弹弓",
+      weapon: { ascension: 6, level: 90, refinement: 5, weaponId: "Slingshot" }
+    }
+    const scenario = { ...raidenNationalBuiltinScenario, primary: tighnariBuild, teammates: [] }
+    saveBuildLibrary(window.localStorage, [tighnariBuild])
+    saveParty(window.localStorage, { memberBuildIds: [tighnariBuild.buildId] })
+    const fetchMock = createCalculationFetchMock(analysisResponse, [
+      {
+        exclusiveGroup: "slingshot-flight-time",
+        id: "weapon.slingshot.flight-time.within-0.3-seconds.damage-bonus",
+        label: "弹弓 · 箭矢命中时机：发射后0.3秒内命中（伤害提高）",
+        selectionMode: "required",
+        source: { kind: "weapon", weaponId: "Slingshot" }
+      },
+      {
+        exclusiveGroup: "slingshot-flight-time",
+        id: "weapon.slingshot.flight-time.after-0.3-seconds.damage-penalty",
+        label: "弹弓 · 箭矢命中时机：发射后超过0.3秒命中（伤害降低）",
+        selectionMode: "required",
+        source: { kind: "weapon", weaponId: "Slingshot" }
+      }
+    ])
+    vi.stubGlobal("fetch", fetchMock)
+
+    await render(createElement(TeamCalculationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      initialScenario: scenario
+    }))
+
+    await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
+    await click(findButton("藏蕴破障 / 藏蕴花矢单次命中 · 蔓激化"))
+    await flushAsyncWork()
+    const flightTimeSelect = document.querySelector<HTMLSelectElement>(
+      'select[aria-label="弹弓"]'
+    )
+    const calculateButton = document.querySelector<HTMLButtonElement>(".calculateButton")
+    expect(flightTimeSelect).not.toBeNull()
+    expect(flightTimeSelect?.textContent).not.toContain("不触发")
+    expect(calculateButton?.disabled).toBe(true)
+    expect(calculateButton?.textContent).toBe("请先完成必选 Buff")
+
+    await changeSelect(flightTimeSelect, "weapon.slingshot.flight-time.within-0.3-seconds.damage-bonus")
+    expect(calculateButton?.disabled).toBe(false)
+    expect(calculateButton?.textContent).toBe("开始计算")
+    await click(calculateButton)
+
+    const request = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
+    const payload = JSON.parse(String(request?.body)) as { conditions: { activeEffectIds: string[] } }
+    expect(payload.conditions.activeEffectIds).toContain(
+      "weapon.slingshot.flight-time.within-0.3-seconds.damage-bonus"
+    )
+    expect(payload.conditions.activeEffectIds).not.toContain(
+      "weapon.slingshot.flight-time.after-0.3-seconds.damage-penalty"
+    )
   })
 })

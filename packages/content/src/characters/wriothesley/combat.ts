@@ -72,7 +72,7 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
       characterId: "Wriothesley",
       id: "wriothesley.burst.darkgold_wolfbite.single_hit",
       kind: "damage",
-      label: "黑金狼噬 / 单次主段命中（C0，无预设反应）",
+      label: "黑金狼噬 / 单次主段命中（C0，无反应）",
       sourceActionId: "wriothesley.burst.darkgold_wolfbite.single_hit",
       status: "verified",
       target: "enemy"

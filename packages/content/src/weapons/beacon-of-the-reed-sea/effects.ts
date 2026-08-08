@@ -7,6 +7,7 @@ export const BEACON_OF_THE_REED_SEA_UNSHIELDED_HP_PERCENT = [0.32, 0.4, 0.48, 0.
 export const beaconOfTheReedSeaCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.beacon-of-the-reed-sea.after-skill-hit.attack-percent",
     label: "苇海信标 · 元素战技命中后8秒内（当前动作前已生效）",
     source: { kind: "weapon", weaponId: "BeaconOfTheReedSea" },
@@ -15,6 +16,7 @@ export const beaconOfTheReedSeaCombatActionEffects: readonly CombatActionEffect[
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.beacon-of-the-reed-sea.after-taking-damage.attack-percent",
     label: "苇海信标 · 受到伤害后8秒内（当前动作前已生效）",
     source: { kind: "weapon", weaponId: "BeaconOfTheReedSea" },
@@ -23,6 +25,7 @@ export const beaconOfTheReedSeaCombatActionEffects: readonly CombatActionEffect[
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.beacon-of-the-reed-sea.unshielded.hp-percent",
     label: "苇海信标 · 当前未处于护盾庇护下",
     source: { kind: "weapon", weaponId: "BeaconOfTheReedSea" },

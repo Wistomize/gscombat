@@ -6,6 +6,7 @@ export const BLOODTAINTED_GREATSWORD_PYRO_OR_ELECTRO_AURA_DAMAGE_BONUS = [0.12, 
 export const bloodtaintedGreatswordCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.bloodtainted-greatsword.pyro-or-electro-aura.damage-bonus",
     label: "沐浴龙血的剑 · 当前目标受火元素或雷元素影响时的伤害",
     source: { kind: "weapon", weaponId: "BloodtaintedGreatsword" },

@@ -15,6 +15,7 @@ export const starcallersWatchCombatActionEffects: readonly CombatActionEffect[] 
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.starcallers-watch.shielded.damage-bonus",
     label: "祭星者之望 · 当前角色处于护盾庇护下",
     source: { kind: "weapon", weaponId: "StarcallersWatch" },

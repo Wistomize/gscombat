@@ -17,6 +17,7 @@ function createStackEffect(
   const stateLabel = shielded ? "受护盾庇护时" : "未受护盾庇护时"
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "vortex-vanquisher-golden-majesty", variant: state + "-" + stackCount + "-stack" },
     id: "weapon.vortex-vanquisher.golden-majesty." + state + "." + stackCount + "-stack.attack-percent",
     label: "贯虹之槊 · " + stateLabel + stackCount + "层攻击力",

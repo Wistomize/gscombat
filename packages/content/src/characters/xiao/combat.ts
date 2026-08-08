@@ -158,7 +158,7 @@ export const xiaoCombatCoverage: CharacterCombatCoverage = {
       characterId: "Xiao",
       id: "xiao.burst.bane_of_all_evil.high_plunge",
       kind: "damage",
-      label: "靖妖傩舞 / 高空下落攻击（C0，无预设反应）",
+      label: "靖妖傩舞 / 高空下落攻击（C0，无反应）",
       sourceActionId: "xiao.burst.bane_of_all_evil.high_plunge",
       status: "verified",
       target: "enemy"

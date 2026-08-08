@@ -7,6 +7,8 @@ export const SACRIFICIAL_JADE_OFF_FIELD_ELEMENTAL_MASTERY = [40, 50, 60, 70, 80]
 export const sacrificialJadeCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
+    exclusivity: { group: "sacrificial-jade-after-off-field", variant: "active" },
     id: "weapon.sacrificial-jade.after-off-field.hp-percent",
     label: "遗祀玉珑 · 后台超过5秒后登场的生命值",
     source: { kind: "weapon", weaponId: "SacrificialJade" },
@@ -15,6 +17,8 @@ export const sacrificialJadeCombatActionEffects: readonly CombatActionEffect[] =
   },
   {
     activation: "active",
+    selectionMode: "optional",
+    exclusivity: { group: "sacrificial-jade-after-off-field", variant: "active" },
     id: "weapon.sacrificial-jade.after-off-field.elemental-mastery",
     label: "遗祀玉珑 · 后台超过5秒后登场的元素精通",
     source: { kind: "weapon", weaponId: "SacrificialJade" },

@@ -7,6 +7,8 @@ export const TALKING_STICK_OTHER_ATTACHMENT_ELEMENTAL_DAMAGE_BONUS = [0.12, 0.15
 export const talkingStickCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
+    exclusivity: { group: "talking-stick-self-attachment", variant: "pyro" },
     id: "weapon.talking-stick.pyro-attachment.attack-percent",
     label: "聊聊棒 · 承受火元素附着后的攻击力",
     source: { kind: "weapon", weaponId: "TalkingStick" },
@@ -15,6 +17,8 @@ export const talkingStickCombatActionEffects: readonly CombatActionEffect[] = [
   },
   {
     activation: "active",
+    selectionMode: "optional",
+    exclusivity: { group: "talking-stick-self-attachment", variant: "hydro-cryo-electro-dendro" },
     id: "weapon.talking-stick.hydro-cryo-electro-dendro-attachment.elemental-damage-bonus",
     label: "聊聊棒 · 承受水、冰、雷或草元素附着后的所有元素伤害",
     source: { kind: "weapon", weaponId: "TalkingStick" },

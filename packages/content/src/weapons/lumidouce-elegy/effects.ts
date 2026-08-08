@@ -12,6 +12,7 @@ function getDamageBonusValues(stackCount: number): readonly number[] {
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "lumidouce-elegy-burning", variant: `${stackCount}-stack` },
     id: `weapon.lumidouce-elegy.burning.${stackCount}-stack.damage-bonus`,
     label: `柔灯挽歌 · 燃烧触发后的${stackCount}层全伤害`,

@@ -232,7 +232,7 @@ export const ventiCombatCoverage: CharacterCombatCoverage = {
       characterId: "Venti",
       id: "venti.skill.skyward_sonnet.press",
       kind: "damage",
-      label: "高天之歌 / 点按单次命中（C0，无预设反应）",
+      label: "高天之歌 / 点按单次命中（C0，无反应）",
       sourceActionId: "venti.skill.skyward_sonnet.press",
       status: "verified",
       target: "enemy"

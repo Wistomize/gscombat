@@ -23,6 +23,7 @@ export const crimsonMoonsSemblanceCombatActionEffects: readonly CombatActionEffe
   },
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "crimson-moons-semblance-bond", variant: "below-thirty-percent" },
     id: "weapon.crimson-moons-semblance.bond-of-life.below-thirty-percent.damage-bonus",
     label: "赤月之形 · 具有低于生命值上限30%的生命之契时造成的伤害",
@@ -32,6 +33,7 @@ export const crimsonMoonsSemblanceCombatActionEffects: readonly CombatActionEffe
   },
   {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "crimson-moons-semblance-bond", variant: "at-least-thirty-percent" },
     id: "weapon.crimson-moons-semblance.bond-of-life.at-least-thirty-percent.damage-bonus",
     label: "赤月之形 · 生命之契不低于生命值上限30%时造成的伤害",

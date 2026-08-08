@@ -72,7 +72,7 @@ export const chascaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Chasca",
       id: "chasca.skill.spirit_reins_shadow_hunt.resonance.initial_hit",
       kind: "damage",
-      label: "灵缰追影 / 共鸣单次命中（C0，无预设反应）",
+      label: "灵缰追影 / 共鸣单次命中（C0，无反应）",
       sourceActionId: "chasca.skill.spirit_reins_shadow_hunt.resonance.initial_hit",
       status: "verified",
       target: "enemy"

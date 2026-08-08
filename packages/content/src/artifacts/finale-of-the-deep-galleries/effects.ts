@@ -20,7 +20,7 @@ export const finaleOfTheDeepGalleriesCombatActionEffects: readonly CombatActionE
     label: "深廊终曲 · 四件套（元素能量为0时的普通攻击伤害）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "FinaleOfTheDeepGalleries" },
     target: "damageBonus",
-    targetFilter: { attackKinds: ["normal"] },
+    targetFilter: { attackKinds: ["normal"], recipientCharacterIds: ["Mavuika", "Skirk"] },
     value: { kind: "fixed", value: FINALE_OF_THE_DEEP_GALLERIES_ZERO_ENERGY_DAMAGE_BONUS }
   },
   {
@@ -29,7 +29,7 @@ export const finaleOfTheDeepGalleriesCombatActionEffects: readonly CombatActionE
     label: "深廊终曲 · 四件套（元素能量为0时的元素爆发伤害）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "FinaleOfTheDeepGalleries" },
     target: "damageBonus",
-    targetFilter: { talentSlots: ["burst"] },
+    targetFilter: { recipientCharacterIds: ["Mavuika", "Skirk"], talentSlots: ["burst"] },
     value: { kind: "fixed", value: FINALE_OF_THE_DEEP_GALLERIES_ZERO_ENERGY_DAMAGE_BONUS }
   }
 ]

@@ -10,10 +10,17 @@ function getValues(values: readonly number[], count: number): readonly number[] 
 }
 
 function createLiyueCharacterEffects(count: (typeof liyueCharacterCounts)[number]): readonly CombatActionEffect[] {
+  const condition = {
+    kind: "team_region_count" as const,
+    ...(count === 4 ? {} : { maximum: count }),
+    minimum: count,
+    region: "liyue"
+  }
   const exclusivity = { group: "lithic-blade-liyue-party", variant: `${count}-character` }
   return [
     {
-      activation: "active",
+      activation: "automatic",
+      condition,
       exclusivity,
       id: `weapon.lithic-blade.liyue-party.${count}-character.attack-percent`,
       label: `千岩古剑 · ${count}名璃月角色的攻击力`,
@@ -22,7 +29,8 @@ function createLiyueCharacterEffects(count: (typeof liyueCharacterCounts)[number
       value: { kind: "refinement_table", values: getValues(LITHIC_BLADE_ATTACK_PERCENT_PER_LIYUE_CHARACTER, count) }
     },
     {
-      activation: "active",
+      activation: "automatic",
+      condition,
       exclusivity,
       id: `weapon.lithic-blade.liyue-party.${count}-character.crit-rate`,
       label: `千岩古剑 · ${count}名璃月角色的暴击率`,

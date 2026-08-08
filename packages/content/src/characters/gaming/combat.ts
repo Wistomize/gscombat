@@ -125,7 +125,7 @@ export const gamingCombatCoverage: CharacterCombatCoverage = {
       characterId: "Gaming",
       id: "gaming.skill.bestial_ascent.plunging_attack_charmed_cloudstrider",
       kind: "damage",
-      label: "瑞兽登高楼 / 踏云献瑞单次下落命中（C0，无预设反应）",
+      label: "瑞兽登高楼 / 踏云献瑞单次下落命中（C0，无反应）",
       sourceActionId: "gaming.skill.bestial_ascent.plunging_attack_charmed_cloudstrider",
       status: "verified",
       target: "enemy"

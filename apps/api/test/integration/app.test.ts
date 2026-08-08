@@ -194,6 +194,21 @@ describe("API", () => {
     expect(labels).not.toContain("已验证基础单段伤害")
   })
 
+  it("uses plain no-reaction wording for every public damage metric", async () => {
+    const response = await app.inject({ method: "GET", url: "/v1/catalog" })
+
+    expect(response.statusCode).toBe(200)
+    const catalogLabels = response.json().characters.flatMap(
+      (character: { primaryActions: readonly { label: string }[] }) =>
+        character.primaryActions.map((action) => action.label)
+    )
+    const labels = [...catalogLabels, ...listCombatMetrics().map((metric) => metric.label)]
+    expect(labels.filter((label) =>
+      label.includes("无预设反应") || label.includes("反应由场景决定")
+    )).toEqual([])
+    expect(labels).toContain("所闻遍计 / 灭净三业单次触发 · 无反应")
+  })
+
   it("keeps the startup catalog lightweight and excludes action effect snapshots", async () => {
     const response = await app.inject({ method: "GET", url: "/v1/catalog" })
 
@@ -258,6 +273,102 @@ describe("API", () => {
     expect((raidenResponse.json().options as readonly { id: string }[]).map((option) => option.id)).toEqual(
       expect.arrayContaining(["raiden.skill.eye", "bennett.burst.field"])
     )
+  })
+
+  it("requires the Slingshot holder to choose one arrow flight-time state", async () => {
+    const primary = {
+      ...raidenNationalBuiltinScenario.primary,
+      buildId: "test.tighnari.slingshot",
+      characterId: "Tighnari",
+      weapon: {
+        ...raidenNationalBuiltinScenario.primary.weapon,
+        refinement: 5,
+        weaponId: "Slingshot"
+      }
+    }
+    const response = await app.inject({
+      body: {
+        actionId: "tighnari.normal.wreath_arrow.single_hit.spread",
+        primary,
+        teammates: []
+      },
+      method: "POST",
+      url: "/v1/action-effect-options"
+    })
+
+    expect(response.statusCode).toBe(200)
+    const options = (response.json().options as readonly {
+      exclusiveGroup?: string
+      id: string
+      selectionMode?: string
+    }[]).filter((option) => option.exclusiveGroup === "slingshot-flight-time")
+    expect(options.map((option) => option.id)).toEqual([
+      "weapon.slingshot.flight-time.within-0.3-seconds.damage-bonus",
+      "weapon.slingshot.flight-time.after-0.3-seconds.damage-penalty"
+    ])
+    expect(options.every((option) => option.selectionMode === "required")).toBe(true)
+  })
+
+  it("exposes Ultimate Overlord's Mega Magic Sword Melusine progress as an optional Buff choice", async () => {
+    const primary = {
+      ...raidenNationalBuiltinScenario.primary,
+      buildId: "test.noelle.ultimate-overlord",
+      characterId: "Noelle",
+      weapon: {
+        ...raidenNationalBuiltinScenario.primary.weapon,
+        refinement: 5,
+        weaponId: "UltimateOverlordsMegaMagicSword"
+      }
+    }
+    const response = await app.inject({
+      body: {
+        actionId: "noelle.burst.sweeping_time.normal_attack_combo",
+        primary,
+        teammates: []
+      },
+      method: "POST",
+      url: "/v1/action-effect-options"
+    })
+
+    expect(response.statusCode).toBe(200)
+    const options = (response.json().options as readonly {
+      exclusiveGroup?: string
+      id: string
+      selectionMode?: string
+    }[]).filter((option) => option.exclusiveGroup === "ultimate-overlords-mega-magic-sword-melusine")
+    expect(options).toHaveLength(12)
+    expect(options.every((option) => option.selectionMode === "optional")).toBe(true)
+  })
+
+  it("projects mutually exclusive weapon Buff variants through the action-effect API", async () => {
+    const primary = {
+      ...raidenNationalBuiltinScenario.primary,
+      buildId: "test.neuvillette.cashflow-buff",
+      characterId: "Neuvillette",
+      weapon: {
+        ...raidenNationalBuiltinScenario.primary.weapon,
+        refinement: 1,
+        weaponId: "CashflowSupervision"
+      }
+    }
+    const response = await app.inject({
+      body: {
+        actionId: "neuvillette.normal.charged_attack.equitable_judgment.single_tick",
+        primary,
+        teammates: []
+      },
+      method: "POST",
+      url: "/v1/action-effect-options"
+    })
+
+    expect(response.statusCode).toBe(200)
+    const options = (response.json().options as readonly {
+      exclusiveGroup?: string
+      exclusiveVariant?: string
+      selectionMode?: string
+    }[]).filter((option) => option.exclusiveGroup === "cashflow-supervision-hp-change")
+    expect(options.map((option) => option.exclusiveVariant)).toEqual(["1-stack", "2-stack", "3-stack"])
+    expect(options.every((option) => option.selectionMode === "optional")).toBe(true)
   })
 
   it("exposes the complete combat coverage graph without relying on a character-by-character fixture list", async () => {
@@ -879,7 +990,9 @@ describe("API", () => {
       ...presetScenario,
       conditions: {
         actionParameters: { "bond-of-life-percent": 100 },
-        activeEffectIds: [],
+        activeEffectIds: [
+          "weapon.crimson-moons-semblance.bond-of-life.at-least-thirty-percent.damage-bonus"
+        ],
         enemyCount: 1,
         equipmentEffectMode: "maximum_reachable"
       },

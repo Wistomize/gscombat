@@ -179,7 +179,7 @@ export const tighnariCombatCoverage: CharacterCombatCoverage = {
       characterId: "Tighnari",
       id: "tighnari.burst.fashioners_tanglevine_shaft.primary_shaft",
       kind: "damage",
-      label: "造生缠藤箭 / 初始缠藤箭单次命中（C0、无预设反应）",
+      label: "造生缠藤箭 / 初始缠藤箭单次命中（C0、无反应）",
       sourceActionId: "tighnari.burst.fashioners_tanglevine_shaft.primary_shaft",
       status: "verified",
       target: "enemy"

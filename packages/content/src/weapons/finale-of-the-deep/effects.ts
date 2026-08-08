@@ -7,6 +7,7 @@ export const FINALE_OF_THE_DEEP_BOND_CLEARED_AT_CAP_FLAT_ATTACK = [150, 188, 225
 export const finaleOfTheDeepCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.finale-of-the-deep.after-skill.attack-percent",
     label: "海渊终曲 · 施放元素战技后的攻击力",
     source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },
@@ -15,6 +16,7 @@ export const finaleOfTheDeepCombatActionEffects: readonly CombatActionEffect[] =
   },
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack",
     label: "海渊终曲 · 清除生命之契后攻击力达到上限（15秒内）",
     source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },

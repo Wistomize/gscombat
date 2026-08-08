@@ -6,6 +6,7 @@ export const MAGIC_GUIDE_DAMAGE_BONUS_BY_REFINEMENT = [0.12, 0.15, 0.18, 0.21, 0
 export const magicGuideCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    selectionMode: "optional",
     id: "weapon.magic-guide.hydro-or-electro-aura.damage-bonus",
     label: "魔导绪论 · 当前目标受水元素或雷元素影响",
     source: { kind: "weapon", weaponId: "MagicGuide" },

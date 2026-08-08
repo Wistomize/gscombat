@@ -576,6 +576,7 @@ describe("combat action effects", () => {
         exclusivity: { group: "blackcliff-agate-defeated-enemy", variant: "one-stack" },
         id: "weapon.blackcliff-agate.defeated-enemy.1-stack.attack-percent",
         label: "黑岩绯玉 · 击败敌人后的1层攻击力",
+        selectionMode: "optional",
         source: { holder: "primary", kind: "weapon", weaponId: "BlackcliffAgate" },
         target: "attackPercent",
         value: { kind: "refinement_table", values: [0.12, 0.15, 0.18, 0.21, 0.24] }
@@ -585,6 +586,7 @@ describe("combat action effects", () => {
         exclusivity: { group: "blackcliff-agate-defeated-enemy", variant: "two-stack" },
         id: "weapon.blackcliff-agate.defeated-enemy.2-stack.attack-percent",
         label: "黑岩绯玉 · 击败敌人后的2层攻击力",
+        selectionMode: "optional",
         source: { holder: "primary", kind: "weapon", weaponId: "BlackcliffAgate" },
         target: "attackPercent",
         value: { kind: "refinement_table", values: [0.24, 0.3, 0.36, 0.42, 0.48] }
@@ -594,6 +596,7 @@ describe("combat action effects", () => {
         exclusivity: { group: "blackcliff-agate-defeated-enemy", variant: "three-stack" },
         id: "weapon.blackcliff-agate.defeated-enemy.3-stack.attack-percent",
         label: "黑岩绯玉 · 击败敌人后的3层攻击力",
+        selectionMode: "optional",
         source: { holder: "primary", kind: "weapon", weaponId: "BlackcliffAgate" },
         target: "attackPercent",
         value: { kind: "refinement_table", values: [0.36, 0.45, 0.54, 0.63, 0.72] }
@@ -806,6 +809,7 @@ describe("combat action effects", () => {
       activation: "active",
       id: "weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack",
       label: "护摩之杖 · 当前生命值低于50%时的额外固定攻击力",
+      selectionMode: "optional",
       source: { holder: "primary", kind: "weapon", weaponId: "StaffOfHoma" },
       target: "finalHpToFlatAttack",
       value: { kind: "refinement_table", values: [0.01, 0.012, 0.014, 0.016, 0.018] }
@@ -1253,6 +1257,7 @@ describe("combat action effects", () => {
       activation: "active",
       id: "weapon.messenger.weak-point-guaranteed-crit.additional-damage",
       label: "信使 · 本次瞄准射击命中要害且冷却已就绪，触发必定暴击的物理附加伤害",
+      selectionMode: "optional",
       source: { holder: "primary", kind: "weapon", weaponId: "Messenger" },
       target: "additionalDamageEvent",
       targetFilter: { attackKinds: ["charged"] },
@@ -1293,6 +1298,7 @@ describe("combat action effects", () => {
       exclusivity: { group: "flowing-purity-bond-of-life-cleared", variant: "6-thousand-points" },
       id: effectId,
       label: "纯水流华 · 清除生命之契后已获得6个完整千点（6000点）的额外所有元素伤害",
+      selectionMode: "optional",
       source: { kind: "weapon", weaponId: "FlowingPurity" },
       target: "damageBonus",
       targetFilter: { elements: ["anemo", "cryo", "dendro", "electro", "geo", "hydro", "pyro"] },
@@ -1472,6 +1478,7 @@ describe("combat action effects", () => {
         exclusivity: { group: "absolution-bond-of-life-increase", variant: "1-stack" },
         id: "weapon.absolution.bond-of-life-increase.1-stack.damage-bonus",
         label: "赦罪 · 本次命中前已持有的1层生命之契数值增加伤害提升（6秒内）",
+        selectionMode: "optional",
         source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
         target: "damageBonus",
         value: { kind: "refinement_table", values: [0.16, 0.2, 0.24, 0.28, 0.32] }
@@ -1481,6 +1488,7 @@ describe("combat action effects", () => {
         exclusivity: { group: "absolution-bond-of-life-increase", variant: "2-stack" },
         id: "weapon.absolution.bond-of-life-increase.2-stack.damage-bonus",
         label: "赦罪 · 本次命中前已持有的2层生命之契数值增加伤害提升（6秒内）",
+        selectionMode: "optional",
         source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
         target: "damageBonus",
         value: { kind: "refinement_table", values: [0.32, 0.4, 0.48, 0.56, 0.64] }
@@ -1490,6 +1498,7 @@ describe("combat action effects", () => {
         exclusivity: { group: "absolution-bond-of-life-increase", variant: "3-stack" },
         id: "weapon.absolution.bond-of-life-increase.3-stack.damage-bonus",
         label: "赦罪 · 本次命中前已持有的3层生命之契数值增加伤害提升（6秒内）",
+        selectionMode: "optional",
         source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
         target: "damageBonus",
         value: { kind: "refinement_table", values: [0.48, 0.6, 0.72, 0.84, 0.96] }
@@ -1642,6 +1651,7 @@ describe("combat action effects", () => {
       activation: "active",
       id: effectId,
       label: "海渊终曲 · 清除生命之契后攻击力达到上限（15秒内）",
+      selectionMode: "optional",
       source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },
       target: "flatAttack",
       value: { kind: "refinement_table", values: [150, 188, 225, 263, 300] }

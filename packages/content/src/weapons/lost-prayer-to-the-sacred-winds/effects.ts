@@ -12,6 +12,7 @@ function getDamageBonusValues(stackCount: number): readonly number[] {
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
     exclusivity: { group: "lost-prayer-movement", variant: `${stackCount}-stack` },
     id: `weapon.lost-prayer-to-the-sacred-winds.movement.${stackCount}-stack.all-element-damage-bonus`,
     label: `四风原典 · 登场后的${stackCount}层所有元素伤害`,
