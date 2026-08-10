@@ -20,7 +20,8 @@ function createBondOfLifeIncreaseEffect(stackCount: (typeof stackCounts)[number]
     label: `赦罪 · 本次命中前已持有的${stackCount}层生命之契数值增加伤害提升（6秒内）`,
     source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
     target: "damageBonus",
-    value: { kind: "refinement_table", values: getDamageBonusValues(stackCount) }
+    value: { kind: "refinement_table", values: getDamageBonusValues(stackCount) },
+    ...(stackCount === 3 ? { weaponComparisonDefault: { recipientCharacterIds: ["Clorinde"] } } : {})
   }
 }
 

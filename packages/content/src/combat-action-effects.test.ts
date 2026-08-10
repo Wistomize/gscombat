@@ -1456,6 +1456,19 @@ describe("combat action effects", () => {
     )
   })
 
+  it("declares Crimson Moon's high-Bond state as Arlecchino's weapon-comparison default", () => {
+    const effect = listCombatActionEffects().find(
+      (candidate) =>
+        candidate.id === "weapon.crimson-moons-semblance.bond-of-life.at-least-thirty-percent.damage-bonus"
+    )
+
+    expect(effect).toMatchObject({
+      activation: "active",
+      selectionMode: "optional",
+      weaponComparisonDefault: { recipientCharacterIds: ["Arlecchino"] }
+    })
+  })
+
   it("declares Absolution's selected Bond-of-Life increase snapshots without inferring their trigger", () => {
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
     const pyronado = requireAction("xiangling.burst.pyronado.reverse_vaporize")
@@ -1501,7 +1514,8 @@ describe("combat action effects", () => {
         selectionMode: "optional",
         source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
         target: "damageBonus",
-        value: { kind: "refinement_table", values: [0.48, 0.6, 0.72, 0.84, 0.96] }
+        value: { kind: "refinement_table", values: [0.48, 0.6, 0.72, 0.84, 0.96] },
+        weaponComparisonDefault: { recipientCharacterIds: ["Clorinde"] }
       }
     ])
     expect(listActiveCombatActionEffectsForAction(pyronado)).toEqual(

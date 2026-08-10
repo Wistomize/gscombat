@@ -197,12 +197,28 @@ function getCandidateActiveEffects(
     return true
   })
 
-  const selectedEffectIds = new Set(activeEffectIds)
+  let candidateActiveEffectIds = activeEffectIds
+  const comparisonDefaultEffects = [...effectsById.values()].filter(
+    (effect) =>
+      effect.source.kind === "weapon" &&
+      effect.source.weaponId === candidateWeaponId &&
+      effect.weaponComparisonDefault?.recipientCharacterIds.includes(scenario.primary.characterId) === true
+  )
+  for (const effect of comparisonDefaultEffects) {
+    if (effect.exclusivity) {
+      candidateActiveEffectIds = candidateActiveEffectIds.filter(
+        (effectId) => effectsById.get(effectId)?.exclusivity?.group !== effect.exclusivity?.group
+      )
+    }
+    if (!candidateActiveEffectIds.includes(effect.id)) candidateActiveEffectIds = [...candidateActiveEffectIds, effect.id]
+    activeEffectSourceBuildIds[effect.id] = scenario.primary.buildId
+  }
+  const selectedEffectIds = new Set(candidateActiveEffectIds)
   for (const effectId of Object.keys(activeEffectSourceBuildIds)) {
     if (!selectedEffectIds.has(effectId)) delete activeEffectSourceBuildIds[effectId]
   }
   return {
-    activeEffectIds,
+    activeEffectIds: candidateActiveEffectIds,
     ...(Object.keys(activeEffectSourceBuildIds).length === 0 ? {} : { activeEffectSourceBuildIds })
   }
 }

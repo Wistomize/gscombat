@@ -930,6 +930,10 @@ interface CombatActionEffectActivation {
   readonly activation: "active" | "automatic" | "maximum_reachable"
   /** Keeps a reachable active effect out of automatic maximum selection and exposes it as an explicit UI choice. */
   readonly selectionMode?: "optional" | "required"
+  /** Selects this reachable state by default only when comparing the weapon for one of the listed recipients. */
+  readonly weaponComparisonDefault?: {
+    readonly recipientCharacterIds: readonly string[]
+  }
   /**
    * Active snapshot IDs that must be selected before this effect can apply. Scenario evaluation derives the effect
    * automatically once every requirement and its own source constraints are satisfied.

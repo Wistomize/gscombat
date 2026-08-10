@@ -39,6 +39,7 @@ export const crimsonMoonsSemblanceCombatActionEffects: readonly CombatActionEffe
     label: "赤月之形 · 生命之契不低于生命值上限30%时造成的伤害",
     source: { kind: "weapon", weaponId: "CrimsonMoonsSemblance" },
     target: "damageBonus",
-    value: { kind: "refinement_table", values: CRIMSON_MOONS_SEMBLANCE_HIGH_BOND_DAMAGE_BONUS }
+    value: { kind: "refinement_table", values: CRIMSON_MOONS_SEMBLANCE_HIGH_BOND_DAMAGE_BONUS },
+    weaponComparisonDefault: { recipientCharacterIds: ["Arlecchino"] }
   }
 ]

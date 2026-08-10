@@ -312,6 +312,132 @@ describe("counterfactual scenario analysis", () => {
     )
   })
 
+  it("uses Absolution's full three-stack passive only for Clorinde's weapon comparison", () => {
+    const clorinde = {
+      ...raidenNationalBuiltinBuild,
+      buildId: "test.clorinde.absolution-comparison",
+      characterId: "Clorinde",
+      talents: { burst: 10, normal: 10, skill: 10 },
+      weapon: { ascension: 6, level: 90, refinement: 5, weaponId: "CalamityOfEshu" }
+    }
+    const clorindeScenario = {
+      ...raidenNationalBuiltinScenario,
+      conditions: { ...withoutRaidenActionParameters(), activeEffectIds: [] },
+      externalBuffs: [],
+      primary: clorinde,
+      targetActionId: "clorinde.normal.auto.first_hit",
+      teammates: []
+    }
+    const candidateWeapon = { ascension: 6, level: 90, refinement: 1, weaponId: "Absolution" }
+    const comparisonCandidate = analyzeScenario(clorindeScenario, gameData).weapons.find(
+      (weapon) => weapon.weaponId === "Absolution"
+    )
+    const automaticOnlyScenario = {
+      ...clorindeScenario,
+      primary: { ...clorinde, weapon: candidateWeapon }
+    }
+    const fullStackScenario = {
+      ...automaticOnlyScenario,
+      conditions: {
+        ...automaticOnlyScenario.conditions,
+        activeEffectIds: ["weapon.absolution.bond-of-life-increase.3-stack.damage-bonus"]
+      }
+    }
+
+    expect(comparisonCandidate?.expectedDamage).toBeCloseTo(
+      evaluateScenario(fullStackScenario, gameData).actionExpectedDamage,
+      8
+    )
+    expect(comparisonCandidate?.expectedDamage).toBeGreaterThan(
+      evaluateScenario(automaticOnlyScenario, gameData).actionExpectedDamage
+    )
+
+    const alhaithamScenario = {
+      ...clorindeScenario,
+      primary: { ...clorinde, buildId: "test.alhaitham.absolution-comparison", characterId: "Alhaitham" },
+      targetActionId: "alhaitham.normal.auto.first_hit"
+    }
+    const alhaithamCandidate = analyzeScenario(alhaithamScenario, gameData).weapons.find(
+      (weapon) => weapon.weaponId === "Absolution"
+    )
+    const alhaithamAutomaticOnlyScenario = {
+      ...alhaithamScenario,
+      primary: { ...alhaithamScenario.primary, weapon: candidateWeapon }
+    }
+
+    expect(alhaithamCandidate?.expectedDamage).toBeCloseTo(
+      evaluateScenario(alhaithamAutomaticOnlyScenario, gameData).actionExpectedDamage,
+      8
+    )
+  })
+
+  it("uses Crimson Moon's high-Bond passive for Arlecchino when comparing from another weapon", () => {
+    const arlecchino = {
+      ...xianglingNationalBuiltinBuild,
+      buildId: "test.arlecchino.crimson-moon-comparison",
+      characterId: "Arlecchino",
+      talents: { burst: 10, normal: 10, skill: 10 },
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "StaffOfHoma" }
+    }
+    const arlecchinoScenario = {
+      ...raidenNationalBuiltinScenario,
+      conditions: {
+        ...withoutRaidenActionParameters(),
+        actionParameters: { "bond-of-life-percent": 100 },
+        activeEffectIds: []
+      },
+      externalBuffs: [],
+      primary: arlecchino,
+      targetActionId: "arlecchino.normal.masque_of_the_red_death.first_hit.full_bond.no_reaction",
+      teammates: []
+    }
+    const candidateWeapon = { ascension: 6, level: 90, refinement: 1, weaponId: "CrimsonMoonsSemblance" }
+    const comparisonCandidate = analyzeScenario(arlecchinoScenario, gameData).weapons.find(
+      (weapon) => weapon.weaponId === "CrimsonMoonsSemblance"
+    )
+    const automaticOnlyScenario = {
+      ...arlecchinoScenario,
+      primary: { ...arlecchino, weapon: candidateWeapon }
+    }
+    const fullEffectId = "weapon.crimson-moons-semblance.bond-of-life.at-least-thirty-percent.damage-bonus"
+    const fullScenario = {
+      ...automaticOnlyScenario,
+      conditions: { ...automaticOnlyScenario.conditions, activeEffectIds: [fullEffectId] }
+    }
+    const fullEvaluation = evaluateScenario(fullScenario, gameData)
+
+    expect(comparisonCandidate?.expectedDamage).toBeCloseTo(fullEvaluation.actionExpectedDamage, 8)
+    expect(comparisonCandidate?.expectedDamage).toBeGreaterThan(
+      evaluateScenario(automaticOnlyScenario, gameData).actionExpectedDamage
+    )
+    expect(fullEvaluation.appliedEffects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          actionParameterId: "bond-of-life-percent",
+          id: "weapon.crimson-moons-semblance.charged-hit.bond-of-life",
+          value: 25
+        }),
+        expect.objectContaining({ id: fullEffectId, target: "damageBonus", value: 0.36 })
+      ])
+    )
+  })
+
+  it("treats artifact critical-rate rolls above 100% as having zero marginal damage", () => {
+    const overcappedScenario = {
+      ...raidenNationalBuiltinScenario,
+      externalBuffs: [
+        ...raidenNationalBuiltinScenario.externalBuffs,
+        { label: "测试暴击率溢出", sourceId: "test.crit-rate-overcap", stat: "crit_rate" as const, value: 2 }
+      ]
+    }
+    const analysis = analyzeScenario(overcappedScenario, gameData)
+    const critRateMarginal = analysis.marginalSubstats.find((result) => result.stat === "crit_rate")
+
+    expect(critRateMarginal?.deltaDamage).toBeCloseTo(0, 8)
+    expect(critRateMarginal?.gainRatio).toBeCloseTo(0, 8)
+    expect(critRateMarginal?.weight).toBeCloseTo(0, 8)
+  })
+
   it("uses the burst-after-cast capability for Raiden's initial slash but not her skill", () => {
     const baseScenario = {
       ...raidenNationalBuiltinScenario,
