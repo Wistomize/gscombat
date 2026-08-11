@@ -7,27 +7,37 @@ import {
   CELESTIAL_GIFT_MORTAL_HYMN_DAMAGE_BONUS
 } from "./artifacts/celestial-gift/index.js"
 import {
+  AUBADE_OF_MORNINGSTAR_AND_MOON_FULL_MOONSIGN_LUNAR_REACTION_DAMAGE_BONUS,
+  AUBADE_OF_MORNINGSTAR_AND_MOON_OFF_FIELD_LUNAR_REACTION_DAMAGE_BONUS
+} from "./artifacts/aubade-of-morningstar-and-moon/index.js"
+import {
   CRIMSON_WITCH_OF_FLAMES_TRANSFORMATIVE_REACTION_DAMAGE_BONUS
 } from "./artifacts/crimson-witch-of-flames/index.js"
 import {
+  DISENCHANTMENT_IN_DEEP_SHADOW_STELLAR_SUPERCONDUCT_REACTION_DAMAGE_BONUS,
   DISENCHANTMENT_IN_DEEP_SHADOW_SUPERCONDUCT_REACTION_DAMAGE_BONUS
 } from "./artifacts/disenchantment-in-deep-shadow/index.js"
 import {
+  FLOWER_OF_PARADISE_LOST_BASE_LUNAR_BLOOM_DAMAGE_BONUS,
   FLOWER_OF_PARADISE_LOST_BASE_REACTION_DAMAGE_BONUS,
+  FLOWER_OF_PARADISE_LOST_LUNAR_BLOOM_DAMAGE_BONUS_BY_STACK,
   FLOWER_OF_PARADISE_LOST_REACTION_DAMAGE_BONUS_BY_STACK,
   FLOWER_OF_PARADISE_LOST_REACTION_DAMAGE_BONUS_STACK_MULTIPLIER
 } from "./artifacts/flower-of-paradise-lost/index.js"
 import {
   NIGHT_OF_THE_SKYS_UNVEILING_FULL_MOONSIGN_CRIT_RATE,
   NIGHT_OF_THE_SKYS_UNVEILING_INITIAL_MOONSIGN_CRIT_RATE,
+  NIGHT_OF_THE_SKYS_UNVEILING_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS,
   NIGHT_OF_THE_SKYS_UNVEILING_TWO_PIECE_ELEMENTAL_MASTERY
 } from "./artifacts/night-of-the-skys-unveiling/index.js"
 import {
   SILKEN_MOONS_SERENADE_FULL_MOONSIGN_PARTY_ELEMENTAL_MASTERY,
-  SILKEN_MOONS_SERENADE_INITIAL_MOONSIGN_PARTY_ELEMENTAL_MASTERY
+  SILKEN_MOONS_SERENADE_INITIAL_MOONSIGN_PARTY_ELEMENTAL_MASTERY,
+  SILKEN_MOONS_SERENADE_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS
 } from "./artifacts/silken-moons-serenade/index.js"
 import {
   THUNDERING_FURY_AGGRAVATE_REACTION_DAMAGE_BONUS,
+  THUNDERING_FURY_SPECIAL_REACTION_DAMAGE_BONUS,
   THUNDERING_FURY_TRANSFORMATIVE_REACTION_DAMAGE_BONUS
 } from "./artifacts/thundering-fury/index.js"
 import {
@@ -373,6 +383,85 @@ describe("combat action effects", () => {
       targetFilter: { specialReactionKinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"] },
       value: { kind: "refinement_table", values: [0.6, 0.8, 1, 1.2, 1.4] }
     })
+  })
+
+  it("declares every audited Moon and Stellar artifact bonus in the dedicated special-reaction stage", () => {
+    const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
+    const ordinaryAction = requireAction("xiangling.skill.guoba.single_flame_breath")
+    const actionsByKind = {
+      lunar_bloom: requireAction("nefer.skill.senet_strategy.phantom_performance.second_hit"),
+      lunar_charged: requireAction("flins.burst.thunder_symphony.lunar_charged"),
+      lunar_crystallize: requireAction("zibai.burst.tri_sphere_eminence.second_hit.lunar_crystallize"),
+      stellar_superconduct: requireAction("sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct")
+    } as const
+    const fixedEffects = [
+      {
+        id: "artifact.disenchantment-in-deep-shadow.4pc.stellar-superconduct.reaction-damage-bonus",
+        kinds: ["stellar_superconduct"],
+        value: DISENCHANTMENT_IN_DEEP_SHADOW_STELLAR_SUPERCONDUCT_REACTION_DAMAGE_BONUS
+      },
+      {
+        id: "artifact.thundering-fury.4pc.lunar-charged-stellar-superconduct.reaction-damage-bonus",
+        kinds: ["lunar_charged", "stellar_superconduct"],
+        value: THUNDERING_FURY_SPECIAL_REACTION_DAMAGE_BONUS
+      },
+      {
+        id: "artifact.aubade-of-morningstar-and-moon.4pc.off-field.lunar-reaction-damage-bonus",
+        kinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"],
+        value: AUBADE_OF_MORNINGSTAR_AND_MOON_OFF_FIELD_LUNAR_REACTION_DAMAGE_BONUS
+      },
+      {
+        id: "artifact.aubade-of-morningstar-and-moon.4pc.full-moonsign.lunar-reaction-damage-bonus",
+        kinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"],
+        value: AUBADE_OF_MORNINGSTAR_AND_MOON_FULL_MOONSIGN_LUNAR_REACTION_DAMAGE_BONUS
+      },
+      {
+        id: "artifact.night-of-the-skys-unveiling.4pc.moongleam.lunar-reaction-damage-bonus",
+        kinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"],
+        value: NIGHT_OF_THE_SKYS_UNVEILING_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS
+      },
+      {
+        id: "artifact.silken-moons-serenade.4pc.different-moongleam.lunar-reaction-damage-bonus",
+        kinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"],
+        value: SILKEN_MOONS_SERENADE_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS
+      }
+    ] as const
+
+    expect(DISENCHANTMENT_IN_DEEP_SHADOW_STELLAR_SUPERCONDUCT_REACTION_DAMAGE_BONUS).toBeCloseTo(0.4)
+    expect(THUNDERING_FURY_SPECIAL_REACTION_DAMAGE_BONUS).toBeCloseTo(0.2)
+    expect(AUBADE_OF_MORNINGSTAR_AND_MOON_OFF_FIELD_LUNAR_REACTION_DAMAGE_BONUS).toBeCloseTo(0.2)
+    expect(AUBADE_OF_MORNINGSTAR_AND_MOON_FULL_MOONSIGN_LUNAR_REACTION_DAMAGE_BONUS).toBeCloseTo(0.4)
+    expect(NIGHT_OF_THE_SKYS_UNVEILING_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS).toBeCloseTo(0.1)
+    expect(SILKEN_MOONS_SERENADE_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS).toBeCloseTo(0.1)
+
+    for (const expected of fixedEffects) {
+      const effect = effectsById.get(expected.id)
+      expect(effect).toMatchObject({
+        target: "specialReactionDamageBonus",
+        targetFilter: { specialReactionKinds: expected.kinds },
+        value: { kind: "fixed", value: expected.value }
+      })
+      expect(isCombatActionEffectApplicable(effect!, ordinaryAction)).toBe(false)
+      for (const kind of expected.kinds) {
+        expect(isCombatActionEffectApplicable(effect!, actionsByKind[kind])).toBe(true)
+      }
+    }
+
+    expect(FLOWER_OF_PARADISE_LOST_BASE_LUNAR_BLOOM_DAMAGE_BONUS).toBeCloseTo(0.1)
+    expect(FLOWER_OF_PARADISE_LOST_LUNAR_BLOOM_DAMAGE_BONUS_BY_STACK).toEqual([0.1, 0.125, 0.15, 0.175, 0.2])
+    for (const [stackCount, value] of FLOWER_OF_PARADISE_LOST_LUNAR_BLOOM_DAMAGE_BONUS_BY_STACK.entries()) {
+      const effect = effectsById.get(
+        `artifact.flower-of-paradise-lost.4pc.reaction-trigger.${stackCount}-stack.lunar-bloom-reaction-damage-bonus`
+      )
+      expect(effect).toMatchObject({
+        exclusivity: { group: "flower-of-paradise-lost-reaction-trigger", variant: `${stackCount}-stack` },
+        target: "specialReactionDamageBonus",
+        targetFilter: { specialReactionKinds: ["lunar_bloom"] },
+        value: { kind: "fixed", value }
+      })
+      expect(isCombatActionEffectApplicable(effect!, actionsByKind.lunar_bloom)).toBe(true)
+      expect(isCombatActionEffectApplicable(effect!, actionsByKind.lunar_charged)).toBe(false)
+    }
   })
 
   it("declares ordinary artifact reaction bonuses and Flower of Paradise Lost's explicit stack snapshots", () => {

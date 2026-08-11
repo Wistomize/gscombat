@@ -3,6 +3,31 @@ import { describe, expect, it } from "vitest"
 import { zibaiCombatCoverage } from "./combat.js"
 
 describe("Zibai combat content", () => {
+  it("maps Spirit Steed's second hit to the generated skill parameter rather than the enhanced normal second hit", () => {
+    const action = zibaiCombatCoverage.actions.find(
+      (candidate) => candidate.id === "zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize"
+    )
+
+    expect(action).toMatchObject({
+      damageParts: [
+        {
+          coefficientParameterId: "spirit-steed-stride-second-hit-lunar-crystallize-damage",
+          snapshotChecks: [
+            { expectedCoefficient: 1.40968, talentLevel: 1 },
+            { expectedCoefficient: 2.537424, talentLevel: 10 }
+          ]
+        }
+      ],
+      parameterReferences: [
+        {
+          groupId: "skill",
+          parameterIndex: 1,
+          talentSlot: "skill"
+        }
+      ]
+    })
+  })
+
   it("declares the second Lunar-Crystallize burst hit as a selectable standalone action", () => {
     const action = zibaiCombatCoverage.actions.find(
       (candidate) => candidate.id === "zibai.burst.tri_sphere_eminence.second_hit.lunar_crystallize"

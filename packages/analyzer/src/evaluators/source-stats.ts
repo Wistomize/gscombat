@@ -15,6 +15,7 @@ import {
   resolveCombatActionElementalMasteryEffects,
   resolveFinalHpToElementalMastery,
   resolveSelfAutomaticEquipmentEffects,
+  resolveSelfMaximumReachableCharacterHpEffects,
   resolveSelfMaximumReachableEquipmentStatEffects,
   type ResolvedCombatActionEffects
 } from "../effects/action-effects.js"
@@ -203,6 +204,20 @@ export function resolveSourceFinalHpByBuildId(
         ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
         teammates: sourceTeammates
       })
+      const maximumReachableCharacterHpEffects = resolveSelfMaximumReachableCharacterHpEffects({
+        action,
+        baseEnergyRecharge: base.energyRecharge,
+        enemyCount,
+        gameData,
+        ...(primaryElement === null ? {} : { primaryElement }),
+        primary: source,
+        ...(primaryDifferentElementTeammateCount === null
+          ? {}
+          : { primaryDifferentElementTeammateCount }),
+        ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
+        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
+        teammates: sourceTeammates
+      })
       const maximumReachableEffects = getSourceSelfMaximumReachableEquipmentEffects(
         sourceSelfMaximumEquipmentEffectsByBuildId,
         source.buildId
@@ -210,10 +225,12 @@ export function resolveSourceFinalHpByBuildId(
       const isPrimary = source.buildId === primary.buildId
       const hpPercent =
         automaticEffects.hpPercent +
+        maximumReachableCharacterHpEffects.hpPercent +
         maximumReachableEffects.hpPercent +
         (isPrimary ? getDelta(deltas, "hp_percent") + getBuffTotal(buffs, "hp_percent") : 0)
       const flatHp =
         automaticEffects.hpFlat +
+        maximumReachableCharacterHpEffects.hpFlat +
         maximumReachableEffects.hpFlat +
         (isPrimary ? getDelta(deltas, "hp") + getBuffTotal(buffs, "hp_flat") : 0)
       return [source.buildId, base.hp + base.baseHp * hpPercent + flatHp] as const

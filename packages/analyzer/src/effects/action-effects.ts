@@ -195,6 +195,36 @@ export function resolveSelfAutomaticEquipmentEffects(
   return resolveCombatActionEffectsForCandidates({ ...candidateInput, activeEffectIds }, candidates)
 }
 
+/** Resolves only a source character's maximum-reachable maximum-HP state for final-HP conversions. */
+export function resolveSelfMaximumReachableCharacterHpEffects(
+  input: ResolveSelfAutomaticEquipmentEffectsInput
+): ResolvedCombatActionEffects {
+  const candidates = listCombatActionEffects().filter(
+    (effect) =>
+      isSelfMaximumReachableCharacterStatEffect(effect, input.primary) &&
+      (effect.target === "hpFlat" || effect.target === "hpPercent")
+  )
+  const candidateInput: ResolveCombatActionEffectCandidatesInput = {
+    action: input.action,
+    activeEffectIds: [],
+    baseEnergyRecharge: input.baseEnergyRecharge,
+    ...(input.gameData === undefined ? {} : { gameData: input.gameData }),
+    ...(input.enemyCount === undefined ? {} : { enemyCount: input.enemyCount }),
+    ...(input.primaryElement === undefined ? {} : { primaryElement: input.primaryElement }),
+    ...(input.primaryDifferentElementTeammateCount === undefined
+      ? {}
+      : { primaryDifferentElementTeammateCount: input.primaryDifferentElementTeammateCount }),
+    ...(input.primarySameElementTeammateCount === undefined
+      ? {}
+      : { primarySameElementTeammateCount: input.primarySameElementTeammateCount }),
+    ...(input.teamUniqueElementCount === undefined ? {} : { teamUniqueElementCount: input.teamUniqueElementCount }),
+    primary: input.primary,
+    teammates: input.teammates ?? []
+  }
+  const activeEffectIds = selectSelfMaximumReachableCharacterEffectIds(candidates, candidateInput)
+  return resolveCombatActionEffectsForCandidates({ ...candidateInput, activeEffectIds }, candidates)
+}
+
 /**
  * Resolves selected maximum-reachable direct stat effects owned by the current source's own weapon or artifact set.
  *

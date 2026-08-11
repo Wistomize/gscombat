@@ -17,6 +17,7 @@ import {
   formatAppliedActionEffect,
   formatAppliedScenarioBuff,
   formatScalingTerms,
+  MasteryAndCritSourceBreakdown,
   moonsignLabels,
   resonanceLabels,
   traceStageMeta,
@@ -118,6 +119,7 @@ export function OrderedDamageReport({
         <div className="traceLegend" aria-label="伤害乘区颜色图例">
           {traceLegendStages.map((stage) => <span className={`traceLegendItem traceLegendItem--${stage}`} key={stage}><i aria-hidden="true" />{traceStageMeta[stage].label}</span>)}
         </div>
+        <MasteryAndCritSourceBreakdown stats={analysis.evaluation.stats} />
         <div className="traceSteps">
           {usesRotationTrace
             ? displayedRotationTraceEvents.map((event, eventIndex) => (

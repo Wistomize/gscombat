@@ -27,12 +27,11 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
+      effectIds: ["artifact.thundering-fury.4pc.lunar-charged-stellar-superconduct.reaction-damage-bonus"],
       id: "artifact.thundering-fury.4pc.lunar-charged-stellar-superconduct.reaction-damage-bonus",
       label: "如雷的盛怒 · 四件套（月感电、星超导反应伤害）",
-      reason: "月曜反应使用独立伤害公式，当前单核心动作流水线尚未建模。",
-      requiredCapability: "lunar_reaction_damage_bonus",
       source: artifactSource("ThunderingFury", 4),
-      status: "unsupported"
+      status: "implemented"
     },
     {
       id: "artifact.thundering-fury.4pc.skill-cooldown-reduction",

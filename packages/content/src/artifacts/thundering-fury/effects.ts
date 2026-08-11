@@ -3,6 +3,7 @@ import type { CombatActionEffect } from "../../combat/types.js"
 export const THUNDERING_FURY_ELECTRO_DAMAGE_BONUS = 0.15
 export const THUNDERING_FURY_TRANSFORMATIVE_REACTION_DAMAGE_BONUS = 0.4
 export const THUNDERING_FURY_AGGRAVATE_REACTION_DAMAGE_BONUS = 0.2
+export const THUNDERING_FURY_SPECIAL_REACTION_DAMAGE_BONUS = 0.2
 
 /** Typed two-piece Electro damage and ordinary-reaction contributions of Thundering Fury. */
 export const thunderingFuryCombatActionEffects: readonly CombatActionEffect[] = [
@@ -32,5 +33,14 @@ export const thunderingFuryCombatActionEffects: readonly CombatActionEffect[] = 
     target: "reactionDamageBonus",
     targetFilter: { reactionKinds: ["aggravate"] },
     value: { kind: "fixed", value: THUNDERING_FURY_AGGRAVATE_REACTION_DAMAGE_BONUS }
+  },
+  {
+    activation: "automatic",
+    id: "artifact.thundering-fury.4pc.lunar-charged-stellar-superconduct.reaction-damage-bonus",
+    label: "如雷的盛怒 · 四件套（月感电、星超导反应伤害）",
+    source: { kind: "artifact_set", minimumPieces: 4, setId: "ThunderingFury" },
+    target: "specialReactionDamageBonus",
+    targetFilter: { specialReactionKinds: ["lunar_charged", "stellar_superconduct"] },
+    value: { kind: "fixed", value: THUNDERING_FURY_SPECIAL_REACTION_DAMAGE_BONUS }
   }
 ]

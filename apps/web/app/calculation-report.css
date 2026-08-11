@@ -677,6 +677,35 @@
   border-top-color: var(--trace-color) !important;
 }
 
+.traceGlobalStatSources {
+  --trace-color: #65558f;
+  border: 1px solid #e5e0ee;
+  margin: 14px 0 18px;
+  padding: 10px 12px;
+}
+
+.traceGlobalStatSourceGrid {
+  display: grid;
+  gap: 12px 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 10px;
+}
+
+.traceGlobalStatSourceGrid h4 {
+  font-size: 11px;
+  margin: 0;
+}
+
+.traceGlobalStatSourceGrid dl {
+  margin-top: 5px;
+}
+
+@media (max-width: 900px) {
+  .traceGlobalStatSourceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .optionalEffectSelect {
   align-items: center;
   border: 1px solid var(--border);

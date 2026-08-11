@@ -25,12 +25,11 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
+      effectIds: ["artifact.disenchantment-in-deep-shadow.4pc.stellar-superconduct.reaction-damage-bonus"],
       id: "artifact.disenchantment-in-deep-shadow.4pc.stellar-superconduct.reaction-damage-bonus",
       label: "影中沉凝的幻灭 · 四件套（星超导反应伤害）",
-      reason: "星超导使用独立的月曜反应伤害公式，当前单核心动作流水线尚未建模。",
-      requiredCapability: "stellar_superconduct_reaction_damage_bonus",
       source: artifactSource("DisenchantmentInDeepShadow", 4),
-      status: "unsupported"
+      status: "implemented"
     }
   ],
   equipmentId: "DisenchantmentInDeepShadow",

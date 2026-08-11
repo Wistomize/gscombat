@@ -103,8 +103,8 @@ export const zibaiCombatCoverage: CharacterCombatCoverage = {
           coefficientParameterId: "spirit-steed-stride-second-hit-lunar-crystallize-damage",
           id: "spirit-steed-stride-second-hit-lunar-crystallize",
           snapshotChecks: [
-            { expectedCoefficient: 0.521007, talentLevel: 1 },
-            { expectedCoefficient: 0.937813, talentLevel: 10 }
+            { expectedCoefficient: 1.40968, talentLevel: 1 },
+            { expectedCoefficient: 2.537424, talentLevel: 10 }
           ]
         }
       ],
@@ -116,7 +116,7 @@ export const zibaiCombatCoverage: CharacterCombatCoverage = {
         {
           groupId: "skill",
           id: "spirit-steed-stride-second-hit-lunar-crystallize-damage",
-          parameterIndex: 6,
+          parameterIndex: 1,
           source: "talent",
           talentSlot: "skill"
         }
@@ -245,9 +245,9 @@ export const zibaiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "zibai.passive.selenic_descent.spirit_steed_second_hit.base_damage",
-      label: "月下素娥降仙 · 太阴降（灵驹飞踏第二段增加60%防御力基础伤害）",
+      label: "月下素娥降仙 · 太阴降（灵驹飞踏第二段伤害增加值为60%防御力）",
       source: { characterId: "Zibai", kind: "character", minimumSourceAscension: 1 },
-      target: "specialReactionBaseDamageFlat",
+      target: "specialReactionFlatDamageAddition",
       targetFilter: {
         actionIds: ["zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize"],
         recipientSourceRelation: "source",
@@ -277,9 +277,9 @@ export const zibaiCombatCoverage: CharacterCombatCoverage = {
       activation: "maximum_reachable",
       condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
       id: "zibai.constellation.2.full_moonsign.spirit_steed_second_hit.base_damage",
-      label: "化于生而死于尸 · C2 满辉太阴降（灵驹飞踏第二段额外增加550%防御力基础伤害）",
+      label: "化于生而死于尸 · C2 满辉太阴降（灵驹飞踏第二段伤害额外增加值为550%防御力）",
       source: { characterId: "Zibai", kind: "character", minimumSourceConstellation: 2 },
-      target: "specialReactionBaseDamageFlat",
+      target: "specialReactionFlatDamageAddition",
       targetFilter: {
         actionIds: ["zibai.skill.spirit_steed_stride.second_hit.lunar_crystallize"],
         recipientSourceRelation: "source",
@@ -362,7 +362,7 @@ export const zibaiCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The primary metric is Spirit Steed's Stride second-hit Lunar-Crystallize damage. It includes the 60% DEF Selenic Descent base addition, C2's Full-Moonsign 550% DEF addition when configured, Zibai's Geo/Hydro teammate stat passive, her capped 14% Lunar-Crystallize base-damage bonus, C1's first-use 220% and C2's 30% reaction-damage bonuses, and C6's maximum 48% elevation snapshot. Tri-Sphere Eminence's direct first hit and Lunar-Crystallize second hit remain selectable secondary metrics. C4's later fourth-normal hit, timing, and rotations remain unmodeled.",
+    "The primary metric is Spirit Steed's Stride second-hit Lunar-Crystallize damage. It uses the generated skill parameter at index 1, while Selenic Descent's 60% DEF and C2 Full-Moonsign's 550% DEF are fixed additions after the Lunar reaction-bonus stage and before CRIT. It also includes Zibai's Geo/Hydro teammate stat passive, her capped 14% Lunar-Crystallize base-damage bonus, C1's first-use 220% and C2's 30% reaction-damage bonuses, and C6's maximum 48% elevation snapshot. Tri-Sphere Eminence's direct first hit and Lunar-Crystallize second hit remain selectable secondary metrics. C4's later fourth-normal hit, timing, and rotations remain unmodeled.",
   label: zibaiDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

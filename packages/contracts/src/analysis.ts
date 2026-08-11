@@ -567,6 +567,8 @@ export const AnalysisResponseSchema = Type.Object({
             Type.Literal("baseDefense"),
             Type.Literal("baseElementalMastery"),
             Type.Literal("baseHp"),
+            Type.Literal("critDamage"),
+            Type.Literal("critRate"),
             Type.Literal("damageBonus"),
             Type.Literal("defensePercent"),
             Type.Literal("elementalMastery"),

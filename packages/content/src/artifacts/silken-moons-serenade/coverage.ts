@@ -21,12 +21,11 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
+      effectIds: ["artifact.silken-moons-serenade.4pc.different-moongleam.lunar-reaction-damage-bonus"],
       id: "artifact.silken-moons-serenade.4pc.different-moongleam.lunar-reaction-damage-bonus",
       label: "纺月的夜歌 · 四件套（不同月辉明光的月曜反应伤害）",
-      reason: "需要团队不同月辉明光效果计数与月曜反应专属伤害加成。",
-      requiredCapability: "different_moongleam_count_and_lunar_reaction_damage_bonus",
       source: artifactSource("SilkenMoonsSerenade", 4, "party_member"),
-      status: "unsupported"
+      status: "implemented"
     }
   ],
   equipmentId: "SilkenMoonsSerenade",

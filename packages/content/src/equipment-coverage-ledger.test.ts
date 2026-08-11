@@ -298,7 +298,7 @@ describe("full equipment coverage ledger", () => {
     expect(listPublishedArtifactSets().map((artifactSet) => artifactSet.setId)).toContain("CrimsonWitchOfFlames")
   })
 
-  it("keeps lunar reaction branches unpublished after ordinary reaction branches resolve", () => {
+  it("publishes audited legacy artifact sets after their Moon and Stellar branches resolve", () => {
     const disenchantmentInDeepShadow = equipmentCoverageLedger.find(
       (entry) => entry.equipmentId === "DisenchantmentInDeepShadow"
     )
@@ -312,8 +312,9 @@ describe("full equipment coverage ledger", () => {
           status: "implemented"
         }),
         expect.objectContaining({
+          effectIds: ["artifact.disenchantment-in-deep-shadow.4pc.stellar-superconduct.reaction-damage-bonus"],
           id: "artifact.disenchantment-in-deep-shadow.4pc.stellar-superconduct.reaction-damage-bonus",
-          status: "unsupported"
+          status: "implemented"
         })
       ])
     )
@@ -330,8 +331,9 @@ describe("full equipment coverage ledger", () => {
           status: "implemented"
         }),
         expect.objectContaining({
+          effectIds: ["artifact.thundering-fury.4pc.lunar-charged-stellar-superconduct.reaction-damage-bonus"],
           id: "artifact.thundering-fury.4pc.lunar-charged-stellar-superconduct.reaction-damage-bonus",
-          status: "unsupported"
+          status: "implemented"
         }),
         expect.objectContaining({
           id: "artifact.thundering-fury.4pc.skill-cooldown-reduction",
@@ -350,19 +352,55 @@ describe("full equipment coverage ledger", () => {
           status: "implemented"
         }),
         expect.objectContaining({
+          effectIds: expect.arrayContaining([
+            "artifact.flower-of-paradise-lost.4pc.reaction-trigger.0-stack.lunar-bloom-reaction-damage-bonus",
+            "artifact.flower-of-paradise-lost.4pc.reaction-trigger.4-stack.lunar-bloom-reaction-damage-bonus"
+          ]),
           id: "artifact.flower-of-paradise-lost.4pc.lunar-bloom.reaction-damage-bonus",
-          status: "unsupported"
+          status: "implemented"
         })
       ])
     )
     const publishedArtifactIds = listPublishedArtifactSets().map((artifactSet) => artifactSet.setId)
 
-    expect(publishedArtifactIds).not.toContain("DisenchantmentInDeepShadow")
-    expect(publishedArtifactIds).not.toContain("ThunderingFury")
-    expect(publishedArtifactIds).not.toContain("FlowerOfParadiseLost")
+    expect(publishedArtifactIds).toEqual(expect.arrayContaining([
+      "DisenchantmentInDeepShadow",
+      "FlowerOfParadiseLost",
+      "ThunderingFury"
+    ]))
   })
 
-  it("keeps Night of the Sky's Unveiling unpublished while its lunar damage branch remains unsupported", () => {
+  it("publishes Aubade of Morningstar and Moon after both reachable Lunar-reaction bonuses resolve", () => {
+    const aubade = equipmentCoverageLedger.find((entry) => entry.equipmentId === "AubadeOfMorningstarAndMoon")
+
+    expect(aubade?.clauses).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        effectIds: [
+          "artifact.aubade-of-morningstar-and-moon.4pc.off-field.lunar-reaction-damage-bonus",
+          "artifact.aubade-of-morningstar-and-moon.4pc.full-moonsign.lunar-reaction-damage-bonus"
+        ],
+        id: "artifact.aubade-of-morningstar-and-moon.4pc.lunar-reaction",
+        status: "implemented"
+      })
+    ]))
+    expect(listPublishedArtifactSets().map((artifactSet) => artifactSet.setId)).toContain(
+      "AubadeOfMorningstarAndMoon"
+    )
+  })
+
+  it("has no remaining unsupported artifact clause for a dedicated Moon or Stellar reaction bonus", () => {
+    const unresolved = equipmentCoverageLedger
+      .filter((entry) => entry.kind === "artifact_set")
+      .flatMap((entry) => entry.clauses.map((clause) => ({ clause, equipmentId: entry.equipmentId })))
+      .filter(({ clause }) =>
+        /lunar|stellar|moon(sign|gleam)|月曜|月感电|月绽放|月结晶|星超导/i.test(`${clause.id} ${clause.label}`)
+      )
+      .filter(({ clause }) => clause.status === "unsupported")
+
+    expect(unresolved).toEqual([])
+  })
+
+  it("publishes Night of the Sky's Unveiling with its party Moongleam Lunar reaction bonus", () => {
     const nightOfTheSkysUnveiling = equipmentCoverageLedger.find(
       (entry) => entry.equipmentId === "NightOfTheSkysUnveiling"
     )
@@ -378,12 +416,14 @@ describe("full equipment coverage ledger", () => {
           status: "implemented"
         }),
         expect.objectContaining({
+          effectIds: ["artifact.night-of-the-skys-unveiling.4pc.moongleam.lunar-reaction-damage-bonus"],
           id: "artifact.night-of-the-skys-unveiling.4pc.moongleam.lunar-reaction-damage-bonus",
-          status: "unsupported"
+          source: expect.objectContaining({ holder: "party_member" }),
+          status: "implemented"
         })
       ])
     )
-    expect(listPublishedArtifactSets().map((artifactSet) => artifactSet.setId)).not.toContain("NightOfTheSkysUnveiling")
+    expect(listPublishedArtifactSets().map((artifactSet) => artifactSet.setId)).toContain("NightOfTheSkysUnveiling")
   })
 
   it("keeps Cinnabar Spindle unpublished while only Albedo's single-hit slice is resolved", () => {
@@ -456,7 +496,7 @@ describe("full equipment coverage ledger", () => {
     expect(listPublishedWeapons().map((weapon) => weapon.weaponId)).toContain("SwordOfNarzissenkreuz")
   })
 
-  it("keeps Silken Moon's Serenade unpublished while its lunar-reaction damage branch is unsupported", () => {
+  it("publishes Silken Moon's Serenade with its party Moongleam Lunar reaction bonus", () => {
     const silkenMoonsSerenade = equipmentCoverageLedger.find((entry) => entry.equipmentId === "SilkenMoonsSerenade")
 
     expect(silkenMoonsSerenade?.clauses).toEqual(
@@ -470,12 +510,13 @@ describe("full equipment coverage ledger", () => {
           status: "implemented"
         }),
         expect.objectContaining({
+          effectIds: ["artifact.silken-moons-serenade.4pc.different-moongleam.lunar-reaction-damage-bonus"],
           id: "artifact.silken-moons-serenade.4pc.different-moongleam.lunar-reaction-damage-bonus",
-          status: "unsupported"
+          status: "implemented"
         })
       ])
     )
-    expect(listPublishedArtifactSets().map((artifactSet) => artifactSet.setId)).not.toContain("SilkenMoonsSerenade")
+    expect(listPublishedArtifactSets().map((artifactSet) => artifactSet.setId)).toContain("SilkenMoonsSerenade")
   })
 
   it("publishes Staff of Homa only after its base and low-health final-HP attack clauses resolve", () => {

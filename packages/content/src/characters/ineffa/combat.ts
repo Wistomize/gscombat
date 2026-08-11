@@ -36,6 +36,34 @@ export const ineffaCombatCoverage: CharacterCombatCoverage = {
     },
     {
       characterId: "Ineffa",
+      damageKind: "special_reaction",
+      damageParts: [
+        {
+          coefficientParameterId: "frequency-overlimit-circuit-additional-lunar-charged-damage",
+          id: "frequency-overlimit-circuit-additional-lunar-charged",
+          snapshotChecks: [{ expectedCoefficient: 0.65, talentLevel: 1 }]
+        }
+      ],
+      element: ineffaDefinition.element,
+      evaluator: "declared_special_reaction",
+      id: "ineffa.passive.frequency_overlimit_circuit.additional_lunar_charged",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "passive1",
+          id: "frequency-overlimit-circuit-additional-lunar-charged-damage",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "passive"
+        }
+      ],
+      scalingStat: "attack",
+      specialReaction: { kind: "lunar_charged" },
+      status: "verified",
+      talentSlot: "passive"
+    },
+    {
+      characterId: "Ineffa",
       damageKind: "direct",
       damageParts: [
         {
@@ -119,8 +147,105 @@ export const ineffaCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "burst"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "ineffa.passive.moonsign_benediction.lunar_charged_base_damage_bonus",
+      label: "月兆祝赐·象拟中继 · 月感电基础伤害加成",
+      source: { characterId: "Ineffa", kind: "character" },
+      target: "specialReactionBaseDamageBonus",
+      targetFilter: { specialReactionKinds: ["lunar_charged"] },
+      value: {
+        kind: "source_final_attack",
+        maximumValue: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive3",
+            id: "lunar-charged-base-damage-bonus-maximum",
+            parameterIndex: 1,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        },
+        multiplier: {
+          kind: "talent_parameter",
+          multiplier: 0.01,
+          parameter: {
+            groupId: "passive3",
+            id: "lunar-charged-base-damage-bonus-per-100-attack",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "ineffa.passive.total_phase_reconfiguration_protocol.elemental_mastery",
+      label: "全相重构协议 · 施放元素爆发后按伊涅芙攻击力的6%提升元素精通",
+      source: { characterId: "Ineffa", kind: "character", minimumSourceAscension: 4 },
+      target: "elementalMastery",
+      value: {
+        kind: "source_final_attack",
+        multiplier: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive2",
+            id: "attack-to-elemental-mastery-ratio",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "ineffa.constellation.1.lunar_charged_damage_bonus",
+      label: "循环整流引擎 · C1展开光流屏障后全队月感电反应伤害提升",
+      source: { characterId: "Ineffa", kind: "character", minimumSourceConstellation: 1 },
+      target: "specialReactionDamageBonus",
+      targetFilter: { specialReactionKinds: ["lunar_charged"] },
+      value: {
+        kind: "source_final_attack",
+        maximumValue: { kind: "fixed", value: 0.5 },
+        multiplier: { kind: "fixed", value: 0.00025 }
+      }
+    }
+  ],
   characterId: "Ineffa",
   metrics: [
+    {
+      actionId: "ineffa.passive.frequency_overlimit_circuit.additional_lunar_charged",
+      characterId: "Ineffa",
+      id: "ineffa.passive.frequency_overlimit_circuit.additional_lunar_charged",
+      kind: "damage",
+      label: "频率超限回路 / 薇尔琪塔额外月感电伤害",
+      sourceActionId: "ineffa.passive.frequency_overlimit_circuit.additional_lunar_charged",
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: "ineffa.skill.cleaning_mode_carrier_frequency.initial_hit",
+      characterId: "Ineffa",
+      id: "ineffa.skill.cleaning_mode_carrier_frequency.initial_hit",
+      kind: "damage",
+      label: "涤净模式·稳态载频 / 释放雷元素伤害",
+      sourceActionId: "ineffa.skill.cleaning_mode_carrier_frequency.initial_hit",
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: "ineffa.burst.supreme_instruction_cyclonic_exterminator.initial_hit",
+      characterId: "Ineffa",
+      id: "ineffa.burst.supreme_instruction_cyclonic_exterminator.initial_hit",
+      kind: "damage",
+      label: "至高律令·全域扫灭 / 释放雷元素伤害",
+      sourceActionId: "ineffa.burst.supreme_instruction_cyclonic_exterminator.initial_hit",
+      status: "verified",
+      target: "enemy"
+    },
     {
       characterId: "Ineffa",
       flatParameter: {
@@ -162,7 +287,7 @@ export const ineffaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit, one Cleaning Mode: Carrier Frequency initial single instance of AoE Electro damage, and Supreme Instruction: Cyclonic Exterminator's initial hit remain verified lower-level C0 attack-scaling actions from the pinned 6.7 Genshin Optimizer snapshot at commit 21c98eb60355160274a8c4cecfc5671e2151a073, but none is selected as Ineffa's display output. The selected support metric calculates one Optical Flow Shield delivered to the current active friendly recipient as total Attack × skill[1] plus skill[2], before that recipient's Shield Strength; C3 adds three Skill levels. It excludes the 250% Electro-damage absorption branch, duration, Birgitta's field and later discharges, Lunar-Charged and every Lunar-Charged damage bonus, passives, constellations other than C3, direct damage, reactions, external effects, timing, and other character states.",
+    "The primary metric is Frequency Overlimit Circuit's separate 65% final-Attack Lunar-Charged hit after Birgitta's nearby Thundercloud trigger has been fulfilled. It uses the dedicated Lunar-Charged coefficient and excludes ordinary damage bonus and defense. Ineffa's capped final-Attack-derived 14% base-damage bonus is team-wide; after Burst, A4 adds 6% of Ineffa's final Attack as Elemental Mastery to Ineffa and the evaluated active character. C1's reachable post-shield state adds up to 50% team Lunar-Charged reaction damage bonus. C2's separate 300% Attack and C6's separate 135% Attack Lunar-Charged events are deliberately not merged into the 65% passive action. The Skill and Burst release hits remain selectable ordinary Electro metrics. Optical Flow Shield remains a selectable support metric calculated as final Attack times skill[1] plus skill[2], before recipient Shield Strength; C3 raises Skill levels and C5 raises Burst levels. Thundercloud creation, trigger cadence, duration, energy, and rotations are not inferred.",
   label: ineffaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

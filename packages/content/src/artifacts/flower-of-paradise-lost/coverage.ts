@@ -24,12 +24,17 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
+      effectIds: [
+        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.0-stack.lunar-bloom-reaction-damage-bonus",
+        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.1-stack.lunar-bloom-reaction-damage-bonus",
+        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.2-stack.lunar-bloom-reaction-damage-bonus",
+        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.3-stack.lunar-bloom-reaction-damage-bonus",
+        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.4-stack.lunar-bloom-reaction-damage-bonus"
+      ],
       id: "artifact.flower-of-paradise-lost.4pc.lunar-bloom.reaction-damage-bonus",
       label: "乐园遗落之花 · 四件套（月绽放反应伤害）",
-      reason: "月绽放使用独立伤害公式，当前单核心动作流水线尚未建模。",
-      requiredCapability: "lunar_bloom_reaction_damage_bonus",
       source: artifactSource("FlowerOfParadiseLost", 4),
-      status: "unsupported"
+      status: "implemented"
     }
   ],
   equipmentId: "FlowerOfParadiseLost",

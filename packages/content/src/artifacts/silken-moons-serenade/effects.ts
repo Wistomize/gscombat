@@ -3,6 +3,7 @@ import type { CombatActionEffect } from "../../combat/types.js"
 export const SILKEN_MOONS_SERENADE_ENERGY_RECHARGE = 0.2
 export const SILKEN_MOONS_SERENADE_INITIAL_MOONSIGN_PARTY_ELEMENTAL_MASTERY = 60
 export const SILKEN_MOONS_SERENADE_FULL_MOONSIGN_PARTY_ELEMENTAL_MASTERY = 120
+export const SILKEN_MOONS_SERENADE_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS = 0.1
 
 /** Typed two-piece energy recharge contribution of Silken Moon's Serenade to maintained core actions. */
 export const silkenMoonsSerenadeCombatActionEffects: readonly CombatActionEffect[] = [
@@ -33,5 +34,15 @@ export const silkenMoonsSerenadeCombatActionEffects: readonly CombatActionEffect
     source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "SilkenMoonsSerenade" },
     target: "elementalMastery",
     value: { kind: "fixed", value: SILKEN_MOONS_SERENADE_FULL_MOONSIGN_PARTY_ELEMENTAL_MASTERY }
+  },
+  {
+    activation: "active",
+    condition: { kind: "moonsign_level", minimum: "nascent_gleam" },
+    id: "artifact.silken-moons-serenade.4pc.different-moongleam.lunar-reaction-damage-bonus",
+    label: "纺月的夜歌 · 月辉明光·崇信（月曜反应伤害）",
+    source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "SilkenMoonsSerenade" },
+    target: "specialReactionDamageBonus",
+    targetFilter: { specialReactionKinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"] },
+    value: { kind: "fixed", value: SILKEN_MOONS_SERENADE_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS }
   }
 ]

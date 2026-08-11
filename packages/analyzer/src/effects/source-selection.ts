@@ -191,6 +191,8 @@ function isSelfSnapshotOwnedBy(effect: CombatActionEffect, build: CharacterBuild
   }
   return (
     build.characterId === source.characterId &&
+    build.ascension >= (source.minimumSourceAscension ?? 0) &&
+    build.constellation >= (source.minimumSourceConstellation ?? 0) &&
     (source.travelerElement === undefined ||
       (build.variant?.kind === "traveler" && build.variant.element === source.travelerElement))
   )

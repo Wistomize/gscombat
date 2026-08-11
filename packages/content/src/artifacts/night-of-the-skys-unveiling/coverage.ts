@@ -21,12 +21,11 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
+      effectIds: ["artifact.night-of-the-skys-unveiling.4pc.moongleam.lunar-reaction-damage-bonus"],
       id: "artifact.night-of-the-skys-unveiling.4pc.moongleam.lunar-reaction-damage-bonus",
       label: "穹境示现之夜 · 四件套（不同月辉明光的月曜反应伤害加成）",
-      reason: "需要月曜反应伤害与队伍不同月辉明光效果计数模型。",
-      requiredCapability: "lunar_reaction_damage_bonus_and_moongleam_count",
-      source: artifactSource("NightOfTheSkysUnveiling", 4),
-      status: "unsupported"
+      source: artifactSource("NightOfTheSkysUnveiling", 4, "party_member"),
+      status: "implemented"
     }
   ],
   equipmentId: "NightOfTheSkysUnveiling",

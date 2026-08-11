@@ -83,6 +83,8 @@ export type ResolvedStatContributionStage =
   | "baseDefense"
   | "baseElementalMastery"
   | "baseHp"
+  | "critDamage"
+  | "critRate"
   | "damageBonus"
   | "defensePercent"
   | "elementalMastery"

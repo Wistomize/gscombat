@@ -248,6 +248,55 @@ export function ScalingStatBreakdown({
   )
 }
 
+function StatSourceList({
+  label,
+  stage,
+  stats,
+  total
+}: {
+  readonly label: string
+  readonly stage: "critDamage" | "critRate" | "elementalMastery"
+  readonly stats: ResolvedScenarioStats
+  readonly total: string
+}) {
+  const contributions = stats.statContributions.filter((contribution) =>
+    stage === "elementalMastery"
+      ? contribution.stage === "baseElementalMastery" || contribution.stage === "elementalMastery"
+      : contribution.stage === stage
+  )
+  return (
+    <section>
+      <h4>{label}</h4>
+      <dl>
+        {contributions.map((contribution, index) => (
+          <div key={`${contribution.stage}-${contribution.label}-${index}`}>
+            <dt>{contribution.label}</dt>
+            <dd>{stage === "elementalMastery" ? formatFormulaNumber(contribution.value) : formatFormulaPercent(contribution.value)}</dd>
+          </div>
+        ))}
+        <div className="traceContributionTotal"><dt>最终{label}</dt><dd>{total}</dd></div>
+      </dl>
+    </section>
+  )
+}
+
+/** Shows mastery and CRIT sources once per selected metric instead of repeating them for every damage event. */
+export function MasteryAndCritSourceBreakdown({ stats }: { readonly stats: ResolvedScenarioStats }) {
+  const critRateTotal = stats.critRate > 1
+    ? `${formatFormulaPercent(stats.critRate)}（期望结算按 ${formatFormulaPercent(1)} 上限）`
+    : formatFormulaPercent(stats.critRate)
+  return (
+    <details className="traceContributionDetails traceGlobalStatSources">
+      <summary>展开精通与双暴来源</summary>
+      <div className="traceGlobalStatSourceGrid">
+        <StatSourceList label="元素精通" stage="elementalMastery" stats={stats} total={formatFormulaNumber(stats.elementalMastery)} />
+        <StatSourceList label="暴击率" stage="critRate" stats={stats} total={critRateTotal} />
+        <StatSourceList label="暴击伤害" stage="critDamage" stats={stats} total={formatFormulaPercent(stats.critDamage)} />
+      </div>
+    </details>
+  )
+}
+
 const amplifyingReactionLabels: Readonly<Record<AmplifyingReaction, string>> = {
   melt_forward: "正向融化",
   melt_reverse: "反向融化",

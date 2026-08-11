@@ -87,7 +87,7 @@ afterAll(async () => {
 })
 
 describe("support effect pipeline API integration", () => {
-  it("publishes complete HP, defense, and elemental-mastery breakdowns with their resolved sources", async () => {
+  it("publishes complete HP, defense, mastery, and CRIT breakdowns with their resolved sources", async () => {
     const baseNoelle = createBuild("Noelle", "RedhornStonethresher", "support-pipeline.noelle-stat-breakdown")
     const noelle: CharacterBuild = {
       ...baseNoelle,
@@ -98,7 +98,8 @@ describe("support effect pipeline API integration", () => {
             ...huskArtifact,
             substats: [
               { stat: "hp_percent" as const, value: 0.1 },
-              { stat: "elemental_mastery" as const, value: 80 }
+              { stat: "elemental_mastery" as const, value: 80 },
+              { stat: "crit_rate" as const, value: 0.066 }
             ]
           }
         }
@@ -107,7 +108,8 @@ describe("support effect pipeline API integration", () => {
             ...huskArtifact,
             substats: [
               { stat: "def_percent" as const, value: 0.1 },
-              { stat: "def" as const, value: 100 }
+              { stat: "def" as const, value: 100 },
+              { stat: "crit_damage" as const, value: 0.132 }
             ]
           }
         }
@@ -133,7 +135,9 @@ describe("support effect pipeline API integration", () => {
           { label: "测试固定生命值", sourceId: "test.hp-flat", stat: "hp_flat", value: 500 },
           { label: "测试防御力%", sourceId: "test.defense-percent", stat: "defense_percent", value: 0.15 },
           { label: "测试固定防御力", sourceId: "test.defense-flat", stat: "defense_flat", value: 120 },
-          { label: "测试元素精通", sourceId: "test.elemental-mastery", stat: "elemental_mastery", value: 60 }
+          { label: "测试元素精通", sourceId: "test.elemental-mastery", stat: "elemental_mastery", value: 60 },
+          { label: "测试暴击率", sourceId: "test.crit-rate", stat: "crit_rate", value: 0.12 },
+          { label: "测试暴击伤害", sourceId: "test.crit-damage", stat: "crit_damage", value: 0.24 }
         ],
         primary: noelle,
         targetActionId: "noelle.normal.auto.first_hit",
@@ -149,6 +153,8 @@ describe("support effect pipeline API integration", () => {
         readonly baseDefense: number
         readonly baseElementalMastery: number
         readonly baseHp: number
+        readonly critDamage: number
+        readonly critRate: number
         readonly defensePercent: number
         readonly effectiveDefense: number
         readonly effectiveHp: number
@@ -174,8 +180,20 @@ describe("support effect pipeline API integration", () => {
       expect.objectContaining({ label: "测试固定防御力", stage: "flatDefense", value: 120 }),
       expect.objectContaining({ label: "华馆梦醒形骸记 · 二件套", stage: "defensePercent", value: 0.3 }),
       expect.objectContaining({ label: "生之花副词条 · 元素精通", stage: "elementalMastery", value: 80 }),
-      expect.objectContaining({ label: "测试元素精通", stage: "elementalMastery", value: 60 })
+      expect.objectContaining({ label: "测试元素精通", stage: "elementalMastery", value: 60 }),
+      expect.objectContaining({ label: "角色基础暴击率", stage: "critRate", value: 0.05 }),
+      expect.objectContaining({ label: "生之花副词条 · 暴击率", stage: "critRate", value: 0.066 }),
+      expect.objectContaining({ label: "测试暴击率", stage: "critRate", value: 0.12 }),
+      expect.objectContaining({ label: "角色基础暴击伤害", stage: "critDamage", value: 0.5 }),
+      expect.objectContaining({ label: "死之羽副词条 · 暴击伤害", stage: "critDamage", value: 0.132 }),
+      expect.objectContaining({ label: "测试暴击伤害", stage: "critDamage", value: 0.24 })
     ]))
+    expect(stats.statContributions
+      .filter((contribution) => contribution.stage === "critRate")
+      .reduce((total, contribution) => total + contribution.value, 0)).toBeCloseTo(stats.critRate)
+    expect(stats.statContributions
+      .filter((contribution) => contribution.stage === "critDamage")
+      .reduce((total, contribution) => total + contribution.value, 0)).toBeCloseTo(stats.critDamage)
     if (!keyEffect) throw new Error("Expected Key of Khaj-Nisut's team elemental-mastery effect to be applied")
     expect(stats.statContributions).toContainEqual(expect.objectContaining({
       label: keyEffect.label,

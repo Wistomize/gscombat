@@ -358,6 +358,8 @@ export function resolveStats(
     baseElementalMastery: characterBaseElementalMastery,
     buffs,
     build,
+    critDamage,
+    critRate,
     damageBonus,
     defensePercent,
     deltas,
@@ -369,6 +371,9 @@ export function resolveStats(
     gameData,
     intrinsicDamageBonusContributions: intrinsicEffects.contributions.filter(
       (contribution) => contribution.target === "damageBonus"
+    ),
+    intrinsicCritRateContributions: intrinsicEffects.contributions.filter(
+      (contribution) => contribution.target === "critRate"
     ),
     intrinsicElementalMasteryContributions: intrinsicEffects.contributions.filter(
       (contribution) => contribution.target === "elementalMastery"
@@ -425,6 +430,8 @@ interface ResolveStatContributionsInput {
   readonly baseElementalMastery: number
   readonly buffs: readonly ExternalBuff[]
   readonly build: CharacterBuild
+  readonly critDamage: number
+  readonly critRate: number
   readonly damageBonus: number
   readonly defensePercent: number
   readonly deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined
@@ -435,6 +442,7 @@ interface ResolveStatContributionsInput {
   readonly flatHp: number
   readonly gameData: GameDataRepository
   readonly intrinsicDamageBonusContributions: readonly { readonly label: string; readonly value: number }[]
+  readonly intrinsicCritRateContributions: readonly { readonly label: string; readonly value: number }[]
   readonly intrinsicElementalMasteryContributions: readonly { readonly label: string; readonly value: number }[]
   readonly hpPercent: number
 }
@@ -540,6 +548,31 @@ export function resolveStatContributions(input: ResolveStatContributionsInput): 
   }
   add("flatDefense", "边际模拟 · 固定防御力", getDelta(deltas, "def"))
   addResidualContribution(contributions, "flatDefense", "其他固定防御力", input.flatDefense)
+
+  add("critRate", "角色基础暴击率", 0.05)
+  addArtifactStatContributions(contributions, build, "crit_rate", "critRate", "暴击率")
+  add("critRate", "角色突破属性 · 暴击率", gameData.getCharacterAscensionBonus(build.characterId, "critRate_", build.ascension) ?? 0)
+  add("critRate", "武器副属性 · 暴击率", gameData.getWeaponStat(build.weapon.weaponId, "critRate_", build.weapon.level, build.weapon.ascension) ?? 0)
+  for (const buff of buffs.filter((candidate) => candidate.stat === "crit_rate")) add("critRate", buff.label, buff.value)
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "critRate")) {
+    add("critRate", effect.label, effect.value)
+  }
+  for (const contribution of input.intrinsicCritRateContributions) {
+    add("critRate", contribution.label, contribution.value)
+  }
+  add("critRate", "边际模拟 · 暴击率", getDelta(deltas, "crit_rate"))
+  addResidualContribution(contributions, "critRate", "其他暴击率", input.critRate)
+
+  add("critDamage", "角色基础暴击伤害", 0.5)
+  addArtifactStatContributions(contributions, build, "crit_damage", "critDamage", "暴击伤害")
+  add("critDamage", "角色突破属性 · 暴击伤害", gameData.getCharacterAscensionBonus(build.characterId, "critDMG_", build.ascension) ?? 0)
+  add("critDamage", "武器副属性 · 暴击伤害", gameData.getWeaponStat(build.weapon.weaponId, "critDMG_", build.weapon.level, build.weapon.ascension) ?? 0)
+  for (const buff of buffs.filter((candidate) => candidate.stat === "crit_damage")) add("critDamage", buff.label, buff.value)
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "critDamage")) {
+    add("critDamage", effect.label, effect.value)
+  }
+  add("critDamage", "边际模拟 · 暴击伤害", getDelta(deltas, "crit_damage"))
+  addResidualContribution(contributions, "critDamage", "其他暴击伤害", input.critDamage)
 
   add("baseElementalMastery", "角色基础元素精通", input.baseElementalMastery)
   addArtifactStatContributions(contributions, build, "elemental_mastery", "elementalMastery", "元素精通")

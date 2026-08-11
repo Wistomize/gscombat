@@ -11,12 +11,14 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
+      effectIds: [
+        "artifact.aubade-of-morningstar-and-moon.4pc.off-field.lunar-reaction-damage-bonus",
+        "artifact.aubade-of-morningstar-and-moon.4pc.full-moonsign.lunar-reaction-damage-bonus"
+      ],
       id: "artifact.aubade-of-morningstar-and-moon.4pc.lunar-reaction",
       label: "晨星与月的晓歌 · 四件套",
-      reason: "需要月曜反应、月兆满辉和装备者前后台状态的组合快照。",
-      requiredCapability: "lunar_reaction_moonsign_and_field_state",
       source: artifactSource("AubadeOfMorningstarAndMoon", 4),
-      status: "unsupported"
+      status: "implemented"
     }
   ],
   equipmentId: "AubadeOfMorningstarAndMoon",

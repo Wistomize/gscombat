@@ -141,6 +141,9 @@ const analysisResponse: AnalysisResponse = {
         { label: "角色基础攻击 · 雷电将军", stage: "baseAttack", value: 337 },
         { label: "武器基础攻击 · 薙草之稻光", stage: "baseAttack", value: 608 },
         { label: "时之沙主词条 · 攻击力%", stage: "attackPercent", value: 0.466 },
+        { label: "测试精通来源", stage: "elementalMastery", value: 80 },
+        { label: "测试暴击率来源", stage: "critRate", value: 0.2 },
+        { label: "测试暴击伤害来源", stage: "critDamage", value: 0.4 },
         { label: "空之杯主词条 · 雷元素伤害加成", stage: "damageBonus", value: 0.466 },
         { label: "固有天赋 · 殊胜之御体", stage: "damageBonus", value: 0.8 }
       ],
@@ -657,11 +660,15 @@ describe("team-first workspace integration", () => {
       .map((summary) => summary.textContent)
     expect(disclosures).toContain("展开属性倍率")
     expect(disclosures).toContain("展开增伤来源")
+    expect(disclosures).toContain("展开精通与双暴来源")
     expect(document.querySelector(".substatReport")?.textContent).toContain("+1.23%")
     expect(document.querySelector(".substatReport")?.textContent).toContain("元素爆发提升至 10 级")
     expect(document.querySelector(".substatReport")?.textContent).toContain("+4.57%")
     expect(document.querySelector(".traceReport")?.textContent).toContain("时之沙主词条 · 攻击力%")
     expect(document.querySelector(".traceReport")?.textContent).toContain("空之杯主词条 · 雷元素伤害加成")
+    expect(document.querySelector(".traceGlobalStatSources")?.textContent).toContain("测试精通来源")
+    expect(document.querySelector(".traceGlobalStatSources")?.textContent).toContain("测试暴击率来源")
+    expect(document.querySelector(".traceGlobalStatSources")?.textContent).toContain("测试暴击伤害来源")
     const refinementSelect = document.querySelector<HTMLSelectElement>('select[aria-label="薙草之稻光精炼等级"]')
     expect(refinementSelect?.querySelectorAll("option")).toHaveLength(5)
     await changeSelect(refinementSelect, "5")
