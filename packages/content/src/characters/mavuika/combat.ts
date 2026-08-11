@@ -250,6 +250,75 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
       target: "attackPercent",
       targetFilter: { recipientSourceRelation: "source" },
       value: { kind: "fixed", value: 0.4 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "mavuika.constellation.2.the-ashen-price.nightsoul-blessing.base-attack",
+      label: "灰烬的代价 · C2 夜魂加持（基础攻击力提升200点）",
+      source: { characterId: "Mavuika", kind: "character", minimumSourceConstellation: 2 },
+      target: "baseAttackFlat",
+      targetFilter: {
+        actionIds: [
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.hydro_aura_vaporize",
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 200 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "mavuika.constellation.2.the-ashen-price.flamestrider.sunfell-slice.base-damage",
+      label: "灰烬的代价 · C2 驰轮车形态（坠日斩增加120%攻击力伤害）",
+      source: { characterId: "Mavuika", kind: "character", minimumSourceConstellation: 2 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: [
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.hydro_aura_vaporize",
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 1.2 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "attack"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "mavuika.constellation.4.the-leaders-resolve.kiongozi.damage-bonus",
+      label: "「领袖」的觉悟 · C4 基扬戈兹额外伤害加成",
+      source: {
+        characterId: "Mavuika",
+        kind: "character",
+        minimumSourceAscension: 4,
+        minimumSourceConstellation: 4
+      },
+      target: "damageBonus",
+      targetFilter: {
+        actionIds: [
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.hydro_aura_vaporize",
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.1 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "mavuika.constellation.6.humanitys-name-unfettered.flamestrider.ring.enemy-defense-reduction",
+      label: "「人之名」解放 · C6 驰轮车形态召唤焚曜之环（附近敌人防御力降低20%）",
+      source: { characterId: "Mavuika", kind: "character", minimumSourceConstellation: 6 },
+      target: "enemyDefenseReduction",
+      targetFilter: {
+        actionIds: [
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.hydro_aura_vaporize",
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.2 }
     }
   ],
   characterId: "Mavuika",
@@ -276,7 +345,7 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One uninfused first normal hit and The Named Moment's initial hit remain verified raw actions. The selected core hit is one Hour of Burning Skies Sunfell Slice: Attack × (burst[0] + Fighting Spirit × burst[2]). Fighting Spirit is an action-owned manual integer input from 100 through 200 and defaults to the full 200. At full Fighting Spirit, the pinned 6.7 snapshot resolves to 764.8% Attack at Burst Level 1 and 1376.64% at Level 10. The Fighting Spirit term is added to base damage before the shared damage multipliers, not treated as a damage-bonus percentage. At Ascension 1+, Gift of Flaming Flowers automatically adds 30% Attack after a party-reachable Nightsoul Burst. At Ascension 4+, the initial Sunfell Slice includes Kiongozi's 0.002 × Fighting Spirit Damage Bonus: 40% at the default full 200 Fighting Spirit. C1 can be selected as a current snapshot after Fighting Spirit was gained and during its eight-second window. Hydro-aura Vaporize and Cryo-aura Melt are mutually exclusive alternatives for this exact one hit. Nightsoul generation, the post-burst Flamestrider attacks, other constellations, timing, and rotation behavior remain excluded.",
+    "One uninfused first normal hit and The Named Moment's initial hit remain verified raw actions. The selected core hit is one Hour of Burning Skies Sunfell Slice: Attack × (burst[0] + Fighting Spirit × burst[2]). Fighting Spirit is an action-owned manual integer input from 100 through 200 and defaults to the full 200. At full Fighting Spirit, the pinned 6.7 snapshot resolves to 764.8% Attack at Burst Level 1 and 1376.64% at Level 10. The Fighting Spirit term is added to base damage before the shared damage multipliers, not treated as a damage-bonus percentage. At Ascension 1+, Gift of Flaming Flowers automatically adds 30% Attack after a party-reachable Nightsoul Burst. At Ascension 4+, the initial Sunfell Slice includes Kiongozi's 0.002 × Fighting Spirit Damage Bonus: 40% at the default full 200 Fighting Spirit. C1 remains an explicit current snapshot because its eight-second Attack window depends on when Fighting Spirit was last gained. C2 automatically adds 200 Base Attack before every Attack-percent multiplier and adds another 120% of final Attack to the same Sunfell Slice base-damage stage. C3 raises Burst level through the shared constellation talent mechanism. C4 adds its extra 10% Kiongozi Damage Bonus; the non-decay clause does not create another multiplier at the selected maximum snapshot. C5 affects only Skill level. At C6, riding the Flamestrider also summons the Ring of Searing Radiance, so its 20% nearby-enemy Defense reduction applies to Sunfell Slice; C6's independent All-Fire Armament hits remain outside this one-hit metric. Hydro-aura Vaporize and Cryo-aura Melt are mutually exclusive alternatives for this exact one hit. Nightsoul generation, post-burst Flamestrider attacks, timing, and rotation behavior remain excluded.",
   label: mavuikaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

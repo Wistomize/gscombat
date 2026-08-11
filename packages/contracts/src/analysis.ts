@@ -491,6 +491,7 @@ export const AnalysisResponseSchema = Type.Object({
           Type.Literal("additionalDamageEvent"),
           Type.Literal("actionParameter"),
           Type.Literal("attackPercent"),
+          Type.Literal("baseAttackFlat"),
           Type.Literal("baseDamageFlat"),
           Type.Literal("critDamage"),
           Type.Literal("critRate"),

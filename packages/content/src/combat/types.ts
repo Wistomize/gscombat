@@ -572,6 +572,8 @@ export type CombatAttackKind = "charged" | "normal" | "plunge"
 /** A stat stage owned by an automatic equipment passive or an explicitly selected current-action state. */
 export type CombatActionEffectTarget =
   | "additionalDamageEvent"
+  /** Adds to character plus weapon Base ATK before every ATK% multiplier. */
+  | "baseAttackFlat"
   | "baseDamageFlat"
   | "matchedActionAdditiveDamageTerm"
   | "attackPercent"

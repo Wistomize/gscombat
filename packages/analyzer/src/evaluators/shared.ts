@@ -260,6 +260,7 @@ export function resolveStats(
   readonly scenario: ResolvedDeclaredScenarioStats
 } {
   const base = resolveBaseCombatStats(build, gameData, action.element)
+  const baseAttack = base.baseAttack + actionEffects.baseAttackFlat
   const attackPercent =
     base.attackPercent + getDelta(deltas, "atk_percent") + getBuffTotal(buffs, "attack_percent") + actionEffects.attackPercent
   const flatAttack = base.flatAttack + getDelta(deltas, "atk") + getBuffTotal(buffs, "attack_flat") + actionEffects.flatAttack
@@ -302,7 +303,7 @@ export function resolveStats(
     getBuffTotal(buffs, "elemental_mastery") +
     actionEffects.elementalMastery +
     finalHpSourcedElementalMastery
-  const preliminaryAttack = base.baseAttack * (1 + attackPercent) + flatAttack + finalHpSourcedFlatAttack
+  const preliminaryAttack = baseAttack * (1 + attackPercent) + flatAttack + finalHpSourcedFlatAttack
   const preliminaryIntrinsicEffects = resolveDeclaredActionIntrinsicEffects(
     action,
     build,
@@ -315,7 +316,7 @@ export function resolveStats(
     build,
     gameData,
     {
-      baseAttack: base.baseAttack,
+      baseAttack,
       defense,
       elementalMastery: preliminaryIntrinsicEffects.elementalMastery,
       hp
@@ -327,7 +328,7 @@ export function resolveStats(
   )
   const effectiveFlatAttack =
     flatAttack + finalHpSourcedFlatAttack + cappedStatToAttackConversion + finalElementalMasterySourcedFlatAttack
-  const attack = base.baseAttack * (1 + attackPercent) + effectiveFlatAttack
+  const attack = baseAttack * (1 + attackPercent) + effectiveFlatAttack
   const intrinsicEffects = resolveDeclaredActionIntrinsicEffects(
     action,
     build,
@@ -397,7 +398,7 @@ export function resolveStats(
     rotation,
     scenario: {
       attackPercent,
-      baseAttack: base.baseAttack,
+      baseAttack,
       baseDefense: base.baseDefense,
       baseElementalMastery: characterBaseElementalMastery,
       baseHp: base.baseHp,
@@ -482,6 +483,9 @@ export function resolveStatContributions(input: ResolveStatContributionsInput): 
     `武器基础攻击 · ${supportedWeapons.find((weapon) => weapon.weaponId === build.weapon.weaponId)?.label ?? build.weapon.weaponId}`,
     gameData.getWeaponStat(build.weapon.weaponId, "atk", build.weapon.level, build.weapon.ascension) ?? 0
   )
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "baseAttackFlat")) {
+    add("baseAttack", effect.label, effect.value)
+  }
   addArtifactStatContributions(contributions, build, "atk_percent", "attackPercent", "攻击力%")
   add("attackPercent", "角色突破属性 · 攻击力%", gameData.getCharacterAscensionBonus(build.characterId, "atk_", build.ascension) ?? 0)
   add("attackPercent", "武器副属性 · 攻击力%", gameData.getWeaponStat(build.weapon.weaponId, "atk_", build.weapon.level, build.weapon.ascension) ?? 0)

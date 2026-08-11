@@ -1,5 +1,7 @@
 import {
   ActionEffectSources,
+  CritSourceBreakdown,
+  ElementalMasterySourceBreakdown,
   FormulaEquation,
   FormulaValue,
   ScalingStatBreakdown,
@@ -18,6 +20,8 @@ export function SpecialReactionTraceFormula({
   effects,
   formula,
   previousStage,
+  showCritSources = false,
+  showMasterySources = false,
   stats
 }: {
   readonly after: number
@@ -25,6 +29,8 @@ export function SpecialReactionTraceFormula({
   readonly effects: readonly AppliedActionEffect[] | undefined
   readonly formula: SpecialReactionFormula
   readonly previousStage: PipelineStage
+  readonly showCritSources?: boolean
+  readonly showMasterySources?: boolean
   readonly stats: ResolvedScenarioStats | undefined
 }) {
   if (formula.kind === "special_reaction_base_damage") {
@@ -140,6 +146,7 @@ export function SpecialReactionTraceFormula({
           <FormulaValue stage="reaction_damage_bonus">{formatFormulaNumber(formula.multiplier)}</FormulaValue>
         </p>
         <ActionEffectSources effects={effects} targets={["specialReactionDamageBonus"]} />
+        {showMasterySources && stats ? <ElementalMasterySourceBreakdown stats={stats} /> : null}
       </div>
     )
   }
@@ -167,6 +174,7 @@ export function SpecialReactionTraceFormula({
         <p className="formulaAuxiliary">
           期望暴击乘数 = <FormulaValue stage="crit">{formatFormulaPercent(formula.multiplier)}</FormulaValue>
         </p>
+        {showCritSources && stats ? <CritSourceBreakdown stats={stats} /> : null}
       </div>
     )
   }

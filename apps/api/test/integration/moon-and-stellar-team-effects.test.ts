@@ -250,6 +250,105 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(evaluation.result.expectedDamage).toBeGreaterThan(0)
   }, 20_000)
 
+  it("publishes Linnea's two heals and two Lunar-Crystallize hammers with cumulative constellation stages", async () => {
+    const actionIds = [
+      "linnea.skill.lumi.enhanced_hammer.lunar_crystallize",
+      "linnea.skill.lumi.million_ton_hammer.lunar_crystallize"
+    ] as const
+    const columbina = withTriplePercentMainStats(
+      createBuild("Columbina", "NocturnesCurtainCall", "test.columbina.linnea-support"),
+      "hp_percent"
+    )
+    const createLinnea = (constellation: number) =>
+      withTriplePercentMainStats(
+        createBuild("Linnea", "TheFirstGreatMagic", `test.linnea.c${constellation}.lunar`, constellation),
+        "def_percent"
+      )
+    const c0 = createLinnea(0)
+    const c4 = createLinnea(4)
+    const c6 = createLinnea(6)
+    const [c0Enhanced, c0Million, c4Enhanced, c4Million, c6Enhanced, c6Million, catalogResponse] =
+      await Promise.all([
+        evaluate(c0, [columbina], actionIds[0]),
+        evaluate(c0, [columbina], actionIds[1]),
+        evaluate(c4, [columbina], actionIds[0]),
+        evaluate(c4, [columbina], actionIds[1]),
+        evaluate(c6, [columbina], actionIds[0]),
+        evaluate(c6, [columbina], actionIds[1]),
+        app.inject({ method: "GET", url: "/v1/catalog" })
+      ])
+
+    expect(catalogResponse.statusCode).toBe(200)
+    const catalogLinnea = (catalogResponse.json().characters as readonly {
+      readonly characterId: string
+      readonly primaryActionIds: readonly string[]
+      readonly supportMetrics: readonly { readonly id: string }[]
+    }[]).find((character) => character.characterId === "Linnea")
+    expect(catalogLinnea?.primaryActionIds).toEqual(actionIds)
+    expect(catalogLinnea?.supportMetrics.map((metric) => metric.id)).toEqual([
+      "linnea.burst.initial_team_healing",
+      "linnea.burst.continuous_healing_tick"
+    ])
+
+    const c0Evaluations = [c0Enhanced, c0Million]
+    for (const [index, evaluation] of c0Evaluations.entries()) {
+      const trace = evaluation.rotation.events[0]?.trace ?? []
+      const baseTerms = trace.find((entry) => entry.stage === "base_damage")?.formula.terms
+      expect(baseTerms?.[0]).toMatchObject({ coefficient: index === 0 ? 1.8 : 7.2, stat: "defense" })
+      expect(trace.find((entry) => entry.stage === "reaction_coefficient")?.formula.multiplier).toBeCloseTo(1.6)
+      expect(findEffect(evaluation, "linnea.passive.defense_to_elemental_mastery")?.value).toBeGreaterThan(0)
+      expect(findEffect(evaluation, "linnea.passive.lunar_crystallize_base_damage_bonus")?.value).toBeCloseTo(0.14)
+      expect(trace.some((entry) => entry.stage === "defense" || entry.stage === "damage_bonus")).toBe(false)
+    }
+    expect(c0Million.result.expectedDamage).toBeGreaterThan(c0Enhanced.result.expectedDamage)
+
+    expect(findEffect(c4Enhanced, "linnea.constellation.4.lunar_cage_chord.linnea.defense_percent")?.value)
+      .toBeCloseTo(0.25)
+    expect(findEffect(c4Enhanced, "linnea.constellation.4.lunar_cage_chord.active_linnea.defense_percent"))
+      .toBeUndefined()
+    expect(findEffect(c4Million, "linnea.constellation.4.lunar_cage_chord.linnea.defense_percent")?.value)
+      .toBeCloseTo(0.25)
+    expect(findEffect(c4Million, "linnea.constellation.4.lunar_cage_chord.active_linnea.defense_percent")?.value)
+      .toBeCloseTo(0.25)
+    expect(c4Enhanced.stats.effectiveDefense).toBeGreaterThan(c0Enhanced.stats.effectiveDefense)
+    expect(c4Million.stats.effectiveDefense).toBeGreaterThan(c4Enhanced.stats.effectiveDefense)
+
+    const c4EnhancedChronicle = findEffect(
+      c4Enhanced,
+      "linnea.constellation.1.chronicle.enhanced_hammer.flat_damage_addition"
+    )
+    const c4MillionChronicle = findEffect(
+      c4Million,
+      "linnea.constellation.1.chronicle.million_ton_hammer.flat_damage_addition"
+    )
+    expect(c4EnhancedChronicle).toMatchObject({ target: "specialReactionFlatDamageAddition" })
+    expect(c4EnhancedChronicle?.value).toBeCloseTo(c4Enhanced.stats.effectiveDefense * 0.75)
+    expect(c4MillionChronicle).toMatchObject({ target: "specialReactionFlatDamageAddition" })
+    expect(c4MillionChronicle?.value).toBeCloseTo(c4Million.stats.effectiveDefense * 7.5)
+    expect(findEffect(c4Enhanced, "linnea.constellation.2.lunar_cage_chord.hydro_geo_crit_damage")?.value)
+      .toBeCloseTo(0.4)
+    expect(findEffect(c4Enhanced, "linnea.constellation.2.million_ton_hammer.crit_damage")).toBeUndefined()
+    expect(findEffect(c4Million, "linnea.constellation.2.lunar_cage_chord.hydro_geo_crit_damage")?.value)
+      .toBeCloseTo(0.4)
+    expect(findEffect(c4Million, "linnea.constellation.2.million_ton_hammer.crit_damage")?.value).toBeCloseTo(1.5)
+
+    const c6EnhancedExtra = findEffect(
+      c6Enhanced,
+      "linnea.constellation.6.chronicle.enhanced_hammer.extra_flat_damage_addition"
+    )
+    const c6MillionExtra = findEffect(
+      c6Million,
+      "linnea.constellation.6.chronicle.million_ton_hammer.extra_flat_damage_addition"
+    )
+    expect(c6EnhancedExtra?.value).toBeCloseTo(c6Enhanced.stats.effectiveDefense * 0.375)
+    expect(c6MillionExtra?.value).toBeCloseTo(c6Million.stats.effectiveDefense * 3.75)
+    expect(findEffect(c6Enhanced, "linnea.constellation.6.full_moonsign.lunar_crystallize_elevation")?.value)
+      .toBeCloseTo(0.25)
+    expect(findEffect(c6Million, "linnea.constellation.6.full_moonsign.lunar_crystallize_elevation")?.value)
+      .toBeCloseTo(0.25)
+    expect(c6Million.result.expectedDamage).toBeGreaterThan(c4Million.result.expectedDamage)
+  }, 30_000)
+
   it("evaluates both Flins Thunder Symphony Lunar-Charged hits through their reviewed stages", async () => {
     const flins = createBuild("Flins", "CalamityQueller", "test.flins.c6.lunar-charged", 6)
     const ineffa = createBuild("Ineffa", "CalamityQueller", "test.ineffa.c1.flins-support", 1)

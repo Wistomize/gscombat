@@ -1,5 +1,7 @@
 import {
   ActionEffectSources,
+  CritSourceBreakdown,
+  ElementalMasterySourceBreakdown,
   FormulaEquation,
   FormulaValue,
   getAdditiveReactionLabel,
@@ -18,11 +20,15 @@ export function TraceFormula({
   entry,
   effects,
   previousStage,
+  showCritSources = false,
+  showMasterySources = false,
   stats
 }: {
   readonly entry: DamageTraceEntry
   readonly effects: readonly AppliedActionEffect[] | undefined
   readonly previousStage: DamageTraceStage
+  readonly showCritSources?: boolean
+  readonly showMasterySources?: boolean
   readonly stats: ResolvedScenarioStats | undefined
 }) {
   const formula = entry.formula
@@ -34,7 +40,7 @@ export function TraceFormula({
     formula.kind === "special_reaction_flat_damage_addition" ||
     formula.kind === "special_reaction_ascension"
   ) {
-    return <SpecialReactionTraceFormula after={entry.after} before={entry.before} effects={effects} formula={formula} previousStage={previousStage} stats={stats} />
+    return <SpecialReactionTraceFormula after={entry.after} before={entry.before} effects={effects} formula={formula} previousStage={previousStage} showCritSources={showCritSources} showMasterySources={showMasterySources} stats={stats} />
   }
   if (formula.kind === "attack") {
     return (
@@ -114,6 +120,7 @@ export function TraceFormula({
           <FormulaValue stage="amplifying_reaction">{formatFormulaNumber(formula.multiplier)}</FormulaValue> ={" "}
           <FormulaValue stage="amplifying_reaction">{formatFormulaNumber(entry.after)}</FormulaValue>
         </p>
+        {showMasterySources && stats ? <ElementalMasterySourceBreakdown stats={stats} /> : null}
       </div>
     )
   }
@@ -133,6 +140,7 @@ export function TraceFormula({
           <FormulaValue stage="additive_reaction">{formatFormulaNumber(formula.reactionDamage)}</FormulaValue> ={" "}
           <FormulaValue stage="additive_reaction">{formatFormulaNumber(entry.after)}</FormulaValue>
         </p>
+        {showMasterySources && stats ? <ElementalMasterySourceBreakdown stats={stats} /> : null}
       </div>
     )
   }
@@ -150,6 +158,7 @@ export function TraceFormula({
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
         <ActionEffectSources effects={effects} targets={["transformativeReactionFlatDamageAddition"]} />
+        {showMasterySources && stats ? <ElementalMasterySourceBreakdown stats={stats} /> : null}
       </div>
     )
   }
@@ -176,6 +185,7 @@ export function TraceFormula({
         <p className="formulaAuxiliary">
           期望暴击乘数 = <FormulaValue stage="crit">{formatFormulaPercent(formula.multiplier)}</FormulaValue>
         </p>
+        {showCritSources && stats ? <CritSourceBreakdown stats={stats} /> : null}
       </div>
     )
   }

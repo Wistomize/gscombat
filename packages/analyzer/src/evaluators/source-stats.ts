@@ -484,7 +484,17 @@ export function resolveSourceFinalAttackByBuildId(
         maximumReachableEffects.flatAttack +
         sourceAttackEffects.flatAttack +
         (isPrimary ? getDelta(deltas, "atk") + getBuffTotal(buffs, "attack_flat") : 0)
-      return [source.buildId, base.attack + base.baseAttack * attackPercent + flatAttack] as const
+      const baseAttackFlat =
+        automaticEffects.baseAttackFlat +
+        maximumReachableEffects.baseAttackFlat +
+        sourceAttackEffects.baseAttackFlat
+      return [
+        source.buildId,
+        base.attack +
+          base.baseAttack * attackPercent +
+          flatAttack +
+          baseAttackFlat * (1 + base.attackPercent + attackPercent)
+      ] as const
     })
   )
 }

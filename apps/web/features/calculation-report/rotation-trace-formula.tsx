@@ -4,6 +4,8 @@ import { formatFormulaNumber, formatFormulaPercent } from "../../lib/formatting/
 import { SpecialReactionTraceFormula } from "./special-reaction-trace"
 import {
   ActionEffectSources,
+  CritSourceBreakdown,
+  ElementalMasterySourceBreakdown,
   FormulaEquation,
   FormulaValue,
   ScalingStatBreakdown,
@@ -43,15 +45,19 @@ export function RotationTraceFormula({
   analysis,
   entry,
   previousStage,
+  showCritSources = false,
+  showMasterySources = false,
   targetAction
 }: {
   readonly analysis: AnalysisResponse
   readonly entry: RotationTraceEntry
   readonly previousStage: PipelineStage
+  readonly showCritSources?: boolean
+  readonly showMasterySources?: boolean
   readonly targetAction: CatalogPrimaryAction | undefined
 }) {
   if (entry.kind === "special_reaction") {
-    return <SpecialReactionTraceFormula after={entry.after} before={entry.before} effects={analysis.evaluation.appliedEffects} formula={entry.formula} previousStage={previousStage} stats={analysis.evaluation.stats} />
+    return <SpecialReactionTraceFormula after={entry.after} before={entry.before} effects={analysis.evaluation.appliedEffects} formula={entry.formula} previousStage={previousStage} showCritSources={showCritSources} showMasterySources={showMasterySources} stats={analysis.evaluation.stats} />
   }
   if (entry.kind === "scaling") {
     const baseMultiplier = analysis.evaluation.stats.talentMultiplier
@@ -136,6 +142,7 @@ export function RotationTraceFormula({
           <FormulaValue stage="amplifying_reaction">{formatFormulaNumber(entry.multiplier)}</FormulaValue> ={" "}
           <FormulaValue stage="amplifying_reaction">{formatFormulaNumber(entry.after)}</FormulaValue>
         </p>
+        {showMasterySources ? <ElementalMasterySourceBreakdown stats={analysis.evaluation.stats} /> : null}
       </div>
     )
   }
@@ -155,6 +162,7 @@ export function RotationTraceFormula({
           <FormulaValue stage="additive_reaction">{formatFormulaNumber(entry.reactionDamage)}</FormulaValue> ={" "}
           <FormulaValue stage="additive_reaction">{formatFormulaNumber(entry.after)}</FormulaValue>
         </p>
+        {showMasterySources ? <ElementalMasterySourceBreakdown stats={analysis.evaluation.stats} /> : null}
       </div>
     )
   }
@@ -188,6 +196,7 @@ export function RotationTraceFormula({
           <FormulaValue stage="crit">{formatFormulaPercent(entry.critDamage)}</FormulaValue>] ={" "}
           <FormulaValue stage="crit">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
+        {showCritSources ? <CritSourceBreakdown stats={analysis.evaluation.stats} /> : null}
       </div>
     )
   }
@@ -233,6 +242,7 @@ export function RotationTraceFormula({
           <FormulaValue stage="transformative_reaction">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
         <ActionEffectSources effects={analysis.evaluation.appliedEffects} targets={["transformativeReactionFlatDamageAddition"]} />
+        {showMasterySources ? <ElementalMasterySourceBreakdown stats={analysis.evaluation.stats} /> : null}
       </div>
     )
   }

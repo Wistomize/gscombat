@@ -262,7 +262,7 @@ export function resolveCombatActionAttackEffects(
   const candidates = listCombatActionEffects().filter(
     (effect) =>
       effect.activation !== "automatic" &&
-      (effect.target === "attackPercent" || effect.target === "flatAttack")
+      (effect.target === "attackPercent" || effect.target === "baseAttackFlat" || effect.target === "flatAttack")
   )
   return resolveCombatActionEffectsForCandidates(input, candidates)
 }
@@ -379,6 +379,7 @@ function resolveCombatActionEffectsForCandidates(
     additionalDamageEvents,
     appliedEffects,
     attackPercent: sumEffectTarget(appliedEffects, "attackPercent"),
+    baseAttackFlat: sumEffectTarget(appliedEffects, "baseAttackFlat"),
     baseDamageFlat: sumEffectTarget(appliedEffects, "baseDamageFlat"),
     flatAttack: sumEffectTarget(appliedEffects, "flatAttack"),
     critDamage: sumEffectTarget(appliedEffects, "critDamage"),
@@ -506,6 +507,7 @@ function isSelfMaximumReachableCharacterStatEffect(effect: CombatActionEffect, s
   ) return false
   return [
     "attackPercent",
+    "baseAttackFlat",
     "critDamage",
     "critRate",
     "defenseFlat",

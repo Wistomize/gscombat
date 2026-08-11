@@ -17,13 +17,37 @@ import {
   formatAppliedActionEffect,
   formatAppliedScenarioBuff,
   formatScalingTerms,
-  MasteryAndCritSourceBreakdown,
   moonsignLabels,
+  NeutralReactionFormula,
   resonanceLabels,
   traceStageMeta,
   type CatalogPrimaryAction,
-  type PipelineStage
+  type DamageTraceEntry,
+  type PipelineStage,
+  type RotationTraceEntry
 } from "./trace-shared"
+
+function rotationTraceUsesMastery(entry: RotationTraceEntry): boolean {
+  return (
+    entry.kind === "amplifying_reaction" ||
+    entry.kind === "additive_reaction" ||
+    entry.kind === "transformative_reaction" ||
+    (entry.kind === "special_reaction" && entry.formula.kind === "special_reaction_damage_bonus")
+  )
+}
+
+function rotationTraceUsesCrit(entry: RotationTraceEntry): boolean {
+  return entry.kind === "expected_crit" || (entry.kind === "special_reaction" && entry.formula.kind === "expected_crit")
+}
+
+function damageTraceUsesMastery(entry: DamageTraceEntry): boolean {
+  return (
+    entry.formula.kind === "amplifying_reaction" ||
+    entry.formula.kind === "additive_reaction" ||
+    entry.formula.kind === "transformative_reaction" ||
+    entry.formula.kind === "special_reaction_damage_bonus"
+  )
+}
 
 function ArtifactRawValueReport({ build, catalog }: { readonly build: CharacterBuild; readonly catalog: CatalogResponse }) {
   const artifactDescription =
@@ -76,9 +100,24 @@ export function OrderedDamageReport({
     ? rotationTraceEvents.filter((event) => event.id.endsWith(`.${tracePresentation.focusEventId}`))
     : rotationTraceEvents
   const displayedRotationTraceEvents = focusedTraceEvents.length > 0 ? focusedTraceEvents : rotationTraceEvents
-  const traceLegendStages: readonly PipelineStage[] = usesRotationTrace
+  const indexedRotationEntries = displayedRotationTraceEvents.flatMap((event, eventIndex) =>
+    event.trace.map((entry, entryIndex) => ({ entry, entryIndex, eventIndex }))
+  )
+  const firstRotationMasteryEntry = indexedRotationEntries.find(({ entry }) => rotationTraceUsesMastery(entry))
+  const firstRotationCritEntry = indexedRotationEntries.find(({ entry }) => rotationTraceUsesCrit(entry))
+  const firstDamageMasteryEntryIndex = analysis.evaluation.result.trace.findIndex(damageTraceUsesMastery)
+  const firstDamageCritEntryIndex = analysis.evaluation.result.trace.findIndex(
+    (entry) => entry.formula.kind === "expected_crit"
+  )
+  const hasMasteryTrace = usesRotationTrace
+    ? firstRotationMasteryEntry !== undefined
+    : firstDamageMasteryEntryIndex >= 0
+  const resolvedTraceLegendStages: readonly PipelineStage[] = usesRotationTrace
     ? [...new Set(displayedRotationTraceEvents.flatMap((event) => event.trace.map(getRotationTraceStage)))]
     : analysis.evaluation.result.trace.map((entry) => entry.stage)
+  const traceLegendStages: readonly PipelineStage[] = hasMasteryTrace
+    ? resolvedTraceLegendStages
+    : ["neutral_reaction", ...resolvedTraceLegendStages]
 
   return (
     <div className="orderedReport">
@@ -119,20 +158,26 @@ export function OrderedDamageReport({
         <div className="traceLegend" aria-label="伤害乘区颜色图例">
           {traceLegendStages.map((stage) => <span className={`traceLegendItem traceLegendItem--${stage}`} key={stage}><i aria-hidden="true" />{traceStageMeta[stage].label}</span>)}
         </div>
-        <MasteryAndCritSourceBreakdown stats={analysis.evaluation.stats} />
         <div className="traceSteps">
           {usesRotationTrace
             ? displayedRotationTraceEvents.map((event, eventIndex) => (
                 <section className="traceEvent" key={event.id}>
                   <div className="traceEventTitle"><strong>{`EVENT ${String(eventIndex + 1).padStart(2, "0")} · ${event.id}`}</strong><small>{`${getRotationEventElementSummary(event)} · ${event.time.toFixed(2)}s · ${event.hitCount} 段`}</small></div>
+                  {!hasMasteryTrace && eventIndex === 0 ? <div aria-label={`${event.id} 反应区结算公式`} className="traceStep" data-stage="neutral_reaction"><div className="traceStage"><span>01</span><div><strong>{traceStageMeta.neutral_reaction.label}</strong><small>{traceStageMeta.neutral_reaction.hint}</small></div></div><NeutralReactionFormula stats={analysis.evaluation.stats} /></div> : null}
                   {event.trace.map((entry, index) => {
                     const stage = getRotationTraceStage(entry)
                     const previousStage = getRotationTraceStage(event.trace[index - 1] ?? entry)
-                    return <div aria-label={`${event.id} ${traceStageMeta[stage].label}结算公式`} className="traceStep" data-stage={stage} key={`${event.id}-${index}-${entry.kind}`}><div className="traceStage"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{traceStageMeta[stage].label}</strong><small>{traceStageMeta[stage].hint}</small></div></div><RotationTraceFormula analysis={analysis} entry={entry} previousStage={previousStage} targetAction={targetAction} /></div>
+                    const showMasterySources =
+                      firstRotationMasteryEntry?.eventIndex === eventIndex &&
+                      firstRotationMasteryEntry.entryIndex === index
+                    const showCritSources =
+                      firstRotationCritEntry?.eventIndex === eventIndex && firstRotationCritEntry.entryIndex === index
+                    const stepNumber = index + 1 + (!hasMasteryTrace && eventIndex === 0 ? 1 : 0)
+                    return <div aria-label={`${event.id} ${traceStageMeta[stage].label}结算公式`} className="traceStep" data-stage={stage} key={`${event.id}-${index}-${entry.kind}`}><div className="traceStage"><span>{String(stepNumber).padStart(2, "0")}</span><div><strong>{traceStageMeta[stage].label}</strong><small>{traceStageMeta[stage].hint}</small></div></div><RotationTraceFormula analysis={analysis} entry={entry} previousStage={previousStage} showCritSources={showCritSources} showMasterySources={showMasterySources} targetAction={targetAction} /></div>
                   })}
                 </section>
               ))
-            : analysis.evaluation.result.trace.map((entry, index) => <div aria-label={`${traceStageMeta[entry.stage].label}结算公式`} className="traceStep" data-stage={entry.stage} key={`${entry.stage}-${index}`}><div className="traceStage"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{traceStageMeta[entry.stage].label}</strong><small>{traceStageMeta[entry.stage].hint}</small></div></div><TraceFormula effects={analysis.evaluation.appliedEffects} entry={entry} previousStage={analysis.evaluation.result.trace[index - 1]?.stage ?? entry.stage} stats={analysis.evaluation.stats} /></div>)}
+            : <>{hasMasteryTrace ? null : <div aria-label="反应区结算公式" className="traceStep" data-stage="neutral_reaction"><div className="traceStage"><span>01</span><div><strong>{traceStageMeta.neutral_reaction.label}</strong><small>{traceStageMeta.neutral_reaction.hint}</small></div></div><NeutralReactionFormula stats={analysis.evaluation.stats} /></div>}{analysis.evaluation.result.trace.map((entry, index) => <div aria-label={`${traceStageMeta[entry.stage].label}结算公式`} className="traceStep" data-stage={entry.stage} key={`${entry.stage}-${index}`}><div className="traceStage"><span>{String(index + 1 + (hasMasteryTrace ? 0 : 1)).padStart(2, "0")}</span><div><strong>{traceStageMeta[entry.stage].label}</strong><small>{traceStageMeta[entry.stage].hint}</small></div></div><TraceFormula effects={analysis.evaluation.appliedEffects} entry={entry} previousStage={analysis.evaluation.result.trace[index - 1]?.stage ?? entry.stage} showCritSources={index === firstDamageCritEntryIndex} showMasterySources={index === firstDamageMasteryEntryIndex} stats={analysis.evaluation.stats} /></div>)}</>}
         </div>
         <div className="buffStrip">
           {analysis.evaluation.appliedBuffs.map((buff) => <span key={`${buff.sourceId}-${buff.stat}`}>{buff.label} {formatAppliedScenarioBuff(buff)}</span>)}

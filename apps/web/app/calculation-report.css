@@ -405,6 +405,10 @@
   --stage-color: #6d28d9;
 }
 
+.traceLegendItem--neutral_reaction {
+  --stage-color: #9333ea;
+}
+
 .traceLegendItem--amplifying_reaction {
   --stage-color: #c2410c;
 }
@@ -497,6 +501,11 @@
 .traceStep[data-stage="amplifying_reaction"] {
   --trace-color: #c2410c;
   --trace-soft: #fff7ed;
+}
+
+.traceStep[data-stage="neutral_reaction"] {
+  --trace-color: #9333ea;
+  --trace-soft: #faf5ff;
 }
 
 .traceStep[data-stage="additive_reaction"] {
@@ -677,31 +686,26 @@
   border-top-color: var(--trace-color) !important;
 }
 
-.traceGlobalStatSources {
-  --trace-color: #65558f;
-  border: 1px solid #e5e0ee;
-  margin: 14px 0 18px;
-  padding: 10px 12px;
-}
-
-.traceGlobalStatSourceGrid {
+.traceCritSourceGrid {
   display: grid;
   gap: 12px 20px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 10px;
 }
 
-.traceGlobalStatSourceGrid h4 {
+.traceCritSourceGrid h4,
+.traceMasterySources h4 {
   font-size: 11px;
   margin: 0;
 }
 
-.traceGlobalStatSourceGrid dl {
+.traceCritSourceGrid dl,
+.traceMasterySources dl {
   margin-top: 5px;
 }
 
 @media (max-width: 900px) {
-  .traceGlobalStatSourceGrid {
+  .traceCritSourceGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -752,6 +756,11 @@
 .formulaValue--talent {
   --formula-color: #6d28d9;
   --formula-soft: #f5f3ff;
+}
+
+.formulaValue--neutral_reaction {
+  --formula-color: #7e22ce;
+  --formula-soft: #f3e8ff;
 }
 
 .formulaValue--amplifying_reaction {

@@ -12,7 +12,7 @@ export type DamageTraceEntry = AnalysisResponse["evaluation"]["result"]["trace"]
 export type DamageTraceStage = DamageTraceEntry["stage"]
 export type RotationEvent = AnalysisResponse["evaluation"]["rotation"]["events"][number]
 export type RotationTraceEntry = RotationEvent["trace"][number]
-export type PipelineStage = DamageTraceStage | "hit_count" | "transformative_reaction"
+export type PipelineStage = DamageTraceStage | "hit_count" | "neutral_reaction" | "transformative_reaction"
 export type AmplifyingReaction = Extract<RotationTraceEntry, { readonly kind: "amplifying_reaction" }>["reaction"]
 export type AdditiveReaction = Extract<RotationTraceEntry, { readonly kind: "additive_reaction" }>["reaction"]
 export type TransformativeReaction = Extract<RotationTraceEntry, { readonly kind: "transformative_reaction" }>["reaction"]
@@ -33,6 +33,7 @@ export const traceStageMeta: Readonly<Record<PipelineStage, { readonly hint: str
   attack: { hint: "基础攻击、攻击力%与固定攻击", label: "攻击区" },
   scaling: { hint: "生命值、防御力或元素精通倍率的取值", label: "属性区" },
   talent: { hint: "技能倍率与愿力加成", label: "倍率区" },
+  neutral_reaction: { hint: "本次伤害不触发元素反应，倍率固定为 1", label: "反应区" },
   amplifying_reaction: { hint: "蒸发、融化与元素精通", label: "增幅反应区" },
   additive_reaction: { hint: "激化附加伤害与元素精通", label: "激化附加区" },
   damage_bonus: { hint: "元素、爆发与通用增伤", label: "增伤区" },
@@ -70,6 +71,7 @@ export const actionEffectTargetLabels: Readonly<Record<AppliedActionEffect["targ
   additionalDamageEvent: "额外物理伤害事件",
   actionParameter: "动作状态参数",
   attackPercent: "攻击力",
+  baseAttackFlat: "基础攻击力",
   baseDamageFlat: "同段基础伤害增加值",
   flatAttack: "固定攻击力",
   critDamage: "暴击伤害",
@@ -147,7 +149,7 @@ export function formatAppliedActionEffect(effect: AppliedActionEffect): string {
     return `${formatPercent(effect.value)} × 最终生命值`
   }
   if (effect.target === "finalElementalMasteryToFlatAttack") return `${formatPercent(effect.value)} × 最终元素精通`
-  if (["defenseFlat", "elementalMastery", "flatAttack", "hpFlat"].includes(effect.target)) {
+  if (["baseAttackFlat", "defenseFlat", "elementalMastery", "flatAttack", "hpFlat"].includes(effect.target)) {
     return `+${formatNumber(effect.value)}`
   }
   return formatPercent(effect.value)
@@ -280,20 +282,47 @@ function StatSourceList({
   )
 }
 
-/** Shows mastery and CRIT sources once per selected metric instead of repeating them for every damage event. */
-export function MasteryAndCritSourceBreakdown({ stats }: { readonly stats: ResolvedScenarioStats }) {
+/** Shows elemental-mastery sources beside the first reaction stage that consumes, or explicitly ignores, mastery. */
+export function ElementalMasterySourceBreakdown({ stats }: { readonly stats: ResolvedScenarioStats }) {
+  return (
+    <details className="traceContributionDetails traceMasterySources">
+      <summary>展开元素精通来源</summary>
+      <StatSourceList
+        label="元素精通"
+        stage="elementalMastery"
+        stats={stats}
+        total={formatFormulaNumber(stats.elementalMastery)}
+      />
+    </details>
+  )
+}
+
+/** Shows CRIT Rate and CRIT DMG sources beside the first expected-CRIT stage. */
+export function CritSourceBreakdown({ stats }: { readonly stats: ResolvedScenarioStats }) {
   const critRateTotal = stats.critRate > 1
     ? `${formatFormulaPercent(stats.critRate)}（期望结算按 ${formatFormulaPercent(1)} 上限）`
     : formatFormulaPercent(stats.critRate)
   return (
-    <details className="traceContributionDetails traceGlobalStatSources">
-      <summary>展开精通与双暴来源</summary>
-      <div className="traceGlobalStatSourceGrid">
-        <StatSourceList label="元素精通" stage="elementalMastery" stats={stats} total={formatFormulaNumber(stats.elementalMastery)} />
+    <details className="traceContributionDetails traceCritSources">
+      <summary>展开双暴来源</summary>
+      <div className="traceCritSourceGrid">
         <StatSourceList label="暴击率" stage="critRate" stats={stats} total={critRateTotal} />
         <StatSourceList label="暴击伤害" stage="critDamage" stats={stats} total={formatFormulaPercent(stats.critDamage)} />
       </div>
     </details>
+  )
+}
+
+/** Renders the explicit x1 reaction stage used by an ordinary action with no configured reaction. */
+export function NeutralReactionFormula({ stats }: { readonly stats: ResolvedScenarioStats }) {
+  return (
+    <div className="formulaLines">
+      <FormulaEquation label="无反应倍率">
+        <FormulaValue stage="neutral_reaction">1.000</FormulaValue>
+      </FormulaEquation>
+      <p className="formulaAuxiliary">本次伤害不触发元素反应，元素精通不改变结果。</p>
+      <ElementalMasterySourceBreakdown stats={stats} />
+    </div>
   )
 }
 

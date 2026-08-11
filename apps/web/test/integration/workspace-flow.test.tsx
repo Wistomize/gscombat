@@ -97,7 +97,15 @@ const analysisResponse: AnalysisResponse = {
         time: 0,
         trace: [
           { after: 200, before: 0, coefficient: 2, kind: "scaling", stat: "attack", value: 100 },
-          { after: 290, before: 200, bonus: 0.45, kind: "damage_bonus", multiplier: 1.45 }
+          { after: 290, before: 200, bonus: 0.45, kind: "damage_bonus", multiplier: 1.45 },
+          {
+            after: 403.28125,
+            before: 290,
+            critDamage: 1.238,
+            critRate: 0.625,
+            kind: "expected_crit",
+            multiplier: 1.390625
+          }
         ]
       }]
     },
@@ -660,15 +668,17 @@ describe("team-first workspace integration", () => {
       .map((summary) => summary.textContent)
     expect(disclosures).toContain("展开属性倍率")
     expect(disclosures).toContain("展开增伤来源")
-    expect(disclosures).toContain("展开精通与双暴来源")
+    expect(disclosures).toContain("展开元素精通来源")
+    expect(disclosures).toContain("展开双暴来源")
     expect(document.querySelector(".substatReport")?.textContent).toContain("+1.23%")
     expect(document.querySelector(".substatReport")?.textContent).toContain("元素爆发提升至 10 级")
     expect(document.querySelector(".substatReport")?.textContent).toContain("+4.57%")
     expect(document.querySelector(".traceReport")?.textContent).toContain("时之沙主词条 · 攻击力%")
     expect(document.querySelector(".traceReport")?.textContent).toContain("空之杯主词条 · 雷元素伤害加成")
-    expect(document.querySelector(".traceGlobalStatSources")?.textContent).toContain("测试精通来源")
-    expect(document.querySelector(".traceGlobalStatSources")?.textContent).toContain("测试暴击率来源")
-    expect(document.querySelector(".traceGlobalStatSources")?.textContent).toContain("测试暴击伤害来源")
+    expect(document.querySelector('.traceStep[data-stage="neutral_reaction"]')?.textContent).toContain("无反应倍率")
+    expect(document.querySelector('.traceStep[data-stage="neutral_reaction"]')?.textContent).toContain("测试精通来源")
+    expect(document.querySelector('.traceStep[data-stage="crit"]')?.textContent).toContain("测试暴击率来源")
+    expect(document.querySelector('.traceStep[data-stage="crit"]')?.textContent).toContain("测试暴击伤害来源")
     const refinementSelect = document.querySelector<HTMLSelectElement>('select[aria-label="薙草之稻光精炼等级"]')
     expect(refinementSelect?.querySelectorAll("option")).toHaveLength(5)
     await changeSelect(refinementSelect, "5")

@@ -61,6 +61,8 @@ export interface ResolvedCombatActionEffects {
   readonly additionalDamageEvents: readonly ResolvedAdditionalDamageEvent[]
   readonly appliedEffects: readonly AppliedCombatActionEffect[]
   readonly attackPercent: number
+  /** Flat addition to character plus weapon Base ATK, multiplied by every applicable ATK% contribution. */
+  readonly baseAttackFlat: number
   readonly baseDamageFlat: number
   readonly flatAttack: number
   readonly critDamage: number
@@ -119,6 +121,7 @@ export const EMPTY_COMBAT_ACTION_EFFECTS: ResolvedCombatActionEffects = {
   additionalDamageEvents: [],
   appliedEffects: [],
   attackPercent: 0,
+  baseAttackFlat: 0,
   baseDamageFlat: 0,
   flatAttack: 0,
   critDamage: 0,

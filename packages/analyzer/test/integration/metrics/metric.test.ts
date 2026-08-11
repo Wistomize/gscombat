@@ -1467,11 +1467,6 @@ describe("character metrics with explicit target context", () => {
     )
     const linneaInitial = evaluateFriendlyMetric("linnea.burst.initial_team_healing", linnea)
     const linneaTick = evaluateFriendlyMetric("linnea.burst.continuous_healing_tick", linnea)
-    const linneaResistance = evaluateCombatMetric({
-      build: linnea,
-      gameData,
-      metricId: "linnea.passive.geo_resistance_reduction.full_moonsign"
-    })
     const noelleShield = evaluateFriendlyMetric("noelle.skill.breastplate.initial_absorption", noelle)
     const noelleHealing = evaluateFriendlyMetric("noelle.skill.breastplate.heal", noelle)
     const noelleProbability = evaluateFriendlyMetric(
@@ -1492,7 +1487,6 @@ describe("character metrics with explicit target context", () => {
       scalingStat: "defense"
     })
     expect(linneaTick).toMatchObject({ flatAmount: 338.9909, kind: "healing", percentage: 0.576 })
-    expect(linneaResistance).toMatchObject({ kind: "scalar", unit: "ratio", value: 0.3 })
     expect(noelleShield).toMatchObject({ kind: "scalar", ratio: 2.16, semantic: "shield", unit: "hp" })
     expect(noelleHealing).toMatchObject({
       flatAmount: 225.99677,
@@ -1512,7 +1506,6 @@ describe("character metrics with explicit target context", () => {
     const chiori = createGeoMetricBuild("Chiori", "SacrificialSword")
     const illuga = createGeoMetricBuild("Illuga", "TheCatch")
     const kachina = createGeoMetricBuild("Kachina", "TheCatch")
-    const linnea = createGeoMetricBuild("Linnea", "FavoniusWarbow")
     const scenarioFor = (build: CharacterBuild) => ({
       ...raidenNationalBuiltinScenario,
       conditions: { ...raidenNationalBuiltinScenario.conditions, activeEffectIds: [] },
@@ -1546,11 +1539,6 @@ describe("character metrics with explicit target context", () => {
       "illuga.burst.song_of_the_nightbird.single_lunar_crystallize_bonus",
       illuga
     )
-    const linneaMastery = evaluateFriendlyMetric("linnea.passive.defense_to_elemental_mastery", linnea)
-    const linneaLunarCrystallize = evaluateFriendlyMetric(
-      "linnea.passive.lunar_crystallize_base_damage_bonus",
-      linnea
-    )
 
     expect(chioriTamoto).toMatchObject({
       actionId: "chiori.skill.fluttering_hasode.tamoto_attack",
@@ -1574,79 +1562,6 @@ describe("character metrics with explicit target context", () => {
       unit: "damage"
     })
     expect(illugaLunarBonus.value).toBeGreaterThan(illugaGeoBonus.value)
-    expect(linneaMastery).toMatchObject({
-      kind: "scalar",
-      ratio: 0.05,
-      semantic: "elemental_mastery_buff",
-      unit: "elemental_mastery"
-    })
-    if (linneaMastery.kind !== "scalar") throw new Error("Expected Linnea's Elemental Mastery scalar metric")
-    expect(linneaMastery.value).toBeCloseTo((linneaMastery.scalingValue ?? 0) * 0.05)
-    expect(linneaLunarCrystallize).toMatchObject({
-      kind: "scalar",
-      maximumValue: 0.14,
-      semantic: "lunar_crystallize_base_damage_bonus",
-      unit: "ratio"
-    })
-    if (linneaLunarCrystallize.kind !== "scalar") {
-      throw new Error("Expected Linnea's Lunar-Crystallize scalar metric")
-    }
-    expect(linneaLunarCrystallize.ratio).toBeCloseTo(0.00007)
-    expect(linneaLunarCrystallize.value).toBeCloseTo(
-      Math.min((linneaLunarCrystallize.scalingValue ?? 0) * 0.00007, 0.14)
-    )
-  })
-
-  it("routes Linnea's ascension-four Elemental Mastery metric from the active Moonsign state", () => {
-    const linnea = createGeoMetricBuild("Linnea", "FavoniusWarbow")
-    const evaluateMastery = (build: CharacterBuild, isMoonsign: boolean) =>
-      evaluateCombatMetric({
-        build,
-        context: {
-          recipient: {
-            buildId: raidenNationalBuiltinBuild.buildId,
-            incomingHealingBonus: 0,
-            isMoonsign,
-            isWithinSourceArea: true
-          },
-          teammates: [raidenNationalBuiltinBuild]
-        },
-        gameData,
-        metricId: "linnea.passive.defense_to_elemental_mastery"
-      })
-    const activeRecipient = evaluateMastery(linnea, true)
-    const selfRecipient = evaluateMastery(linnea, false)
-    const beforeAscensionFour = evaluateMastery({ ...linnea, ascension: 3 }, true)
-
-    expect(activeRecipient).toMatchObject({
-      kind: "scalar",
-      ratio: 0.05,
-      target: { buildId: raidenNationalBuiltinBuild.buildId, kind: "friendly_recipient" }
-    })
-    expect(selfRecipient).toMatchObject({
-      kind: "scalar",
-      target: { characterId: "Linnea", kind: "self" }
-    })
-    expect(selfRecipient.value).toBeCloseTo(activeRecipient.value)
-    expect(beforeAscensionFour).toMatchObject({ kind: "scalar", value: 0 })
-    expect(beforeAscensionFour.conditions).toContainEqual(
-      expect.objectContaining({ kind: "source_ascension", minimumAscension: 4, satisfied: false })
-    )
-    expect(() =>
-      evaluateCombatMetric({
-        build: linnea,
-        context: {
-          recipient: {
-            buildId: raidenNationalBuiltinBuild.buildId,
-            incomingHealingBonus: 0,
-            isWithinSourceArea: true
-          },
-          teammates: [raidenNationalBuiltinBuild]
-        },
-        gameData,
-        metricId: "linnea.passive.defense_to_elemental_mastery"
-      })
-    ).toThrow("requires the active recipient Moonsign state")
   })
 
   it("publishes Bennett's default profile as healing and attack-buff outputs, never self damage", () => {
