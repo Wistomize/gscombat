@@ -45,7 +45,9 @@ export function WorkspaceLogin({ error, onClose, onLogin }: WorkspaceLoginProps)
           </div>
           <button aria-label="关闭邀请码登录" type="button" onClick={onClose}>×</button>
         </div>
-        <p>邀请码用于把配置保存到云端并在多台设备继续使用；不登录仍可保存在本机。</p>
+        <p>
+          邀请码可以同步数据并在多端通用；无邀请码时仅使用浏览器缓存，请及时导出个人数据，需要时再通过 JSON 导入恢复。
+        </p>
         <input
           aria-hidden="true"
           autoComplete="username"
