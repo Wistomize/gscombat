@@ -1,3 +1,9 @@
+{
+	servers :443 {
+		protocols h1 h2
+	}
+}
+
 {$PUBLIC_DOMAIN:gscombat.online} {
 	encode zstd gzip
 	header {
