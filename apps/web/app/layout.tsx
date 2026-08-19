@@ -8,7 +8,7 @@ import "./calculation-report.css"
 
 export const metadata: Metadata = {
   description: "原神角色指标与战斗伤害分析工作台。",
-  title: "GSCombat · 原神战斗分析爽"
+  title: "角色数据分析"
 }
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

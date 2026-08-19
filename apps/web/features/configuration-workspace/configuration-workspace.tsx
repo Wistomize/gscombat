@@ -300,7 +300,7 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
     <main className="workspacePage">
       <header className="workspaceHeader">
         <div>
-          <strong>原神指标分析</strong>
+          <strong>原神战斗分析</strong>
           <span>{status}</span>
         </div>
         {cloudEnabled && cloudSessionStatus === "authenticated" ? (

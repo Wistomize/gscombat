@@ -373,7 +373,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   return (
     <main className="workspacePage calculationPage">
       <header className="workspaceHeader">
-        <div><strong>原神指标分析</strong><span>{status}</span></div>
+        <div><strong>原神战斗分析</strong><span>{status}</span></div>
         <a className="workspaceBackLink" href="/">← 返回配置</a>
       </header>
 
