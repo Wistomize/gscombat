@@ -16,9 +16,13 @@ separate read-only SQLite snapshot.
 
 ## Decision
 
-Each high-entropy invitation code maps to one private workspace. Entering the code establishes a signed, HTTP-only
-cookie session; the browser never needs to retain the raw code after login. The database stores only an HMAC digest
-of each invitation code, supports revocation, and never returns a stored code.
+Visitors enter a browser-local workspace without authentication. Durable local storage is preferred; when it is
+blocked, the client falls back to same-tab session storage and tells the user to export JSON before closing the tab.
+If neither browser store is available, the UI remains usable in memory and prominently requires manual import/export.
+
+Cloud synchronization is opt-in. Each high-entropy invitation code maps to one private workspace. Entering the code
+establishes a signed, HTTP-only cookie session; the browser never needs to retain the raw code after login. The
+database stores only an HMAC digest of each invitation code, supports revocation, and never returns a stored code.
 
 Persist one versioned workspace JSON document and an integer revision in a writable SQLite database. The document
 contains the complete character build library and current party. Continue exporting only character builds so the
@@ -37,6 +41,7 @@ snapshot. A later PostgreSQL migration replaces the store without changing calcu
 
 - Different invitation codes cannot read or overwrite each other's workspace through supported APIs.
 - One code provides automatic continuity across multiple devices without a full account system.
+- Visitors without a code can use the complete local workflow without creating server-side state.
 - Existing JSON import/export and all stateless evaluation endpoints remain compatible.
 - Revision conflicts are explicit and recoverable.
 
@@ -45,10 +50,11 @@ snapshot. A later PostgreSQL migration replaces the store without changing calcu
 - Anyone who possesses an invitation code can access that workspace until the code is revoked.
 - The initial SQLite deployment must remain single-writer and cannot be horizontally scaled as-is.
 - Losing an invitation code requires an operator to issue a new workspace rather than an email recovery flow.
+- Browser-only visitors must export JSON themselves when persistent browser storage is unavailable.
 
 ## Alternatives Considered
 
-### Continue manual JSON transfer only
+### Require manual JSON transfer for every user
 
 Rejected because it isolates browsers but does not provide automatic multi-device continuity.
 

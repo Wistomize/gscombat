@@ -11,7 +11,12 @@ import { BuildEditor } from "../../features/build-editor/build-editor"
 import { TeamCalculationWorkspace } from "../../features/calculation-workspace/calculation-workspace"
 import { ConfigurationWorkspace } from "../../features/configuration-workspace/configuration-workspace"
 import { webCatalog } from "../../lib/catalog"
-import { saveBuildLibrary, saveParty } from "../../lib/workspace/workspace-config"
+import {
+  BUILD_LIBRARY_STORAGE_KEY,
+  getVolatileWorkspaceStorage,
+  saveBuildLibrary,
+  saveParty
+} from "../../lib/workspace/workspace-config"
 
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }))
 
@@ -178,8 +183,11 @@ afterEach(async () => {
   root = undefined
   document.body.innerHTML = ""
   window.localStorage.clear()
+  window.sessionStorage.clear()
+  getVolatileWorkspaceStorage().storage.clear()
   routerPush.mockReset()
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
 })
 
 async function render(component: ReturnType<typeof createElement>) {
@@ -233,7 +241,7 @@ describe("build editor artifact display", () => {
 })
 
 describe("invite workspace integration", () => {
-  it("logs in, initializes an empty cloud workspace, and synchronizes party changes", async () => {
+  it("starts in local mode, optionally logs in, and synchronizes party changes", async () => {
     let authenticated = false
     let nickname = "朋友测试"
     let revision = 0
@@ -269,6 +277,13 @@ describe("invite workspace integration", () => {
           status: 200
         })
       }
+      if (url.endsWith("/v1/session/logout") && method === "POST") {
+        authenticated = false
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200
+        })
+      }
       if (url.endsWith("/v1/workspace") && method === "GET") {
         return new Response(JSON.stringify({ document: cloudDocument, revision }), {
           headers: { "Content-Type": "application/json" },
@@ -300,7 +315,13 @@ describe("invite workspace integration", () => {
     }))
     await flushAsyncWork()
 
-    expect(document.querySelector(".workspaceLoginCard")?.textContent).toContain("输入邀请码")
+    expect(document.querySelector(".workspaceLoginCard")).toBeNull()
+    expect(document.querySelector(".workspaceLocalSession")?.textContent).toContain("本机模式 · 自动保存")
+    expect(document.querySelector(".buildGroups")?.textContent).toContain("雷电将军")
+    expect(requests).toHaveLength(0)
+
+    await click(findButton("使用邀请码同步"))
+    expect(document.querySelector(".workspaceLoginCard")?.textContent).toContain("使用邀请码同步")
     const loginForm = document.querySelector<HTMLFormElement>(".workspaceLoginCard")
     const credentialUsername = loginForm?.querySelector<HTMLInputElement>('input[name="username"]')
     const inviteInput = loginForm?.querySelector<HTMLInputElement>('input[name="password"]')
@@ -311,9 +332,13 @@ describe("invite workspace integration", () => {
     expect(inviteInput?.autocomplete).toBe("current-password")
     expect(inviteInput?.type).toBe("password")
     await changeInput(inviteInput, "YSIN-test-invite-code-123456")
-    await click(findButton("进入工作空间"))
+    await click(findButton("登录并同步"))
     await flushAsyncWork(25)
     await flushAsyncWork(25)
+
+    expect(document.querySelector(".workspaceMigrationCard")?.textContent).toContain("本机与云端配置不同")
+    await click(findButton("使用本机配置覆盖云端"))
+    await flushAsyncWork()
 
     expect(document.querySelector(".workspaceSession")?.textContent).toContain("未设置昵称")
     expect(document.querySelector(".workspaceSession")?.textContent).not.toContain("朋友测试")
@@ -336,6 +361,96 @@ describe("invite workspace integration", () => {
     expect(requests.at(-1)?.document?.party.memberBuildIds).toEqual([
       raidenNationalBuiltinScenario.primary.buildId
     ])
+
+    await click(findButton("退出"))
+    await flushAsyncWork()
+    expect(document.querySelector(".workspaceLocalSession")?.textContent).toContain("本机模式 · 自动保存")
+    expect(document.querySelector(".buildGroups")?.textContent).toContain("雷电将军")
+  })
+
+  it("uses same-tab storage and warns the guest when durable browser storage is blocked", async () => {
+    const originalSetItem = Storage.prototype.setItem
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (this: Storage, key: string, value: string) {
+      if (this === window.localStorage) throw new DOMException("local storage blocked", "SecurityError")
+      originalSetItem.call(this, key, value)
+    })
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
+      code: "session_required",
+      message: "请先输入邀请码"
+    }), {
+      headers: { "Content-Type": "application/json" },
+      status: 401
+    })))
+
+    await render(createElement(ConfigurationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      cloudEnabled: true,
+      initialScenario: raidenNationalBuiltinScenario
+    }))
+    await flushAsyncWork()
+
+    expect(document.querySelector(".workspaceLocalSession")?.textContent).toContain("临时模式")
+    expect(document.querySelector(".workspaceStorageWarning")?.textContent).toContain("关闭前请导出 JSON")
+    expect(window.sessionStorage.getItem(BUILD_LIBRARY_STORAGE_KEY)).not.toBeNull()
+
+    const raidenCard = [...document.querySelectorAll<HTMLElement>(".buildGroup")].find((card) =>
+      card.textContent?.includes("雷电将军")
+    )
+    await click([...raidenCard?.querySelectorAll<HTMLButtonElement>("button") ?? []]
+      .find((button) => button.textContent === "加入队伍"))
+    await click(findButton("确认队伍并选择指标"))
+    expect(routerPush).toHaveBeenCalledWith("/calculate")
+
+    await act(async () => root?.unmount())
+    root = undefined
+    document.body.innerHTML = ""
+    await render(createElement(TeamCalculationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      initialScenario: raidenNationalBuiltinScenario
+    }))
+    await flushAsyncWork()
+    expect(document.querySelector(".calculationParty")?.textContent).toContain("雷电将军")
+  })
+
+  it("keeps an in-memory guest workspace usable until the page is refreshed", async () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("browser storage blocked", "SecurityError")
+    })
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
+      code: "session_required",
+      message: "请先输入邀请码"
+    }), {
+      headers: { "Content-Type": "application/json" },
+      status: 401
+    })))
+
+    await render(createElement(ConfigurationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      cloudEnabled: true,
+      initialScenario: raidenNationalBuiltinScenario
+    }))
+    await flushAsyncWork()
+
+    expect(document.querySelector(".workspaceLocalSession")?.textContent).toContain("未缓存")
+    expect(document.querySelector(".workspaceStorageWarning")?.textContent).toContain("JSON 导入和导出")
+
+    const raidenCard = [...document.querySelectorAll<HTMLElement>(".buildGroup")].find((card) =>
+      card.textContent?.includes("雷电将军")
+    )
+    await click([...raidenCard?.querySelectorAll<HTMLButtonElement>("button") ?? []]
+      .find((button) => button.textContent === "加入队伍"))
+    await click(findButton("确认队伍并选择指标"))
+    expect(routerPush).toHaveBeenCalledWith("/calculate")
+
+    await act(async () => root?.unmount())
+    root = undefined
+    document.body.innerHTML = ""
+    await render(createElement(TeamCalculationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      initialScenario: raidenNationalBuiltinScenario
+    }))
+    await flushAsyncWork()
+    expect(document.querySelector(".calculationParty")?.textContent).toContain("雷电将军")
   })
 
   it("deletes one selected configuration, clears its party slot, and saves the complete cloud document", async () => {

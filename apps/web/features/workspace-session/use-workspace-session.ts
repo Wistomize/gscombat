@@ -13,9 +13,13 @@ import {
   WorkspaceApiError
 } from "../../lib/api/workspace-api"
 import {
+  type BrowserWorkspaceStorage,
+  type BrowserWorkspaceStorageMode,
+  getVolatileWorkspaceStorage,
   hasStoredBuildLibrary,
   loadBuildLibrary,
   loadParty,
+  resolveBrowserWorkspaceStorage,
   saveBuildLibrary,
   saveParty
 } from "../../lib/workspace/workspace-config"
@@ -36,6 +40,7 @@ export interface WorkspaceSessionController {
   readonly ready: boolean
   readonly sessionLabel: string
   readonly status: string
+  readonly storageMode: BrowserWorkspaceStorageMode
   readonly syncStopped: boolean
   readonly clearError: () => void
   readonly loginWithInvite: (inviteCode: string) => Promise<boolean>
@@ -67,6 +72,7 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
   const [sessionLabel, setSessionLabel] = useState("")
   const [pendingMigration, setPendingMigration] = useState<PendingWorkspaceMigration | null>(null)
   const [status, setStatus] = useState("正在读取本地配置…")
+  const [storageMode, setStorageMode] = useState<BrowserWorkspaceStorageMode>("memory")
   const [error, setError] = useState("")
   const cloudRevisionRef = useRef(0)
   const lastSyncedDocumentRef = useRef("")
@@ -74,6 +80,42 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
   const syncPromiseRef = useRef<Promise<void> | null>(null)
   const syncStoppedRef = useRef(false)
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const storageRef = useRef<BrowserWorkspaceStorage | null>(null)
+
+  const persistLocalDocument = (document: WorkspaceDocument): boolean => {
+    const persist = (storage: Storage) => {
+      saveBuildLibrary(storage, document.builds)
+      saveParty(storage, document.party)
+    }
+    const current = storageRef.current
+    if (current) {
+      try {
+        persist(current.storage)
+        return true
+      } catch {
+        // A full or newly-blocked local store can still fall back to the current tab's session storage.
+      }
+    }
+    try {
+      persist(window.sessionStorage)
+      storageRef.current = { mode: "session", storage: window.sessionStorage }
+      setStorageMode("session")
+      return true
+    } catch {
+      storageRef.current = getVolatileWorkspaceStorage()
+      setStorageMode("memory")
+      persist(storageRef.current.storage)
+      return true
+    }
+  }
+
+  const applyLocalWorkspace = (document: WorkspaceDocument, message: string) => {
+    setBuilds([...document.builds])
+    setPartyBuildIds([...document.party.memberBuildIds])
+    setPendingMigration(null)
+    setReady(true)
+    setStatus(message)
+  }
 
   const applyCloudWorkspace = (workspace: WorkspaceResponse, message: string) => {
     const document = workspace.document
@@ -83,15 +125,14 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
     syncStoppedRef.current = false
     setBuilds([...document.builds])
     setPartyBuildIds([...document.party.memberBuildIds])
-    saveBuildLibrary(window.localStorage, document.builds)
-    saveParty(window.localStorage, document.party)
+    persistLocalDocument(document)
     setPendingMigration(null)
     setReady(true)
     setStatus(message)
   }
 
   const flushCloudSync = async (): Promise<void> => {
-    if (!cloudEnabled || syncStoppedRef.current) return
+    if (!cloudEnabled || cloudSessionStatus !== "authenticated" || syncStoppedRef.current) return
     if (syncPromiseRef.current) {
       await syncPromiseRef.current
       if (pendingSyncRef.current && !syncStoppedRef.current) await flushCloudSync()
@@ -119,9 +160,11 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
           }
           if (caught instanceof WorkspaceApiError && caught.status === 401) {
             syncStoppedRef.current = true
-            setReady(false)
+            setSessionLabel("")
             setCloudSessionStatus("anonymous")
-            setError("邀请码会话已失效，请重新登录")
+            setError("邀请码会话已失效，已切换为本机模式；需要云端同步时请重新登录")
+            setStatus("本机模式 · 云端会话已失效")
+            setReady(true)
             return
           }
           if (!pendingSyncRef.current) pendingSyncRef.current = document
@@ -140,7 +183,7 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
   }
 
   const scheduleCloudSync = (document: WorkspaceDocument) => {
-    if (!cloudEnabled || syncStoppedRef.current) return
+    if (!cloudEnabled || cloudSessionStatus !== "authenticated" || syncStoppedRef.current) return
     pendingSyncRef.current = document
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
     syncTimerRef.current = setTimeout(() => {
@@ -153,31 +196,45 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
     let cancelled = false
 
     const loadLocalWorkspace = () => {
-      const library = loadBuildLibrary(window.localStorage, fallbackBuilds)
-      const party = { memberBuildIds: [...loadParty(window.localStorage, library.builds).memberBuildIds] }
+      const access = resolveBrowserWorkspaceStorage(window)
+      storageRef.current = access
+      setStorageMode(access.mode)
+      const library = loadBuildLibrary(access.storage, fallbackBuilds)
+      const party = { memberBuildIds: [...loadParty(access.storage, library.builds).memberBuildIds] }
       return {
         document: { builds: [...library.builds], party, schemaVersion: 1 } satisfies WorkspaceDocument,
-        stored: hasStoredBuildLibrary(window.localStorage)
+        stored: hasStoredBuildLibrary(access.storage)
       }
     }
 
     const bootstrap = async () => {
+      const fallbackDocument = {
+        builds: [...fallbackBuilds],
+        party: { memberBuildIds: [] },
+        schemaVersion: 1
+      } satisfies WorkspaceDocument
+      let local: { document: WorkspaceDocument; stored: boolean }
       try {
-        const local = loadLocalWorkspace()
-        if (!cloudEnabled) {
-          if (cancelled) return
-          setBuilds([...local.document.builds])
-          setPartyBuildIds([...local.document.party.memberBuildIds])
-          setStatus(`已读取 ${local.document.builds.length} 份角色配置`)
-          setReady(true)
-          return
-        }
+        local = loadLocalWorkspace()
+      } catch {
+        storageRef.current = getVolatileWorkspaceStorage()
+        setStorageMode("memory")
+        local = { document: fallbackDocument, stored: false }
+        setError("浏览器缓存不可用或内容损坏；当前配置仅在页面内保留，请使用 JSON 导入和导出")
+      }
 
+      if (!cloudEnabled) {
+        if (cancelled) return
+        applyLocalWorkspace(local.document, `已读取 ${local.document.builds.length} 份角色配置`)
+        return
+      }
+
+      try {
         const session = await getWorkspaceSession()
         if (cancelled) return
         if (!session) {
           setCloudSessionStatus("anonymous")
-          setStatus("请输入邀请码")
+          applyLocalWorkspace(local.document, `本机模式 · 已读取 ${local.document.builds.length} 份角色配置`)
           return
         }
 
@@ -185,9 +242,10 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
         setCloudSessionStatus("authenticated")
         const remote = await loadCloudWorkspace()
         if (cancelled) return
-        if (remote.document.builds.length === 0 && local.stored) {
+        const localDiffersFromRemote = JSON.stringify(local.document) !== JSON.stringify(remote.document)
+        if (local.stored && localDiffersFromRemote) {
           setPendingMigration({ localDocument: local.document, remote })
-          setStatus("请选择首次同步方式")
+          setStatus("请选择本机或云端配置")
           return
         }
         if (remote.document.builds.length === 0) {
@@ -196,11 +254,12 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
           return
         }
         applyCloudWorkspace(remote, `已读取 ${remote.document.builds.length} 份云端配置`)
-      } catch (caught) {
+      } catch {
         if (cancelled) return
-        setCloudSessionStatus(cloudEnabled ? "anonymous" : "authenticated")
-        setError(caught instanceof Error ? caught.message : "配置读取失败")
-        setStatus(cloudEnabled ? "云端连接失败" : "本地配置读取失败")
+        setSessionLabel("")
+        setCloudSessionStatus("anonymous")
+        applyLocalWorkspace(local.document, "本机模式 · 云端连接失败")
+        setError("云端暂时无法连接，已进入本机模式；当前配置仍可导入和导出")
       }
     }
 
@@ -213,7 +272,6 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
 
   useEffect(() => {
     if (!ready) return
-    saveBuildLibrary(window.localStorage, builds)
     const validParty = partyBuildIds.filter((buildId) => builds.some((build) => build.buildId === buildId))
     if (validParty.length !== partyBuildIds.length) setPartyBuildIds(validParty)
   }, [builds, partyBuildIds, ready])
@@ -221,8 +279,9 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
   useEffect(() => {
     if (!ready) return
     const party = { memberBuildIds: partyBuildIds }
-    saveParty(window.localStorage, party)
-    scheduleCloudSync({ builds, party, schemaVersion: 1 })
+    const document = { builds, party, schemaVersion: 1 } satisfies WorkspaceDocument
+    persistLocalDocument(document)
+    scheduleCloudSync(document)
   }, [builds, partyBuildIds, ready])
 
   const loginWithInvite = async (inviteCode: string): Promise<boolean> => {
@@ -230,6 +289,8 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
     setStatus("正在验证邀请码…")
     try {
       const session = await loginToWorkspace(inviteCode.trim())
+      syncStoppedRef.current = false
+      setReady(false)
       setSessionLabel(session.label)
       setCloudSessionStatus("checking")
       setBootstrapVersion((current) => current + 1)
@@ -250,10 +311,10 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
         : pendingMigration.remote
       applyCloudWorkspace(
         selected,
-        useLocalDocument ? `已上传 ${selected.document.builds.length} 份本机配置` : "已使用云端空工作空间"
+        useLocalDocument ? `已上传 ${selected.document.builds.length} 份本机配置` : "已使用云端配置"
       )
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "首次同步失败")
+      setError(caught instanceof Error ? caught.message : "同步选择失败")
     }
   }
 
@@ -272,10 +333,14 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
     try {
       await logoutWorkspace()
     } finally {
-      setReady(false)
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
+      syncTimerRef.current = null
+      pendingSyncRef.current = null
+      syncStoppedRef.current = false
       setSessionLabel("")
       setCloudSessionStatus("anonymous")
-      setStatus("已退出当前工作空间，本机缓存仍保留")
+      setStatus("本机模式 · 已退出云端工作空间，本机缓存仍保留")
+      setReady(true)
     }
   }
 
@@ -298,7 +363,11 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
   }
 
   const syncImmediately = async (document: WorkspaceDocument): Promise<boolean> => {
-    if (!cloudEnabled) return true
+    const locallyPersisted = persistLocalDocument(document)
+    if (!cloudEnabled || cloudSessionStatus !== "authenticated") {
+      if (!locallyPersisted) setError("浏览器无法缓存配置，请先导出 JSON 后再继续")
+      return locallyPersisted
+    }
     pendingSyncRef.current = document
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
     syncTimerRef.current = null
@@ -325,6 +394,7 @@ export function useWorkspaceSession({ cloudEnabled, fallbackBuilds }: UseWorkspa
     setStatus,
     signOut,
     status,
+    storageMode,
     syncImmediately,
     syncStopped: syncStoppedRef.current
   }

@@ -14,8 +14,8 @@ bonuses; each metric retains its formula tree and applicability conditions.
 ## Capabilities
 
 - Build an unordered party of one to four configured characters and evaluate any member's available metric.
-- Create builds manually, import JSON, import an in-game showcase through Enka.Network, and synchronize an isolated
-  workspace with an invite code.
+- Create builds manually, import JSON, and import an in-game showcase through Enka.Network. Builds stay local by
+  default, while an optional invite code enables isolated cross-device synchronization.
 - Evaluate direct, amplifying, additive, transformative, Lunar, and Astral reactions together with resonances,
   Moonsign, weapon, artifact, constellation, and teammate effects.
 - Inspect per-hit and multi-hit traces, resolved stats, effective artifact rolls, single-roll marginal gains, and
@@ -89,8 +89,9 @@ pnpm --filter @gscombat/api dev
 pnpm --filter @gscombat/web dev
 ```
 
-Open `http://127.0.0.1:3200` and sign in with the one-time-displayed invite code. The web app proxies
-`/api/backend/*` to `http://127.0.0.1:3001` by default; set `API_BASE_URL` to override it.
+Open `http://127.0.0.1:3200` to use a browser-local workspace. Enter the one-time-displayed invite code only when
+testing cloud synchronization. The web app proxies `/api/backend/*` to `http://127.0.0.1:3001` by default; set
+`API_BASE_URL` to override it.
 
 ## Verification
 

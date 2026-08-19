@@ -9,8 +9,7 @@ import { getCharacterLabel } from "../../lib/formatting/builds"
 import {
   createBuildWorkspaceExport,
   mergeBuilds,
-  parseBuildWorkspaceJson,
-  saveParty
+  parseBuildWorkspaceJson
 } from "../../lib/workspace/workspace-config"
 import { BuildEditorDialog } from "../build-editor/build-editor-dialog"
 import { createLocalDraftBuild } from "../build-editor/build-draft"
@@ -19,6 +18,7 @@ import { BuildLibrary } from "../build-library/build-library"
 import { PartyEditor, type PartyPickerState } from "../party/party-editor"
 import {
   WorkspaceConnecting,
+  WorkspaceLocalSessionHeader,
   WorkspaceLogin,
   WorkspaceMigration,
   WorkspaceSessionHeader
@@ -78,6 +78,7 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
     setStatus,
     signOut,
     status,
+    storageMode,
     syncImmediately,
     syncStopped
   } = workspace
@@ -90,6 +91,7 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
   const [managedCharacterId, setManagedCharacterId] = useState<string | null>(null)
   const [partyPicker, setPartyPicker] = useState<PartyPickerState | null>(null)
   const [replacementBuild, setReplacementBuild] = useState<CharacterBuild | null>(null)
+  const [loginOpen, setLoginOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const groupedBuilds = useMemo(() => {
@@ -274,7 +276,6 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
       setError("请至少选择一名队伍成员")
       return
     }
-    saveParty(window.localStorage, { memberBuildIds: partyBuildIds })
     const synced = await syncImmediately({ builds, party: { memberBuildIds: partyBuildIds }, schemaVersion: 1 })
     if (!synced) return
     router.push("/calculate")
@@ -282,10 +283,6 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
 
   if (cloudEnabled && cloudSessionStatus === "checking") {
     return <WorkspaceConnecting />
-  }
-
-  if (cloudEnabled && cloudSessionStatus === "anonymous") {
-    return <WorkspaceLogin error={error} onLogin={loginWithInvite} />
   }
 
   if (cloudEnabled && pendingMigration) {
@@ -306,8 +303,10 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
           <strong>原神指标分析</strong>
           <span>{status}</span>
         </div>
-        {cloudEnabled ? (
+        {cloudEnabled && cloudSessionStatus === "authenticated" ? (
           <WorkspaceSessionHeader label={sessionLabel} onRename={renameSessionNickname} onSignOut={signOut} />
+        ) : cloudEnabled ? (
+          <WorkspaceLocalSessionHeader storageMode={storageMode} onLogin={() => setLoginOpen(true)} />
         ) : null}
       </header>
 
@@ -316,6 +315,14 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
         <h1>角色配置与队伍</h1>
         <p>先维护角色配置，再组成一支 1–4 人队伍。计算时可以任选其中一名成员和指标。</p>
       </section>
+
+      {storageMode !== "local" ? (
+        <div className="workspaceStorageWarning" role="status">
+          {storageMode === "session"
+            ? "浏览器不允许长期缓存：配置仅保留在当前标签页，关闭前请导出 JSON。"
+            : "浏览器无法缓存配置：数据可能随刷新丢失，请使用 JSON 导入和导出。"}
+        </div>
+      ) : null}
 
       {error ? (
         <div className="workspaceError" role="alert">
@@ -396,6 +403,10 @@ export function ConfigurationWorkspace({ catalog, cloudEnabled = false, initialS
           onChange={setEditingBuild}
           onSave={saveEditingBuild}
         />
+      ) : null}
+
+      {cloudEnabled && cloudSessionStatus === "anonymous" && loginOpen ? (
+        <WorkspaceLogin error={error} onClose={() => setLoginOpen(false)} onLogin={loginWithInvite} />
       ) : null}
     </main>
   )

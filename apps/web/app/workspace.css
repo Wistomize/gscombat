@@ -7,6 +7,7 @@
 }
 
 .workspaceLoginCard {
+  background: #ffffff;
   border: 1px solid var(--border);
   display: grid;
   gap: 18px;
@@ -20,6 +21,38 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
+}
+
+.workspaceLoginDialog {
+  border-color: #111111;
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.workspaceLoginHeading {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.workspaceLoginHeading > div {
+  display: grid;
+  gap: 8px;
+}
+
+.workspaceLoginHeading span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.workspaceLoginHeading button {
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  min-height: 28px;
+  padding: 0 6px;
 }
 
 .workspaceLoginCard h1,
@@ -192,6 +225,16 @@
   justify-content: space-between;
   margin-top: 20px;
   padding: 12px 14px;
+}
+
+.workspaceStorageWarning {
+  background: #fffaeb;
+  border: 1px solid #fedf89;
+  color: #854a0e;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 20px;
+  padding: 11px 13px;
 }
 
 .workspaceError button {

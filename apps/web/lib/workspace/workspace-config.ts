@@ -21,6 +21,59 @@ export interface BuildWorkspaceExport {
   readonly schemaVersion: 1
 }
 
+export type BrowserWorkspaceStorageMode = "local" | "memory" | "session"
+
+export interface BrowserWorkspaceStorage {
+  readonly mode: BrowserWorkspaceStorageMode
+  readonly storage: Storage
+}
+
+class VolatileWorkspaceStorage implements Storage {
+  readonly #values = new Map<string, string>()
+
+  get length(): number {
+    return this.#values.size
+  }
+
+  clear(): void {
+    this.#values.clear()
+  }
+
+  getItem(key: string): string | null {
+    return this.#values.get(key) ?? null
+  }
+
+  key(index: number): string | null {
+    return [...this.#values.keys()][index] ?? null
+  }
+
+  removeItem(key: string): void {
+    this.#values.delete(key)
+  }
+
+  setItem(key: string, value: string): void {
+    this.#values.set(key, value)
+  }
+}
+
+const volatileWorkspaceStorage = new VolatileWorkspaceStorage()
+
+/** Returns the process-local workspace store used when browser persistence is unavailable. */
+export function getVolatileWorkspaceStorage(): BrowserWorkspaceStorage {
+  return { mode: "memory", storage: volatileWorkspaceStorage }
+}
+
+function canWriteStorage(storage: Storage): boolean {
+  const probeKey = `project-b.storage-probe.${Date.now()}`
+  try {
+    storage.setItem(probeKey, "1")
+    storage.removeItem(probeKey)
+    return true
+  } catch {
+    return false
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -67,6 +120,21 @@ export function parseBuildWorkspaceJson(source: string): CharacterBuild[] {
 /** Creates the portable export that contains only the configured character builds. */
 export function createBuildWorkspaceExport(builds: readonly CharacterBuild[]): BuildWorkspaceExport {
   return { builds, exportedAt: new Date().toISOString(), schemaVersion: 1 }
+}
+
+/** Chooses durable browser storage first, then a same-tab session fallback, or memory-only mode. */
+export function resolveBrowserWorkspaceStorage(browser: Window): BrowserWorkspaceStorage {
+  try {
+    if (canWriteStorage(browser.localStorage)) return { mode: "local", storage: browser.localStorage }
+  } catch {
+    // Accessing localStorage itself may throw when browser storage is blocked.
+  }
+  try {
+    if (canWriteStorage(browser.sessionStorage)) return { mode: "session", storage: browser.sessionStorage }
+  } catch {
+    // The caller can still keep an in-memory workspace and offer JSON import/export.
+  }
+  return getVolatileWorkspaceStorage()
 }
 
 /** Reports whether this browser contains user-persisted build data rather than only application fallbacks. */

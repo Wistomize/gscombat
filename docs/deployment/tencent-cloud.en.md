@@ -30,6 +30,9 @@ redirects HTTP traffic to HTTPS.
 
 ## Invite management
 
+Invite codes are optional and only enable cloud persistence and cross-device synchronization. Visitors without a
+code use browser-local storage and do not create server-side workspaces.
+
 An invite code is printed only when it is created:
 
 ```bash

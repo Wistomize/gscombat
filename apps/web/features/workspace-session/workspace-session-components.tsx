@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+import type { BrowserWorkspaceStorageMode } from "../../lib/workspace/workspace-config"
 import type { PendingWorkspaceMigration } from "./use-workspace-session"
 
 const legacyWorkspaceNicknameLabels = new Set(["个人测试", "朋友测试"])
@@ -12,28 +13,39 @@ function getWorkspaceNicknameDisplay(label: string): string {
 
 interface WorkspaceLoginProps {
   readonly error: string
+  readonly onClose: () => void
   readonly onLogin: (inviteCode: string) => Promise<boolean>
 }
 
-/** Renders the invitation-code login gate and owns only its credential draft. */
-export function WorkspaceLogin({ error, onLogin }: WorkspaceLoginProps) {
+/** Renders optional invitation login without blocking the local workspace. */
+export function WorkspaceLogin({ error, onClose, onLogin }: WorkspaceLoginProps) {
   const [inviteCode, setInviteCode] = useState("")
 
   const submit = async () => {
-    if (await onLogin(inviteCode)) setInviteCode("")
+    if (await onLogin(inviteCode)) {
+      setInviteCode("")
+      onClose()
+    }
   }
 
   return (
-    <main className="workspaceLoginPage">
+    <div className="workspaceDialogBackdrop" role="presentation">
       <form
+        aria-modal="true"
         autoComplete="on"
-        className="workspaceLoginCard"
+        className="workspaceLoginCard workspaceLoginDialog"
         method="post"
+        role="dialog"
         onSubmit={(event) => { event.preventDefault(); void submit() }}
       >
-        <span>INVITE WORKSPACE</span>
-        <h1>输入邀请码</h1>
-        <p>不同邀请码对应独立工作空间；同一个邀请码可以在多台设备继续使用。</p>
+        <div className="workspaceLoginHeading">
+          <div>
+            <span>INVITE WORKSPACE</span>
+            <h1>使用邀请码同步</h1>
+          </div>
+          <button aria-label="关闭邀请码登录" type="button" onClick={onClose}>×</button>
+        </div>
+        <p>邀请码用于把配置保存到云端并在多台设备继续使用；不登录仍可保存在本机。</p>
         <input
           aria-hidden="true"
           autoComplete="username"
@@ -60,11 +72,14 @@ export function WorkspaceLogin({ error, onLogin }: WorkspaceLoginProps) {
           />
         </label>
         {error ? <div className="workspaceLoginError" role="alert">{error}</div> : null}
-        <button className="workspacePrimaryButton" disabled={inviteCode.trim().length < 16} type="submit">
-          进入工作空间
-        </button>
+        <div className="workspaceMigrationActions">
+          <button className="workspacePrimaryButton" disabled={inviteCode.trim().length < 16} type="submit">
+            登录并同步
+          </button>
+          <button type="button" onClick={onClose}>继续使用本机模式</button>
+        </div>
       </form>
-    </main>
+    </div>
   )
 }
 
@@ -88,27 +103,46 @@ interface WorkspaceMigrationProps {
   readonly onResolve: (useLocalDocument: boolean) => Promise<void>
 }
 
-/** Renders the one-time choice between an existing local workspace and an empty cloud workspace. */
+/** Protects divergent local and cloud documents by requiring an explicit source choice. */
 export function WorkspaceMigration({ error, migration, onDownload, onResolve }: WorkspaceMigrationProps) {
+  const remoteCount = migration.remote.document.builds.length
   return (
     <main className="workspaceLoginPage">
       <section className="workspaceLoginCard workspaceMigrationCard">
-        <span>FIRST SYNC</span>
-        <h1>发现本机已有配置</h1>
+        <span>SYNC CHOICE</span>
+        <h1>本机与云端配置不同</h1>
         <p>
-          云端工作空间目前为空，本机有 {migration.localDocument.builds.length} 份角色配置。
-          请选择首次同步方式。
+          本机有 {migration.localDocument.builds.length} 份角色配置，云端有 {remoteCount} 份。
+          请选择保留哪一份；覆盖前可以先导出本机备份。
         </p>
         {error ? <div className="workspaceLoginError" role="alert">{error}</div> : null}
         <div className="workspaceMigrationActions">
           <button className="workspacePrimaryButton" type="button" onClick={() => void onResolve(true)}>
-            上传本机配置
+            使用本机配置覆盖云端
           </button>
-          <button type="button" onClick={() => void onResolve(false)}>使用云端空配置</button>
+          <button type="button" onClick={() => void onResolve(false)}>使用云端配置</button>
           <button type="button" onClick={onDownload}>先导出本机备份</button>
         </div>
       </section>
     </main>
+  )
+}
+
+interface WorkspaceLocalSessionHeaderProps {
+  readonly onLogin: () => void
+  readonly storageMode: BrowserWorkspaceStorageMode
+}
+
+/** Shows local persistence status and the optional cloud-login entry point. */
+export function WorkspaceLocalSessionHeader({ onLogin, storageMode }: WorkspaceLocalSessionHeaderProps) {
+  const label = storageMode === "local"
+    ? "本机模式 · 自动保存"
+    : storageMode === "session" ? "临时模式 · 关闭标签页前请导出" : "未缓存 · 请使用导入导出"
+  return (
+    <div className="workspaceSession workspaceLocalSession">
+      <span className="workspaceNickname">{label}</span>
+      <button type="button" onClick={onLogin}>使用邀请码同步</button>
+    </div>
   )
 }
 

@@ -12,7 +12,13 @@ import type {
 import { useEffect, useMemo, useState } from "react"
 
 import { getCharacterElement } from "../../components/ui/visual-icons"
-import { loadBuildLibrary, loadParty } from "../../lib/workspace/workspace-config"
+import { loadCloudWorkspace } from "../../lib/api/workspace-api"
+import {
+  hasStoredBuildLibrary,
+  loadBuildLibrary,
+  loadParty,
+  resolveBrowserWorkspaceStorage
+} from "../../lib/workspace/workspace-config"
 import { CalculationResults } from "../calculation-report/calculation-results"
 import { CalculationScenario } from "../calculation-setup/calculation-scenario"
 import { CalculationTargetSelector } from "../calculation-setup/calculation-target-selector"
@@ -63,17 +69,36 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   const [error, setError] = useState("")
 
   useEffect(() => {
-    try {
-      const library = loadBuildLibrary(window.localStorage, fallbackBuilds)
-      const party = loadParty(window.localStorage, library.builds)
-      setBuilds([...library.builds])
-      setPartyBuildIds([...party.memberBuildIds])
-      if (party.memberBuildIds.length === 0) setError("当前队伍为空，请返回配置页选择队伍成员")
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "无法读取队伍配置")
-    } finally {
-      setReady(true)
+    let cancelled = false
+    const bootstrap = async () => {
+      try {
+        const access = resolveBrowserWorkspaceStorage(window)
+        let loadedBuilds: readonly CharacterBuild[]
+        let loadedPartyBuildIds: readonly string[]
+        if (access.mode !== "memory" || hasStoredBuildLibrary(access.storage)) {
+          const library = loadBuildLibrary(access.storage, fallbackBuilds)
+          const party = loadParty(access.storage, library.builds)
+          loadedBuilds = library.builds
+          loadedPartyBuildIds = party.memberBuildIds
+        } else {
+          const cloud = await loadCloudWorkspace()
+          loadedBuilds = cloud.document.builds
+          loadedPartyBuildIds = cloud.document.party.memberBuildIds
+        }
+        if (cancelled) return
+        setBuilds([...loadedBuilds])
+        setPartyBuildIds([...loadedPartyBuildIds])
+        if (loadedPartyBuildIds.length === 0) setError("当前队伍为空，请返回配置页选择队伍成员")
+      } catch (caught) {
+        if (!cancelled) {
+          setError(caught instanceof Error ? caught.message : "无法读取队伍配置，请返回配置页导入 JSON")
+        }
+      } finally {
+        if (!cancelled) setReady(true)
+      }
     }
+    void bootstrap()
+    return () => { cancelled = true }
   }, [fallbackBuilds])
 
   const partyBuilds = partyBuildIds.flatMap((buildId) => {

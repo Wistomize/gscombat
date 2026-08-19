@@ -12,7 +12,7 @@ GSCombat 是一个类型安全、可审计的原神角色指标与战斗伤害�
 ## 现有能力
 
 - 选择 1–4 个已配置角色组成无顺序语义的队伍，再自由选择其中任意成员和目标指标；
-- 手动配置角色、导入 JSON、通过 Enka.Network 导入游戏展示柜，并用邀请码隔离和同步个人工作空间；
+- 手动配置角色、导入 JSON、通过 Enka.Network 导入游戏展示柜；默认保存在本机，也可用邀请码同步个人工作空间；
 - 计算直伤、增幅、激化、剧变及月曜／星烁反应，应用队伍共鸣、月兆、武器、圣遗物、命座和队友效果；
 - 展示单段与多段公式轨迹、实际结算属性、有效词条、单词条边际收益以及适用武器的满可达效果比较；
 - 角色动作、辅助指标和角色专属效果按角色目录维护，通用计算器只处理类型化的结算阶段。
@@ -68,7 +68,7 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-创建本地持久化工作空间和测试邀请码：
+如需测试可选的跨设备云端同步，创建本地持久化工作空间和测试邀请码：
 
 ```bash
 mkdir -p runtime/workspace
@@ -84,8 +84,8 @@ pnpm --filter @gscombat/api dev
 pnpm --filter @gscombat/web dev
 ```
 
-访问 `http://127.0.0.1:3200`，使用上一步只显示一次的邀请码登录。网站通过
-`/api/backend/*` 代理到默认的 `http://127.0.0.1:3001`；可用 `API_BASE_URL` 覆盖。
+访问 `http://127.0.0.1:3200` 即可使用本机工作空间；输入上一步只显示一次的邀请码后才会启用云端同步。
+网站通过 `/api/backend/*` 代理到默认的 `http://127.0.0.1:3001`；可用 `API_BASE_URL` 覆盖。
 
 ## 验证
 
@@ -106,8 +106,8 @@ pnpm build
 ## 部署
 
 IP 直连的 Docker Compose 流程见 [腾讯云部署说明](docs/deployment/tencent-cloud.md)。生产环境必须自行配置
-强随机 `INVITE_TOKEN_SECRET`，并备份 `runtime/workspace/workspaces.sqlite`。当前邀请码既是登录凭据，也是
-工作空间隔离标识，不应在正式环境公开。
+强随机 `INVITE_TOKEN_SECRET`，并备份 `runtime/workspace/workspaces.sqlite`。邀请码是可选的云端同步凭据和
+工作空间隔离标识，不应在正式环境公开；不使用邀请码的访客数据不会写入服务器。
 
 ## 许可证与声明
 
