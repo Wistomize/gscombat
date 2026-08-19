@@ -1,22 +1,21 @@
 # Deploying a GSCombat friend-testing service on Tencent Cloud
 
-The current test deployment combines Caddy, Next.js, Fastify, and a writable SQLite workspace database. The pinned
-game-data snapshot is shipped read-only in the API image. Only one high-numbered HTTP port is exposed publicly.
-
-This IP-only mode is suitable only for temporary testing where plaintext transport is explicitly accepted. Use HTTPS
-and an appropriately registered domain before a public production launch in mainland China.
+The deployment combines Caddy, Next.js, Fastify, and a writable SQLite workspace database. The pinned game-data
+snapshot is shipped read-only in the API image. Caddy serves the filed public domain over HTTPS; Next.js and Fastify
+are not exposed directly.
 
 ## Prerequisites and configuration
 
 - A Tencent Cloud server with Docker Engine and the Docker Compose plugin.
-- A security-group rule allowing the selected high-numbered TCP port.
+- Security-group rules allowing TCP ports 80 and 443.
+- A domain A record pointing at the server public IP and a completed mainland China ICP filing.
 
 ```bash
 cp .env.deploy.example .env
 openssl rand -base64 48
 ```
 
-Place the generated value in `INVITE_TOKEN_SECRET`. Never commit `.env`.
+Place the generated value in `INVITE_TOKEN_SECRET` and confirm `PUBLIC_DOMAIN=gscombat.online`. Never commit `.env`.
 
 ## Start and inspect
 
@@ -26,7 +25,8 @@ docker compose up -d
 docker compose ps
 ```
 
-The test URL is `http://PUBLIC_IP:${PUBLIC_PORT}`.
+The production URL is `https://gscombat.online`. Caddy automatically obtains and renews its TLS certificate and
+redirects HTTP traffic to HTTPS.
 
 ## Invite management
 
@@ -52,7 +52,7 @@ Deploy only commits already pushed to GitHub `main`, then verify:
 git rev-parse HEAD
 git ls-remote origin refs/heads/main
 docker compose ps
-curl -fsS "http://127.0.0.1:${PUBLIC_PORT}/api/backend/health"
+curl -fsS https://gscombat.online/api/backend/health
 ```
 
 Local, GitHub `main`, and the server deployment must resolve to the same commit SHA. `.env` and `runtime/` are server

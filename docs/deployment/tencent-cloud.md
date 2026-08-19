@@ -1,15 +1,13 @@
 # GSCombat 腾讯云朋友测试服务部署
 
-当前测试部署由 Caddy、Next.js、Fastify 和一个可写 SQLite 工作空间库组成。游戏数据快照继续随
-API 镜像只读发布。对外只暴露一个高位 HTTP 端口；Next.js 与 Fastify 不直接暴露到公网。
+当前部署由 Caddy、Next.js、Fastify 和一个可写 SQLite 工作空间库组成。游戏数据快照继续随 API
+镜像只读发布。Caddy 通过备案域名提供 HTTPS，Next.js 与 Fastify 不直接暴露到公网。
 
 ## 前提
 
 - 一台安装了 Docker Engine 与 Docker Compose plugin 的腾讯云服务器；
-- 腾讯云防火墙或安全组放行选定的高位 HTTP 端口。
-
-这个 IP 直连模式仅用于已明确接受明文传输风险的临时测试。正式开放必须改回 HTTPS，并为中国大陆
-服务器准备已备案域名。
+- 腾讯云防火墙或安全组放行 TCP 80、443 端口；
+- 域名 A 记录指向服务器公网 IP，并已完成中国大陆 ICP 备案。
 
 ## 配置
 
@@ -20,7 +18,8 @@ cp .env.deploy.example .env
 openssl rand -base64 48
 ```
 
-将生成结果写入 `INVITE_TOKEN_SECRET`。该文件不能提交到版本库。
+将生成结果写入 `INVITE_TOKEN_SECRET`，并确认 `PUBLIC_DOMAIN=gscombat.online`。该文件不能提交到
+版本库。
 
 ## 启动
 
@@ -30,7 +29,8 @@ docker compose up -d
 docker compose ps
 ```
 
-当前测试地址为 `http://服务器公网IP:${PUBLIC_PORT}`。
+正式地址为 `https://gscombat.online`。Caddy 会自动申请、续期 TLS 证书，并将 HTTP 请求重定向到
+HTTPS。
 
 ## 邀请码管理
 
@@ -66,7 +66,7 @@ PostgreSQL 前不要横向扩容 API 写入端。
 git rev-parse HEAD
 git ls-remote origin refs/heads/main
 docker compose ps
-curl -fsS "http://127.0.0.1:${PUBLIC_PORT}/api/backend/health"
+curl -fsS https://gscombat.online/api/backend/health
 ```
 
 本地、GitHub `main` 和服务器部署目录必须指向同一个提交 SHA；`.env` 与 `runtime/` 是服务器状态，

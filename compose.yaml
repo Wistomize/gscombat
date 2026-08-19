@@ -9,7 +9,7 @@ services:
       INVITE_TOKEN_SECRET: ${INVITE_TOKEN_SECRET:?INVITE_TOKEN_SECRET is required}
       NODE_ENV: production
       PORT: 3001
-      SESSION_COOKIE_SECURE: "false"
+      SESSION_COOKIE_SECURE: "true"
       TRUST_PROXY: "true"
       WORKSPACE_DATA_PATH: /data/workspaces.sqlite
     expose:
@@ -52,9 +52,10 @@ services:
       web:
         condition: service_healthy
     environment:
-      PUBLIC_PORT: ${PUBLIC_PORT:-18473}
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:-gscombat.online}
     ports:
-      - "${PUBLIC_PORT:-18473}:${PUBLIC_PORT:-18473}"
+      - "80:80"
+      - "443:443"
     restart: unless-stopped
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
