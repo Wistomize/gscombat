@@ -38,7 +38,8 @@ export const traceStageMeta: Readonly<Record<PipelineStage, { readonly hint: str
   additive_reaction: { hint: "激化附加伤害与元素精通", label: "激化附加区" },
   damage_bonus: { hint: "元素、爆发与通用增伤", label: "增伤区" },
   base_damage: { hint: "特殊反应独立公式的基础伤害", label: "基础伤害" },
-  reaction_coefficient: { hint: "月曜或星超导反应的固定系数", label: "反应系数" },
+  reaction_coefficient: { hint: "月曜、星超导或星扩散反应的固定系数", label: "反应系数" },
+  base_damage_multiplier: { hint: "按原始伤害比例结算的共用基础伤害倍率", label: "基础伤害倍率" },
   base_damage_bonus: { hint: "特殊反应基础伤害的独立加成", label: "基础伤害加成" },
   reaction_damage_bonus: { hint: "元素精通与特殊反应伤害加成", label: "反应伤害加成" },
   flat_damage_addition: { hint: "反应乘区结算后的独立固定伤害增加", label: "固定伤害加成" },
@@ -81,6 +82,7 @@ export const actionEffectTargetLabels: Readonly<Record<AppliedActionEffect["targ
   reactionDamageBonus: "普通反应伤害加成",
   transformativeReactionFlatDamageAddition: "剧变反应基础伤害增加值",
   specialReactionBaseDamageFlat: "月曜/星烁反应基础伤害增加值",
+  specialReactionBaseDamageMultiplier: "月曜/星烁反应基础伤害倍率",
   specialReactionBaseDamageBonus: "月曜/星烁反应基础伤害加成",
   specialReactionDamageBonus: "月曜/星烁反应伤害加成",
   specialReactionElevation: "月曜/星烁反应伤害擢升",
@@ -354,6 +356,7 @@ const specialReactionLabels: Readonly<Record<SpecialReactionKind, string>> = {
   lunar_bloom: "月绽放",
   lunar_charged: "月感电",
   lunar_crystallize: "月结晶",
+  stellar_swirl: "星扩散",
   stellar_superconduct: "星超导"
 }
 

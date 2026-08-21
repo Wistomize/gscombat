@@ -35,6 +35,7 @@ export function TraceFormula({
   if (
     formula.kind === "special_reaction_base_damage" ||
     formula.kind === "special_reaction_coefficient" ||
+    formula.kind === "special_reaction_base_damage_multiplier" ||
     formula.kind === "special_reaction_base_damage_bonus" ||
     formula.kind === "special_reaction_damage_bonus" ||
     formula.kind === "special_reaction_flat_damage_addition" ||

@@ -6,7 +6,12 @@ export type Element = "anemo" | "cryo" | "dendro" | "electro" | "geo" | "hydro" 
 export type ScalingStat = "attack" | "defense" | "elementalMastery" | "hp"
 
 /** Damage families that use the independent Moon or stellar formula instead of ordinary direct damage stages. */
-export type SpecialReactionKind = "lunar_bloom" | "lunar_charged" | "lunar_crystallize" | "stellar_superconduct"
+export type SpecialReactionKind =
+  | "lunar_bloom"
+  | "lunar_charged"
+  | "lunar_crystallize"
+  | "stellar_superconduct"
+  | "stellar_swirl"
 
 export interface DamageTags {
   readonly actionId: string
@@ -135,6 +140,7 @@ export type DamageStage =
   | "resistance"
   | "base_damage"
   | "reaction_coefficient"
+  | "base_damage_multiplier"
   | "base_damage_bonus"
   | "reaction_damage_bonus"
   | "flat_damage_addition"
@@ -145,6 +151,7 @@ export type SpecialReactionTraceStage = Extract<
   DamageStage,
   | "base_damage"
   | "reaction_coefficient"
+  | "base_damage_multiplier"
   | "base_damage_bonus"
   | "reaction_damage_bonus"
   | "flat_damage_addition"
@@ -233,6 +240,7 @@ export type TraceFormula =
       readonly reactionKind: SpecialReactionKind
       readonly storedElementalApplications?: number
     }
+  | { readonly bonus: number; readonly kind: "special_reaction_base_damage_multiplier"; readonly multiplier: number }
   | { readonly bonus: number; readonly kind: "special_reaction_base_damage_bonus"; readonly multiplier: number }
   | {
       readonly bonus: number
@@ -249,6 +257,7 @@ export type SpecialReactionTraceFormula = Extract<
   TraceFormula,
   | { readonly kind: "special_reaction_base_damage" }
   | { readonly kind: "special_reaction_coefficient" }
+  | { readonly kind: "special_reaction_base_damage_multiplier" }
   | { readonly kind: "special_reaction_base_damage_bonus" }
   | { readonly kind: "special_reaction_damage_bonus" }
   | { readonly kind: "special_reaction_flat_damage_addition" }

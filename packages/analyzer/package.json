@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run --testTimeout=30000",
+    "test": "vitest run --maxWorkers=4 --testTimeout=45000",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

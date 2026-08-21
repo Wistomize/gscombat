@@ -298,7 +298,8 @@ export type {
   SourceStatSnapshotSelectionInput
 } from "./source-selection.js"
 
-function resolveCombatActionEffectsForCandidates(
+/** Resolves an explicitly supplied effect registry for isolated coverage and integration verification. */
+export function resolveCombatActionEffectsForCandidates(
   input: ResolveCombatActionEffectCandidatesInput,
   candidates: readonly CombatActionEffect[]
 ): ResolvedCombatActionEffects {
@@ -390,6 +391,7 @@ function resolveCombatActionEffectsForCandidates(
     transformativeReactionFlatDamageAddition: sumEffectTarget(appliedEffects, "transformativeReactionFlatDamageAddition"),
     specialReactionDamageBonus: sumEffectTarget(appliedEffects, "specialReactionDamageBonus"),
     specialReactionBaseDamageFlat: sumEffectTarget(appliedEffects, "specialReactionBaseDamageFlat"),
+    specialReactionBaseDamageMultiplier: sumEffectTarget(appliedEffects, "specialReactionBaseDamageMultiplier"),
     specialReactionBaseDamageBonus: sumEffectTarget(appliedEffects, "specialReactionBaseDamageBonus"),
     specialReactionFlatDamageAddition: sumEffectTarget(appliedEffects, "specialReactionFlatDamageAddition"),
     specialReactionElevation: sumEffectTarget(appliedEffects, "specialReactionElevation"),
@@ -596,6 +598,7 @@ function isCombatActionEffectCompatibleWithAdditionalDamageEvent(effect: CombatA
     effect.target === "transformativeReactionFlatDamageAddition" ||
     effect.target === "specialReactionDamageBonus" ||
     effect.target === "specialReactionBaseDamageFlat" ||
+    effect.target === "specialReactionBaseDamageMultiplier" ||
     effect.target === "specialReactionBaseDamageBonus" ||
     effect.target === "specialReactionFlatDamageAddition" ||
     effect.target === "specialReactionElevation"
@@ -842,7 +845,9 @@ function resolveEffectSources(
           countArtifactSet(build, artifactSource.setId) >= artifactSource.minimumPieces && matchesSourceCondition(build)
       ),
       selectedSourceBuildId,
-      false
+      false,
+      undefined,
+      artifactSource.resolveOneMatchingPartySource === true
     )
   }
   const characterId = source.characterId
@@ -861,7 +866,8 @@ function resolveEffectSourceCandidates(
   candidates: readonly CharacterBuild[],
   selectedSourceBuildId: string | undefined,
   resolveAllMatchingSources: boolean,
-  characterId?: string
+  characterId?: string,
+  resolveOneMatchingSource = false
 ): readonly CharacterBuild[] {
   if (candidates.length === 0) return []
   if (selectedSourceBuildId !== undefined) {
@@ -870,6 +876,7 @@ function resolveEffectSourceCandidates(
     throw new Error(`Active effect ${effectId} cannot use selected source build ${selectedSourceBuildId}`)
   }
   if (resolveAllMatchingSources) return candidates
+  if (resolveOneMatchingSource) return candidates.slice(0, 1)
   const soleCandidate = candidates[0]
   if (candidates.length === 1 && soleCandidate) return [soleCandidate]
   if (characterId) throw new Error(`Active effect ${effectId} requires exactly one ${characterId} source build`)

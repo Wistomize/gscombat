@@ -25,6 +25,7 @@ import { equipmentCoverage as artifactGildedDreamsCoverage } from "../artifacts/
 import { equipmentCoverage as artifactGladiatorsFinaleCoverage } from "../artifacts/gladiators-finale/coverage.js"
 import { equipmentCoverage as artifactGoldenTroupeCoverage } from "../artifacts/golden-troupe/coverage.js"
 import { equipmentCoverage as artifactHeartOfDepthCoverage } from "../artifacts/heart-of-depth/coverage.js"
+import { equipmentCoverage as artifactHeartOfTheFurnaceCoverage } from "../artifacts/heart-of-the-furnace/coverage.js"
 import { equipmentCoverage as artifactHuskOfOpulentDreamsCoverage } from "../artifacts/husk-of-opulent-dreams/coverage.js"
 import { equipmentCoverage as artifactInstructorCoverage } from "../artifacts/instructor/coverage.js"
 import { equipmentCoverage as artifactLavawalkerCoverage } from "../artifacts/lavawalker/coverage.js"
@@ -46,6 +47,7 @@ import { equipmentCoverage as artifactPrayersForWisdomCoverage } from "../artifa
 import { equipmentCoverage as artifactPrayersToSpringtimeCoverage } from "../artifacts/prayers-to-springtime/coverage.js"
 import { equipmentCoverage as artifactResolutionOfSojournerCoverage } from "../artifacts/resolution-of-sojourner/coverage.js"
 import { equipmentCoverage as artifactRetracingBolideCoverage } from "../artifacts/retracing-bolide/coverage.js"
+import { equipmentCoverage as artifactScarletProofCoverage } from "../artifacts/scarlet-proof/coverage.js"
 import { equipmentCoverage as artifactScholarCoverage } from "../artifacts/scholar/coverage.js"
 import { equipmentCoverage as artifactScrollOfTheHeroOfCinderCityCoverage } from "../artifacts/scroll-of-the-hero-of-cinder-city/coverage.js"
 import { equipmentCoverage as artifactShimenawasReminiscenceCoverage } from "../artifacts/shimenawas-reminiscence/coverage.js"
@@ -89,6 +91,7 @@ import { equipmentCoverage as weaponBlackcliffPoleCoverage } from "../weapons/bl
 import { equipmentCoverage as weaponBlackcliffSlasherCoverage } from "../weapons/blackcliff-slasher/coverage.js"
 import { equipmentCoverage as weaponBlackcliffWarbowCoverage } from "../weapons/blackcliff-warbow/coverage.js"
 import { equipmentCoverage as weaponBlackmarrowLanternCoverage } from "../weapons/blackmarrow-lantern/coverage.js"
+import { equipmentCoverage as weaponBladeOfAtonementCoverage } from "../weapons/blade-of-atonement/coverage.js"
 import { equipmentCoverage as weaponBloodsoakedRuinsCoverage } from "../weapons/bloodsoaked-ruins/coverage.js"
 import { equipmentCoverage as weaponBloodtaintedGreatswordCoverage } from "../weapons/bloodtainted-greatsword/coverage.js"
 import { equipmentCoverage as weaponCalamityOfEshuCoverage } from "../weapons/calamity-of-eshu/coverage.js"
@@ -96,9 +99,11 @@ import { equipmentCoverage as weaponCalamityQuellerCoverage } from "../weapons/c
 import { equipmentCoverage as weaponCashflowSupervisionCoverage } from "../weapons/cashflow-supervision/coverage.js"
 import { equipmentCoverage as weaponChainBreakerCoverage } from "../weapons/chain-breaker/coverage.js"
 import { equipmentCoverage as weaponCinnabarSpindleCoverage } from "../weapons/cinnabar-spindle/coverage.js"
+import { equipmentCoverage as weaponClashOfKingsCoverage } from "../weapons/clash-of-kings/coverage.js"
 import { equipmentCoverage as weaponCloudforgedCoverage } from "../weapons/cloudforged/coverage.js"
 import { equipmentCoverage as weaponCompoundBowCoverage } from "../weapons/compound-bow/coverage.js"
 import { equipmentCoverage as weaponCoolSteelCoverage } from "../weapons/cool-steel/coverage.js"
+import { equipmentCoverage as weaponCovenantOfFrostAndSnowCoverage } from "../weapons/covenant-of-frost-and-snow/coverage.js"
 import { equipmentCoverage as weaponCranesEchoingCallCoverage } from "../weapons/cranes-echoing-call/coverage.js"
 import { equipmentCoverage as weaponCrescentPikeCoverage } from "../weapons/crescent-pike/coverage.js"
 import { equipmentCoverage as weaponCrimsonMoonsSemblanceCoverage } from "../weapons/crimson-moons-semblance/coverage.js"
@@ -113,12 +118,15 @@ import { equipmentCoverage as weaponDragonsBaneCoverage } from "../weapons/drago
 import { equipmentCoverage as weaponDragonspineSpearCoverage } from "../weapons/dragonspine-spear/coverage.js"
 import { equipmentCoverage as weaponDullBladeCoverage } from "../weapons/dull-blade/coverage.js"
 import { equipmentCoverage as weaponEarthShakerCoverage } from "../weapons/earth-shaker/coverage.js"
+import { equipmentCoverage as weaponEchoesOfTheHeartCoverage } from "../weapons/echoes-of-the-heart/coverage.js"
 import { equipmentCoverage as weaponElegyForTheEndCoverage } from "../weapons/elegy-for-the-end/coverage.js"
+import { equipmentCoverage as weaponEmberwellCoverage } from "../weapons/emberwell/coverage.js"
 import { equipmentCoverage as weaponEmeraldOrbCoverage } from "../weapons/emerald-orb/coverage.js"
 import { equipmentCoverage as weaponEndOfTheLineCoverage } from "../weapons/end-of-the-line/coverage.js"
 import { equipmentCoverage as weaponEngulfingLightningCoverage } from "../weapons/engulfing-lightning/coverage.js"
 import { equipmentCoverage as weaponEtherlightSpindleluteCoverage } from "../weapons/etherlight-spindlelute/coverage.js"
 import { equipmentCoverage as weaponEverlastingMoonglowCoverage } from "../weapons/everlasting-moonglow/coverage.js"
+import { equipmentCoverage as weaponExaiphanesBladeCoverage } from "../weapons/exaiphanes-blade/coverage.js"
 import { equipmentCoverage as weaponEyeOfPerceptionCoverage } from "../weapons/eye-of-perception/coverage.js"
 import { equipmentCoverage as weaponFadingTwilightCoverage } from "../weapons/fading-twilight/coverage.js"
 import { equipmentCoverage as weaponFangOfTheMountainKingCoverage } from "../weapons/fang-of-the-mountain-king/coverage.js"
@@ -138,9 +146,11 @@ import { equipmentCoverage as weaponFlowingPurityCoverage } from "../weapons/flo
 import { equipmentCoverage as weaponFluteOfEzpitzalCoverage } from "../weapons/flute-of-ezpitzal/coverage.js"
 import { equipmentCoverage as weaponFootprintOfTheRainbowCoverage } from "../weapons/footprint-of-the-rainbow/coverage.js"
 import { equipmentCoverage as weaponForestRegaliaCoverage } from "../weapons/forest-regalia/coverage.js"
+import { equipmentCoverage as weaponForgedByTheGoldenMelodyCoverage } from "../weapons/forged-by-the-golden-melody/coverage.js"
 import { equipmentCoverage as weaponFracturedHaloCoverage } from "../weapons/fractured-halo/coverage.js"
 import { equipmentCoverage as weaponFreedomSwornCoverage } from "../weapons/freedom-sworn/coverage.js"
 import { equipmentCoverage as weaponFrostbearerCoverage } from "../weapons/frostbearer/coverage.js"
+import { equipmentCoverage as weaponFrostbreathCoverage } from "../weapons/frostbreath/coverage.js"
 import { equipmentCoverage as weaponFruitOfFulfillmentCoverage } from "../weapons/fruit-of-fulfillment/coverage.js"
 import { equipmentCoverage as weaponFruitfulHookCoverage } from "../weapons/fruitful-hook/coverage.js"
 import { equipmentCoverage as weaponGestOfTheMightyWolfCoverage } from "../weapons/gest-of-the-mighty-wolf/coverage.js"
@@ -150,11 +160,13 @@ import { equipmentCoverage as weaponHalberdCoverage } from "../weapons/halberd/c
 import { equipmentCoverage as weaponHamayumiCoverage } from "../weapons/hamayumi/coverage.js"
 import { equipmentCoverage as weaponHaranGeppakuFutsuCoverage } from "../weapons/haran-geppaku-futsu/coverage.js"
 import { equipmentCoverage as weaponHarbingerOfDawnCoverage } from "../weapons/harbinger-of-dawn/coverage.js"
+import { equipmentCoverage as weaponHereticsMoltenBladeCoverage } from "../weapons/heretics-molten-blade/coverage.js"
 import { equipmentCoverage as weaponHuntersBowCoverage } from "../weapons/hunters-bow/coverage.js"
 import { equipmentCoverage as weaponHuntersPathCoverage } from "../weapons/hunters-path/coverage.js"
 import { equipmentCoverage as weaponIbisPiercerCoverage } from "../weapons/ibis-piercer/coverage.js"
 import { equipmentCoverage as weaponIronPointCoverage } from "../weapons/iron-point/coverage.js"
 import { equipmentCoverage as weaponIronStingCoverage } from "../weapons/iron-sting/coverage.js"
+import { equipmentCoverage as weaponJadeVistaCoverage } from "../weapons/jade-vista/coverage.js"
 import { equipmentCoverage as weaponJadefallsSplendorCoverage } from "../weapons/jadefalls-splendor/coverage.js"
 import { equipmentCoverage as weaponKagotsurubeIsshinCoverage } from "../weapons/kagotsurube-isshin/coverage.js"
 import { equipmentCoverage as weaponKagurasVerityCoverage } from "../weapons/kaguras-verity/coverage.js"
@@ -246,6 +258,7 @@ import { equipmentCoverage as weaponSnowTombedStarsilverCoverage } from "../weap
 import { equipmentCoverage as weaponSolarPearlCoverage } from "../weapons/solar-pearl/coverage.js"
 import { equipmentCoverage as weaponSongOfBrokenPinesCoverage } from "../weapons/song-of-broken-pines/coverage.js"
 import { equipmentCoverage as weaponSongOfStillnessCoverage } from "../weapons/song-of-stillness/coverage.js"
+import { equipmentCoverage as weaponSongOfTheVigilCoverage } from "../weapons/song-of-the-vigil/coverage.js"
 import { equipmentCoverage as weaponSplendorOfTranquilWatersCoverage } from "../weapons/splendor-of-tranquil-waters/coverage.js"
 import { equipmentCoverage as weaponStaffOfHomaCoverage } from "../weapons/staff-of-homa/coverage.js"
 import { equipmentCoverage as weaponStaffOfTheScarletSandsCoverage } from "../weapons/staff-of-the-scarlet-sands/coverage.js"
@@ -291,6 +304,7 @@ import { equipmentCoverage as weaponWaveridingWhirlCoverage } from "../weapons/w
 import { equipmentCoverage as weaponWhiteIronGreatswordCoverage } from "../weapons/white-iron-greatsword/coverage.js"
 import { equipmentCoverage as weaponWhiteTasselCoverage } from "../weapons/white-tassel/coverage.js"
 import { equipmentCoverage as weaponWhiteblindCoverage } from "../weapons/whiteblind/coverage.js"
+import { equipmentCoverage as weaponWhitelakeFrostfeatherCoverage } from "../weapons/whitelake-frostfeather/coverage.js"
 import { equipmentCoverage as weaponWindblumeOdeCoverage } from "../weapons/windblume-ode/coverage.js"
 import { equipmentCoverage as weaponWineAndSongCoverage } from "../weapons/wine-and-song/coverage.js"
 import { equipmentCoverage as weaponWolfFangCoverage } from "../weapons/wolf-fang/coverage.js"
@@ -322,6 +336,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   artifactGladiatorsFinaleCoverage,
   artifactGoldenTroupeCoverage,
   artifactHeartOfDepthCoverage,
+  artifactHeartOfTheFurnaceCoverage,
   artifactHuskOfOpulentDreamsCoverage,
   artifactInstructorCoverage,
   artifactLavawalkerCoverage,
@@ -343,6 +358,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   artifactPrayersToSpringtimeCoverage,
   artifactResolutionOfSojournerCoverage,
   artifactRetracingBolideCoverage,
+  artifactScarletProofCoverage,
   artifactScholarCoverage,
   artifactScrollOfTheHeroOfCinderCityCoverage,
   artifactShimenawasReminiscenceCoverage,
@@ -386,6 +402,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponBlackcliffSlasherCoverage,
   weaponBlackcliffWarbowCoverage,
   weaponBlackmarrowLanternCoverage,
+  weaponBladeOfAtonementCoverage,
   weaponBloodsoakedRuinsCoverage,
   weaponBloodtaintedGreatswordCoverage,
   weaponCalamityOfEshuCoverage,
@@ -393,9 +410,11 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponCashflowSupervisionCoverage,
   weaponChainBreakerCoverage,
   weaponCinnabarSpindleCoverage,
+  weaponClashOfKingsCoverage,
   weaponCloudforgedCoverage,
   weaponCompoundBowCoverage,
   weaponCoolSteelCoverage,
+  weaponCovenantOfFrostAndSnowCoverage,
   weaponCranesEchoingCallCoverage,
   weaponCrescentPikeCoverage,
   weaponCrimsonMoonsSemblanceCoverage,
@@ -410,12 +429,15 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponDragonspineSpearCoverage,
   weaponDullBladeCoverage,
   weaponEarthShakerCoverage,
+  weaponEchoesOfTheHeartCoverage,
   weaponElegyForTheEndCoverage,
+  weaponEmberwellCoverage,
   weaponEmeraldOrbCoverage,
   weaponEndOfTheLineCoverage,
   weaponEngulfingLightningCoverage,
   weaponEtherlightSpindleluteCoverage,
   weaponEverlastingMoonglowCoverage,
+  weaponExaiphanesBladeCoverage,
   weaponEyeOfPerceptionCoverage,
   weaponFadingTwilightCoverage,
   weaponFangOfTheMountainKingCoverage,
@@ -435,9 +457,11 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponFluteOfEzpitzalCoverage,
   weaponFootprintOfTheRainbowCoverage,
   weaponForestRegaliaCoverage,
+  weaponForgedByTheGoldenMelodyCoverage,
   weaponFracturedHaloCoverage,
   weaponFreedomSwornCoverage,
   weaponFrostbearerCoverage,
+  weaponFrostbreathCoverage,
   weaponFruitOfFulfillmentCoverage,
   weaponFruitfulHookCoverage,
   weaponGestOfTheMightyWolfCoverage,
@@ -447,11 +471,13 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponHamayumiCoverage,
   weaponHaranGeppakuFutsuCoverage,
   weaponHarbingerOfDawnCoverage,
+  weaponHereticsMoltenBladeCoverage,
   weaponHuntersBowCoverage,
   weaponHuntersPathCoverage,
   weaponIbisPiercerCoverage,
   weaponIronPointCoverage,
   weaponIronStingCoverage,
+  weaponJadeVistaCoverage,
   weaponJadefallsSplendorCoverage,
   weaponKagotsurubeIsshinCoverage,
   weaponKagurasVerityCoverage,
@@ -543,6 +569,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponSolarPearlCoverage,
   weaponSongOfBrokenPinesCoverage,
   weaponSongOfStillnessCoverage,
+  weaponSongOfTheVigilCoverage,
   weaponSplendorOfTranquilWatersCoverage,
   weaponStaffOfHomaCoverage,
   weaponStaffOfTheScarletSandsCoverage,
@@ -588,6 +615,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponWhiteIronGreatswordCoverage,
   weaponWhiteTasselCoverage,
   weaponWhiteblindCoverage,
+  weaponWhitelakeFrostfeatherCoverage,
   weaponWindblumeOdeCoverage,
   weaponWineAndSongCoverage,
   weaponWolfFangCoverage,

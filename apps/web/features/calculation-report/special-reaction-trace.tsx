@@ -114,6 +114,22 @@ export function SpecialReactionTraceFormula({
       </div>
     )
   }
+  if (formula.kind === "special_reaction_base_damage_multiplier") {
+    return (
+      <div className="formulaLines">
+        <FormulaEquation label="基础伤害倍率">
+          <FormulaValue stage={previousStage}>{formatFormulaNumber(before)}</FormulaValue> × (1 +{" "}
+          <FormulaValue stage="base_damage_multiplier">{formatFormulaPercent(formula.bonus)}</FormulaValue>) ={" "}
+          <FormulaValue stage="base_damage_multiplier">{formatFormulaNumber(after)}</FormulaValue>
+        </FormulaEquation>
+        <p className="formulaAuxiliary">
+          基础伤害倍率乘数 ={" "}
+          <FormulaValue stage="base_damage_multiplier">{formatFormulaNumber(formula.multiplier)}</FormulaValue>
+        </p>
+        <ActionEffectSources effects={effects} targets={["specialReactionBaseDamageMultiplier"]} />
+      </div>
+    )
+  }
   if (formula.kind === "special_reaction_base_damage_bonus") {
     return (
       <div className="formulaLines">

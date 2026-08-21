@@ -33,9 +33,9 @@ interface DownloadedJson<T> {
   readonly value: T
 }
 
-type TravelerElement = "anemo" | "dendro" | "electro" | "geo" | "hydro" | "pyro"
+type TravelerElement = "anemo" | "cryo" | "dendro" | "electro" | "geo" | "hydro" | "pyro"
 
-const enkaApiDocsCommit = "7339dc982937c40b48ef48c569bf6d0a1aa5c851"
+const enkaApiDocsCommit = "dc86b5dc06ad27d26c9a4df9f0b6ffd0417bf554"
 const enkaApiDocsRepository = "https://github.com/EnkaNetwork/API-docs"
 const enkaStoreRoot =
   `https://raw.githubusercontent.com/EnkaNetwork/API-docs/${enkaApiDocsCommit}` + "/store/gi"
@@ -44,6 +44,7 @@ const travelerElementBySkillDepotSuffix: Readonly<Record<string, TravelerElement
   "2": "geo",
   "3": "electro",
   "4": "anemo",
+  "5": "cryo",
   "6": "dendro",
   "7": "hydro",
   "8": "pyro"

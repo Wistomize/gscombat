@@ -5,6 +5,7 @@ import type { GameDataRepository } from "@gscombat/game-data"
 
 const travelerOwnerElementSegment: Readonly<Record<TravelerElement, string>> = {
   anemo: "Anemo",
+  cryo: "Cryo",
   dendro: "Dendro",
   electro: "Electro",
   geo: "Geo",

@@ -210,7 +210,19 @@ const pinnedSnapshotComparisonWeaponIds = [
   "WineAndSong",
   "WolfFang",
   "WolfsGravestone",
-  "XiphosMoonlight"
+  "XiphosMoonlight",
+  "BladeOfAtonement",
+  "ClashOfKings",
+  "CovenantOfFrostAndSnow",
+  "EchoesOfTheHeart",
+  "Emberwell",
+  "ExaiphanesBlade",
+  "ForgedByTheGoldenMelody",
+  "Frostbreath",
+  "HereticsMoltenBlade",
+  "JadeVista",
+  "SongOfTheVigil",
+  "WhitelakeFrostfeather"
 ] as const
 
 function sorted(values: readonly string[]): string[] {
@@ -218,20 +230,20 @@ function sorted(values: readonly string[]): string[] {
 }
 
 describe("official weapon-name registry", () => {
-  it("covers every four- and five-star candidate from the fixed 6.7 snapshot offline", () => {
+  it("covers every four- and five-star candidate from the fixed 7.0 snapshot offline", () => {
     const registeredWeaponIds = Object.keys(officialWeaponNames)
 
     expect(pinnedWeaponNameSource).toEqual({
-      gameVersion: "6.7",
+      gameVersion: "7.0",
       localizationAggregatePath: "libs/gi/dm-localization/assets/locales/chs/weaponNames_gen.json",
       localizationPathTemplate: "libs/gi/dm-localization/assets/locales/chs/weapon_<weaponId>_gen.json",
-      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+      upstreamCommit: "98aafa1f135f086524b611c7d5b5bfb78d98bb6d",
       upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
     })
-    expect(pinnedSnapshotComparisonWeaponIds).toHaveLength(200)
+    expect(pinnedSnapshotComparisonWeaponIds).toHaveLength(212)
     expect(new Set(pinnedSnapshotComparisonWeaponIds).size).toBe(pinnedSnapshotComparisonWeaponIds.length)
     expect(sorted(registeredWeaponIds)).toEqual(sorted(pinnedSnapshotComparisonWeaponIds))
-    expect(registeredWeaponIds).toHaveLength(200)
+    expect(registeredWeaponIds).toHaveLength(212)
 
     for (const weaponId of pinnedSnapshotComparisonWeaponIds) {
       const name = getOfficialWeaponName(weaponId)

@@ -43,14 +43,18 @@ export {
   calculateDirectSpecialReactionDamage,
   calculateLunarReactionExpectedDamage,
   calculateLunarReactionParticipantDamage,
+  calculateStellarSwirlReactionExpectedDamage,
+  calculateStellarSwirlReactionParticipantDamage,
   getLunarReactionBaseCoefficient,
-  getStellarSuperconductBaseCoefficient
+  getStellarSuperconductBaseCoefficient,
+  getStellarSwirlReactionCoefficient
 } from "./special-reaction.js"
 export type {
   DirectLunarReactionDamageInput,
   DirectSpecialReactionDamageInput,
   DirectSpecialReactionKind,
   DirectStellarSuperconductDamageInput,
+  DirectStellarSwirlDamageInput,
   LunarParticipantReactionKind,
   LunarReactionCriticalOutcome,
   LunarReactionExpectedDamageInput,
@@ -61,7 +65,11 @@ export type {
   SpecialReactionBaseDamageTerm,
   SpecialReactionDamageResult,
   SpecialReactionTraceEntry,
-  StellarReactionKind
+  StellarReactionKind,
+  StellarSwirlReactionEvent,
+  StellarSwirlReactionExpectedDamageInput,
+  StellarSwirlReactionExpectedDamageResult,
+  StellarSwirlReactionParticipantInput
 } from "./special-reaction.js"
 export {
   evaluateRotation,

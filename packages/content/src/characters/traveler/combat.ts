@@ -1,5 +1,7 @@
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
+import { travelerCryoCombatCoverage } from "./cryo-combat.js"
+
 export const travelerCombatCoverage: CharacterCombatCoverage = {
   actions: [
     {
@@ -270,7 +272,8 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
       status: "verified",
       talentSlot: "burst",
       travelerElement: "pyro"
-    }
+    },
+    ...travelerCryoCombatCoverage.actions
   ],
   actionEffects: [
     {
@@ -299,7 +302,8 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
       },
       target: "damageBonus",
       value: { kind: "fixed", value: 0.09 }
-    }
+    },
+    ...(travelerCryoCombatCoverage.actionEffects ?? [])
   ],
   characterId: "Traveler",
   metrics: [
@@ -372,10 +376,11 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
       sourceActionId: "traveler.pyro.burst.scorching_firestrike.hit.cryo_aura_melt",
       status: "verified",
       target: "enemy"
-    }
+    },
+    ...(travelerCryoCombatCoverage.metrics ?? [])
   ],
   detail:
-    "旅行者的六种元素形态互斥；动作和角色效果都按当前构筑的元素变体筛选，并从对应性别天赋表解析参数。火元素旅行者可进入夜魂加持，但不会增加队伍夜魂迸发人数。火元素C1在流火剑界持续期间自动为场上角色提供6%伤害加成；若计算对象可进入夜魂加持，再追加9%。其余动作仍按单次、单段指标结算，不模拟循环、持续命中、资源恢复和时序。",
+    "旅行者的七种元素形态互斥；动作和角色效果都按当前构筑的元素变体筛选，并从对应性别天赋表解析参数。冰元素形态提供辉映·星超导特殊重击与满寒辉聚冰成锋指标。火元素旅行者可进入夜魂加持，但不会增加队伍夜魂迸发人数。火元素C1在流火剑界持续期间自动为场上角色提供6%伤害加成；若计算对象可进入夜魂加持，再追加9%。其余动作仍按单次、单段指标结算，不模拟循环、持续命中、资源恢复和时序。",
   label: "旅行者",
   status: "draft",
   talentLevelConstellationBonuses: [
@@ -390,6 +395,7 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
     { minimumSourceConstellation: 3, talentSlot: "skill", travelerElement: "hydro", value: 3 },
     { minimumSourceConstellation: 5, talentSlot: "burst", travelerElement: "hydro", value: 3 },
     { minimumSourceConstellation: 3, talentSlot: "skill", travelerElement: "pyro", value: 3 },
-    { minimumSourceConstellation: 5, talentSlot: "burst", travelerElement: "pyro", value: 3 }
+    { minimumSourceConstellation: 5, talentSlot: "burst", travelerElement: "pyro", value: 3 },
+    ...(travelerCryoCombatCoverage.talentLevelConstellationBonuses ?? [])
   ]
 }

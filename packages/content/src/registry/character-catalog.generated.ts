@@ -118,6 +118,8 @@ import { zibaiDefinition as characterZibaiDefinition } from "../characters/zibai
 import { mualaniDefinition as characterMualaniDefinition } from "../characters/mualani/definition.js"
 import { sangonomiyaKokomiDefinition as characterSangonomiyaKokomiDefinition } from "../characters/sangonomiya-kokomi/definition.js"
 import { durinDefinition as characterDurinDefinition } from "../characters/durin/definition.js"
+import { odetteDefinition as characterOdetteDefinition } from "../characters/odette/definition.js"
+import { alyoshaDefinition as characterAlyoshaDefinition } from "../characters/alyosha/definition.js"
 
 export const characterCatalogPresentation: readonly CharacterCatalogPresentation[] = [
   characterRaidenDefinition.catalog,
@@ -236,5 +238,7 @@ export const characterCatalogPresentation: readonly CharacterCatalogPresentation
   characterZibaiDefinition.catalog,
   characterMualaniDefinition.catalog,
   characterSangonomiyaKokomiDefinition.catalog,
-  characterDurinDefinition.catalog
+  characterDurinDefinition.catalog,
+  characterOdetteDefinition.catalog,
+  characterAlyoshaDefinition.catalog
 ]

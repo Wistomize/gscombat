@@ -80,6 +80,17 @@ describe("CharacterBuild", () => {
     ])
   })
 
+  it("accepts the Cryo Traveler as a canonical build variant", () => {
+    const cryoTraveler: CharacterBuild = {
+      ...build,
+      buildId: "traveler-cryo",
+      characterId: "Traveler",
+      variant: { element: "cryo", gender: "female", kind: "traveler" }
+    }
+
+    expect(validateCharacterBuild(cryoTraveler)).toEqual([])
+  })
+
   it("rejects malformed Traveler variants from direct runtime callers", () => {
     const malformedTravelerBuild = {
       ...build,

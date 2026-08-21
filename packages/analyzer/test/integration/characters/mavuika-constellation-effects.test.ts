@@ -36,7 +36,7 @@ function createScenario(constellation: number): EvaluationScenario {
     conditions: { activeEffectIds: [], enemyCount: 1, equipmentEffectMode: "maximum_reachable" },
     enemy: { defenseReduction: 0, level: 100, name: "训练木桩", resistance: 0.1 },
     externalBuffs: [],
-    gameDataVersion: "6.7",
+    gameDataVersion: "7.0",
     primary: createMavuikaBuild(constellation),
     targetActionId: actionId,
     teammates: []

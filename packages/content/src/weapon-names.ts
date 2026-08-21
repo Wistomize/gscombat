@@ -1,14 +1,14 @@
 /**
- * Browser-safe weapon-name data pinned to the same 6.7 Genshin Optimizer commit as the
+ * Browser-safe weapon-name data pinned to the same 7.0 Genshin Optimizer commit as the
  * bundled game-data snapshot. Names are copied from the upstream Simplified Chinese aggregate,
  * generated from entries at `libs/gi/dm-localization/assets/locales/chs/weapon_<weaponId>_gen.json`.
  */
 export const pinnedWeaponNameSource = {
-  gameVersion: "6.7",
+  gameVersion: "7.0",
   localizationAggregatePath: "libs/gi/dm-localization/assets/locales/chs/weaponNames_gen.json",
   localizationPathTemplate:
     "libs/gi/dm-localization/assets/locales/chs/weapon_<weaponId>_gen.json",
-  upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+  upstreamCommit: "98aafa1f135f086524b611c7d5b5bfb78d98bb6d",
   upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
 } as const
 
@@ -41,7 +41,7 @@ const officialThreeStarWeaponNames: Readonly<Record<string, string>> = Object.fr
 
 /**
  * Official Simplified Chinese names for every player-facing four- and five-star weapon in the
- * pinned 6.7 player-facing snapshot.
+ * pinned 7.0 player-facing snapshot.
  */
 export const officialWeaponNames: Readonly<Record<string, string>> = Object.freeze({
   ATeaspoonOfTranscendence: "超越之匙",
@@ -243,7 +243,19 @@ export const officialWeaponNames: Readonly<Record<string, string>> = Object.free
   WineAndSong: "暗巷的酒与诗",
   WolfFang: "狼牙",
   WolfsGravestone: "狼的末路",
-  XiphosMoonlight: "西福斯的月光"
+  XiphosMoonlight: "西福斯的月光",
+  BladeOfAtonement: "救赎之斩",
+  ClashOfKings: "群王局戏",
+  CovenantOfFrostAndSnow: "霜雪誓约",
+  EchoesOfTheHeart: "寸心余响",
+  Emberwell: "引火之源",
+  ExaiphanesBlade: "星锋剑",
+  ForgedByTheGoldenMelody: "金律铸影",
+  Frostbreath: "寒息",
+  HereticsMoltenBlade: "熔猎异端之刃",
+  JadeVista: "悬黎千钧",
+  SongOfTheVigil: "戍望谣歌",
+  WhitelakeFrostfeather: "白湖冬羽"
 })
 
 /** Returns the maintained official Simplified Chinese name, never an internal-ID fallback. */

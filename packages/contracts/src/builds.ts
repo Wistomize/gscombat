@@ -63,6 +63,7 @@ export type TalentLevels = Type.Static<typeof TalentLevelsSchema>
 
 export const TravelerElementSchema = Type.Union([
   Type.Literal("anemo"),
+  Type.Literal("cryo"),
   Type.Literal("dendro"),
   Type.Literal("electro"),
   Type.Literal("geo"),
@@ -85,7 +86,7 @@ export const TravelerVariantSchema = Type.Object({
 
 export type TravelerVariant = Type.Static<typeof TravelerVariantSchema>
 
-const travelerElements: ReadonlySet<string> = new Set(["anemo", "dendro", "electro", "geo", "hydro", "pyro"])
+const travelerElements: ReadonlySet<string> = new Set(["anemo", "cryo", "dendro", "electro", "geo", "hydro", "pyro"])
 const travelerGenders: ReadonlySet<string> = new Set(["female", "male"])
 
 export const WeaponBuildSchema = Type.Object({

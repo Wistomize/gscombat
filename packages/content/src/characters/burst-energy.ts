@@ -6,7 +6,7 @@ interface BurstEnergyCostGroup {
 }
 
 /**
- * Generated from the pinned 6.7 SQLite snapshot's `burst` parameter groups.
+ * Generated from the pinned 7.0 SQLite snapshot's `burst` parameter groups.
  * Every regular character has exactly one constant scalar in the standard Energy-cost set 40/50/60/70/80/90.
  */
 const burstEnergyCostGroups: readonly BurstEnergyCostGroup[] = [
@@ -66,6 +66,7 @@ const burstEnergyCostGroups: readonly BurstEnergyCostGroup[] = [
       "Nefer",
       "Nicole",
       "Noelle",
+      "Odette",
       "Ororon",
       "Rosaria",
       "Sandrone",
@@ -87,6 +88,7 @@ const burstEnergyCostGroups: readonly BurstEnergyCostGroup[] = [
     energyCost: 70,
     characterIds: [
       "Alhaitham",
+      "Alyosha",
       "AratakiItto",
       "Dehya",
       "Durin",
@@ -150,6 +152,7 @@ const burstEnergyCosts = new Map<string, number>(
 
 const travelerBurstEnergyCosts: Readonly<Record<TravelerElement, number>> = {
   anemo: 60,
+  cryo: 60,
   dendro: 80,
   electro: 80,
   geo: 60,

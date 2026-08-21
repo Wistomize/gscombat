@@ -16,7 +16,10 @@ export type LunarReactionKind = "lunar_bloom" | "lunar_charged" | "lunar_crystal
 export type LunarParticipantReactionKind = Exclude<LunarReactionKind, "lunar_bloom">
 
 /** The currently known stellar reaction damage family. It is separate from Moon reactions. */
-export type StellarReactionKind = "stellar_superconduct"
+export type StellarReactionKind = "stellar_superconduct" | "stellar_swirl"
+
+/** Actual Stellar-Swirl reaction events, distinct from direct talent damage treated as Stellar-Swirl. */
+export type StellarSwirlReactionEvent = "trigger" | "vortex"
 
 /** A direct character action that is explicitly treated as Moon or stellar reaction damage. */
 export type DirectSpecialReactionKind = SpecialReactionKind
@@ -37,13 +40,22 @@ export interface DirectStellarSuperconductDamageInput extends DirectSpecialReact
   readonly kind: "stellar_superconduct"
 }
 
+/** One direct talent hit explicitly treated as Stellar-Swirl damage. */
+export interface DirectStellarSwirlDamageInput extends DirectSpecialReactionDamageInputBase {
+  readonly kind: "stellar_swirl"
+  readonly storedElementalApplications?: never
+}
+
 /** Input for a character action explicitly treated as special-reaction damage. */
 export type DirectSpecialReactionDamageInput =
   | DirectLunarReactionDamageInput
   | DirectStellarSuperconductDamageInput
+  | DirectStellarSwirlDamageInput
 
 /** Per-character inputs for one manually declared participant in a reaction Moon instance. */
 export interface LunarReactionParticipantInput {
+  /** Additive ratio in the shared base-damage-multiplier stage. */
+  readonly baseDamageMultiplier?: number
   /** Additive ratio in Moon's independent base-damage-bonus stage. */
   readonly baseDamageBonus?: number
   /** Character level, which supplies the level-scaled reaction base damage. */
@@ -62,6 +74,9 @@ export interface LunarReactionParticipantInput {
   readonly resistanceReduction?: number
 }
 
+/** Per-character inputs for one manually declared Stellar-Swirl reaction contributor. */
+export type StellarSwirlReactionParticipantInput = LunarReactionParticipantInput
+
 /** Manually declared current contributors to one reaction Lunar-Charged or Lunar-Crystallize hit. */
 export interface LunarReactionExpectedDamageInput {
   readonly kind: LunarParticipantReactionKind
@@ -70,6 +85,14 @@ export interface LunarReactionExpectedDamageInput {
    * snapshot. The caller owns this snapshot; the calculator never infers it from timing.
    */
   readonly participants: readonly LunarReactionParticipantInput[]
+}
+
+/** Manually declared contributors to one Anemo trigger hit or Cryo Stellar Vortex explosion. */
+export interface StellarSwirlReactionExpectedDamageInput {
+  readonly event: StellarSwirlReactionEvent
+  readonly participants: readonly StellarSwirlReactionParticipantInput[]
+  /** One or two; only used by a Vortex event. */
+  readonly vortexLevel?: number
 }
 
 /** One typed, ordered special-reaction formula stage for the result UI. */
@@ -120,11 +143,21 @@ export interface LunarReactionExpectedDamageResult {
   readonly participants: readonly LunarReactionParticipantDamageResult[]
 }
 
+/** Expected aggregate Stellar-Swirl reaction damage after participant CRIT outcomes are ranked. */
+export interface StellarSwirlReactionExpectedDamageResult
+  extends Omit<LunarReactionExpectedDamageResult, "kind"> {
+  readonly event: StellarSwirlReactionEvent
+  readonly kind: "stellar_swirl"
+  readonly reactionCoefficient: number
+}
+
 interface DirectSpecialReactionDamageInputBase {
   /** Scaling-stat value times the explicitly selected character action's multiplier. */
   readonly baseDamage: number
   /** Optional resolved terms retained so an event trace can show its real per-hit base-damage construction. */
   readonly baseDamageTerms?: readonly SpecialReactionBaseDamageTerm[]
+  /** Additive ratio in the shared base-damage-multiplier stage. */
+  readonly baseDamageMultiplier?: number
   /** Additive ratio in the special-reaction base-damage-bonus stage. */
   readonly baseDamageBonus?: number
   /** Additive direct special-reaction fixed damage after reaction multipliers and before CRIT. */
@@ -144,6 +177,7 @@ interface ResolvedSpecialReactionDamageInput {
   readonly ascensionBonus: number
   readonly baseDamage: number
   readonly baseDamageTerms?: readonly (SpecialReactionBaseDamageTerm & { readonly contribution: number })[]
+  readonly baseDamageMultiplier: number
   readonly baseDamageBonus: number
   readonly critDamage: number
   readonly critRate: number
@@ -151,7 +185,7 @@ interface ResolvedSpecialReactionDamageInput {
   readonly enemyResistance: number
   readonly flatDamageAddition: number
   readonly kind: DirectSpecialReactionKind
-  readonly mode: "direct" | "reaction_lunar"
+  readonly mode: "direct" | "reaction_lunar" | "reaction_stellar_swirl"
   readonly reactionCoefficient: number
   readonly reactionDamageBonus: number
   readonly resistanceReduction: number
@@ -184,6 +218,18 @@ export function getStellarSuperconductBaseCoefficient(storedElementalApplication
   return 2
 }
 
+/** Returns the fixed coefficient for an actual Stellar-Swirl trigger hit or Stellar Vortex explosion. */
+export function getStellarSwirlReactionCoefficient(event: StellarSwirlReactionEvent, vortexLevel?: number): number {
+  if (event === "trigger") {
+    if (vortexLevel !== undefined) throw new Error("A Stellar-Swirl trigger hit must not declare a Vortex level")
+    return 0.75
+  }
+  if (vortexLevel !== 1 && vortexLevel !== 2) {
+    throw new Error("A Stellar Vortex level must be either 1 or 2")
+  }
+  return vortexLevel === 1 ? 2 : 3
+}
+
 /**
  * Evaluates one character action explicitly treated as Lunar-Charged, Lunar-Bloom,
  * Lunar-Crystallize, or Stellar-Superconduct damage.
@@ -200,6 +246,10 @@ export function calculateDirectSpecialReactionDamage(
     ascensionBonus: requireFinite("Special-reaction ascension bonus", input.ascensionBonus ?? 0),
     baseDamage,
     ...(baseDamageTerms === undefined ? {} : { baseDamageTerms }),
+    baseDamageMultiplier: requireFinite(
+      "Special-reaction base damage multiplier bonus",
+      input.baseDamageMultiplier ?? 0
+    ),
     baseDamageBonus: requireFinite("Special-reaction base damage bonus", input.baseDamageBonus ?? 0),
     critDamage: requireNonNegativeFinite("Special-reaction crit damage", input.critDamage),
     critRate: requireFinite("Special-reaction crit rate", input.critRate),
@@ -228,6 +278,10 @@ export function calculateLunarReactionParticipantDamage(
   return calculateSpecialReactionDamage({
     ascensionBonus: requireFinite("Lunar reaction ascension bonus", input.ascensionBonus ?? 0),
     baseDamage: getReactionBaseDamage(input.level),
+    baseDamageMultiplier: requireFinite(
+      "Lunar reaction base damage multiplier bonus",
+      input.baseDamageMultiplier ?? 0
+    ),
     baseDamageBonus: requireFinite("Lunar reaction base damage bonus", input.baseDamageBonus ?? 0),
     critDamage: requireNonNegativeFinite("Lunar reaction crit damage", input.critDamage),
     critRate: requireFinite("Lunar reaction crit rate", input.critRate),
@@ -242,6 +296,34 @@ export function calculateLunarReactionParticipantDamage(
   })
 }
 
+/** Calculates one participant's independent Stellar-Swirl trigger or Vortex contribution. */
+export function calculateStellarSwirlReactionParticipantDamage(
+  event: StellarSwirlReactionEvent,
+  input: StellarSwirlReactionParticipantInput,
+  vortexLevel?: number
+): SpecialReactionDamageResult {
+  assertCharacterLevel(input.level)
+  return calculateSpecialReactionDamage({
+    ascensionBonus: requireFinite("Stellar-Swirl ascension bonus", input.ascensionBonus ?? 0),
+    baseDamage: getReactionBaseDamage(input.level),
+    baseDamageBonus: requireFinite("Stellar-Swirl base damage bonus", input.baseDamageBonus ?? 0),
+    baseDamageMultiplier: requireFinite(
+      "Stellar-Swirl base damage multiplier bonus",
+      input.baseDamageMultiplier ?? 0
+    ),
+    critDamage: requireNonNegativeFinite("Stellar-Swirl crit damage", input.critDamage),
+    critRate: requireFinite("Stellar-Swirl crit rate", input.critRate),
+    elementalMastery: requireNonNegativeFinite("Stellar-Swirl elemental mastery", input.elementalMastery),
+    enemyResistance: requireFinite("Stellar-Swirl enemy resistance", input.enemyResistance),
+    flatDamageAddition: requireFinite("Stellar-Swirl flat damage addition", input.flatDamageAddition ?? 0),
+    kind: "stellar_swirl",
+    mode: "reaction_stellar_swirl",
+    reactionCoefficient: getStellarSwirlReactionCoefficient(event, vortexLevel),
+    reactionDamageBonus: requireFinite("Stellar-Swirl damage bonus", input.reactionDamageBonus ?? 0),
+    resistanceReduction: requireFinite("Stellar-Swirl resistance reduction", input.resistanceReduction ?? 0)
+  })
+}
+
 /**
  * Evaluates a manually declared set of current reaction Moon contributors without inferring aura,
  * elemental application timing, or a full rotation. Crit outcomes are enumerated before ranking,
@@ -251,27 +333,49 @@ export function calculateLunarReactionExpectedDamage(
   input: LunarReactionExpectedDamageInput
 ): LunarReactionExpectedDamageResult {
   assertLunarParticipantReactionKind(input.kind)
-  if (input.participants.length === 0 || input.participants.length > lunarParticipantContributionWeights.length) {
-    throw new Error("A reaction Moon damage instance requires between one and four manual participants")
-  }
-
-  const participantIds = new Set(input.participants.map((participant) => participant.participantId))
-  if (participantIds.size !== input.participants.length || participantIds.has("")) {
-    throw new Error("Each reaction Moon participant must have one unique non-empty participant ID")
-  }
-
   const participants = input.participants.map((participant) => ({
     critRate: clamp(participant.critRate, 0, 1),
     damage: calculateLunarReactionParticipantDamage(input.kind, participant),
     participantId: participant.participantId
   }))
+  const aggregate = calculateParticipantExpectedDamage(participants, "reaction Moon")
+
+  return { ...aggregate, kind: input.kind, participants }
+}
+
+/** Calculates one manually selected actual Stellar-Swirl trigger or Vortex reaction event. */
+export function calculateStellarSwirlReactionExpectedDamage(
+  input: StellarSwirlReactionExpectedDamageInput
+): StellarSwirlReactionExpectedDamageResult {
+  const reactionCoefficient = getStellarSwirlReactionCoefficient(input.event, input.vortexLevel)
+  const participants = input.participants.map((participant) => ({
+    critRate: clamp(participant.critRate, 0, 1),
+    damage: calculateStellarSwirlReactionParticipantDamage(input.event, participant, input.vortexLevel),
+    participantId: participant.participantId
+  }))
+  const aggregate = calculateParticipantExpectedDamage(participants, "Stellar-Swirl")
+
+  return { ...aggregate, event: input.event, kind: "stellar_swirl", participants, reactionCoefficient }
+}
+
+function calculateParticipantExpectedDamage(
+  participants: readonly LunarReactionParticipantDamageResult[],
+  label: string
+): Omit<LunarReactionExpectedDamageResult, "kind" | "participants"> {
+  if (participants.length === 0 || participants.length > lunarParticipantContributionWeights.length) {
+    throw new Error(`A ${label} damage instance requires between one and four manual participants`)
+  }
+  const participantIds = new Set(participants.map((participant) => participant.participantId))
+  if (participantIds.size !== participants.length || participantIds.has("")) {
+    throw new Error(`Each ${label} participant must have one unique non-empty participant ID`)
+  }
   const expectedContributionByParticipantId = new Map(participants.map((participant) => [participant.participantId, 0]))
   const outcomes: LunarReactionCriticalOutcome[] = []
   let expectedDamage = 0
   const outcomeCount = 2 ** participants.length
 
   for (let outcomeMask = 0; outcomeMask < outcomeCount; outcomeMask += 1) {
-    const outcome = calculateLunarReactionCriticalOutcome(participants, outcomeMask)
+    const outcome = calculateSpecialReactionCriticalOutcome(participants, outcomeMask)
     outcomes.push(outcome)
     expectedDamage += outcome.probability * outcome.weightedDamage
     for (const [rank, participantId] of outcome.rankedParticipantIds.entries()) {
@@ -290,16 +394,16 @@ export function calculateLunarReactionExpectedDamage(
       participantId: participant.participantId
     })),
     expectedDamage,
-    kind: input.kind,
-    outcomes,
-    participants
+    outcomes
   }
 }
 
 function calculateSpecialReactionDamage(input: ResolvedSpecialReactionDamageInput): SpecialReactionDamageResult {
   const afterReactionCoefficient = input.baseDamage * input.reactionCoefficient
+  const baseDamageMultiplier = 1 + input.baseDamageMultiplier
+  const afterBaseDamageMultiplier = afterReactionCoefficient * baseDamageMultiplier
   const baseDamageBonusMultiplier = 1 + input.baseDamageBonus
-  const afterBaseDamageBonus = afterReactionCoefficient * baseDamageBonusMultiplier
+  const afterBaseDamageBonus = afterBaseDamageMultiplier * baseDamageBonusMultiplier
   const masteryBonus = (6 * input.elementalMastery) / (input.elementalMastery + 2000)
   const reactionDamageBonusMultiplier = 1 + masteryBonus + input.reactionDamageBonus
   const afterReactionDamageBonus = afterBaseDamageBonus * reactionDamageBonusMultiplier
@@ -335,9 +439,20 @@ function calculateSpecialReactionDamage(input: ResolvedSpecialReactionDamageInpu
       }
     ),
     createSpecialReactionTraceEntry(
+      "base_damage_multiplier",
+      "special_reaction_base_damage_multiplier",
+      afterReactionCoefficient,
+      afterBaseDamageMultiplier,
+      {
+        bonus: input.baseDamageMultiplier,
+        kind: "special_reaction_base_damage_multiplier",
+        multiplier: baseDamageMultiplier
+      }
+    ),
+    createSpecialReactionTraceEntry(
       "base_damage_bonus",
       "special_reaction_base_damage_bonus",
-      afterReactionCoefficient,
+      afterBaseDamageMultiplier,
       afterBaseDamageBonus,
       {
         bonus: input.baseDamageBonus,
@@ -424,7 +539,7 @@ function resolveSpecialReactionBaseDamageTerms(
   return resolvedTerms
 }
 
-function calculateLunarReactionCriticalOutcome(
+function calculateSpecialReactionCriticalOutcome(
   participants: readonly LunarReactionParticipantDamageResult[],
   outcomeMask: number
 ): LunarReactionCriticalOutcome {
@@ -470,6 +585,7 @@ function resolveDirectReactionCoefficient(input: DirectSpecialReactionDamageInpu
   if (input.kind === "stellar_superconduct") {
     return getStellarSuperconductBaseCoefficient(input.storedElementalApplications)
   }
+  if (input.kind === "stellar_swirl") return 1
   return getLunarReactionBaseCoefficient(input.kind)
 }
 
@@ -481,7 +597,7 @@ function assertLunarParticipantReactionKind(kind: string): asserts kind is Lunar
 
 function assertCharacterLevel(level: number): void {
   if (!Number.isInteger(level) || level < 1 || level > 90) {
-    throw new Error("Reaction Moon participant level must be an integer from 1 through 90")
+    throw new Error("Special-reaction participant level must be an integer from 1 through 90")
   }
 }
 

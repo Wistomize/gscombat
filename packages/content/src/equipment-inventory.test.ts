@@ -8,15 +8,15 @@ function sortedIds(entries: readonly { readonly id: string }[]): string[] {
 }
 
 describe("pinned equipment inventory", () => {
-  it("matches every 6.7 weapon and artifact set in the bundled game-data snapshot", () => {
+  it("matches every 7.0 weapon and artifact set in the bundled game-data snapshot", () => {
     using repository = new GameDataRepository(DEFAULT_GAME_DATA_PATH)
     const snapshotWeapons = repository.listWeapons()
     const snapshotArtifactSets = repository.listArtifactSets()
     const excludedWeaponIds = new Set(pinnedEquipmentInventorySource.excludedNonGenshinWeaponIds)
     const playerFacingSnapshotWeapons = snapshotWeapons.filter((weapon) => !excludedWeaponIds.has(weapon.id))
 
-    expect(snapshotWeapons).toHaveLength(235)
-    expect(snapshotArtifactSets).toHaveLength(61)
+    expect(snapshotWeapons).toHaveLength(247)
+    expect(snapshotArtifactSets).toHaveLength(63)
     expect(pinnedEquipmentInventorySource.excludedNonGenshinWeaponIds).toEqual(["QuantumCatalyst"])
     expect(sortedIds(weaponInventory)).toEqual(sortedIds(playerFacingSnapshotWeapons))
     expect(sortedIds(artifactSetInventory)).toEqual(sortedIds(snapshotArtifactSets))

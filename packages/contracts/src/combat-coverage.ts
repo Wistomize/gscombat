@@ -91,12 +91,14 @@ const CombatEventHitCountSchema = Type.Union([
 const CombatEventSpecialReactionConfigSchema = Type.Object({
   ascensionBonus: Type.Optional(Type.Number()),
   baseDamageBonus: Type.Optional(Type.Number()),
+  baseDamageMultiplier: Type.Optional(Type.Number()),
   flatDamageAddition: Type.Optional(Type.Number()),
   kind: Type.Union([
     Type.Literal("lunar_bloom"),
     Type.Literal("lunar_charged"),
     Type.Literal("lunar_crystallize"),
-    Type.Literal("stellar_superconduct")
+    Type.Literal("stellar_superconduct"),
+    Type.Literal("stellar_swirl")
   ]),
   reactionDamageBonus: Type.Optional(Type.Number()),
   stellarStoredElementalApplicationsParameterId: Type.Optional(Type.String({ minLength: 1 }))
@@ -189,12 +191,14 @@ const DirectSpecialReactionKindSchema = Type.Union([
   Type.Literal("lunar_bloom"),
   Type.Literal("lunar_charged"),
   Type.Literal("lunar_crystallize"),
-  Type.Literal("stellar_superconduct")
+  Type.Literal("stellar_superconduct"),
+  Type.Literal("stellar_swirl")
 ])
 
 const CombatDirectSpecialReactionConfigSchema = Type.Object({
   ascensionBonus: Type.Optional(Type.Number()),
   baseDamageBonus: Type.Optional(Type.Number()),
+  baseDamageMultiplier: Type.Optional(Type.Number()),
   flatDamageAddition: Type.Optional(Type.Number()),
   kind: DirectSpecialReactionKindSchema,
   reactionDamageBonus: Type.Optional(Type.Number()),

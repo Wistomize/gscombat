@@ -22,18 +22,18 @@ function duplicateIds(ids: readonly string[]): string[] {
 }
 
 describe("official Chinese character presentation audit", () => {
-  it("pins every selectable character name to the reviewed 6.7 chs localization evidence", () => {
+  it("pins every selectable character name to the reviewed 7.0 chs localization evidence", () => {
     const presentationIds = characterCatalogPresentation.map((character) => character.characterId)
     const auditIds = officialChineseCharacterNameAudit.map((character) => character.characterId)
     const auditById = new Map(officialChineseCharacterNameAudit.map((character) => [character.characterId, character]))
 
     expect(officialChineseCharacterNameAuditSource).toMatchObject({
-      gameVersion: "6.7",
+      gameVersion: "7.0",
       locale: "chs",
-      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+      upstreamCommit: "98aafa1f135f086524b611c7d5b5bfb78d98bb6d",
       upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
     })
-    expect(officialChineseCharacterNameAudit).toHaveLength(117)
+    expect(officialChineseCharacterNameAudit).toHaveLength(119)
     expect(duplicateIds(auditIds)).toEqual([])
     expect(sortedIds(auditIds)).toEqual(sortedIds(presentationIds))
 

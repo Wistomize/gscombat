@@ -78,6 +78,8 @@ export interface ResolvedCombatActionEffects {
   readonly specialReactionDamageBonus: number
   /** Adds directly to the selected special-reaction event's base damage before its dedicated multipliers. */
   readonly specialReactionBaseDamageFlat: number
+  /** Adds to the shared special-reaction base-damage multiplier. */
+  readonly specialReactionBaseDamageMultiplier: number
   /** Adds to the selected special-reaction event's independent base-damage-bonus stage. */
   readonly specialReactionBaseDamageBonus: number
   readonly specialReactionFlatDamageAddition: number
@@ -132,6 +134,7 @@ export const EMPTY_COMBAT_ACTION_EFFECTS: ResolvedCombatActionEffects = {
   transformativeReactionFlatDamageAddition: 0,
   specialReactionDamageBonus: 0,
   specialReactionBaseDamageFlat: 0,
+  specialReactionBaseDamageMultiplier: 0,
   specialReactionBaseDamageBonus: 0,
   specialReactionFlatDamageAddition: 0,
   specialReactionElevation: 0,

@@ -10,9 +10,10 @@ import { getCharacterBurstEnergyCost, listCharacterBurstEnergyCostCoverage } fro
 
 const standardBurstEnergyCosts = new Set([40, 50, 60, 70, 80, 90])
 const nonElementalEnergyCharacterIds = new Set(["Mavuika", "Skirk", "Traveler"])
-const gameDataPath = fileURLToPath(new URL("../../../game-data/snapshots/6.7/game-data.sqlite", import.meta.url))
+const gameDataPath = fileURLToPath(new URL("../../../game-data/snapshots/7.0/game-data.sqlite", import.meta.url))
 const travelerOwnerElementSegments: Readonly<Record<TravelerElement, string>> = {
   anemo: "Anemo",
+  cryo: "Cryo",
   dendro: "Dendro",
   electro: "Electro",
   geo: "Geo",
@@ -21,6 +22,7 @@ const travelerOwnerElementSegments: Readonly<Record<TravelerElement, string>> = 
 }
 const travelerBurstEnergyCosts: Readonly<Record<TravelerElement, number>> = {
   anemo: 60,
+  cryo: 60,
   dendro: 80,
   electro: 80,
   geo: 60,

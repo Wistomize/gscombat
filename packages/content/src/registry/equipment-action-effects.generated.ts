@@ -25,6 +25,7 @@ import { gildedDreamsCombatActionEffects as artifactGildedDreamsEffects } from "
 import { gladiatorsFinaleCombatActionEffects as artifactGladiatorsFinaleEffects } from "../artifacts/gladiators-finale/effects.js"
 import { goldenTroupeCombatActionEffects as artifactGoldenTroupeEffects } from "../artifacts/golden-troupe/effects.js"
 import { heartOfDepthCombatActionEffects as artifactHeartOfDepthEffects } from "../artifacts/heart-of-depth/effects.js"
+import { heartOfTheFurnaceCombatActionEffects as artifactHeartOfTheFurnaceEffects } from "../artifacts/heart-of-the-furnace/effects.js"
 import { huskOfOpulentDreamsCombatActionEffects as artifactHuskOfOpulentDreamsEffects } from "../artifacts/husk-of-opulent-dreams/effects.js"
 import { instructorCombatActionEffects as artifactInstructorEffects } from "../artifacts/instructor/effects.js"
 import { lavawalkerCombatActionEffects as artifactLavawalkerEffects } from "../artifacts/lavawalker/effects.js"
@@ -46,6 +47,7 @@ import { prayersForWisdomCombatActionEffects as artifactPrayersForWisdomEffects 
 import { prayersToSpringtimeCombatActionEffects as artifactPrayersToSpringtimeEffects } from "../artifacts/prayers-to-springtime/effects.js"
 import { resolutionOfSojournerCombatActionEffects as artifactResolutionOfSojournerEffects } from "../artifacts/resolution-of-sojourner/effects.js"
 import { retracingBolideCombatActionEffects as artifactRetracingBolideEffects } from "../artifacts/retracing-bolide/effects.js"
+import { scarletProofCombatActionEffects as artifactScarletProofEffects } from "../artifacts/scarlet-proof/effects.js"
 import { scholarCombatActionEffects as artifactScholarEffects } from "../artifacts/scholar/effects.js"
 import { scrollOfTheHeroOfCinderCityCombatActionEffects as artifactScrollOfTheHeroOfCinderCityEffects } from "../artifacts/scroll-of-the-hero-of-cinder-city/effects.js"
 import { shimenawasReminiscenceCombatActionEffects as artifactShimenawasReminiscenceEffects } from "../artifacts/shimenawas-reminiscence/effects.js"
@@ -89,6 +91,7 @@ import { blackcliffPoleCombatActionEffects as weaponBlackcliffPoleEffects } from
 import { blackcliffSlasherCombatActionEffects as weaponBlackcliffSlasherEffects } from "../weapons/blackcliff-slasher/effects.js"
 import { blackcliffWarbowCombatActionEffects as weaponBlackcliffWarbowEffects } from "../weapons/blackcliff-warbow/effects.js"
 import { blackmarrowLanternCombatActionEffects as weaponBlackmarrowLanternEffects } from "../weapons/blackmarrow-lantern/effects.js"
+import { bladeOfAtonementCombatActionEffects as weaponBladeOfAtonementEffects } from "../weapons/blade-of-atonement/effects.js"
 import { bloodsoakedRuinsCombatActionEffects as weaponBloodsoakedRuinsEffects } from "../weapons/bloodsoaked-ruins/effects.js"
 import { bloodtaintedGreatswordCombatActionEffects as weaponBloodtaintedGreatswordEffects } from "../weapons/bloodtainted-greatsword/effects.js"
 import { calamityOfEshuCombatActionEffects as weaponCalamityOfEshuEffects } from "../weapons/calamity-of-eshu/effects.js"
@@ -96,9 +99,11 @@ import { calamityQuellerCombatActionEffects as weaponCalamityQuellerEffects } fr
 import { cashflowSupervisionCombatActionEffects as weaponCashflowSupervisionEffects } from "../weapons/cashflow-supervision/effects.js"
 import { chainBreakerCombatActionEffects as weaponChainBreakerEffects } from "../weapons/chain-breaker/effects.js"
 import { cinnabarSpindleCombatActionEffects as weaponCinnabarSpindleEffects } from "../weapons/cinnabar-spindle/effects.js"
+import { clashOfKingsCombatActionEffects as weaponClashOfKingsEffects } from "../weapons/clash-of-kings/effects.js"
 import { cloudforgedCombatActionEffects as weaponCloudforgedEffects } from "../weapons/cloudforged/effects.js"
 import { compoundBowCombatActionEffects as weaponCompoundBowEffects } from "../weapons/compound-bow/effects.js"
 import { coolSteelCombatActionEffects as weaponCoolSteelEffects } from "../weapons/cool-steel/effects.js"
+import { covenantOfFrostAndSnowCombatActionEffects as weaponCovenantOfFrostAndSnowEffects } from "../weapons/covenant-of-frost-and-snow/effects.js"
 import { cranesEchoingCallCombatActionEffects as weaponCranesEchoingCallEffects } from "../weapons/cranes-echoing-call/effects.js"
 import { crescentPikeCombatActionEffects as weaponCrescentPikeEffects } from "../weapons/crescent-pike/effects.js"
 import { crimsonMoonsSemblanceCombatActionEffects as weaponCrimsonMoonsSemblanceEffects } from "../weapons/crimson-moons-semblance/effects.js"
@@ -113,12 +118,15 @@ import { dragonsBaneCombatActionEffects as weaponDragonsBaneEffects } from "../w
 import { dragonspineSpearCombatActionEffects as weaponDragonspineSpearEffects } from "../weapons/dragonspine-spear/effects.js"
 import { dullBladeCombatActionEffects as weaponDullBladeEffects } from "../weapons/dull-blade/effects.js"
 import { earthShakerCombatActionEffects as weaponEarthShakerEffects } from "../weapons/earth-shaker/effects.js"
+import { echoesOfTheHeartCombatActionEffects as weaponEchoesOfTheHeartEffects } from "../weapons/echoes-of-the-heart/effects.js"
 import { elegyForTheEndCombatActionEffects as weaponElegyForTheEndEffects } from "../weapons/elegy-for-the-end/effects.js"
+import { emberwellCombatActionEffects as weaponEmberwellEffects } from "../weapons/emberwell/effects.js"
 import { emeraldOrbCombatActionEffects as weaponEmeraldOrbEffects } from "../weapons/emerald-orb/effects.js"
 import { endOfTheLineCombatActionEffects as weaponEndOfTheLineEffects } from "../weapons/end-of-the-line/effects.js"
 import { engulfingLightningCombatActionEffects as weaponEngulfingLightningEffects } from "../weapons/engulfing-lightning/effects.js"
 import { etherlightSpindleluteCombatActionEffects as weaponEtherlightSpindleluteEffects } from "../weapons/etherlight-spindlelute/effects.js"
 import { everlastingMoonglowCombatActionEffects as weaponEverlastingMoonglowEffects } from "../weapons/everlasting-moonglow/effects.js"
+import { exaiphanesBladeCombatActionEffects as weaponExaiphanesBladeEffects } from "../weapons/exaiphanes-blade/effects.js"
 import { eyeOfPerceptionCombatActionEffects as weaponEyeOfPerceptionEffects } from "../weapons/eye-of-perception/effects.js"
 import { fadingTwilightCombatActionEffects as weaponFadingTwilightEffects } from "../weapons/fading-twilight/effects.js"
 import { fangOfTheMountainKingCombatActionEffects as weaponFangOfTheMountainKingEffects } from "../weapons/fang-of-the-mountain-king/effects.js"
@@ -138,9 +146,11 @@ import { flowingPurityCombatActionEffects as weaponFlowingPurityEffects } from "
 import { fluteOfEzpitzalCombatActionEffects as weaponFluteOfEzpitzalEffects } from "../weapons/flute-of-ezpitzal/effects.js"
 import { footprintOfTheRainbowCombatActionEffects as weaponFootprintOfTheRainbowEffects } from "../weapons/footprint-of-the-rainbow/effects.js"
 import { forestRegaliaCombatActionEffects as weaponForestRegaliaEffects } from "../weapons/forest-regalia/effects.js"
+import { forgedByTheGoldenMelodyCombatActionEffects as weaponForgedByTheGoldenMelodyEffects } from "../weapons/forged-by-the-golden-melody/effects.js"
 import { fracturedHaloCombatActionEffects as weaponFracturedHaloEffects } from "../weapons/fractured-halo/effects.js"
 import { freedomSwornCombatActionEffects as weaponFreedomSwornEffects } from "../weapons/freedom-sworn/effects.js"
 import { frostbearerCombatActionEffects as weaponFrostbearerEffects } from "../weapons/frostbearer/effects.js"
+import { frostbreathCombatActionEffects as weaponFrostbreathEffects } from "../weapons/frostbreath/effects.js"
 import { fruitOfFulfillmentCombatActionEffects as weaponFruitOfFulfillmentEffects } from "../weapons/fruit-of-fulfillment/effects.js"
 import { fruitfulHookCombatActionEffects as weaponFruitfulHookEffects } from "../weapons/fruitful-hook/effects.js"
 import { gestOfTheMightyWolfCombatActionEffects as weaponGestOfTheMightyWolfEffects } from "../weapons/gest-of-the-mighty-wolf/effects.js"
@@ -150,11 +160,13 @@ import { halberdCombatActionEffects as weaponHalberdEffects } from "../weapons/h
 import { hamayumiCombatActionEffects as weaponHamayumiEffects } from "../weapons/hamayumi/effects.js"
 import { haranGeppakuFutsuCombatActionEffects as weaponHaranGeppakuFutsuEffects } from "../weapons/haran-geppaku-futsu/effects.js"
 import { harbingerOfDawnCombatActionEffects as weaponHarbingerOfDawnEffects } from "../weapons/harbinger-of-dawn/effects.js"
+import { hereticsMoltenBladeCombatActionEffects as weaponHereticsMoltenBladeEffects } from "../weapons/heretics-molten-blade/effects.js"
 import { huntersBowCombatActionEffects as weaponHuntersBowEffects } from "../weapons/hunters-bow/effects.js"
 import { huntersPathCombatActionEffects as weaponHuntersPathEffects } from "../weapons/hunters-path/effects.js"
 import { ibisPiercerCombatActionEffects as weaponIbisPiercerEffects } from "../weapons/ibis-piercer/effects.js"
 import { ironPointCombatActionEffects as weaponIronPointEffects } from "../weapons/iron-point/effects.js"
 import { ironStingCombatActionEffects as weaponIronStingEffects } from "../weapons/iron-sting/effects.js"
+import { jadeVistaCombatActionEffects as weaponJadeVistaEffects } from "../weapons/jade-vista/effects.js"
 import { jadefallsSplendorCombatActionEffects as weaponJadefallsSplendorEffects } from "../weapons/jadefalls-splendor/effects.js"
 import { kagotsurubeIsshinCombatActionEffects as weaponKagotsurubeIsshinEffects } from "../weapons/kagotsurube-isshin/effects.js"
 import { kagurasVerityCombatActionEffects as weaponKagurasVerityEffects } from "../weapons/kaguras-verity/effects.js"
@@ -246,6 +258,7 @@ import { snowTombedStarsilverCombatActionEffects as weaponSnowTombedStarsilverEf
 import { solarPearlCombatActionEffects as weaponSolarPearlEffects } from "../weapons/solar-pearl/effects.js"
 import { songOfBrokenPinesCombatActionEffects as weaponSongOfBrokenPinesEffects } from "../weapons/song-of-broken-pines/effects.js"
 import { songOfStillnessCombatActionEffects as weaponSongOfStillnessEffects } from "../weapons/song-of-stillness/effects.js"
+import { songOfTheVigilCombatActionEffects as weaponSongOfTheVigilEffects } from "../weapons/song-of-the-vigil/effects.js"
 import { splendorOfTranquilWatersCombatActionEffects as weaponSplendorOfTranquilWatersEffects } from "../weapons/splendor-of-tranquil-waters/effects.js"
 import { staffOfHomaCombatActionEffects as weaponStaffOfHomaEffects } from "../weapons/staff-of-homa/effects.js"
 import { staffOfTheScarletSandsCombatActionEffects as weaponStaffOfTheScarletSandsEffects } from "../weapons/staff-of-the-scarlet-sands/effects.js"
@@ -291,6 +304,7 @@ import { waveridingWhirlCombatActionEffects as weaponWaveridingWhirlEffects } fr
 import { whiteIronGreatswordCombatActionEffects as weaponWhiteIronGreatswordEffects } from "../weapons/white-iron-greatsword/effects.js"
 import { whiteTasselCombatActionEffects as weaponWhiteTasselEffects } from "../weapons/white-tassel/effects.js"
 import { whiteblindCombatActionEffects as weaponWhiteblindEffects } from "../weapons/whiteblind/effects.js"
+import { whitelakeFrostfeatherCombatActionEffects as weaponWhitelakeFrostfeatherEffects } from "../weapons/whitelake-frostfeather/effects.js"
 import { windblumeOdeCombatActionEffects as weaponWindblumeOdeEffects } from "../weapons/windblume-ode/effects.js"
 import { wineAndSongCombatActionEffects as weaponWineAndSongEffects } from "../weapons/wine-and-song/effects.js"
 import { wolfFangCombatActionEffects as weaponWolfFangEffects } from "../weapons/wolf-fang/effects.js"
@@ -322,6 +336,7 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...artifactGladiatorsFinaleEffects,
   ...artifactGoldenTroupeEffects,
   ...artifactHeartOfDepthEffects,
+  ...artifactHeartOfTheFurnaceEffects,
   ...artifactHuskOfOpulentDreamsEffects,
   ...artifactInstructorEffects,
   ...artifactLavawalkerEffects,
@@ -343,6 +358,7 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...artifactPrayersToSpringtimeEffects,
   ...artifactResolutionOfSojournerEffects,
   ...artifactRetracingBolideEffects,
+  ...artifactScarletProofEffects,
   ...artifactScholarEffects,
   ...artifactScrollOfTheHeroOfCinderCityEffects,
   ...artifactShimenawasReminiscenceEffects,
@@ -386,6 +402,7 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...weaponBlackcliffSlasherEffects,
   ...weaponBlackcliffWarbowEffects,
   ...weaponBlackmarrowLanternEffects,
+  ...weaponBladeOfAtonementEffects,
   ...weaponBloodsoakedRuinsEffects,
   ...weaponBloodtaintedGreatswordEffects,
   ...weaponCalamityOfEshuEffects,
@@ -393,9 +410,11 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...weaponCashflowSupervisionEffects,
   ...weaponChainBreakerEffects,
   ...weaponCinnabarSpindleEffects,
+  ...weaponClashOfKingsEffects,
   ...weaponCloudforgedEffects,
   ...weaponCompoundBowEffects,
   ...weaponCoolSteelEffects,
+  ...weaponCovenantOfFrostAndSnowEffects,
   ...weaponCranesEchoingCallEffects,
   ...weaponCrescentPikeEffects,
   ...weaponCrimsonMoonsSemblanceEffects,
@@ -410,12 +429,15 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...weaponDragonspineSpearEffects,
   ...weaponDullBladeEffects,
   ...weaponEarthShakerEffects,
+  ...weaponEchoesOfTheHeartEffects,
   ...weaponElegyForTheEndEffects,
+  ...weaponEmberwellEffects,
   ...weaponEmeraldOrbEffects,
   ...weaponEndOfTheLineEffects,
   ...weaponEngulfingLightningEffects,
   ...weaponEtherlightSpindleluteEffects,
   ...weaponEverlastingMoonglowEffects,
+  ...weaponExaiphanesBladeEffects,
   ...weaponEyeOfPerceptionEffects,
   ...weaponFadingTwilightEffects,
   ...weaponFangOfTheMountainKingEffects,
@@ -435,9 +457,11 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...weaponFluteOfEzpitzalEffects,
   ...weaponFootprintOfTheRainbowEffects,
   ...weaponForestRegaliaEffects,
+  ...weaponForgedByTheGoldenMelodyEffects,
   ...weaponFracturedHaloEffects,
   ...weaponFreedomSwornEffects,
   ...weaponFrostbearerEffects,
+  ...weaponFrostbreathEffects,
   ...weaponFruitOfFulfillmentEffects,
   ...weaponFruitfulHookEffects,
   ...weaponGestOfTheMightyWolfEffects,
@@ -447,11 +471,13 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...weaponHamayumiEffects,
   ...weaponHaranGeppakuFutsuEffects,
   ...weaponHarbingerOfDawnEffects,
+  ...weaponHereticsMoltenBladeEffects,
   ...weaponHuntersBowEffects,
   ...weaponHuntersPathEffects,
   ...weaponIbisPiercerEffects,
   ...weaponIronPointEffects,
   ...weaponIronStingEffects,
+  ...weaponJadeVistaEffects,
   ...weaponJadefallsSplendorEffects,
   ...weaponKagotsurubeIsshinEffects,
   ...weaponKagurasVerityEffects,
@@ -543,6 +569,7 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...weaponSolarPearlEffects,
   ...weaponSongOfBrokenPinesEffects,
   ...weaponSongOfStillnessEffects,
+  ...weaponSongOfTheVigilEffects,
   ...weaponSplendorOfTranquilWatersEffects,
   ...weaponStaffOfHomaEffects,
   ...weaponStaffOfTheScarletSandsEffects,
@@ -588,6 +615,7 @@ export const equipmentCombatActionEffects: readonly CombatActionEffect[] = [
   ...weaponWhiteIronGreatswordEffects,
   ...weaponWhiteTasselEffects,
   ...weaponWhiteblindEffects,
+  ...weaponWhitelakeFrostfeatherEffects,
   ...weaponWindblumeOdeEffects,
   ...weaponWineAndSongEffects,
   ...weaponWolfFangEffects,

@@ -58,6 +58,8 @@ export interface CombatTransformativeReactionConfig {
  * Reaction participant selection and elemental-application timing are intentionally not inferred here.
  */
 export interface CombatDirectSpecialReactionConfig {
+  /** Additive ratio in the shared base-damage-multiplier stage. */
+  readonly baseDamageMultiplier?: number
   /** Additive ratio in the special-reaction base-damage-bonus stage. */
   readonly baseDamageBonus?: number
   /** Additive direct special-reaction fixed damage after reaction multipliers and before CRIT. */
@@ -523,6 +525,8 @@ interface CombatScalarMetricDefinitionBase extends CombatMetricDefinitionBase {
   readonly minimumSourceAscension?: number
   readonly minimumScalingValue?: number
   readonly ratio?: number
+  /** Adds fixed ratio terms after the source reaches each cumulative constellation threshold. */
+  readonly ratioConstellationBonuses?: readonly CombatMetricRatioConstellationBonus[]
   readonly ratioParameter?: CombatMetricTalentParameter
   /** Multiplies the ratio by one explicitly hand-filled snapshot from this metric's source action. */
   readonly ratioScenarioParameter?: CombatMetricRatioScenarioParameter
@@ -593,6 +597,8 @@ export type CombatActionEffectTarget =
   | "specialReactionDamageBonus"
   /** Adds directly to an eligible Moon or Stellar action's base damage before every special-reaction multiplier. */
   | "specialReactionBaseDamageFlat"
+  /** Adds to the shared base-damage multiplier used by effects that make an action deal a percentage of original damage. */
+  | "specialReactionBaseDamageMultiplier"
   /** Adds to an eligible Moon or Stellar action's independent base-damage-bonus stage. */
   | "specialReactionBaseDamageBonus"
   /** Adds after the independent Moon or Stellar reaction multipliers, before critical expectation. */
@@ -793,6 +799,8 @@ export type CombatActionEffectSource =
       readonly holder?: "party_member" | "primary"
       readonly kind: "artifact_set"
       readonly minimumPieces: number
+      /** Selects one deterministic matching holder when same-name party effects explicitly cannot stack. */
+      readonly resolveOneMatchingPartySource?: true
       readonly setId: string
     }
   | {

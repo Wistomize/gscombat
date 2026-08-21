@@ -49,7 +49,7 @@ function resolveCoverageEntry(entry: EquipmentCoverageEntry): EquipmentCoverageE
   return reviewedCoverageByEquipmentId.get(entry.equipmentId) ?? entry
 }
 
-/** Full 6.7 equipment inventory with explicit implemented, not-applicable, unsupported, or unreviewed coverage. */
+/** Full pinned equipment inventory with explicit implemented, not-applicable, unsupported, or unreviewed coverage. */
 export const equipmentCoverageLedger: readonly EquipmentCoverageEntry[] = [
   ...weaponInventory.map(createUnreviewedWeaponCoverageEntry).map(resolveCoverageEntry),
   ...artifactSetInventory.map(createUnreviewedArtifactSetCoverageEntry).map(resolveCoverageEntry)

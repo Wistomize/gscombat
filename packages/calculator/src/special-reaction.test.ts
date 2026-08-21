@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest"
 import {
   calculateDirectSpecialReactionDamage,
   calculateLunarReactionExpectedDamage,
+  calculateStellarSwirlReactionExpectedDamage,
   getLunarReactionBaseCoefficient,
-  getStellarSuperconductBaseCoefficient
+  getStellarSuperconductBaseCoefficient,
+  getStellarSwirlReactionCoefficient
 } from "./special-reaction.js"
 
 describe("special reaction damage", () => {
@@ -34,6 +36,7 @@ describe("special reaction damage", () => {
     expect(result.trace.map((entry) => entry.stage)).toEqual([
       "base_damage",
       "reaction_coefficient",
+      "base_damage_multiplier",
       "base_damage_bonus",
       "reaction_damage_bonus",
       "flat_damage_addition",
@@ -87,6 +90,74 @@ describe("special reaction damage", () => {
     })
     expect(() => getStellarSuperconductBaseCoefficient(-1)).toThrow("non-negative integer")
     expect(() => getStellarSuperconductBaseCoefficient(1.5)).toThrow("non-negative integer")
+  })
+
+  it("uses coefficient one and a shared base-damage multiplier for direct Stellar-Swirl damage", () => {
+    const result = calculateDirectSpecialReactionDamage({
+      ascensionBonus: 0.45,
+      baseDamage: 1000,
+      baseDamageMultiplier: 0.3,
+      critDamage: 0,
+      critRate: 0,
+      elementalMastery: 0,
+      enemyResistance: 0,
+      kind: "stellar_swirl"
+    })
+
+    expect(result.reactionCoefficient).toBe(1)
+    expect(result.expectedDamage).toBeCloseTo(1000 * 1.3 * 1.45)
+    expect(result.trace[2]?.formula).toEqual({
+      bonus: 0.3,
+      kind: "special_reaction_base_damage_multiplier",
+      multiplier: 1.3
+    })
+    expect(result.trace.at(-1)?.formula).toEqual({
+      ascensionBonus: 0.45,
+      kind: "special_reaction_ascension",
+      multiplier: 1.45
+    })
+  })
+
+  it("calculates actual Stellar-Swirl trigger and Vortex events with participant aggregation", () => {
+    const participants = [
+      {
+        baseDamageBonus: 0.2,
+        critDamage: 0,
+        critRate: 0,
+        elementalMastery: 0,
+        enemyResistance: 0,
+        level: 90,
+        participantId: "first"
+      },
+      {
+        critDamage: 0,
+        critRate: 0,
+        elementalMastery: 0,
+        enemyResistance: 0,
+        level: 90,
+        participantId: "second"
+      }
+    ] as const
+    const trigger = calculateStellarSwirlReactionExpectedDamage({ event: "trigger", participants })
+    const levelOne = calculateStellarSwirlReactionExpectedDamage({
+      event: "vortex",
+      participants,
+      vortexLevel: 1
+    })
+    const levelTwo = calculateStellarSwirlReactionExpectedDamage({
+      event: "vortex",
+      participants,
+      vortexLevel: 2
+    })
+
+    expect(getStellarSwirlReactionCoefficient("trigger")).toBe(0.75)
+    expect(getStellarSwirlReactionCoefficient("vortex", 1)).toBe(2)
+    expect(getStellarSwirlReactionCoefficient("vortex", 2)).toBe(3)
+    expect(levelOne.expectedDamage / trigger.expectedDamage).toBeCloseTo(2 / 0.75)
+    expect(levelTwo.expectedDamage / trigger.expectedDamage).toBeCloseTo(3 / 0.75)
+    expect(levelTwo.expectedContributions).toHaveLength(2)
+    expect(() => getStellarSwirlReactionCoefficient("trigger", 1)).toThrow("must not declare")
+    expect(() => getStellarSwirlReactionCoefficient("vortex", 3)).toThrow("either 1 or 2")
   })
 
   it("applies fixed 60/30/5/5 participant weights to a manual reaction Lunar-Crystallize snapshot", () => {

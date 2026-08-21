@@ -28,7 +28,8 @@ const SpecialReactionKindSchema = Type.Union([
   Type.Literal("lunar_bloom"),
   Type.Literal("lunar_charged"),
   Type.Literal("lunar_crystallize"),
-  Type.Literal("stellar_superconduct")
+  Type.Literal("stellar_superconduct"),
+  Type.Literal("stellar_swirl")
 ])
 
 const TeamStateSchema = Type.Object({
@@ -91,6 +92,11 @@ const SpecialReactionTraceFormulaSchema = Type.Union([
   }),
   Type.Object({
     bonus: Type.Number(),
+    kind: Type.Literal("special_reaction_base_damage_multiplier"),
+    multiplier: Type.Number()
+  }),
+  Type.Object({
+    bonus: Type.Number(),
     kind: Type.Literal("special_reaction_base_damage_bonus"),
     multiplier: Type.Number()
   }),
@@ -114,6 +120,7 @@ const SpecialReactionTraceFormulaSchema = Type.Union([
 const SpecialReactionTraceStageSchema = Type.Union([
   Type.Literal("base_damage"),
   Type.Literal("reaction_coefficient"),
+  Type.Literal("base_damage_multiplier"),
   Type.Literal("base_damage_bonus"),
   Type.Literal("reaction_damage_bonus"),
   Type.Literal("flat_damage_addition"),
@@ -218,6 +225,7 @@ export const TraceEntrySchema = Type.Object({
     Type.Literal("resistance"),
     Type.Literal("base_damage"),
     Type.Literal("reaction_coefficient"),
+    Type.Literal("base_damage_multiplier"),
     Type.Literal("base_damage_bonus"),
     Type.Literal("reaction_damage_bonus"),
     Type.Literal("flat_damage_addition"),
@@ -500,6 +508,7 @@ export const AnalysisResponseSchema = Type.Object({
           Type.Literal("reactionDamageBonus"),
           Type.Literal("transformativeReactionFlatDamageAddition"),
           Type.Literal("specialReactionBaseDamageFlat"),
+          Type.Literal("specialReactionBaseDamageMultiplier"),
           Type.Literal("specialReactionBaseDamageBonus"),
           Type.Literal("specialReactionDamageBonus"),
           Type.Literal("specialReactionFlatDamageAddition"),

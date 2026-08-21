@@ -28,11 +28,13 @@ describe("generated showcase metadata", () => {
     expect(new Set(travelerVariants)).toEqual(
       new Set(
         ["female", "male"].flatMap((gender) =>
-          ["anemo", "dendro", "electro", "geo", "hydro", "pyro"].map((element) => `${gender}.${element}`)
+          ["anemo", "cryo", "dendro", "electro", "geo", "hydro", "pyro"].map(
+            (element) => `${gender}.${element}`
+          )
         )
       )
     )
-    expect(travelerVariants).toHaveLength(12)
+    expect(travelerVariants).toHaveLength(14)
     for (const entry of showcaseCharacterMetadata) {
       expect(getShowcaseCharacterMetadata(entry.avatarId, entry.skillDepotId)).toEqual(entry)
     }
@@ -54,7 +56,7 @@ describe("generated showcase metadata", () => {
       artifactSetCount: artifactSetInventory.length,
       characterCount: supportedCharacters.length,
       repository: "https://github.com/EnkaNetwork/API-docs",
-      travelerVariantCount: 12,
+      travelerVariantCount: 14,
       weaponCount: weaponInventory.length
     })
     expect(pinnedShowcaseMetadataSource.commit).toMatch(/^[0-9a-f]{40}$/)

@@ -164,15 +164,15 @@ describe("API", () => {
     expect(response.statusCode).toBe(200)
     expect(response.json()).toMatchObject({
       counts: {
-        artifactSets: 61,
-        characterSkillParameterGroups: 1708,
-        characterSkillParameters: 44749,
-        characters: 117,
-        weapons: 235
+        artifactSets: 63,
+        characterSkillParameterGroups: 1764,
+        characterSkillParameters: 46418,
+        characters: 119,
+        weapons: 247
       },
-      gameVersion: "6.7",
+      gameVersion: "7.0",
       schemaVersion: 2,
-      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073"
+      upstreamCommit: "98aafa1f135f086524b611c7d5b5bfb78d98bb6d"
     })
   })
 
@@ -672,13 +672,15 @@ describe("API", () => {
     expect(response.json()).toMatchObject({
       readinessCounts: {
         missing_talent_parameters: 0,
-        ready_for_semantic_authoring: 116,
+        ready_for_semantic_authoring: 118,
         requires_explicit_variant_binding: 1
       },
-      totalStaticCharacters: 117,
+      totalStaticCharacters: 119,
       unboundTalentParameterOwnerIds: [
         "TravelerAnemoF",
         "TravelerAnemoM",
+        "TravelerCryoF",
+        "TravelerCryoM",
         "TravelerDendroF",
         "TravelerDendroM",
         "TravelerElectroF",

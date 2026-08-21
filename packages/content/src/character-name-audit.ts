@@ -1,7 +1,7 @@
 /**
  * 角色官方简中名称的离线审计锁。
  *
- * 除旅行者外，每项的 label 均逐项核对同一固定 Genshin Optimizer 6.7 提交中
+ * 除旅行者外，每项的 label 均逐项核对同一固定 Genshin Optimizer 7.0 提交中
  * `chs/char_<CharacterId>_gen.json` 的顶层 `name`，并记录该文件的 SHA-256。
  * `Traveler` 是性别无关的可选角色记录，展示名固定为官方通用称呼“旅行者”；
  * 其“荧 / 空”本地化原名及校验和在下方例外中明确锁定。
@@ -9,9 +9,9 @@
 export const officialChineseCharacterNameAuditSource = {
   assetPathPrefix: "libs/gi/dm-localization/assets/locales/chs/char_",
   assetPathSuffix: "_gen.json",
-  gameVersion: "6.7",
+  gameVersion: "7.0",
   locale: "chs",
-  upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+  upstreamCommit: "98aafa1f135f086524b611c7d5b5bfb78d98bb6d",
   upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
 } as const
 
@@ -139,6 +139,8 @@ export const officialChineseCharacterNameAudit: readonly OfficialChineseCharacte
   { characterId: "Mualani", label: "玛拉妮", sourceSha256: "b56be141ca08c222d658193cd6f96f9160346292a34568dabd61ebdb841bc2f9" },
   { characterId: "SangonomiyaKokomi", label: "珊瑚宫心海", sourceSha256: "2f55b77688113af8ac0b2d761e7e113980959c658f88e8c145d572b685dcff13" },
   { characterId: "Durin", label: "杜林", sourceSha256: "1460c25dba8d7c038b51636aa0e1290d11695c59ed6f274c0058004f92780174" },
+  { characterId: "Alyosha", label: "阿罗夏", sourceSha256: "7cb4ce48e2aa38d70853855fbcf3938de9164d94cf01d5df040e5dd3a8843933" },
+  { characterId: "Odette", label: "奥黛塔", sourceSha256: "4efc151d86375271417dff702fd67f4267dd8ee1f0f8b56dd61df3bf6e98ace8" },
 ]
 
 /** The generic Traveler entry is intentionally not collapsed to either gender-specific playable name. */

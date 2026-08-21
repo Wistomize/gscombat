@@ -14,7 +14,7 @@
 ## 2. Genshin Optimizer
 
 - **项目**：[frzyc/genshin-optimizer](https://github.com/frzyc/genshin-optimizer)
-- **固定提交**：`21c98eb60355160274a8c4cecfc5671e2151a073`
+- **固定提交**：`98aafa1f135f086524b611c7d5b5bfb78d98bb6d`
 - **上游许可证**：[MIT](https://github.com/frzyc/genshin-optimizer/blob/master/LICENSE)
 - **本地证据**：`packages/game-data/sources/current.json`、
   `packages/game-data/sources/semantic-localization-preview.v3.json`、
@@ -34,7 +34,7 @@
 
 - **API 与文档**：[Enka.Network](https://enka.network/)；
   [EnkaNetwork/API-docs](https://github.com/EnkaNetwork/API-docs)
-- **元数据固定提交**：`7339dc982937c40b48ef48c569bf6d0a1aa5c851`
+- **元数据固定提交**：`dc86b5dc06ad27d26c9a4df9f0b6ffd0417bf554`
 - **本地证据**：`apps/api/src/showcase-metadata.generated.ts`
 - **使用方式**：`/api/uid/{uid}` 展示柜请求，以及固定角色、武器、圣遗物物品 ID 映射。
 

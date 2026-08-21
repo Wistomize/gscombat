@@ -18,7 +18,7 @@ materials belong to their respective rights holders.
 ## 2. Genshin Optimizer
 
 - **Project:** [frzyc/genshin-optimizer](https://github.com/frzyc/genshin-optimizer)
-- **Pinned commit:** `21c98eb60355160274a8c4cecfc5671e2151a073`
+- **Pinned commit:** `98aafa1f135f086524b611c7d5b5bfb78d98bb6d`
 - **Upstream license:** [MIT](https://github.com/frzyc/genshin-optimizer/blob/master/LICENSE)
 - **Local evidence:** `packages/game-data/sources/current.json`,
   `packages/game-data/sources/semantic-localization-preview.v3.json`, and
@@ -33,7 +33,7 @@ material. We thank the Genshin Optimizer maintainers for organizing reproducible
 
 - **API and documentation:** [Enka.Network](https://enka.network/) and
   [EnkaNetwork/API-docs](https://github.com/EnkaNetwork/API-docs)
-- **Pinned metadata commit:** `7339dc982937c40b48ef48c569bf6d0a1aa5c851`
+- **Pinned metadata commit:** `dc86b5dc06ad27d26c9a4df9f0b6ffd0417bf554`
 - **Local evidence:** `apps/api/src/showcase-metadata.generated.ts`
 - **Use:** showcase requests through `/api/uid/{uid}` and pinned character, weapon, and artifact item-ID mappings.
 

@@ -84,11 +84,12 @@ describe("declared special-reaction scenario actions", () => {
     })
     expect(baseline.rotation.events).toHaveLength(1)
     expect(baseline.rotation.events[0]?.trace.map((entry) => entry.kind)).toEqual(
-      Array(8).fill("special_reaction")
+      Array(9).fill("special_reaction")
     )
     expect(baseline.result.trace.map((entry) => entry.stage)).toEqual([
       "base_damage",
       "reaction_coefficient",
+      "base_damage_multiplier",
       "base_damage_bonus",
       "reaction_damage_bonus",
       "flat_damage_addition",
@@ -150,6 +151,40 @@ describe("declared special-reaction scenario actions", () => {
       multiplier: 2,
       reactionKind: "stellar_superconduct",
       storedElementalApplications: 12
+    })
+  })
+
+  it("routes a direct Stellar-Swirl action through the shared base-damage multiplier stage", () => {
+    const baselineAction = createSpecialAction("test.stellar-swirl.direct.baseline", { kind: "stellar_swirl" })
+    const enhancedAction = createSpecialAction("test.stellar-swirl.direct.enhanced", {
+      baseDamageMultiplier: 0.3,
+      kind: "stellar_swirl"
+    })
+    const baseline = evaluateDeclaredSpecialReactionScenarioAction({
+      action: baselineAction,
+      build: raidenNationalBuiltinBuild,
+      buffs: [],
+      enemy,
+      gameData
+    })
+    const enhanced = evaluateDeclaredSpecialReactionScenarioAction({
+      action: enhancedAction,
+      build: raidenNationalBuiltinBuild,
+      buffs: [],
+      enemy,
+      gameData
+    })
+
+    expect(enhanced.result.kind).toBe("stellar_swirl")
+    expect(enhanced.result.reactionCoefficient).toBe(1)
+    expect(enhanced.result.expectedDamage).toBeCloseTo(baseline.result.expectedDamage * 1.3)
+    expect(enhanced.result.trace[2]).toMatchObject({
+      formula: {
+        bonus: 0.3,
+        kind: "special_reaction_base_damage_multiplier",
+        multiplier: 1.3
+      },
+      stage: "base_damage_multiplier"
     })
   })
 })

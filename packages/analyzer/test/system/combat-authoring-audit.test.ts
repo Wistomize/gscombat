@@ -24,11 +24,11 @@ describe("combat authoring audit", () => {
 
     expect(report).toMatchObject({
       readinessCounts: {
-        ready_for_semantic_authoring: 116,
+        ready_for_semantic_authoring: 118,
         requires_explicit_variant_binding: 1,
         missing_talent_parameters: 0
       },
-      totalStaticCharacters: 117
+      totalStaticCharacters: 119
     })
     expect(Object.values(report.readinessCounts).reduce((total, count) => total + count, 0)).toBe(
       report.totalStaticCharacters

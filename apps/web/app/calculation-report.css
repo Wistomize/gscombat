@@ -433,6 +433,10 @@
   --stage-color: #be185d;
 }
 
+.traceLegendItem--base_damage_multiplier {
+  --stage-color: #6d28d9;
+}
+
 .traceLegendItem--base_damage_bonus {
   --stage-color: #1d4ed8;
 }
@@ -531,6 +535,11 @@
 .traceStep[data-stage="reaction_coefficient"] {
   --trace-color: #be185d;
   --trace-soft: #fdf2f8;
+}
+
+.traceStep[data-stage="base_damage_multiplier"] {
+  --trace-color: #6d28d9;
+  --trace-soft: #f5f3ff;
 }
 
 .traceStep[data-stage="base_damage_bonus"] {
@@ -796,6 +805,11 @@
 .formulaValue--reaction_coefficient {
   --formula-color: #be185d;
   --formula-soft: #fdf2f8;
+}
+
+.formulaValue--base_damage_multiplier {
+  --formula-color: #6d28d9;
+  --formula-soft: #f5f3ff;
 }
 
 .formulaValue--base_damage_bonus {

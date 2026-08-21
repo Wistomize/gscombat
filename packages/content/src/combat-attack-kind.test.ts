@@ -24,6 +24,7 @@ const expectedExplicitAttackKinds = {
   "skirk.skill.seven_phase_flash.normal.fifth_hit": "normal",
   "tartaglia.skill.foul_legacy_raging_tide.melee_normal.first_hit": "normal",
   "tighnari.normal.wreath_arrow.single_hit.spread": "charged",
+  "traveler.cryo.normal.icebound_charged_attack.stellar_superconduct": "charged",
   "varesa.normal.fiery_passion.high_plunge.follow_up_strike": "plunge",
   "xiao.burst.bane_of_all_evil.high_plunge": "plunge",
   "yanfei.normal.charged_attack.three_scarlet_seals.cryo_aura_melt": "charged",

@@ -216,7 +216,7 @@ export function assertDeclaredSpecialReactionConfig(
     return
   }
   if (storedApplicationsParameterId !== undefined) {
-    throw new Error(`Moon-reaction action ${actionId} must not declare a Stellar-Superconduct application snapshot`)
+    throw new Error(`Non-Stellar-Superconduct action ${actionId} must not declare an application snapshot`)
   }
 }
 
@@ -733,6 +733,7 @@ export function resolveDirectSpecialReactionInput(
     | "appliedEffects"
     | "specialReactionBaseDamageBonus"
     | "specialReactionBaseDamageFlat"
+    | "specialReactionBaseDamageMultiplier"
     | "specialReactionDamageBonus"
     | "specialReactionElevation"
     | "specialReactionFlatDamageAddition"
@@ -759,6 +760,8 @@ export function resolveDirectSpecialReactionInput(
     ascensionBonus: (config.ascensionBonus ?? 0) + actionEffects.specialReactionElevation,
     baseDamage: baseDamage + actionEffects.specialReactionBaseDamageFlat,
     baseDamageTerms: resolvedBaseDamageTerms,
+    baseDamageMultiplier:
+      (config.baseDamageMultiplier ?? 0) + actionEffects.specialReactionBaseDamageMultiplier,
     baseDamageBonus: (config.baseDamageBonus ?? 0) + actionEffects.specialReactionBaseDamageBonus,
     critDamage: stats.critDamage,
     critRate: stats.critRate,
@@ -794,6 +797,7 @@ export function isSpecialReactionStatEffect(effect: AppliedCombatActionEffect): 
     effect.target === "defensePercent" ||
     effect.target === "elementalMastery" ||
     effect.target === "specialReactionBaseDamageFlat" ||
+    effect.target === "specialReactionBaseDamageMultiplier" ||
     effect.target === "specialReactionBaseDamageBonus" ||
     effect.target === "specialReactionDamageBonus" ||
     effect.target === "specialReactionFlatDamageAddition" ||

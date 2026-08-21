@@ -171,6 +171,22 @@ describe("build variants", () => {
     ).toThrow("requires Traveler pyro, not anemo")
   })
 
+  it("resolves the preview Cryo Traveler talent owners without changing the canonical character ID", () => {
+    const action = {
+      characterId: "Traveler",
+      id: "test.traveler.cryo.burst",
+      travelerElement: "cryo"
+    } as CombatActionMetadata
+    const cryoTraveler: CharacterBuild = {
+      ...raidenNationalBuiltinBuild,
+      buildId: "test.traveler.cryo-female",
+      characterId: "Traveler",
+      variant: { element: "cryo", gender: "female", kind: "traveler" }
+    }
+
+    expect(resolveTalentParameterOwnerId(action, cryoTraveler)).toBe("TravelerCryoF")
+  })
+
   it("rejects element-restricted Traveler actions on another character or with a fixed owner", () => {
     const travelerAction = {
       characterId: "Traveler",

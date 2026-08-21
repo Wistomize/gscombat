@@ -87,9 +87,9 @@ describe("Enka showcase normalization", () => {
       }
     })
 
-    const result = normalizeEnkaShowcase({ avatarInfoList, ttl: 60 }, "123456789", "6.7")
+    const result = normalizeEnkaShowcase({ avatarInfoList, ttl: 60 }, "123456789", "7.0")
 
-    expect(result.builds).toHaveLength(116)
+    expect(result.builds).toHaveLength(118)
     expect(new Set(result.builds.map((build) => build.characterId))).toEqual(
       new Set(characters.map((character) => character.characterId))
     )

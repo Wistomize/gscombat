@@ -71,7 +71,11 @@ export function evaluateScalarMetric(
   const ratioScenarioParameter = ratioScenarioParameterDefinition
     ? runtime.resolveMetricRatioScenarioParameter(metric, ratioScenarioParameterDefinition, input.build, input.context)
     : undefined
-  const baseRatio = (metric.ratio ?? 0) + (ratioParameter?.value ?? 0)
+  const ratioConstellationBonus = (metric.ratioConstellationBonuses ?? []).reduce(
+    (total, bonus) => total + (input.build.constellation >= bonus.minimumConstellation ? bonus.value : 0),
+    0
+  )
+  const baseRatio = (metric.ratio ?? 0) + (ratioParameter?.value ?? 0) + ratioConstellationBonus
   const ratio = baseRatio * (ratioScenarioParameter?.value ?? 1)
   const flatAmount = (metric.flat ?? 0) + (flatParameter?.value ?? 0)
   const operands: CombatMetricFormulaNode[] = []
@@ -80,6 +84,14 @@ export function evaluateScalarMetric(
   if (metric.ratio !== undefined) ratioOperands.push(constantTerm("固定倍率", metric.ratio))
   if (ratioParameter && ratioParameterDefinition) {
     ratioOperands.push(runtime.talentParameterTerm("天赋倍率", ratioParameterDefinition, ratioParameter))
+  }
+  if (ratioConstellationBonus !== 0) {
+    ratioOperands.push({
+      kind: "term",
+      label: "命之座额外倍率",
+      role: "source_constellation",
+      value: ratioConstellationBonus
+    })
   }
   const ratioFormula = addFormula("最终倍率", ratioOperands)
   const effectiveRatioFormula = ratioScenarioParameter

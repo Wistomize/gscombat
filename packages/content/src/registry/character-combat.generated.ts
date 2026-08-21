@@ -5,6 +5,7 @@ import { ainoCombatCoverage as characterAinoCoverage } from "../characters/aino/
 import { albedoCombatCoverage as characterAlbedoCoverage } from "../characters/albedo/combat.js"
 import { alhaithamCombatCoverage as characterAlhaithamCoverage } from "../characters/alhaitham/combat.js"
 import { aloyCombatCoverage as characterAloyCoverage } from "../characters/aloy/combat.js"
+import { alyoshaCombatCoverage as characterAlyoshaCoverage } from "../characters/alyosha/combat.js"
 import { amberCombatCoverage as characterAmberCoverage } from "../characters/amber/combat.js"
 import { aratakiIttoCombatCoverage as characterAratakiIttoCoverage } from "../characters/arataki-itto/combat.js"
 import { arlecchinoCombatCoverage as characterArlecchinoCoverage } from "../characters/arlecchino/combat.js"
@@ -79,6 +80,7 @@ import { nicoleCombatCoverage as characterNicoleCoverage } from "../characters/n
 import { nilouCombatCoverage as characterNilouCoverage } from "../characters/nilou/combat.js"
 import { ningguangCombatCoverage as characterNingguangCoverage } from "../characters/ningguang/combat.js"
 import { noelleCombatCoverage as characterNoelleCoverage } from "../characters/noelle/combat.js"
+import { odetteCombatCoverage as characterOdetteCoverage } from "../characters/odette/combat.js"
 import { ororonCombatCoverage as characterOroronCoverage } from "../characters/ororon/combat.js"
 import { pruneCombatCoverage as characterPruneCoverage } from "../characters/prune/combat.js"
 import { qiqiCombatCoverage as characterQiqiCoverage } from "../characters/qiqi/combat.js"
@@ -124,6 +126,7 @@ export const characterCombatCoverageRegistry: readonly CharacterCombatCoverage[]
   characterAlbedoCoverage,
   characterAlhaithamCoverage,
   characterAloyCoverage,
+  characterAlyoshaCoverage,
   characterAmberCoverage,
   characterAratakiIttoCoverage,
   characterArlecchinoCoverage,
@@ -198,6 +201,7 @@ export const characterCombatCoverageRegistry: readonly CharacterCombatCoverage[]
   characterNilouCoverage,
   characterNingguangCoverage,
   characterNoelleCoverage,
+  characterOdetteCoverage,
   characterOroronCoverage,
   characterPruneCoverage,
   characterQiqiCoverage,

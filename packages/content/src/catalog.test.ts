@@ -93,7 +93,7 @@ describe("supported character catalog", () => {
       characterCatalogPresentation.map((character) => [character.characterId, character])
     )
 
-    expect(characterCatalogPresentationVersion).toBe("6.7.1")
+    expect(characterCatalogPresentationVersion).toBe("7.0.0")
     expect(new Set(characterCatalogPresentation.map((character) => character.characterId))).toHaveLength(
       characterCatalogPresentation.length
     )
@@ -462,7 +462,19 @@ describe("supported weapon catalog", () => {
       WineAndSong: "暗巷的酒与诗",
       WolfFang: "狼牙",
       WolfsGravestone: "狼的末路",
-      XiphosMoonlight: "西福斯的月光"
+      XiphosMoonlight: "西福斯的月光",
+      BladeOfAtonement: "救赎之斩",
+      ClashOfKings: "群王局戏",
+      CovenantOfFrostAndSnow: "霜雪誓约",
+      EchoesOfTheHeart: "寸心余响",
+      Emberwell: "引火之源",
+      ExaiphanesBlade: "星锋剑",
+      ForgedByTheGoldenMelody: "金律铸影",
+      Frostbreath: "寒息",
+      HereticsMoltenBlade: "熔猎异端之刃",
+      JadeVista: "悬黎千钧",
+      SongOfTheVigil: "戍望谣歌",
+      WhitelakeFrostfeather: "白湖冬羽"
     }
 
     expect(supportedWeapons.map((weapon) => weapon.weaponId).sort()).toEqual(Object.keys(officialLabels).sort())

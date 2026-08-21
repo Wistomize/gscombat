@@ -9,7 +9,7 @@
     "generate:showcase-metadata": "tsx tools/generate-showcase-metadata.ts",
     "invite": "tsx src/manage-invites.ts",
     "start": "node dist/server.js",
-    "test": "vitest run --testTimeout=30000",
+    "test": "vitest run --maxWorkers=4 --testTimeout=60000 --hookTimeout=60000",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

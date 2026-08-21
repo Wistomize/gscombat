@@ -30,7 +30,8 @@ describe("Content entity-directory architecture", () => {
   it("keeps every character definition, combat declaration, and public entity entry together", () => {
     const characterRoot = join(sourceRoot, "characters")
     const slugs = listDirectories(characterRoot)
-    expect(slugs).toHaveLength(characterCombatCoverageRegistry.length)
+    const registeredCharacterIds = new Set(characterCombatCoverageRegistry.map((coverage) => coverage.characterId))
+    expect(slugs).toHaveLength(registeredCharacterIds.size)
     expect(characterCatalogPresentation).toHaveLength(characterCombatCoverageRegistry.length)
     for (const slug of slugs) {
       const files = readdirSync(join(characterRoot, slug))

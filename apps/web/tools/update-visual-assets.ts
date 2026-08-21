@@ -9,26 +9,31 @@ import { fileURLToPath } from "node:url"
 import { supportedCharacters, supportedWeapons } from "@gscombat/content"
 
 const execFileAsync = promisify(execFile)
-const upstreamCommit = "21c98eb60355160274a8c4cecfc5671e2151a073"
+const upstreamCommit = "98aafa1f135f086524b611c7d5b5bfb78d98bb6d"
 const upstreamRepository = "https://github.com/frzyc/genshin-optimizer"
 const rawBaseUrl = `https://raw.githubusercontent.com/frzyc/genshin-optimizer/${upstreamCommit}`
-const treeUrl = `https://api.github.com/repos/frzyc/genshin-optimizer/git/trees/${upstreamCommit}?recursive=1`
+const gitApiBaseUrl = "https://api.github.com/repos/frzyc/genshin-optimizer/git"
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const repositoryRoot = resolve(packageRoot, "../..")
 const generatedPath = join(packageRoot, "lib", "visual-assets.generated.json")
-const gameDataPath = join(repositoryRoot, "packages", "game-data", "snapshots", "6.7", "game-data.sqlite")
+const gameDataPath = join(repositoryRoot, "packages", "game-data", "snapshots", "7.0", "game-data.sqlite")
 
 type ArtifactSlot = "circlet" | "flower" | "goblet" | "plume" | "sands"
 type Element = "anemo" | "cryo" | "dendro" | "electro" | "geo" | "hydro" | "pyro" | "traveler"
 
 interface TreeEntry {
   readonly path: string
+  readonly sha: string
   readonly type: string
 }
 
 interface TreeResponse {
   readonly tree: readonly TreeEntry[]
   readonly truncated: boolean
+}
+
+interface CommitResponse {
+  readonly tree: { readonly sha: string }
 }
 
 interface CharacterElementRow {
@@ -60,6 +65,23 @@ async function requireText(url: string): Promise<string> {
   const response = await fetch(url, { headers: { "User-Agent": "gscombat-visual-assets" } })
   if (!response.ok) throw new Error(`Asset source request failed: ${response.status} ${url}`)
   return await response.text()
+}
+
+async function readGeneratedAssetPaths(): Promise<readonly string[]> {
+  const commit = await requireJson<CommitResponse>(`${gitApiBaseUrl}/commits/${upstreamCommit}`)
+  let treeSha = commit.tree.sha
+  const pathSegments = ["libs", "gi", "assets", "src", "gen"]
+  for (const segment of pathSegments) {
+    const tree = await requireJson<TreeResponse>(`${gitApiBaseUrl}/trees/${treeSha}`)
+    const next = tree.tree.find((entry) => entry.path === segment && entry.type === "tree")
+    if (!next) throw new Error(`Missing upstream asset directory segment: ${segment}`)
+    treeSha = next.sha
+  }
+  const generatedTree = await requireJson<TreeResponse>(`${gitApiBaseUrl}/trees/${treeSha}?recursive=1`)
+  if (generatedTree.truncated) throw new Error("Upstream generated-asset tree is truncated")
+  return generatedTree.tree
+    .filter((entry) => entry.type === "blob")
+    .map((entry) => `libs/gi/assets/src/gen/${entry.path}`)
 }
 
 async function downloadThumbnail(
@@ -138,9 +160,7 @@ async function readElementPaths(): Promise<Record<(typeof elementNames)[number],
 
 async function main(): Promise<void> {
   const resume = process.argv.includes("--resume")
-  const tree = await requireJson<TreeResponse>(treeUrl)
-  if (tree.truncated) throw new Error("Upstream asset tree is truncated")
-  const paths = tree.tree.filter((entry) => entry.type === "blob").map((entry) => entry.path)
+  const paths = await readGeneratedAssetPaths()
   const characterElements = readCharacterElements()
   const artifactSetIds = readArtifactSetIds()
   const temporaryRoot = await mkdtemp(join(tmpdir(), "gscombat-icons-"))
