@@ -1,120 +1,139 @@
 # GSCombat
 
-[中文](README.md) · [Tencent Cloud deployment](docs/deployment/tencent-cloud.en.md) ·
+**Genshin Impact character stats and combat analysis**
+
+[Try it online](https://gscombat.online) · [中文](README.md) ·
+[Report an issue](https://github.com/Wistomize/gscombat/issues) ·
 [Sources and acknowledgements](docs/third-party-sources.en.md)
 
-GSCombat is a typed and auditable Genshin Impact character-metric and combat-damage workbench. It normalizes
-character builds, a party, a target action, an enemy, and buffs into a reproducible scenario, then reports the
-selected metric, resolved stats, a stage-by-stage formula trace, artifact-stat marginal gains, and weapon comparisons.
+GSCombat answers a more useful question than “What is this artifact's score?”
 
-Damage metrics deliberately target the expected damage of one developer-maintained core action. GSCombat is not yet
-a rotation DPS simulator. Supports use separate metrics such as healing, shield strength, Attack buffs, and damage
-bonuses; each metric retains its formula tree and applicability conditions.
+> With this character, weapon, artifact set, and party, how much does the chosen action deal—and how much would one
+> more stat roll or a different weapon actually improve it?
 
-## Capabilities
+Configure a character and party, select a damage or support metric, and GSCombat reports the expected result,
+resolved stats, a complete formula trace, artifact-stat marginal gains, and weapon comparisons. Each stage is
+explainable, so a result can be traced back to its passive, constellation, item, teammate, or buff instead of ending
+as an opaque score.
 
-- Build an unordered party of one to four configured characters and evaluate any member's available metric.
-- Create builds manually, import JSON, and import an in-game showcase through Enka.Network. Builds stay local by
-  default, while an optional invite code enables isolated cross-device synchronization.
-- Evaluate direct, amplifying, additive, transformative, Lunar, and Astral reactions together with resonances,
-  Moonsign, weapon, artifact, constellation, and teammate effects.
-- Inspect per-hit and multi-hit traces, resolved stats, effective artifact rolls, single-roll marginal gains, and
-  maximum-reachable weapon comparisons.
-- Maintain actions, support metrics, passives, and constellations in each character's content directory while keeping
-  the calculator character-agnostic.
+![Raiden National party configuration](docs/images/team-configuration.webp)
 
-Results remain community-tool estimates. Newly released mechanics, random action sequences, timing behavior, and
-unreviewed data may be incomplete. The API exposes coverage and authoring audits at `/v1/combat-coverage` and
-`/v1/combat-authoring/audit`.
+_Create a party of one to four configured characters. Party slots do not imply rotation or field order._
 
-## Repository layout
+## What GSCombat can do
 
-```text
-apps/
-├── api/          Fastify API, invite sessions, SQLite workspaces, showcase import
-├── web/          Next.js website
-└── mini/         Paused Taro WeChat Mini Program shell
-packages/
-├── analyzer/     Scenario orchestration, effect resolution, counterfactual analysis
-├── calculator/   Character-independent typed damage pipeline
-├── content/      Semantic characters, weapons, artifacts, and rules
-├── contracts/    TypeBox domain and HTTP contracts
-└── game-data/    Pinned, read-only game-data SQLite snapshots
-```
+### Analyze a target action
 
-Character actions, passives, constellations, and support metrics live under
-`packages/content/src/characters/<character>/`. Weapon and artifact effects belong to their own content directories,
-and party rules belong under `rules/`. The calculator imports no character or equipment content. The Mini Program
-does not run an independent calculation path while its product work is paused.
+- Evaluate a Normal Attack, Charged Attack, Elemental Skill, Elemental Burst, or character-specific mechanic.
+- Compare no-reaction damage with applicable Amplifying, Additive, Transformative, Lunar, and Astral reactions.
+- Resolve Attack, HP, Defense, and Elemental Mastery scaling together with CRIT, damage bonus, resistance, defense,
+  reaction, and special-reaction stages.
+- Expand multi-hit results and identify contributions from talents, constellations, weapons, artifacts, teammates,
+  and buffs.
 
-## Maintaining Content declarations
+### Evaluate supports as supports
 
-Content uses entity-owned declarations with build-time static aggregation:
+A support does not need to justify their slot with personal damage. Bennett exposes field Attack and healing metrics;
+Zhongli exposes shield strength; other characters can expose healing, shielding, stat bonuses, or damage bonuses.
+These metrics retain the same formula detail and activation conditions as damage metrics.
 
-- A character's `definition.ts` owns catalog identity, official Chinese label, weapon type, and exceptional action
-  labels. `combat.ts` owns actions, metrics, and character effects; reviewed multi-scaling mappings use optional
-  `evidence.ts`.
-- Every inventory weapon and artifact-set directory contains `effects.ts`, `coverage.ts`, and `index.ts`. An item with
-  no current core-action effect exports a typed empty effect array and explains its status in coverage clauses.
-- `packages/content/src/registry/*.generated.ts` contains tool-generated explicit imports. Do not edit these files or
-  scan the filesystem at runtime.
+### Find the most effective upgrade
 
-After adding or moving a Content entity, run:
+- Measure the marginal gain of each artifact substat for the current target metric.
+- Convert those current gains into effective rolls across all five equipped artifacts.
+- Compare character levels, talent levels, and elemental damage bonus upgrades.
+- Compare compatible weapons under the current build, including effects that can be reached reliably.
+- Inspect the raw artifact values used by the calculation and verify them against the equipped build.
 
-```bash
-pnpm --filter @gscombat/content registries:generate
-pnpm --filter @gscombat/content registries:check
-```
+## How to use it
 
-Content `build`, `test`, and `typecheck` all run the freshness check first and fail on missing or stale registries.
-See [ADR 0015](docs/adr/0015-generate-content-registries-from-entity-owned-declarations.md) for the decision record.
+1. **Prepare builds:** import an in-game showcase by UID, import a GSCombat JSON file, or create a build manually.
+2. **Create a party:** choose one to four configured characters. Party slots have no positional meaning.
+3. **Choose a target:** select any party member and one of their damage or support metrics.
+4. **Set the scenario:** adjust enemy level, resistances, and buffs. The default target is level 100 with 10%
+   resistance to every element.
+5. **Calculate:** inspect the metric result, resolved stats, formula trace, effective rolls, marginal gains, and weapon
+   comparisons.
 
-## Local development
+[Open GSCombat](https://gscombat.online)
 
-Node.js 22+ and pnpm 11.15.1 are required.
+## Reading the report
 
-```bash
-pnpm install --frozen-lockfile
-pnpm build
-mkdir -p runtime/workspace
-export WORKSPACE_DATA_PATH="$PWD/runtime/workspace/workspaces.sqlite"
-export INVITE_TOKEN_SECRET="replace-with-at-least-32-random-characters"
-pnpm --filter @gscombat/api invite -- create local
-```
+![Raiden Shogun initial-slash result, resolved stats, and formula trace](docs/images/calculation-report.webp)
 
-Keep those environment variables and start the API and web app in separate terminals:
+_Raiden Shogun's initial slash with Baleful Omen and Bennett's field enabled, including the expected result and
+stage-by-stage trace._
 
-```bash
-pnpm --filter @gscombat/api dev
-pnpm --filter @gscombat/web dev
-```
+### Expected metric result
 
-Open `http://127.0.0.1:3200` to use a browser-local workspace. Enter the one-time-displayed invite code only when
-testing cloud synchronization. The web app proxies `/api/backend/*` to `http://127.0.0.1:3001` by default; set
-`API_BASE_URL` to override it.
+This is the value being compared. A damage metric is usually one maintained core action, such as one Vaporized hit of
+Xiangling's Pyronado, Neuvillette's Equitable Judgment, or a specified special-reaction hit. A support metric may be a
+healing tick, shield value, or Attack buff.
 
-## Verification
+### Resolved stats and formula trace
 
-```bash
-pnpm typecheck
-pnpm test
-pnpm build
-```
+Resolved stats show the Attack, HP, Defense, Elemental Mastery, and CRIT values actually used by the action. The trace
+then expands scaling, CRIT, damage bonus, reaction, resistance, defense, and special stages, including sources such as
+artifact main stats and set effects, talents, constellations, teammates, and buffs.
 
-The suite emphasizes integration across real package boundaries, SQLite, HTTP routes, and complete scenarios.
+### Marginal gains
 
-## Data and deployment
+Marginal gains are not fixed weights. GSCombat holds the character, party, enemy, and buffs constant, adds one stat
+roll or replaces one weapon, then recalculates the same metric. CRIT Rate above 100% provides no further expected-damage
+gain, and other caps or conditions are resolved against the actual build.
 
-Runtime services never query an external static game-data API. `@gscombat/game-data` ships a pinned, SHA-256-verified,
-read-only SQLite snapshot. Showcase import remains a separate optional adapter. See the
-[game-data guide](packages/game-data/README.md) and [Tencent Cloud deployment guide](docs/deployment/tencent-cloud.en.md).
+![Artifact marginal gains and weapon swap comparison](docs/images/upgrade-comparison.webp)
 
-## License and disclaimer
+_Compare one average artifact roll and compatible weapon swaps while holding the character, party, and target metric constant._
 
-Original project code is licensed under the [GNU Affero General Public License v3.0](LICENSE). If you provide a
-modified version over a network, AGPL-3.0 requires offering the corresponding source to that service's users.
-Third-party data, images, game text, trademarks, and dependencies retain their own rights and licenses.
+## Why there is no universal artifact score
 
-This is an unofficial community project and is not affiliated with or endorsed by miHoYo/HoYoverse. Genshin Impact,
-its characters, weapons, artifacts, imagery, and related materials belong to their respective rights holders. See
-[Sources and acknowledgements](docs/third-party-sources.en.md) for the complete source inventory and pinned revisions.
+A stat's value changes with the character, weapon, party, reaction, and current build. Attack may be essential for one
+character and nearly irrelevant for an HP scaler. CRIT Rate is valuable below the cap and useless above it.
+
+GSCombat therefore evaluates the current build and target action instead of forcing every character into one CRIT-score
+formula:
+
+- **How much now:** the target action or support metric's expected result.
+- **How much better:** the relative change from a stat roll, level, talent, or weapon upgrade.
+- **Why:** stat sources, activation conditions, and the complete staged formula.
+
+## Storage and cross-device sync
+
+- **Without an invite code:** builds stay in the current browser. Export and import the whole workspace to back up or
+  move it.
+- **With an invite code:** builds are stored in an isolated SQLite workspace and can sync across browsers or devices.
+- **Showcase import:** public third-party showcase data is converted into builds without asking for a game account or
+  password.
+
+An invite code is a workspace credential; share it only with people you trust. Without one, export your data regularly
+in case browser storage is cleared.
+
+## Current scope and limitations
+
+GSCombat focuses on the **expected result of one core action**. It is not yet a full rotation DPS simulator. Cast timing,
+animation time, player execution, random action order, and complete rotation duration are not modeled uniformly.
+
+Weapons, artifacts, constellations, passives, teammate effects, party resonances, and special reactions are maintained
+individually. Newly released mechanics or unreviewed interactions may be incomplete. When a result looks wrong, please
+include the build, party, target metric, and formula trace in the report.
+
+The current pinned Genshin Impact 7.0 snapshot contains 119 characters, 247 weapons, and 63 artifact sets. Runtime
+services do not query an external API for static game data; showcase import is a separate optional feature.
+
+## Feedback, license, and disclaimer
+
+- Report incorrect results or request mechanics: [GitHub Issues](https://github.com/Wistomize/gscombat/issues)
+- Original code is licensed under the [GNU Affero General Public License v3.0](LICENSE)
+- Game data, imagery, text, and external references: [Sources and acknowledgements](docs/third-party-sources.en.md)
+
+GSCombat is an unofficial community project and is not affiliated with or endorsed by miHoYo/HoYoverse. Genshin Impact,
+its characters, weapons, artifacts, imagery, and related materials belong to their respective rights holders. Results
+are community-tool estimates, not official game conclusions.
+
+## Development and contributing
+
+Repository layout, local development, Content authoring, data updates, testing, and deployment are documented in the
+[GSCombat development guide](docs/development.en.md). Architecture decisions live under [`docs/adr`](docs/adr), and
+the production deployment flow is covered by the
+[Tencent Cloud deployment guide](docs/deployment/tencent-cloud.en.md).
