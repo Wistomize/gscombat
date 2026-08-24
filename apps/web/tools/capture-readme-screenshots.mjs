@@ -113,7 +113,6 @@ async function captureScreenshots() {
       await character.getByRole("button", { exact: true, name: "加入队伍" }).click()
     }
     await page.getByText("4/4", { exact: true }).waitFor()
-    await captureElement(page, ".partySection", "team-configuration.webp")
 
     await page.getByRole("button", { name: /确认队伍并选择指标/ }).click()
     await page.waitForURL(/\/calculate$/)

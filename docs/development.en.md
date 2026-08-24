@@ -129,16 +129,18 @@ metadata, and website behavior should be exercised through complete workspace fl
 
 ## Updating README screenshots
 
-README screenshots use a clean browser context and the built-in Raiden National party. The capture does not read a
-developer's browser builds, UID, or invite code. Install Google Chrome and `cwebp`, then run:
+The README calculation and upgrade-comparison screenshots use a clean browser context and the built-in Raiden National
+party. The capture does not read a developer's browser builds, UID, or invite code. The team overview at
+`docs/images/team-configuration.webp` is maintained separately and is not overwritten by the script. Install Google
+Chrome and `cwebp`, then run:
 
 ```bash
 pnpm --filter @gscombat/web screenshots:readme
 ```
 
-The default source is `https://gscombat.online`; set `README_SCREENSHOT_BASE_URL` to validate a local instance. Output
-is written to `docs/images/`. Before committing, inspect every image for cropping, legibility, enabled demo buffs, and
-sensitive information.
+The default source is `https://gscombat.online`; set `README_SCREENSHOT_BASE_URL` to validate a local instance. The two
+generated result images are written to `docs/images/`. Before committing, inspect every image for cropping, legibility,
+enabled demo buffs, and sensitive information.
 
 ## Game-data updates
 

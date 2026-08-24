@@ -16,7 +16,7 @@ resolved stats, a complete formula trace, artifact-stat marginal gains, and weap
 explainable, so a result can be traced back to its passive, constellation, item, teammate, or buff instead of ending
 as an opaque score.
 
-![Raiden National party configuration](docs/images/team-configuration.webp)
+![Configured characters and team selection](docs/images/team-configuration.webp)
 
 _Create a party of one to four configured characters. Party slots do not imply rotation or field order._
 

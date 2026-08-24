@@ -123,15 +123,16 @@ Content 或数据更新还应运行对应包的完整测试；涉及展示柜时
 
 ## 更新 README 截图
 
-README 截图使用干净浏览器上下文和内置雷神国家队生成，不读取开发者的浏览器配置、UID 或邀请码。确保本机已经安装
+README 的计算结果与提升对比截图使用干净浏览器上下文和内置雷神国家队生成，不读取开发者的浏览器配置、UID
+或邀请码。队伍配置总览图 `docs/images/team-configuration.webp` 单独维护，不会被脚本覆盖。确保本机已经安装
 Google Chrome 和 `cwebp`，然后运行：
 
 ```bash
 pnpm --filter @gscombat/web screenshots:readme
 ```
 
-默认从 `https://gscombat.online` 截图；需要验证本地界面时可设置 `README_SCREENSHOT_BASE_URL`。生成结果写入
-`docs/images/`。提交前必须逐张检查裁切、清晰度、演示 Buff 和敏感信息。
+默认从 `https://gscombat.online` 截图；需要验证本地界面时可设置 `README_SCREENSHOT_BASE_URL`。生成的两张结果图
+写入 `docs/images/`。提交前必须逐张检查裁切、清晰度、演示 Buff 和敏感信息。
 
 ## 游戏数据更新
 
