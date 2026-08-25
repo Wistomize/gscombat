@@ -7,6 +7,7 @@
     "dev": "next dev --port 3200",
     "icons:update": "node --experimental-strip-types tools/update-visual-assets.ts",
     "screenshots:readme": "node tools/capture-readme-screenshots.mjs",
+    "social-preview:generate": "node tools/generate-social-preview.mjs",
     "start": "next start --port 3200",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
