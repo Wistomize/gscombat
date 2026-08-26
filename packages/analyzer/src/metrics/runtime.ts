@@ -109,10 +109,9 @@ interface ResolvedHealingSourceContribution {
 /** Evaluates one maintainer-selected metric with its explicit damage or party context. */
 export function assertMetricBuild(
   metric: CombatMetricDefinition,
-  build: CharacterBuild,
-  gameData: GameDataRepository
+  build: CharacterBuild
 ): void {
-  assertValidBuild(build, gameData, "source character")
+  assertValidBuild(build, "source character")
   if (metric.status !== "verified") throw new Error(`Combat metric ${metric.id} is not verified`)
   if (metric.characterId !== build.characterId) {
     throw new Error(`Combat metric ${metric.id} belongs to ${metric.characterId}, not ${build.characterId}`)
@@ -122,13 +121,11 @@ export function assertMetricBuild(
   resolveTalentParameterOwnerId(sourceAction, build)
 }
 
-export function assertValidBuild(build: CharacterBuild, gameData: GameDataRepository, description: string): void {
+/** Validates the persisted build shape without coupling it to the current game-data snapshot version. */
+export function assertValidBuild(build: CharacterBuild, description: string): void {
   const validationErrors = validateCharacterBuild(build)
   if (validationErrors.length > 0) {
     throw new Error(`Invalid ${description} build ${build.buildId}: ${validationErrors.join("; ")}`)
-  }
-  if (build.gameDataVersion !== gameData.getManifest().gameVersion) {
-    throw new Error(`Game-data version mismatch for ${description} build ${build.buildId}: ${build.gameDataVersion}`)
   }
 }
 
@@ -145,7 +142,7 @@ export function resolveFriendlyRecipient(
   for (const member of party) {
     if (buildIds.has(member.buildId)) throw new Error(`Metric party contains duplicate build ${member.buildId}`)
     buildIds.add(member.buildId)
-    if (member.buildId !== input.build.buildId) assertValidBuild(member, input.gameData, "teammate")
+    if (member.buildId !== input.build.buildId) assertValidBuild(member, "teammate")
   }
 
   const recipientBuild = party.find((member) => member.buildId === recipientContext.buildId)

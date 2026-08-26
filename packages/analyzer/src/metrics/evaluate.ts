@@ -40,7 +40,7 @@ export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMe
   const metric = getCombatMetricDefinition(input.metricId)
   if (!metric) throw new Error(`Combat metric ${input.metricId} is not registered`)
 
-  runtime.assertMetricBuild(metric, input.build, input.gameData)
+  runtime.assertMetricBuild(metric, input.build)
   if (metric.kind === "damage") return evaluateDamageMetric(metric, input)
   if (metric.kind === "scalar") return evaluateScalarMetric(metric, input)
 

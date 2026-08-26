@@ -52,6 +52,34 @@ interface SupportMetricResponse {
 afterAll(async () => app.close())
 
 describe("Lunar-Bloom effects API integration", () => {
+  it("evaluates a legacy-version Lauma support metric against the current game-data snapshot", async () => {
+    const lauma = { ...createBuild("Lauma", "api.legacy-version.lauma"), gameDataVersion: "6.7" }
+    const nefer = { ...createBuild("Nefer", "api.legacy-version.nefer"), gameDataVersion: "6.7" }
+    const response = await app.inject({
+      method: "POST",
+      payload: {
+        build: lauma,
+        context: {
+          recipient: {
+            buildId: nefer.buildId,
+            currentHpFraction: 1,
+            incomingHealingBonus: 0,
+            isMoonsign: true,
+            isWithinSourceArea: true,
+            missingHp: 0
+          },
+          source: { currentHpFraction: 1 },
+          teammates: [nefer]
+        },
+        metricId: "lauma.burst.pale_hymn.lunar_bloom_flat_damage_addition"
+      },
+      url: "/v1/support-metrics/evaluate"
+    })
+
+    expect(response.statusCode, response.body).toBe(200)
+    expect((response.json() as SupportMetricResponse).metric.value).toBeGreaterThan(0)
+  })
+
   it("places Lauma's Pale Hymn in the additive base-damage stage without leaking it into the reaction-bonus stage", async () => {
     const nefer = createBuild("Nefer", "api.lunar-bloom.nefer")
     const lauma = createBuild("Lauma", "api.lunar-bloom.lauma")
