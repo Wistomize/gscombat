@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { listCharacterCombatCoverage } from "../../combat-registry.js"
 
-import { odetteCombatCoverage, odetteEffectIds } from "./combat.js"
+import { odetteCombatCoverage, odetteDamageActionIds, odetteEffectIds } from "./combat.js"
 import { odetteDefinition } from "./definition.js"
 
 describe("Odette combat logic", () => {
@@ -11,19 +11,37 @@ describe("Odette combat logic", () => {
     expect(odetteDefinition.catalog.label).toBe("奥黛塔")
   })
 
-  it("declares Plume and Wing ordinary, Stellar-Conduct, and Stellar-Swirl hit metrics", () => {
+  it("uses Coda at Dawn as the primary Stellar-Conduct and Stellar-Swirl metric", () => {
     const damageMetrics = odetteCombatCoverage.metrics?.filter((metric) => metric.kind === "damage") ?? []
 
     expect(damageMetrics.map((metric) => metric.actionId)).toEqual([
-      "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume",
-      "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume.stellar_conduct",
-      "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume.stellar_swirl",
-      "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing",
-      "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing.stellar_conduct",
-      "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing.stellar_swirl"
+      odetteDamageActionIds.codaStellarSuperconduct,
+      odetteDamageActionIds.codaStellarSwirl,
+      odetteDamageActionIds.c4CoordinatedStellarSuperconduct,
+      odetteDamageActionIds.c4CoordinatedStellarSwirl
     ])
-    expect(odetteCombatCoverage.actions.filter((action) => action.specialReaction?.kind === "stellar_swirl"))
-      .toHaveLength(2)
+    expect(damageMetrics.slice(2).map((metric) => metric.minimumSourceConstellation)).toEqual([4, 4])
+  })
+
+  it("adds the matching C1 extra hit to each Coda ending without replacing its talent multiplier", () => {
+    const codaActionIds: readonly string[] = [
+      odetteDamageActionIds.codaStellarSuperconduct,
+      odetteDamageActionIds.codaStellarSwirl
+    ]
+    const codaActions = odetteCombatCoverage.actions.filter((action) => codaActionIds.includes(action.id))
+
+    expect(codaActions).toHaveLength(2)
+    expect(
+      codaActions.map((action) => {
+        const reference = action.parameterReferences?.[0]
+        return reference?.source === "talent" ? reference.parameterIndex : undefined
+      })
+    ).toEqual([2, 3])
+    expect(codaActions.map((action) => action.damageParts?.[1]?.scalingTerms?.[0])).toEqual([
+      expect.objectContaining({ fixedCoefficient: 3, minimumSourceConstellation: 1, stat: "attack" }),
+      expect.objectContaining({ fixedCoefficient: 4.5, minimumSourceConstellation: 1, stat: "attack" })
+    ])
+    expect(codaActions.map((action) => action.timeline?.damageEvents[1]?.minimumSourceConstellation)).toEqual([1, 1])
   })
 
   it("keeps Pathetique in the shared base multiplier and cumulative C6 in Elevation", () => {

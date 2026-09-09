@@ -11,6 +11,14 @@ export const odetteEffectIds = {
   stellarSwirlRadiance: "odette.constellation.2.radiance.stellar_swirl.resistance_reduction"
 } as const
 
+export const odetteDamageActionIds = {
+  c4CoordinatedStellarSuperconduct:
+    "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_superconduct",
+  c4CoordinatedStellarSwirl: "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl",
+  codaStellarSuperconduct: "odette.skill.adagio_coda_at_dawn.final_hit.stellar_superconduct",
+  codaStellarSwirl: "odette.skill.adagio_coda_at_dawn.final_hit.stellar_swirl"
+} as const
+
 const stellarConductApplicationsParameter = {
   defaultValue: 12,
   id: "stellar-conduct-stored-elemental-applications",
@@ -19,22 +27,50 @@ const stellarConductApplicationsParameter = {
   minimumValue: 0
 } as const
 
-function createSkillDamageAction(input: {
+type OdetteStellarReactionKind = "stellar_superconduct" | "stellar_swirl"
+
+function getSpecialReactionConfig(kind: OdetteStellarReactionKind) {
+  return kind === "stellar_superconduct"
+    ? {
+        kind,
+        stellarStoredElementalApplicationsParameterId: stellarConductApplicationsParameter.id
+      }
+    : { kind }
+}
+
+function createCodaDamageAction(input: {
+  readonly c1Coefficient: number
   readonly coefficientParameterId: string
   readonly id: string
+  readonly kind: OdetteStellarReactionKind
   readonly parameterIndex: number
   readonly snapshots: readonly [number, number]
 }): CombatActionMetadata {
+  const finalHitPartId = "coda-final-hit"
+  const c1AdditionalPartId = "c1-additional-hit"
+  const specialReaction = getSpecialReactionConfig(input.kind)
+  const reactionLabel = input.kind === "stellar_superconduct" ? "星超导" : "星扩散"
+
   return {
     characterId: "Odette",
     damageKind: "direct",
     damageParts: [
       {
         coefficientParameterId: input.coefficientParameterId,
-        id: input.coefficientParameterId,
+        id: finalHitPartId,
         snapshotChecks: [
           { expectedCoefficient: input.snapshots[0], talentLevel: 1 },
           { expectedCoefficient: input.snapshots[1], talentLevel: 10 }
+        ]
+      },
+      {
+        id: c1AdditionalPartId,
+        scalingTerms: [
+          {
+            fixedCoefficient: input.c1Coefficient,
+            minimumSourceConstellation: 1,
+            stat: "attack"
+          }
         ]
       }
     ],
@@ -52,92 +88,104 @@ function createSkillDamageAction(input: {
       }
     ],
     scalingStat: "attack",
+    ...(input.kind === "stellar_superconduct" ? { scenarioParameters: [stellarConductApplicationsParameter] } : {}),
     status: "verified",
-    talentSlot: "skill"
+    talentSlot: "skill",
+    timeline: {
+      damageEvents: [
+        {
+          at: 0,
+          damagePartId: finalHitPartId,
+          id: finalHitPartId,
+          snapshot: "hit",
+          specialReaction
+        },
+        {
+          at: 0.1,
+          damagePartId: c1AdditionalPartId,
+          id: c1AdditionalPartId,
+          minimumSourceConstellation: 1,
+          snapshot: "hit",
+          specialReaction
+        }
+      ],
+      duration: 0.2
+    },
+    tracePresentation: {
+      focusEventId: finalHitPartId,
+      focusLabel: `破晓终奏·共舞结束${reactionLabel}伤害`,
+      totalLabel: `破晓终奏${reactionLabel}伤害合计`
+    }
   }
 }
 
-function createStellarSkillDamageAction(input: {
-  readonly coefficientParameterId: string
+function createC4CoordinatedDamageAction(input: {
+  readonly coefficient: number
   readonly id: string
-  readonly kind: "stellar_superconduct" | "stellar_swirl"
-  readonly parameterIndex: number
-  readonly snapshots: readonly [number, number]
+  readonly kind: OdetteStellarReactionKind
 }): CombatActionMetadata {
   return {
-    ...createSkillDamageAction(input),
+    characterId: "Odette",
     damageKind: "special_reaction",
+    damageParts: [
+      {
+        id: `${input.id}.coordinated-hit`,
+        scalingTerms: [{ fixedCoefficient: input.coefficient, stat: "attack" }]
+      }
+    ],
+    element: odetteDefinition.element,
     evaluator: "declared_special_reaction",
+    id: input.id,
+    kind: "damage",
     ...(input.kind === "stellar_superconduct"
       ? { scenarioParameters: [stellarConductApplicationsParameter] }
       : {}),
-    specialReaction:
-      input.kind === "stellar_superconduct"
-        ? {
-            kind: input.kind,
-            stellarStoredElementalApplicationsParameterId: stellarConductApplicationsParameter.id
-          }
-        : { kind: input.kind }
+    specialReaction: getSpecialReactionConfig(input.kind),
+    status: "verified",
+    talentSlot: "passive"
   }
 }
 
 const odetteDamageActions = [
-  createSkillDamageAction({
-    coefficientParameterId: "solo-dance-double-plume-move-damage",
-    id: "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume",
-    parameterIndex: 4,
-    snapshots: [0.4304, 0.77472]
-  }),
-  createStellarSkillDamageAction({
-    coefficientParameterId: "solo-dance-double-plume-move-stellar-conduct-damage",
-    id: "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume.stellar_conduct",
+  createCodaDamageAction({
+    c1Coefficient: 3,
+    coefficientParameterId: "coda-at-dawn-final-stellar-superconduct-damage",
+    id: odetteDamageActionIds.codaStellarSuperconduct,
     kind: "stellar_superconduct",
-    parameterIndex: 5,
-    snapshots: [0.27024, 0.486432]
+    parameterIndex: 2,
+    snapshots: [3.0576, 5.50368]
   }),
-  createStellarSkillDamageAction({
-    coefficientParameterId: "solo-dance-double-plume-move-stellar-swirl-damage",
-    id: "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume.stellar_swirl",
+  createCodaDamageAction({
+    c1Coefficient: 4.5,
+    coefficientParameterId: "coda-at-dawn-final-stellar-swirl-damage",
+    id: odetteDamageActionIds.codaStellarSwirl,
     kind: "stellar_swirl",
-    parameterIndex: 6,
-    snapshots: [0.40528, 0.729504]
+    parameterIndex: 3,
+    snapshots: [4.5864, 8.25552]
   }),
-  createSkillDamageAction({
-    coefficientParameterId: "solo-dance-double-wing-move-damage",
-    id: "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing",
-    parameterIndex: 7,
-    snapshots: [0.51464, 0.926352]
+  createC4CoordinatedDamageAction({
+    coefficient: 0.66,
+    id: odetteDamageActionIds.c4CoordinatedStellarSuperconduct,
+    kind: "stellar_superconduct"
   }),
-  createStellarSkillDamageAction({
-    coefficientParameterId: "solo-dance-double-wing-move-stellar-conduct-damage",
-    id: "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing.stellar_conduct",
-    kind: "stellar_superconduct",
-    parameterIndex: 8,
-    snapshots: [0.32312, 0.581616]
-  }),
-  createStellarSkillDamageAction({
-    coefficientParameterId: "solo-dance-double-wing-move-stellar-swirl-damage",
-    id: "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing.stellar_swirl",
-    kind: "stellar_swirl",
-    parameterIndex: 9,
-    snapshots: [0.48464, 0.872352]
+  createC4CoordinatedDamageAction({
+    coefficient: 0.99,
+    id: odetteDamageActionIds.c4CoordinatedStellarSwirl,
+    kind: "stellar_swirl"
   })
 ] as const
 
-const metricLabels: Readonly<Record<(typeof odetteDamageActions)[number]["id"], string>> = {
-  "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume":
-    "柔板·幻灵夜舞 / 独舞倒影·拂羽舞步单次冰元素伤害",
-  "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume.stellar_conduct":
-    "柔板·幻灵夜舞 / 独舞倒影·拂羽舞步单次星超导伤害",
-  "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume.stellar_swirl":
-    "柔板·幻灵夜舞 / 独舞倒影·拂羽舞步单次星扩散伤害",
-  "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing":
-    "柔板·幻灵夜舞 / 独舞倒影·旋翼舞步单次冰元素伤害",
-  "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing.stellar_conduct":
-    "柔板·幻灵夜舞 / 独舞倒影·旋翼舞步单次星超导伤害",
-  "odette.skill.adagio_phantom_night_dancers.solo_dance_double.wing.stellar_swirl":
-    "柔板·幻灵夜舞 / 独舞倒影·旋翼舞步单次星扩散伤害"
+const metricLabels: Readonly<Record<string, string>> = {
+  [odetteDamageActionIds.codaStellarSuperconduct]: "柔板·破晓终奏 / 共舞结束星超导伤害",
+  [odetteDamageActionIds.codaStellarSwirl]: "柔板·破晓终奏 / 共舞结束星扩散伤害",
+  [odetteDamageActionIds.c4CoordinatedStellarSuperconduct]: "高飞，飞越那幽蓝漫长的迷狂 / C4单次星超导协同攻击",
+  [odetteDamageActionIds.c4CoordinatedStellarSwirl]: "高飞，飞越那幽蓝漫长的迷狂 / C4单次星扩散协同攻击"
 }
+
+const c4CoordinatedDamageActionIds: readonly string[] = [
+  odetteDamageActionIds.c4CoordinatedStellarSuperconduct,
+  odetteDamageActionIds.c4CoordinatedStellarSwirl
+]
 
 const odetteDamageMetrics: readonly CombatDamageMetricDefinition[] = odetteDamageActions.map((action) => {
   const label = metricLabels[action.id]
@@ -148,6 +196,7 @@ const odetteDamageMetrics: readonly CombatDamageMetricDefinition[] = odetteDamag
     id: action.id,
     kind: "damage",
     label,
+    ...(c4CoordinatedDamageActionIds.includes(action.id) ? { minimumSourceConstellation: 4 } : {}),
     sourceActionId: action.id,
     status: "verified",
     target: "enemy"
@@ -327,7 +376,7 @@ export const odetteCombatCoverage: CharacterCombatCoverage = {
   ],
   characterId: "Odette",
   detail:
-    "The selected damage metrics cover one Plume or Wing Solo Dance Double hit in ordinary Cryo, Stellar-Conduct, or Stellar-Swirl form. Stellar-Conduct keeps its explicit 0–12 stored-application snapshot; Stellar-Swirl direct talent damage uses coefficient one. Silver Dawn Dance enters the base-damage-bonus stage; Pathetique enters the shared base-damage-multiplier stage rather than Elevation. Maximum-reachable Splendor resolves four stacks at C0 and six from C1 onward; because the Attack effect unlocks at C2 after cumulative C1, its maintained C2 output is 42%. C6 resolves 25% party Elevation plus another 20% for Odette.",
+    "The primary damage metrics calculate Coda at Dawn's ending hit in Stellar-Conduct or Stellar-Swirl form. At C1 and above, the corresponding 300% or 450% Attack extra hit joins the same Coda result as a separate event. C4 exposes its 66% or 99% Attack coordinated hit as a separate background metric rather than mixing a cooldown-limited proc into every Coda result. Stellar-Conduct keeps its explicit 0–12 stored-application snapshot. Silver Dawn Dance enters the base-damage-bonus stage; Pathetique enters the shared base-damage-multiplier stage rather than Elevation. Maximum-reachable Splendor resolves four stacks at C0 and six from C1 onward; because the Attack effect unlocks at C2 after cumulative C1, its maintained C2 output is 42%. C6 resolves 25% party Elevation plus another 20% for Odette.",
   label: odetteDefinition.name,
   metrics: [
     ...odetteDamageMetrics,

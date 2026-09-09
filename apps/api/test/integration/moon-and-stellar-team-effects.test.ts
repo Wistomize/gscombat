@@ -764,13 +764,40 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(constellationOne.result.expectedDamage).toBeGreaterThan(constellationZero.result.expectedDamage)
   }, 60_000)
 
+  it("evaluates both Coda at Dawn endings with their cumulative C1 extra hit", async () => {
+    const odette = createBuild("Odette", "FavoniusSword", "test.odette.coda-c1", 1)
+    const stellarSuperconductId = "odette.skill.adagio_coda_at_dawn.final_hit.stellar_superconduct"
+    const stellarSwirlId = "odette.skill.adagio_coda_at_dawn.final_hit.stellar_swirl"
+    const [stellarSuperconduct, stellarSwirl] = await Promise.all([
+      evaluate(odette, [], stellarSuperconductId),
+      evaluate(odette, [], stellarSwirlId)
+    ])
+
+    for (const [evaluation, actionId, coefficients] of [
+      [stellarSuperconduct, stellarSuperconductId, [5.50368, 3]],
+      [stellarSwirl, stellarSwirlId, [8.25552, 4.5]]
+    ] as const) {
+      const events = evaluation.rotation.events
+      expect(events.map((event) => event.id)).toEqual([
+        `${actionId}.coda-final-hit`,
+        `${actionId}.c1-additional-hit`
+      ])
+      expect(
+        events.map((event) => event.trace.find((entry) => entry.stage === "base_damage")?.formula.terms?.[0]?.coefficient)
+      ).toEqual(coefficients)
+      expect(evaluation.rotation.dpr).toBeCloseTo(
+        events.reduce((total, event) => total + event.expectedDamage, 0)
+      )
+    }
+  }, 60_000)
+
   it("applies every damage-relevant part of Yumemizuki Mizuki's C6 without leaking reaction crit", async () => {
     const mizukiC5 = withTripleElementalMasteryMainStats(
       createBuild("YumemizukiMizuki", "FavoniusCodex", "test.mizuki.c5", 5)
     )
     const mizukiC6 = { ...mizukiC5, buildId: "test.mizuki.c6", constellation: 6 }
     const mizukiActionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.initial_hit"
-    const odetteActionId = "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume.stellar_swirl"
+    const odetteActionId = "odette.skill.adagio_coda_at_dawn.final_hit.stellar_swirl"
     const mizukiSwirlActionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_pyro_swirl"
     const sucroseSwirlActionId = "sucrose.skill.astable_anemohypostasis_creation_6308.single_pyro_swirl"
     const hyperbloomActionId = "kuki_shinobu.skill.sanctifying_ring.grass_ring.single_hyperbloom"
