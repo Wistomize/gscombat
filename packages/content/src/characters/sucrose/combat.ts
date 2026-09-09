@@ -36,6 +36,28 @@ export const sucroseCombatCoverage: CharacterCombatCoverage = {
     },
     {
       characterId: "Sucrose",
+      damageKind: "transformative",
+      element: "pyro",
+      evaluator: "declared_transformative",
+      id: "sucrose.skill.astable_anemohypostasis_creation_6308.single_pyro_swirl",
+      kind: "damage",
+      status: "verified",
+      talentSlot: "skill",
+      transformativeReaction: { damageElement: "pyro", kind: "swirl" }
+    },
+    {
+      characterId: "Sucrose",
+      damageKind: "transformative",
+      element: "cryo",
+      evaluator: "declared_transformative",
+      id: "sucrose.skill.astable_anemohypostasis_creation_6308.single_cryo_swirl",
+      kind: "damage",
+      status: "verified",
+      talentSlot: "skill",
+      transformativeReaction: { damageElement: "cryo", kind: "swirl" }
+    },
+    {
+      characterId: "Sucrose",
       element: sucroseDefinition.element,
       id: "sucrose.passive.catalyst_conversion.elemental_mastery_share",
       kind: "support",
@@ -163,6 +185,26 @@ export const sucroseCombatCoverage: CharacterCombatCoverage = {
   characterId: "Sucrose",
   metrics: [
     {
+      actionId: "sucrose.skill.astable_anemohypostasis_creation_6308.single_cryo_swirl",
+      characterId: "Sucrose",
+      id: "sucrose.skill.astable_anemohypostasis_creation_6308.single_cryo_swirl",
+      kind: "damage",
+      label: "风灵作成·陆叁零捌 / 单次冰元素扩散",
+      sourceActionId: "sucrose.skill.astable_anemohypostasis_creation_6308.single_cryo_swirl",
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: "sucrose.skill.astable_anemohypostasis_creation_6308.single_pyro_swirl",
+      characterId: "Sucrose",
+      id: "sucrose.skill.astable_anemohypostasis_creation_6308.single_pyro_swirl",
+      kind: "damage",
+      label: "风灵作成·陆叁零捌 / 单次火元素扩散",
+      sourceActionId: "sucrose.skill.astable_anemohypostasis_creation_6308.single_pyro_swirl",
+      status: "verified",
+      target: "enemy"
+    },
+    {
       characterId: "Sucrose",
       flatParameter: {
         reference: {
@@ -209,7 +251,7 @@ export const sucroseCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "Catalyst Conversion and Mollis Favonius remain the selected Elemental Mastery support outputs. Seven-Cycle Theory contributes 5.7143% party damage after a small spirit and another 7.1429% only to Hexerei recipients after a large spirit. C6 absorption remains explicit; timing, target eligibility, and rotations are not inferred.",
+    "Catalyst Conversion and Mollis Favonius remain the selected Elemental Mastery support outputs, alongside explicit Pyro- and Cryo-Swirl snapshots caused by Astable Anemohypostasis Creation - 6308. Seven-Cycle Theory contributes 5.7143% party damage after a small spirit and another 7.1429% only to Hexerei recipients after a large spirit. C6 absorption remains explicit; timing, target eligibility, and rotations are not inferred.",
   label: sucroseDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

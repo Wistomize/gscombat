@@ -171,10 +171,25 @@ export const yunJinCombatCoverage: CharacterCombatCoverage = {
       status: "verified",
       target: "friendly_recipient",
       unit: "damage"
+    },
+    {
+      characterId: "YunJin",
+      id: "yun_jin.constellation.6.decorous_harmony.flying_cloud_flag_formation.normal_attack_speed_bonus",
+      kind: "scalar",
+      minimumSourceConstellation: 6,
+      label: "庄谐并举 / 飞云旗阵普通攻击速度提升",
+      ratio: 0,
+      ratioConstellationBonuses: [{ minimumConstellation: 6, value: 0.12 }],
+      recipientRequirements: [],
+      semantic: "attack_speed_bonus",
+      sourceActionId: "yun_jin.burst.flying_cloud_flag_formation",
+      status: "verified",
+      target: "friendly_recipient",
+      unit: "ratio"
     }
   ],
   detail:
-    "One uninfused normal first hit is verified as baseline Physical damage. The selected support profile verifies Flying Cloud Flag Formation's base DEF-scaled damage increase for one Normal Attack hit, including C3 talent levels, without applying it to a fixed main DPS. C2 can be selected as an explicit current-action snapshot after Yun Jin casts Spring Spirit Summoning: Yun Jin and teammates gain 15% damage bonus only for Normal Attacks. It does not infer the cast, 12-second duration, timing, stack consumption, or a rotation. The party-element passive increment, C6 attack speed, charged holds and temporary shield remain in progress.",
+    "One uninfused normal first hit is verified as baseline Physical damage. The selected support profile verifies Flying Cloud Flag Formation's base DEF-scaled damage increase for one Normal Attack hit, including C3 talent levels, without applying it to a fixed main DPS. C2 can be selected as an explicit current-action snapshot after Yun Jin casts Spring Spirit Summoning: Yun Jin and teammates gain 15% damage bonus only for Normal Attacks. C6 exposes its separate 12% Normal Attack Speed support scalar for Flying Cloud Flag Formation recipients; it is zero below C6 and does not model cast, duration, timing, stack consumption, or a rotation. The party-element passive increment, charged holds and temporary shield remain in progress.",
   label: yunJinDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

@@ -164,6 +164,36 @@ export const varesaCombatCoverage: CharacterCombatCoverage = {
       target: "attackPercent",
       targetFilter: { recipientSourceRelation: "source" },
       value: { kind: "fixed", value: 0.7 }
+    },
+    {
+      activation: "active",
+      id: "varesa.constellation.6.righteous_hero.apex_drive.plunge_and_burst_crit_rate",
+      label: "正义英雄的凯旋 · C6 极限驱动状态下下落攻击与闪烈降临暴击率+10%",
+      source: { characterId: "Varesa", kind: "character", minimumSourceConstellation: 6 },
+      target: "critRate",
+      targetFilter: {
+        actionIds: [
+          "varesa.normal.fiery_passion.high_plunge.follow_up_strike",
+          "varesa.burst.guardian_of_the_sacred_mountain.kick"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.1 }
+    },
+    {
+      activation: "active",
+      id: "varesa.constellation.6.righteous_hero.apex_drive.plunge_and_burst_crit_damage",
+      label: "正义英雄的凯旋 · C6 极限驱动状态下下落攻击与闪烈降临暴击伤害+100%",
+      source: { characterId: "Varesa", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: {
+        actionIds: [
+          "varesa.normal.fiery_passion.high_plunge.follow_up_strike",
+          "varesa.burst.guardian_of_the_sacred_mountain.kick"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 1 }
     }
   ],
   characterId: "Varesa",

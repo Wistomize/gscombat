@@ -170,7 +170,8 @@ describe("CombatActionMetadataSchema", () => {
                 coefficientMultiplierScenarioParameterId: "stored-stacks",
                 coefficientParameterId: "hp-coefficient-per-stack",
                 stat: "hp"
-              }
+              },
+              { fixedCoefficient: 0.6, minimumSourceConstellation: 1, stat: "elementalMastery" }
             ]
           }
         ],

@@ -303,6 +303,65 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
       target: "damageBonus",
       value: { kind: "fixed", value: 0.09 }
     },
+    {
+      activation: "active",
+      id: "traveler.dendro.constellation.6.withered_aggregation.dendro_damage_bonus",
+      label: "枯叶连绵 · 草元素旅行者C6（处于草灯莲攻击范围内，草元素伤害加成提高12%）",
+      source: {
+        characterId: "Traveler",
+        kind: "character",
+        minimumSourceConstellation: 6,
+        travelerElement: "dendro"
+      },
+      target: "damageBonus",
+      targetFilter: { elements: ["dendro"] },
+      value: { kind: "fixed", value: 0.12 }
+    },
+    {
+      activation: "active",
+      exclusivity: { group: "traveler-dendro-c6-lamp-transformation", variant: "electro" },
+      id: "traveler.dendro.constellation.6.withered_aggregation.electro_lamp.party_damage_bonus",
+      label: "枯叶连绵 · 草元素旅行者C6（草灯莲完成雷元素转化后，雷元素伤害加成提高12%）",
+      source: {
+        characterId: "Traveler",
+        kind: "character",
+        minimumSourceConstellation: 6,
+        travelerElement: "dendro"
+      },
+      target: "damageBonus",
+      targetFilter: { elements: ["electro"] },
+      value: { kind: "fixed", value: 0.12 }
+    },
+    {
+      activation: "active",
+      exclusivity: { group: "traveler-dendro-c6-lamp-transformation", variant: "hydro" },
+      id: "traveler.dendro.constellation.6.withered_aggregation.hydro_lamp.party_damage_bonus",
+      label: "枯叶连绵 · 草元素旅行者C6（草灯莲完成水元素转化后，水元素伤害加成提高12%）",
+      source: {
+        characterId: "Traveler",
+        kind: "character",
+        minimumSourceConstellation: 6,
+        travelerElement: "dendro"
+      },
+      target: "damageBonus",
+      targetFilter: { elements: ["hydro"] },
+      value: { kind: "fixed", value: 0.12 }
+    },
+    {
+      activation: "active",
+      exclusivity: { group: "traveler-dendro-c6-lamp-transformation", variant: "pyro" },
+      id: "traveler.dendro.constellation.6.withered_aggregation.pyro_lamp.party_damage_bonus",
+      label: "枯叶连绵 · 草元素旅行者C6（草灯莲完成火元素转化后，火元素伤害加成提高12%）",
+      source: {
+        characterId: "Traveler",
+        kind: "character",
+        minimumSourceConstellation: 6,
+        travelerElement: "dendro"
+      },
+      target: "damageBonus",
+      targetFilter: { elements: ["pyro"] },
+      value: { kind: "fixed", value: 0.12 }
+    },
     ...(travelerCryoCombatCoverage.actionEffects ?? [])
   ],
   characterId: "Traveler",

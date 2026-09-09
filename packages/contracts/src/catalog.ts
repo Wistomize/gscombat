@@ -109,6 +109,7 @@ const SupportMetricCatalogEntrySchema = Type.Object({
   id: Type.String({ minLength: 1, maxLength: 120 }),
   kind: SupportMetricKindSchema,
   label: Type.String({ minLength: 1, maxLength: 160 }),
+  minimumSourceConstellation: Type.Optional(Type.Integer({ maximum: 6, minimum: 0 })),
   recipientRequirements: Type.Optional(Type.Array(RecipientRequirementSchema, { maxItems: 20 })),
   recipientTargetRouting: Type.Optional(Type.Literal("active_recipient_if_moonsign_else_self")),
   scenarioParameters: Type.Optional(Type.Array(CombatActionIntegerScenarioParameterSchema, { maxItems: 20 })),
@@ -130,6 +131,7 @@ export const CatalogResponseSchema = Type.Object({
         Type.Object({
           id: Type.String(),
           label: Type.String(),
+          minimumSourceConstellation: Type.Optional(Type.Integer({ maximum: 6, minimum: 0 })),
           scenarioParameters: Type.Optional(Type.Array(CombatActionIntegerScenarioParameterSchema, { maxItems: 20 })),
           tracePresentation: Type.Optional(
             Type.Object({

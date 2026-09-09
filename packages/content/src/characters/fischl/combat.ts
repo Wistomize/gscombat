@@ -98,7 +98,7 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
   characterId: "Fischl",
   actionEffects: [
     {
-      activation: "maximum_reachable",
+      activation: "active",
       condition: { kind: "hexerei_secret_rite" },
       id: "fischl.locked_passive.nocturnal_world_fantasia.after_overload.attack_percent",
       label: "魔女的前夜礼·宵世幻奏 · 奥兹在场且触发超载后攻击力提升",
@@ -107,7 +107,7 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
       value: { kind: "fixed", value: 0.225 }
     },
     {
-      activation: "maximum_reachable",
+      activation: "active",
       condition: { kind: "hexerei_secret_rite" },
       id: "fischl.locked_passive.nocturnal_world_fantasia.after_electro_charged.elemental_mastery",
       label: "魔女的前夜礼·宵世幻奏 · 奥兹在场且触发感电或月感电后元素精通提升",
@@ -116,7 +116,7 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
       value: { kind: "fixed", value: 90 }
     },
     {
-      activation: "maximum_reachable",
+      activation: "active",
       condition: { kind: "hexerei_secret_rite" },
       id: "fischl.locked_passive.nocturnal_world_fantasia.c6.after_overload.extra_attack_percent",
       label: "魔女的前夜礼·宵世幻奏 · C6奥兹协同攻击后超载攻击力额外提升",
@@ -125,7 +125,7 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
       value: { kind: "fixed", value: 0.225 }
     },
     {
-      activation: "maximum_reachable",
+      activation: "active",
       condition: { kind: "hexerei_secret_rite" },
       id: "fischl.locked_passive.nocturnal_world_fantasia.c6.after_electro_charged.extra_elemental_mastery",
       label: "魔女的前夜礼·宵世幻奏 · C6奥兹协同攻击后感电元素精通额外提升",
@@ -140,14 +140,14 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
       characterId: "Fischl",
       id: "fischl.skill.nightrider.oz.level_one_bolt",
       kind: "damage",
-      label: "夜巡影翼 / 奥兹单次攻击（后台，C0，无反应）",
+      label: "夜巡影翼 / 奥兹单次攻击（后台，无反应）",
       sourceActionId: "fischl.skill.nightrider.oz.level_one_bolt",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "The selected metric is one ordinary post-deployment Oz attack. Nocturnal World Fantasia now contributes its Overloaded Attack and Electro-Charged/Lunar-Charged Elemental Mastery team snapshots under Hexerei: Secret Rite, including the C6 doubled values. Summoning damage, recurrence, target selection, timing, and other constellations remain unmodeled.",
+    "The selected metric is one ordinary post-deployment Oz attack. Nocturnal World Fantasia exposes explicit Overloaded Attack and Electro-Charged/Lunar-Charged Elemental Mastery snapshots under Hexerei: Secret Rite, including the C6 doubled values. These effects must be selected only after Oz is present and the corresponding reaction has occurred; the single-hit metric does not infer that history. Summoning damage, recurrence, target selection, timing, and other constellations remain unmodeled.",
   label: fischlDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

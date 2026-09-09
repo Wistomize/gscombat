@@ -111,6 +111,68 @@ export const baizhuCombatCoverage: CharacterCombatCoverage = {
       ],
       status: "verified",
       talentSlot: "burst"
+    },
+    {
+      characterId: "Baizhu",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "spiritvein-skill-damage",
+          id: "c6-gossamer-sprite-seamless-shield-spiritvein",
+          snapshotChecks: [
+            { expectedCoefficient: 0.97064, talentLevel: 1 },
+            { expectedCoefficient: 1.747152, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: baizhuDefinition.element,
+      evaluator: "declared_direct",
+      id: "baizhu.constellation.6.radical_vitality.gossamer_sprite.seamless_shield.spiritvein",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "burst",
+          id: "spiritvein-skill-damage",
+          parameterIndex: 6,
+          source: "talent",
+          talentSlot: "burst"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-gossamer-sprite-seamless-shield-spiritvein-current",
+          label: "C6 真邪合离：游丝徵灵命中产生无郤气护盾并触发灵气脉",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "burst",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-gossamer-sprite-seamless-shield-spiritvein-current",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 1, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "c6-gossamer-sprite-seamless-shield-spiritvein",
+            id: "c6-gossamer-sprite-seamless-shield-spiritvein",
+            snapshot: "hit"
+          }
+        ],
+        duration: 1
+      }
     }
   ],
   actionEffects: [
@@ -121,6 +183,22 @@ export const baizhuCombatCoverage: CharacterCombatCoverage = {
       source: { characterId: "Baizhu", kind: "character", minimumSourceConstellation: 4 },
       target: "elementalMastery",
       value: { kind: "fixed", value: 80 }
+    },
+    {
+      activation: "automatic",
+      id: "baizhu.constellation.6.radical_vitality.spiritvein.max_hp_additive_damage",
+      label: "真邪合离 · C6 灵气脉伤害追加白术生命值上限的8%",
+      source: { characterId: "Baizhu", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: ["baizhu.constellation.6.radical_vitality.gossamer_sprite.seamless_shield.spiritvein"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 0.08 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "hp"
+      }
     }
   ],
   characterId: "Baizhu",
@@ -185,7 +263,7 @@ export const baizhuCombatCoverage: CharacterCombatCoverage = {
       },
       id: "baizhu.burst.holistic_revivification.seamless_shield.initial_absorption",
       kind: "scalar",
-      label: "愈气全形论 / 无郤气护盾基础吸收量（C0、非草元素伤害、当前场上角色）",
+      label: "愈气全形论 / 无郤气护盾基础吸收量（非草元素伤害、当前场上角色）",
       ratioParameter: {
         reference: {
           groupId: "burst",
@@ -206,10 +284,21 @@ export const baizhuCombatCoverage: CharacterCombatCoverage = {
       status: "verified",
       target: "friendly_recipient",
       unit: "hp"
+    },
+    {
+      actionId: "baizhu.constellation.6.radical_vitality.gossamer_sprite.seamless_shield.spiritvein",
+      characterId: "Baizhu",
+      id: "baizhu.constellation.6.radical_vitality.gossamer_sprite.seamless_shield.spiritvein",
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "真邪合离 / C6 游丝徵灵产生无郤气护盾后灵气脉单次伤害（无反应）",
+      sourceActionId: "baizhu.constellation.6.radical_vitality.gossamer_sprite.seamless_shield.spiritvein",
+      status: "verified",
+      target: "enemy"
     }
   ],
   detail:
-    "One first normal-attack hit and one initial Universal Diagnosis Gossamer Sprite hit remain verified baseline C0 attack-scaling Dendro actions for lower-level calculation, but neither is a selected display metric because Baizhu's role-correct outputs here are his healing and shield. The selected support metric calculates one returning Gossamer Sprite heal as max HP × skill[1] plus skill[2], then source Healing Bonus and recipient Incoming Healing Bonus, for a nearby party member when the Sprite returns; C5 adds three Skill levels. The selected shield metric calculates one Seamless Shield applied to the current active party member as non-Dendro base absorption max HP × burst[0] plus burst[1], before that recipient's Shield Strength; C3 adds three Burst levels. At C4, a separately selected current-action snapshot means Holistic Revivification was already cast and the evaluated recipient is nearby: all nearby party members gain 80 Elemental Mastery for 15 seconds. It does not infer the cast, distance, duration, or a rotation. It otherwise excludes additional Sprite attacks, Shield refreshes, the 250% Dendro-damage absorption branch, Spiritvein attacks, burst healing, reaction bonus, external infusions, remaining passives and constellations, external effects, and other character states.",
+    "One first normal-attack hit and one initial Universal Diagnosis Gossamer Sprite hit remain verified baseline attack-scaling Dendro actions for lower-level calculation, but neither is a selected display metric because Baizhu's role-correct outputs here are his healing and shield. The selected support metric calculates one returning Gossamer Sprite heal as max HP × skill[1] plus skill[2], then source Healing Bonus and recipient Incoming Healing Bonus, for a nearby party member when the Sprite returns; C5 adds three Skill levels. The selected shield metric calculates one Seamless Shield applied to the current active party member as non-Dendro base absorption max HP × burst[0] plus burst[1], before that recipient's Shield Strength; C3 adds three Burst levels. This same single-shield magnitude also covers the Seamless Shield created by a C6 Gossamer Sprite hit. The dedicated C6 damage metric is zero through C5 and, at C6, evaluates one Spiritvein triggered after a Gossamer Sprite creates a new Seamless Shield while the prior shield can release: Attack × burst[6] plus 8% of Baizhu's max HP in the same base-damage stage. At C4, a separately selected current-action snapshot means Holistic Revivification was already cast and the evaluated recipient is nearby: all nearby party members gain 80 Elemental Mastery for 15 seconds. It does not infer the cast, distance, duration, shield sequence, or a rotation. It otherwise excludes additional Sprite attacks, repeated Shield refreshes, the 250% Dendro-damage absorption branch, burst healing, reaction bonus, external infusions, remaining passives and constellations, external effects, and other character states.",
   label: baizhuDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

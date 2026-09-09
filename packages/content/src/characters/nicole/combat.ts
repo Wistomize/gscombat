@@ -116,6 +116,23 @@ export const nicoleCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "automatic",
+      id: "nicole.constellation.1.foreseen_destiny.arcane_projection.active_character_attack_addition",
+      label: "「命运早已注定，万事无可更易」· C1 奥迹造影追加当前场上角色600%攻击力伤害",
+      source: { characterId: "Nicole", kind: "character", minimumSourceConstellation: 1 },
+      target: "additionalDamageEvent",
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 0 },
+        element: "recipient_native",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        recipientFinalAttackFlatDamageMultiplier: { kind: "fixed", value: 6 },
+        scalingStat: "attack"
+      }
+    },
+    {
+      activation: "automatic",
       id: "nicole.burst.pilgrimage_of_the_heavenly_path.arcane_projection.coordinated_damage",
       label: "圣言默示·天路历程 · 奥迹造影协同攻击",
       source: { characterId: "Nicole", kind: "character" },
@@ -188,6 +205,14 @@ export const nicoleCombatCoverage: CharacterCombatCoverage = {
           }
         }
       }
+    },
+    {
+      activation: "active",
+      id: "nicole.constellation.6.correct_path.divine_blessing.enemy_defense_ignore",
+      label: "「这便是正确的道路，莫要彷徨」· C6 已升变圣祝之引的角色（无视敌人40%防御力）",
+      source: { characterId: "Nicole", kind: "character", minimumSourceConstellation: 6 },
+      target: "enemyDefenseIgnore",
+      value: { kind: "fixed", value: 0.4 }
     }
   ],
   characterId: "Nicole",
@@ -272,7 +297,7 @@ export const nicoleCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected support metrics calculate Shield of Blazing Light and Grace of Kenosis. Pilgrimage of the Heavenly Path's Arcane Projection is a separate non-reacting coordinated event based on the recipient's final Attack; Light from Darkness adds Nicole's 300% final Attack for Hexerei recipients. Duration, trigger cooldown, A1/A4 Guidance, and other constellations remain outside the single-action snapshot.",
+    "The selected support metrics calculate Shield of Blazing Light and Grace of Kenosis. Pilgrimage of the Heavenly Path's Arcane Projection is a separate non-reacting coordinated event based on the recipient's final Attack. C1 adds another independent Arcane Projection event equal to 600% of the active recipient's final Attack, so C6 source builds retain it cumulatively. Light from Darkness adds Nicole's 300% final Attack for Hexerei recipients. Duration, trigger cooldown, A1/A4 Guidance, and non-numeric constellation timing remain outside the single-action snapshot.",
   label: nicoleDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

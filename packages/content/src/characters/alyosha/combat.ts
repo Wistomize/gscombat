@@ -89,6 +89,15 @@ export const alyoshaCombatCoverage: CharacterCombatCoverage = {
     },
     {
       activation: "maximum_reachable",
+      id: "alyosha.constellation.6.hunters_precision.second_stack.stellar_superconduct_damage_bonus",
+      label: "复夺旌幡 · C6猎者之准第2层星超导反应伤害提升20%",
+      source: { characterId: "Alyosha", kind: "character", minimumSourceConstellation: 6 },
+      target: "specialReactionDamageBonus",
+      targetFilter: { specialReactionKinds: ["stellar_superconduct"] },
+      value: { kind: "fixed", value: 0.2 }
+    },
+    {
+      activation: "maximum_reachable",
       id: "alyosha.passive.stellar_frontier.active_character.stellar_superconduct_damage_bonus",
       label: "星赴险域 · 场上角色星超导反应伤害提升20%",
       source: { characterId: "Alyosha", kind: "character" },
@@ -107,7 +116,7 @@ export const alyoshaCombatCoverage: CharacterCombatCoverage = {
   ],
   characterId: "Alyosha",
   detail:
-    "The selected outputs are Hunter's Precision Attack increase, one Tugarin heal for the current active character, Stellar Frontier's 20% active-character Stellar-Superconduct damage bonus, and C6's 100 Elemental Mastery. Hunter's Precision defaults to one stack. At C6, cumulative C3 raises a configured level-10 Skill to effective level 13 (25.016% per stack), while C6 automatically supplies two stacks for 50.032% total Attack increase. Tugarin healing is Attack × 120% before source Healing Bonus and recipient Incoming Healing Bonus. C4's separate 60% Attack heal for the lowest-HP party member, personal Skill/Burst damage, Energy restoration, field cadence, and mark timing are intentionally not merged into these source-owned indicators.",
+    "The selected outputs are Hunter's Precision Attack increase, one Tugarin heal for the current active character, C4's separate lowest-HP nearby-party heal, Stellar Frontier's active-character Stellar-Superconduct damage bonus, and C6's 100 Elemental Mastery. Hunter's Precision defaults to one stack. At C6, cumulative C3 raises a configured level-10 Skill to effective level 13 (25.016% per stack), while C6 automatically supplies two stacks for 50.032% total Attack increase and duplicates Stellar Frontier's 20% Stellar-Superconduct bonus for a 40% total. Tugarin healing is Attack × 120% before source Healing Bonus and recipient Incoming Healing Bonus. The C4 heal is independently calculated as 60% of Alyosha's Attack before the same healing modifiers; the caller must select and confirm the nearby party member with the lowest HP percentage. Personal Skill/Burst damage, Energy restoration, field cadence, and mark timing are not merged into these source-owned indicators.",
   label: alyoshaDefinition.name,
   metrics: [
     {
@@ -149,6 +158,22 @@ export const alyoshaCombatCoverage: CharacterCombatCoverage = {
     },
     {
       characterId: "Alyosha",
+      id: "alyosha.constellation.4.tugarin.lowest_hp_party_member.healing",
+      includeHealingBonus: true,
+      kind: "healing",
+      label: "C4 / 图加林为附近生命值比例最低队员的追加治疗量",
+      minimumSourceConstellation: 4,
+      ratio: 0.6,
+      recipientRequirements: [
+        { kind: "recipient_in_source_area", label: "受治疗角色为图加林附近生命值比例最低的队伍角色" }
+      ],
+      scalingStat: "attack",
+      sourceActionId: tugarinHealingActionId,
+      status: "verified",
+      target: "friendly_recipient"
+    },
+    {
+      characterId: "Alyosha",
       id: "alyosha.passive.stellar_frontier.active_character.stellar_superconduct_damage_bonus",
       kind: "scalar",
       label: "星赴险域 / 场上角色星超导反应伤害提升",
@@ -165,6 +190,7 @@ export const alyoshaCombatCoverage: CharacterCombatCoverage = {
       id: "alyosha.constellation.6.hunters_precision.elemental_mastery",
       flat: 0,
       kind: "scalar",
+      minimumSourceConstellation: 6,
       label: "复夺旌幡 / C6满2层元素精通提升",
       ratioConstellationBonuses: [{ minimumConstellation: 6, value: 100 }],
       recipientRequirements: [],

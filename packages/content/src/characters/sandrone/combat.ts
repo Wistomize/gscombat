@@ -2,6 +2,12 @@ import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { sandroneDefinition } from "./definition.js"
 
+const sandroneC6ClusterBeamActionIds = {
+  ordinary: "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.ordinary",
+  stellarSuperconduct: "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.stellar_superconduct",
+  stellarSwirl: "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.stellar_swirl"
+} as const
+
 export const sandroneCombatCoverage: CharacterCombatCoverage = {
   actions: [
     {
@@ -66,7 +72,7 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
     },
     {
       characterId: "Sandrone",
-      damageKind: "special_reaction",
+      damageKind: "direct",
       damageParts: [
         {
           coefficientParameterId: "prism-bullet-stellar-superconduct-damage",
@@ -78,7 +84,7 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
         }
       ],
       element: sandroneDefinition.element,
-      evaluator: "declared_special_reaction",
+      evaluator: "declared_direct",
       id: "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct",
       kind: "damage",
       parameterReferences: [
@@ -100,17 +106,13 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
           minimumValue: 0
         }
       ],
-      specialReaction: {
-        kind: "stellar_superconduct",
-        stellarStoredElementalApplicationsParameterId: "stored-elemental-applications"
-      },
       status: "verified",
       talentSlot: "skill"
     },
     {
       attackKind: "charged",
       characterId: "Sandrone",
-      damageKind: "special_reaction",
+      damageKind: "direct",
       damageParts: [
         {
           coefficientParameterId: "condensation-ray-stellar-superconduct-damage",
@@ -122,7 +124,7 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
         }
       ],
       element: sandroneDefinition.element,
-      evaluator: "declared_special_reaction",
+      evaluator: "declared_direct",
       id: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
       kind: "damage",
       parameterReferences: [
@@ -226,9 +228,249 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
       },
       status: "verified",
       talentSlot: "burst"
+    },
+    {
+      attackKind: "charged",
+      characterId: "Sandrone",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "prism-bullet-damage",
+          id: "condensed-cluster-beam-ordinary",
+          snapshotChecks: [
+            { expectedCoefficient: 0.324, talentLevel: 1 },
+            { expectedCoefficient: 0.5832, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: sandroneDefinition.element,
+      evaluator: "declared_direct",
+      id: sandroneC6ClusterBeamActionIds.ordinary,
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "prism-bullet-damage",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-condensed-cluster-beam-ready",
+          label: "C6 水仙梦醒，且望晨光：第三次冷凝射线触发凝聚集束炮",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "skill",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-condensed-cluster-beam-ready",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 0, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "condensed-cluster-beam-ordinary",
+            hitCount: 4,
+            id: "condensed-cluster-beam-ordinary-four-hits",
+            snapshot: "hit"
+          }
+        ],
+        duration: 1
+      }
+    },
+    {
+      attackKind: "charged",
+      characterId: "Sandrone",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "prism-bullet-stellar-superconduct-damage",
+          id: "condensed-cluster-beam-stellar-superconduct",
+          snapshotChecks: [
+            { expectedCoefficient: 0.216, talentLevel: 1 },
+            { expectedCoefficient: 0.3888, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: sandroneDefinition.element,
+      evaluator: "declared_direct",
+      id: sandroneC6ClusterBeamActionIds.stellarSuperconduct,
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "prism-bullet-stellar-superconduct-damage",
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-condensed-cluster-beam-ready",
+          label: "C6 水仙梦醒，且望晨光：第三次冷凝射线触发星超导凝聚集束炮",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        },
+        {
+          defaultValue: 0,
+          id: "stored-elemental-applications",
+          label: "手填：当前极星辉域已储存元素附着次数（0–12次）",
+          maximumValue: 12,
+          minimumValue: 0
+        }
+      ],
+      status: "verified",
+      talentSlot: "skill",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-condensed-cluster-beam-ready",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 0, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "condensed-cluster-beam-stellar-superconduct",
+            hitCount: 4,
+            id: "condensed-cluster-beam-stellar-superconduct-four-hits",
+            snapshot: "hit",
+            specialReaction: { kind: "stellar_superconduct" }
+          }
+        ],
+        duration: 1
+      }
+    },
+    {
+      attackKind: "charged",
+      characterId: "Sandrone",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "prism-bullet-stellar-superconduct-damage",
+          id: "condensed-cluster-beam-stellar-swirl",
+          snapshotChecks: [
+            { expectedCoefficient: 0.216, talentLevel: 1 },
+            { expectedCoefficient: 0.3888, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: sandroneDefinition.element,
+      evaluator: "declared_direct",
+      id: sandroneC6ClusterBeamActionIds.stellarSwirl,
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "prism-bullet-stellar-superconduct-damage",
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-condensed-cluster-beam-ready",
+          label: "C6 水仙梦醒，且望晨光：第三次冷凝射线触发星扩散凝聚集束炮",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "skill",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-condensed-cluster-beam-ready",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 0, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "condensed-cluster-beam-stellar-swirl",
+            hitCount: 4,
+            id: "condensed-cluster-beam-stellar-swirl-four-hits",
+            snapshot: "hit",
+            specialReaction: { kind: "stellar_swirl" }
+          }
+        ],
+        duration: 1
+      }
     }
   ],
   actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.ordinary_damage",
+      label: "水仙梦醒，且望晨光 · C6 凝聚集束炮普通分支（每段100%攻击力）",
+      source: { characterId: "Sandrone", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: { actionIds: [sandroneC6ClusterBeamActionIds.ordinary], recipientSourceRelation: "source" },
+      value: {
+        coefficient: { kind: "fixed", value: 1 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "attack"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.stellar_superconduct_damage",
+      label: "水仙梦醒，且望晨光 · C6 凝聚集束炮星超导分支（每段80%攻击力）",
+      source: { characterId: "Sandrone", kind: "character", minimumSourceConstellation: 6 },
+      target: "specialReactionBaseDamageFlat",
+      targetFilter: {
+        actionIds: [sandroneC6ClusterBeamActionIds.stellarSuperconduct],
+        recipientSourceRelation: "source",
+        specialReactionKinds: ["stellar_superconduct"]
+      },
+      value: { kind: "source_final_attack", multiplier: { kind: "fixed", value: 0.8 } }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.stellar_swirl_damage",
+      label: "水仙梦醒，且望晨光 · C6 凝聚集束炮星扩散分支（每段120%攻击力）",
+      source: { characterId: "Sandrone", kind: "character", minimumSourceConstellation: 6 },
+      target: "specialReactionBaseDamageFlat",
+      targetFilter: {
+        actionIds: [sandroneC6ClusterBeamActionIds.stellarSwirl],
+        recipientSourceRelation: "source",
+        specialReactionKinds: ["stellar_swirl"]
+      },
+      value: { kind: "source_final_attack", multiplier: { kind: "fixed", value: 1.2 } }
+    },
     {
       activation: "maximum_reachable",
       id: "sandrone.passive.stellar_superconduct_base_damage_bonus",
@@ -260,10 +502,55 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
           }
         }
       }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "sandrone.constellation.6.narcissus_awaking.stellar_reaction_elevation",
+      label: "水仙梦醒，且望晨光 · C6 桑多涅造成的所有星烁反应伤害擢升20%",
+      source: { characterId: "Sandrone", kind: "character", minimumSourceConstellation: 6 },
+      target: "specialReactionElevation",
+      targetFilter: {
+        recipientSourceRelation: "source",
+        specialReactionKinds: ["stellar_superconduct", "stellar_swirl"]
+      },
+      value: { kind: "fixed", value: 0.2 }
     }
   ],
   characterId: "Sandrone",
   metrics: [
+    {
+      actionId: sandroneC6ClusterBeamActionIds.ordinary,
+      characterId: "Sandrone",
+      id: sandroneC6ClusterBeamActionIds.ordinary,
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "水仙梦醒，且望晨光 / C6 凝聚集束炮普通分支四段总伤害",
+      sourceActionId: sandroneC6ClusterBeamActionIds.ordinary,
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: sandroneC6ClusterBeamActionIds.stellarSuperconduct,
+      characterId: "Sandrone",
+      id: sandroneC6ClusterBeamActionIds.stellarSuperconduct,
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "水仙梦醒，且望晨光 / C6 凝聚集束炮星超导分支四段总伤害",
+      sourceActionId: sandroneC6ClusterBeamActionIds.stellarSuperconduct,
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: sandroneC6ClusterBeamActionIds.stellarSwirl,
+      characterId: "Sandrone",
+      id: sandroneC6ClusterBeamActionIds.stellarSwirl,
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "水仙梦醒，且望晨光 / C6 凝聚集束炮星扩散分支四段总伤害",
+      sourceActionId: sandroneC6ClusterBeamActionIds.stellarSwirl,
+      status: "verified",
+      target: "enemy"
+    },
     {
       actionId: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
       characterId: "Sandrone",
@@ -286,7 +573,7 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The maintained metrics are one charged Condensation Ray Stellar-Superconduct hit and one Burst Negative-Temperature Beam Stellar-Superconduct hit. Both read the manual 0–12 stored-application snapshot. The Burst defaults to ten Improved Tactics stacks and applies the pinned 10% multiplier per stack. Sandrone's final-Attack-derived, capped 14% Stellar-Superconduct base-damage bonus applies to eligible party actions. Prism bullets and one normal hit remain registered as lower-level actions; bombardment, other passives, constellations, timing, and rotations remain unmodeled.",
+    "The maintained metrics are one charged Condensation Ray Stellar-Superconduct hit, one Burst Negative-Temperature Beam Stellar-Superconduct hit, and all three C6 Condensed Cluster Beam branches. Stellar-Superconduct metrics read the manual 0–12 stored-application snapshot. The Burst defaults to ten Improved Tactics stacks and applies the pinned 10% multiplier per stack. Sandrone's final-Attack-derived, capped 14% Stellar-Superconduct base-damage bonus applies to eligible party actions. At C6, the third Condensation Ray adds four 100%-Attack ordinary Cryo hits, four 80%-Attack Stellar-Superconduct hits, or four 120%-Attack Stellar-Swirl hits according to the beam's damage branch; the Stellar branches also receive Sandrone's automatic 20% elevation. Prism bullets and one normal hit remain registered as lower-level actions; bombardment, timing, and rotations remain unmodeled.",
   label: sandroneDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

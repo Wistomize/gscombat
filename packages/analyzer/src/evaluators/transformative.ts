@@ -57,6 +57,7 @@ export function evaluateDeclaredTransformativeScenarioAction(
     sourceFinalAttackByBuildId,
     sourceFinalDefenseByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     sourceFinalHpByBuildId,
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
@@ -88,6 +89,7 @@ export function evaluateDeclaredTransformativeScenarioAction(
     sourceFinalAttackByBuildId,
     sourceFinalHpByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
     ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
     ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
@@ -132,6 +134,12 @@ export function evaluateDeclaredTransformativeScenarioAction(
         reaction: {
           ...action.transformativeReaction,
           bonus: actionEffects.reactionDamageBonus,
+          ...(actionEffects.transformativeReactionCritDamage === 0
+            ? {}
+            : { critDamage: actionEffects.transformativeReactionCritDamage }),
+          ...(actionEffects.transformativeReactionCritRate === 0
+            ? {}
+            : { critRate: actionEffects.transformativeReactionCritRate }),
           ...(actionEffects.transformativeReactionFlatDamageAddition === 0
             ? {}
             : { flatDamageAddition: actionEffects.transformativeReactionFlatDamageAddition })
@@ -177,6 +185,21 @@ function createTransformativeExpectedDamageResult(event: RotationEventResult): E
         },
         source: "reaction",
         stage: "transformative_reaction"
+      })
+      continue
+    }
+    if (entry.kind === "expected_crit") {
+      trace.push({
+        after: entry.after,
+        before: entry.before,
+        formula: {
+          critDamage: entry.critDamage,
+          critRate: entry.critRate,
+          kind: "expected_crit",
+          multiplier: entry.multiplier
+        },
+        source: "stats",
+        stage: "crit"
       })
       continue
     }

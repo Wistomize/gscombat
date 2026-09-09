@@ -1,0 +1,68 @@
+schema: spec-driven
+
+context: |
+  Language: zh
+  All artifacts must be written in zh.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+  Project: GSCombat, a pnpm and Turborepo modular monolith for explainable Genshin combat analysis.
+  Workspaces: apps/api, apps/web, apps/mini, packages/calculator, packages/contracts, packages/game-data,
+    packages/content, and packages/analyzer.
+  Architecture: calculator owns character-agnostic formulas; contracts owns runtime and HTTP schemas; game-data owns
+    pinned read-only data; content owns typed character, weapon, artifact, and team declarations; analyzer composes
+    scenarios and evaluates metrics; api and web expose the supported product workflows.
+  Product boundary: report one selected core-action expected result, support metrics, traceable formulas, and
+    counterfactual gains. Do not describe the result as full-rotation DPS.
+  Authoritative flow: production damage and support results must use the maintained typed metric and scenario paths.
+    Do not add parallel calculation paths or character-specific branches to generic layers.
+  Public boundaries: apps/api exposes TypeBox-validated HTTP resources through one buildApp composition root;
+    /v1/analysis is the supported damage-analysis workflow and /v1/support-metrics/evaluate is the non-damage metric
+    workflow. packages/analyzer exposes supported library APIs only from its package root.
+  Action semantics: Content binds semantic actions to the pinned snapshot and may declare explicit event timing,
+    snapshots, reaction assumptions, elemental applications, and element overrides. The sustained-aura and standard-ICD
+    layer is intentionally static, single-target, and non-consuming; it is not a complete gauge or rotation simulator.
+  Content model: ordinary entities must fit entity-owned declarations and generated registries. A new generic
+    multiplier, effect stage, reaction type, or shared scenario rule is an architectural change.
+  Persistence: browser-local versioned builds remain the default. Invite-authenticated SQLite workspace sync is
+    optional, uses a versioned aggregate, and rejects stale writes through an expected revision.
+  Data provenance: static game facts come from a pinned, read-only snapshot. Ambiguous or multi-scaling semantic
+    mappings require reviewed evidence and snapshot checks instead of inference from array shape.
+  Existing decisions: docs/adr contains durable architecture decisions. docs/plans is historical design and execution
+    context, not the source of truth for current change status.
+  Governance roles: AGENTS.md is the Agent entry point; this config holds cross-change constraints; openspec/specs
+    describes current observable behavior; docs/adr preserves rationale, alternatives, and consequences.
+  Verification: run focused tests first, then the relevant workspace typecheck and tests. Before delivery, run
+    pnpm typecheck, pnpm test, and pnpm build unless the approved tasks document a narrower proportional gate.
+  Git safety: preserve unrelated worktree changes and do not commit, push, deploy, or rewrite history without an
+    explicit user request.
+
+rules:
+  proposal:
+    - State which OpenSpec trigger made the change qualifying and list affected apps/packages workspaces.
+    - Include explicit non-goals and identify compatibility, migration, security, and deployment impact.
+    - Keep routine entity declarations and unrelated cleanup out of a cross-cutting proposal.
+  specs:
+    - Specify observable behavior, inputs, outputs, errors, and compatibility constraints; exclude internal file,
+      class, function, and framework choices.
+    - Every requirement must contain at least one concrete, testable scenario.
+    - Use skip_specs for pure refactors, tooling, generated assets, and documentation-only work.
+  design:
+    - Describe dependency direction, affected workspaces, alternatives considered, failure modes, and rollback or
+      migration strategy when applicable.
+    - Reuse the single authoritative scenario metric flow and keep entity-specific behavior in Content declarations.
+    - Link durable decisions to docs/adr and create a new ADR when the decision will constrain future changes.
+  tasks:
+    - Organize tasks into independently verifiable slices and name focused tests or commands for each slice.
+    - Include generated-registry checks, contract compatibility tests, migration tests, and end-to-end flows when
+      applicable.
+    - Finish with proportional full-repository verification and an explicit Git diff/status review.
+
+operations:
+  apply:
+    guidance:
+      - Read AGENTS.md and every context file returned by OpenSpec before implementation.
+      - Preserve caller-owned data, public contracts, and unrelated worktree changes.
+      - Update task checkboxes only after the corresponding implementation and verification are complete.
+  archive:
+    guidance:
+      - Confirm implementation, task completion, relevant tests, and spec behavior all agree before archiving.
+      - Confirm any durable architectural decision has a matching ADR or an explicit reason why no ADR is needed.

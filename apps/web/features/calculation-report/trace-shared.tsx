@@ -69,7 +69,7 @@ export const moonsignLabels = {
 } as const
 
 export const actionEffectTargetLabels: Readonly<Record<AppliedActionEffect["target"], string>> = {
-  additionalDamageEvent: "额外物理伤害事件",
+  additionalDamageEvent: "额外伤害事件",
   actionParameter: "动作状态参数",
   attackPercent: "攻击力",
   baseAttackFlat: "基础攻击力",
@@ -81,6 +81,8 @@ export const actionEffectTargetLabels: Readonly<Record<AppliedActionEffect["targ
   amplifyingReactionBonus: "蒸发/融化反应加成",
   reactionDamageBonus: "普通反应伤害加成",
   transformativeReactionFlatDamageAddition: "剧变反应基础伤害增加值",
+  transformativeReactionCritRate: "普通剧变反应专属暴击率",
+  transformativeReactionCritDamage: "普通剧变反应专属暴击伤害",
   specialReactionBaseDamageFlat: "月曜/星烁反应基础伤害增加值",
   specialReactionBaseDamageMultiplier: "月曜/星烁反应基础伤害倍率",
   specialReactionBaseDamageBonus: "月曜/星烁反应基础伤害加成",

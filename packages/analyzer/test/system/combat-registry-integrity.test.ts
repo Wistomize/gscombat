@@ -3,8 +3,10 @@ import {
   reviewedMultiScalingEvidenceRegistry,
   type CharacterCombatCoverage,
   type CombatActionMetadata,
+  type CombatTalentDamageScalingTerm,
   type CombatMetricDefinition,
   type ReviewedMultiScalingEvidenceRecord,
+  type ReviewedTalentMultiScalingEvidenceTerm,
   type SingleScalingCombatDamagePart
 } from "@gscombat/content"
 import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
@@ -29,6 +31,13 @@ function requireAction(coverage: CharacterCombatCoverage): CombatActionMetadata 
   const action = coverage.actions[0]
   if (!action) throw new Error(`Expected ${coverage.characterId} to declare one combat action`)
   return action
+}
+
+function requireTalentEvidenceTerm(
+  term: ReviewedMultiScalingEvidenceRecord["terms"][number] | undefined
+): ReviewedTalentMultiScalingEvidenceTerm {
+  if (!term || term.fixedCoefficient !== undefined) throw new Error("Expected a reviewed talent scaling term")
+  return term
 }
 
 function createCoverage(
@@ -201,9 +210,8 @@ describe("combat registry integrity", () => {
       (record) => record.actionId === action.id && record.damagePartId === "flame-manes-fist"
     )
     if (!evidence) throw new Error("Expected reviewed evidence for Dehya's Flame-Mane's Fist")
-    const firstTerm = evidence.terms[0]
-    const secondTerm = evidence.terms[1]
-    if (!firstTerm || !secondTerm) throw new Error("Expected two reviewed terms for Dehya's Flame-Mane's Fist")
+    const firstTerm = requireTalentEvidenceTerm(evidence.terms[0])
+    const secondTerm = requireTalentEvidenceTerm(evidence.terms[1])
 
     const mismatchedEvidenceSets: readonly (readonly ReviewedMultiScalingEvidenceRecord[])[] = [
       [
@@ -250,10 +258,10 @@ describe("combat registry integrity", () => {
       (record) => record.actionId === action.id && record.damagePartId === "flame-manes-fist"
     )
     if (!evidence) throw new Error("Expected reviewed evidence for Dehya's Flame-Mane's Fist")
-    const firstTerm = evidence.terms[0]
-    const secondTerm = evidence.terms[1]
-    const secondSnapshotCheck = firstTerm?.snapshotChecks[1]
-    if (!firstTerm || !secondTerm || !secondSnapshotCheck) {
+    const firstTerm = requireTalentEvidenceTerm(evidence.terms[0])
+    const secondTerm = requireTalentEvidenceTerm(evidence.terms[1])
+    const secondSnapshotCheck = firstTerm.snapshotChecks[1]
+    if (!secondSnapshotCheck) {
       throw new Error("Expected two reviewed terms and snapshots for Dehya's Flame-Mane's Fist")
     }
 
@@ -285,7 +293,7 @@ describe("combat registry integrity", () => {
               snapshotChecks: [
                 { ...firstTerm.snapshotChecks[0], expectedCoefficient: 0 },
                 secondSnapshotCheck
-              ]
+              ] as const
             },
             secondTerm
           ]
@@ -318,6 +326,63 @@ describe("combat registry integrity", () => {
     expect(report).toEqual({ isValid: true, issues: [] })
     expect(() => assertCombatRegistryIntegrity({ gameData })).not.toThrow()
   }, 20_000)
+
+  it("rejects invalid ordinary transformative-reaction CRIT effect declarations", () => {
+    const kuki = requireCoverage("KukiShinobu")
+    const action = kuki.actions.find(
+      (entry) => entry.id === "kuki_shinobu.skill.sanctifying_ring.grass_ring.single_hyperbloom"
+    )
+    if (!action) throw new Error("Expected Kuki Shinobu's Hyperbloom action")
+    const validSource = { characterId: "KukiShinobu", kind: "character" as const, minimumSourceConstellation: 6 }
+    const report = validateCombatRegistryIntegrity({
+      gameData,
+      registry: [
+        {
+          ...createCoverage("KukiShinobu", [action]),
+          actionEffects: [
+            {
+              activation: "maximum_reachable",
+              id: "test.transformative-crit.missing-reaction-filter",
+              label: "Missing reaction filter",
+              source: validSource,
+              target: "transformativeReactionCritRate",
+              value: { kind: "fixed", value: 0.2 }
+            },
+            {
+              activation: "maximum_reachable",
+              id: "test.transformative-crit.additive-reaction-filter",
+              label: "Wrong reaction family",
+              source: validSource,
+              target: "transformativeReactionCritDamage",
+              targetFilter: { reactionKinds: ["aggravate"] },
+              value: { kind: "fixed", value: 1 }
+            },
+            {
+              activation: "maximum_reachable",
+              id: "test.transformative-crit.negative-value",
+              label: "Negative value",
+              source: validSource,
+              target: "transformativeReactionCritRate",
+              targetFilter: { reactionKinds: ["hyperbloom"] },
+              value: { kind: "fixed", value: -0.1 }
+            },
+            {
+              activation: "maximum_reachable",
+              id: "test.transformative-crit.weapon-source",
+              label: "Wrong source",
+              source: { kind: "weapon", weaponId: "FavoniusSword" },
+              target: "transformativeReactionCritDamage",
+              targetFilter: { reactionKinds: ["hyperbloom"] },
+              value: { kind: "fixed", value: 1 }
+            }
+          ]
+        }
+      ]
+    })
+
+    expect(report.issues.filter((issue) => issue.code === "invalid-transformative-reaction-crit-effect"))
+      .toHaveLength(4)
+  })
 
   it("rejects intrinsic effects without a declared source or complete bounded-state lookup", () => {
     const xiao = requireCoverage("Xiao")
@@ -555,6 +620,7 @@ describe("combat registry integrity", () => {
     const bennett = requireCoverage("Bennett")
     const healingMetric = bennett.metrics?.find((metric) => metric.kind === "healing")
     if (!healingMetric) throw new Error("Expected Bennett healing metric")
+    if (!healingMetric.percentageParameter) throw new Error("Expected Bennett talent-derived healing percentage")
 
     const duplicateReport = validateCombatRegistryIntegrity({
       gameData,
@@ -638,6 +704,56 @@ describe("combat registry integrity", () => {
         expect.objectContaining({ code: "invalid-metric-recipient-requirement", metricId: healingMetric.id })
       ])
     )
+  })
+
+  it("rejects contradictory healing ratios and invalid constellation-gated healing extensions", () => {
+    const bennett = requireCoverage("Bennett")
+    const healingMetric = bennett.metrics?.find((metric) => metric.kind === "healing")
+    if (!healingMetric?.percentageParameter) throw new Error("Expected Bennett talent-derived healing percentage")
+
+    const invalidMetrics = [
+      {
+        ...healingMetric,
+        id: "test.healing.invalid-base-ratio",
+        ratio: 0.1
+      },
+      {
+        ...healingMetric,
+        additionalScalingTerms: [
+          {
+            label: "Invalid capped C6 healing",
+            maximumValue: -1,
+            minimumSourceConstellation: 7,
+            ratio: 0.1,
+            scalingStat: "hp" as const
+          }
+        ],
+        id: "test.healing.invalid-additional-term"
+      },
+      {
+        ...healingMetric,
+        id: "test.healing.invalid-recipient-bonus",
+        recipientIncomingHealingBonuses: [
+          {
+            label: "Invalid recipient bonus",
+            minimumSourceConstellation: 0,
+            recipientRequirement: {
+              comparison: "at_most" as const,
+              kind: "recipient_hp_fraction" as const,
+              label: "Recipient HP at most 50%",
+              threshold: 0.5
+            },
+            value: 0.3
+          }
+        ]
+      }
+    ] as unknown as readonly CombatMetricDefinition[]
+    const report = validateCombatRegistryIntegrity({
+      gameData,
+      registry: [createCoverage("Bennett", bennett.actions, invalidMetrics)]
+    })
+
+    expect(report.issues.filter((issue) => issue.code === "invalid-healing-metric-extension")).toHaveLength(3)
   })
 
   it("rejects duplicate action IDs and actions assigned to a different coverage character", () => {
@@ -809,6 +925,7 @@ describe("combat registry integrity", () => {
     const [firstParameter] = action.scenarioParameters
     const [firstEvent] = action.timeline.damageEvents
     if (!firstParameter || !firstEvent) throw new Error("Expected Navia's declared Crystalshot parameter and event")
+    if (firstEvent.damagePartId === undefined) throw new Error("Expected Navia's declared damage-part event")
 
     const report = validateCombatRegistryIntegrity({
       gameData,
@@ -823,7 +940,7 @@ describe("combat registry integrity", () => {
                 {
                   ...firstEvent,
                   coefficientMultiplier: {
-                    kind: "scenario_parameter_lookup",
+                    kind: "scenario_parameter_lookup" as const,
                     parameterId: "missing-parameter",
                     values: [{ multiplier: 1, parameterValue: 1 }]
                   },
@@ -982,7 +1099,8 @@ describe("combat registry integrity", () => {
             ...action,
             timeline: {
               damageEvents: [
-                { at: 0, damagePartId: "pyronado-tick", id: "pyronado-tick", snapshot: "dynamic" }
+                { at: 0, damagePartId: "pyronado-tick", id: "pyronado-tick", snapshot: "dynamic" },
+                { at: 0.5, damagePartId: "pyronado-tick", id: "pyronado-tick-second", snapshot: "hit" }
               ],
               duration: 1
             }
@@ -1183,6 +1301,10 @@ describe("combat registry integrity", () => {
     }
     const [attackTerm, hpTerm] = flameManesFist.scalingTerms
     if (!attackTerm || !hpTerm) throw new Error("Expected Dehya's hit to have attack and health scaling terms")
+    if (attackTerm.fixedCoefficient !== undefined || hpTerm.fixedCoefficient !== undefined) {
+      throw new Error("Expected Dehya's hit to use talent-table scaling terms")
+    }
+    const talentHpTerm = hpTerm as CombatTalentDamageScalingTerm
 
     const report = validateCombatRegistryIntegrity({
       gameData,
@@ -1193,7 +1315,10 @@ describe("combat registry integrity", () => {
             damageParts: [
               {
                 ...flameManesFist,
-                scalingTerms: [attackTerm, { ...hpTerm, snapshotChecks: [{ expectedCoefficient: 0.03, talentLevel: 10 }] }]
+                scalingTerms: [
+                  attackTerm,
+                  { ...talentHpTerm, snapshotChecks: [{ expectedCoefficient: 0.03, talentLevel: 10 }] }
+                ]
               }
             ]
           }

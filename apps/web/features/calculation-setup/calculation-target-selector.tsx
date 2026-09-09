@@ -32,6 +32,16 @@ export function CalculationTargetSelector({
   onSelectSupportMetric,
   onSelectTargetBuild
 }: CalculationTargetSelectorProps) {
+  const targetBuild = partyBuilds.find((build) => build.buildId === targetBuildId)
+  const sourceConstellation = targetBuild?.constellation ?? 0
+  const primaryActions =
+    targetCharacter?.primaryActions.filter(
+      (action) => sourceConstellation >= (action.minimumSourceConstellation ?? 0)
+    ) ?? []
+  const supportMetrics =
+    targetCharacter?.supportMetrics.filter(
+      (metric) => sourceConstellation >= (metric.minimumSourceConstellation ?? 0)
+    ) ?? []
   return (
     <>
       <div className="calculationBlock">
@@ -68,11 +78,11 @@ export function CalculationTargetSelector({
         <div className="workspaceSectionHeading"><div><span>02</span><h2>选择计算指标</h2></div></div>
         {!targetCharacter ? <p className="workspaceEmpty">请先选择一名队伍成员。</p> : (
           <div className="metricGroups">
-            {targetCharacter.primaryActions.length > 0 ? (
+            {primaryActions.length > 0 ? (
               <div>
                 <h3>伤害指标</h3>
                 <div>
-                  {targetCharacter.primaryActions.map((action) => (
+                  {primaryActions.map((action) => (
                     <button
                       aria-pressed={targetActionId === action.id}
                       className={targetActionId === action.id ? "active" : ""}
@@ -86,11 +96,11 @@ export function CalculationTargetSelector({
                 </div>
               </div>
             ) : null}
-            {targetCharacter.supportMetrics.length > 0 ? (
+            {supportMetrics.length > 0 ? (
               <div>
                 <h3>辅助指标</h3>
                 <div>
-                  {targetCharacter.supportMetrics.map((metric) => (
+                  {supportMetrics.map((metric) => (
                     <button
                       aria-pressed={supportMetricId === metric.id}
                       className={supportMetricId === metric.id ? "active" : ""}

@@ -95,6 +95,28 @@ export const kavehCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "normal"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "kaveh.constellation.6.pairidaeza_dreams.light_of_pairidaeza",
+      label: "天园的理想 · C6 繁绘隅穹期间普攻命中释放天园之光（61.8%攻击力草元素伤害）",
+      source: { characterId: "Kaveh", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: ["kaveh.burst.painted_dome.normal_attack.first_hit"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 0.618 },
+        element: "dendro",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack"
+      }
+    }
+  ],
   characterId: "Kaveh",
   metrics: [
     {
@@ -102,14 +124,14 @@ export const kavehCombatCoverage: CharacterCombatCoverage = {
       characterId: "Kaveh",
       id: "kaveh.burst.painted_dome.normal_attack.first_hit",
       kind: "damage",
-      label: "繁绘隅穹状态普攻一段（C0，无反应）",
+      label: "繁绘隅穹状态普攻一段（无反应）",
       sourceActionId: "kaveh.burst.painted_dome.normal_attack.first_hit",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "Artistic Ingenuity's direct hit and Painted Dome's initial burst hit remain separately verified raw actions from the pinned 6.7 Genshin Optimizer snapshot at commit 21c98eb60355160274a8c4cecfc5671e2151a073. The selected C0 core action is exactly Kaveh's first Normal Attack hit while the Painted Dome burst state is already active: Attack × auto[0], treated as one Dendro Normal Attack. The pinned values are 76.1857% Attack at Normal Talent Level 1 and 150.5996% at Level 10. It assumes the burst state is manually active and declares no target aura or reaction. No Dendro Core or Bloom damage bonus is attached to this direct normal hit. It excludes Artistic Ingenuity's immediate Dendro Core bursts, normal-attack follow-ups, Painted Dome's initial hit, state duration and attack-area changes, Dendro Core bonus, interruption resistance, passive Elemental Mastery stacks and Dendro Core self-healing, constellations, reactions, timing, external effects, and other character states.",
+    "Artistic Ingenuity's direct hit and Painted Dome's initial burst hit remain separately verified raw actions. The selected core action is Kaveh's first Normal Attack hit while Painted Dome is active, treated as one Dendro Normal Attack. At C6 and with its three-second trigger ready, the maximum-reachable snapshot appends one independently calculated 61.8% Attack Light of Pairidaeza Dendro event. Its accompanying Dendro-Core detonation is not invented without a configured core count or ownership. Neither direct hit presets a target aura or reaction. State duration, passive Elemental Mastery stacks, Dendro-Core self-healing, timing, and rotation remain outside this metric.",
   label: kavehDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

@@ -120,7 +120,7 @@ export const barbaraCombatCoverage: CharacterCombatCoverage = {
       id: "barbara.burst.shining_miracle.party_member_healing",
       includeHealingBonus: true,
       kind: "healing",
-      label: "闪耀奇迹♪ / 单名队员治疗量（C0）",
+      label: "闪耀奇迹♪ / 单名队员治疗量",
       percentageParameter: {
         reference: {
           groupId: "burst",
@@ -142,7 +142,7 @@ export const barbaraCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit and one Let the Show Begin Water Drop are verified as baseline C0 attack-scaling Hydro hits. The selected C0 support metric verifies Shining Miracle's instant healing for one selected party member as max HP times burst[0] plus burst[1], then Barbara's Healing Bonus and the recipient's Incoming Healing Bonus. It reads the pinned 6.7 game-data snapshot: burst[0] is 0.176 at talent level one and 0.3168 at level ten, while burst[1] is 1694.2819 and 3727.7026. Shining Miracle heals each party member independently, so this metric has no range or current-HP eligibility requirement and emits no damage or reaction event. C2 can be selected as an explicit current-action snapshot while Let the Show Begin is already active: the selected on-field Hydro action gains 15% Hydro Damage Bonus. It does not infer the cast, duration, active character, or position, and leaves the C2 cooldown reduction unsupported. Let the Show Begin's on-hit and continuous healing, Water Ring, C1, C4, C6 revival, other passives and constellations, external effects, timing, and all other character states remain unmodeled.",
+    "One first normal-attack hit and one Let the Show Begin Water Drop are verified as baseline C0 attack-scaling Hydro hits. The selected C0 support metric verifies Shining Miracle's instant healing for one selected party member as max HP times burst[0] plus burst[1], then Barbara's Healing Bonus and the recipient's Incoming Healing Bonus. It reads the pinned 6.7 game-data snapshot: burst[0] is 0.176 at talent level one and 0.3168 at level ten, while burst[1] is 1694.2819 and 3727.7026. Shining Miracle heals each party member independently, so this metric has no range or current-HP eligibility requirement and emits no damage or reaction event. C2 can be selected as an explicit current-action snapshot while Let the Show Begin is already active: the selected on-field Hydro action gains 15% Hydro Damage Bonus. It does not infer the cast, duration, active character, or position, and leaves the C2 cooldown reduction unsupported. Barbara's C6 revives one defeated party member and restores 100% of that member's maximum HP, with a 15-minute cooldown; it cannot modify a selected living-character damage or Shining Miracle healing event. Let the Show Begin's on-hit and continuous healing, Water Ring, C1, C4, other passives and constellations, external effects, timing, and all other character states remain unmodeled.",
   label: barbaraDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

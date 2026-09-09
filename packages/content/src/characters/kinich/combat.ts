@@ -182,6 +182,85 @@ export const kinichCombatCoverage: CharacterCombatCoverage = {
       target: "enemyResistanceReduction",
       targetFilter: { elements: ["dendro"] },
       value: { kind: "fixed", value: 0.3 }
+    },
+    {
+      activation: "automatic",
+      id: "kinich.constellation.6.auspicious_beast_shape.scalespiker_cannon.bounce",
+      label: "瑞兽之形 · C6 迴猎贯鳞炮命中后弹跳（700%攻击力草元素伤害）",
+      source: { characterId: "Kinich", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: ["kinich.skill.scalespiker_cannon.single_hit"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 7 },
+        element: "dendro",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
+    },
+    {
+      activation: "active",
+      id: "kinich.constellation.6.auspicious_beast_shape.one_hunters_experience.bounce_additive_damage",
+      label: "瑞兽之形 · C6 弹跳继承1层猎人心得（攻击力倍率加算320%）",
+      requiredActiveEffectIds: [
+        "kinich.passive.flame_spirit_pact.hunters_experience.one_stack.attack_additive_damage"
+      ],
+      source: {
+        characterId: "Kinich",
+        kind: "character",
+        minimumSourceAscension: 4,
+        minimumSourceConstellation: 6
+      },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: ["kinich.skill.scalespiker_cannon.single_hit"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 3.2 },
+        element: "dendro",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
+    },
+    {
+      activation: "active",
+      id: "kinich.constellation.6.auspicious_beast_shape.two_hunters_experience.bounce_additive_damage",
+      label: "瑞兽之形 · C6 弹跳继承2层猎人心得（攻击力倍率加算640%）",
+      requiredActiveEffectIds: [
+        "kinich.passive.flame_spirit_pact.hunters_experience.two_stacks.attack_additive_damage"
+      ],
+      source: {
+        characterId: "Kinich",
+        kind: "character",
+        minimumSourceAscension: 4,
+        minimumSourceConstellation: 6
+      },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: ["kinich.skill.scalespiker_cannon.single_hit"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 6.4 },
+        element: "dendro",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
     }
   ],
   characterId: "Kinich",
@@ -208,7 +287,7 @@ export const kinichCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit, one full-Nightsoul Scalespiker Cannon hit, Hail to the Almighty Dragonlord's opening AoE, and one Dragonlord Breath tick are locked to the pinned 6.7 game-data snapshot. The first selected metric is one Scalespiker Cannon hit; Flame Spirit Pact automatically adds 320% Attack per reachable Hunter's Experience stack for 15 seconds, up to two stacks. The second selected metric is one Dragonlord Breath tick. C1 automatically adds 100% Crit DMG to the Scalespiker Cannon only, and C2 Dendro resistance reduction remains an explicit post-hit snapshot. Neither metric presets Burning, Spread, or another reaction. Dragon-breath follow-ups, Nightsoul generation, firing sequences, timing, and rotation behavior remain unmodeled.",
+    "One full-Nightsoul Scalespiker Cannon hit and one Dragonlord Breath tick are selected metrics. Flame Spirit Pact adds 320% Attack per reachable Hunter's Experience stack, up to two stacks. C1 adds 100% Crit DMG to the Cannon and C2 resistance reduction remains an explicit post-hit snapshot. At C6, the Cannon automatically appends its 700% Attack Dendro bounce; dependent additions carry the selected one- or two-stack Hunter's Experience coefficient into that same expected total, while C1 Crit DMG is inherited through the action snapshot. The trace keeps those inherited coefficients auditable as separate additions. Neither metric presets Burning, Spread, or another reaction; Nightsoul generation, firing sequences, timing, and rotation remain unmodeled.",
   label: kinichDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

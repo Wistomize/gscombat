@@ -91,6 +91,16 @@ export const noelleCombatCoverage: CharacterCombatCoverage = {
                 { expectedCoefficient: 1.564, talentLevel: 10 }
               ],
               stat: "defense"
+            },
+            {
+              coefficientMultiplierScenarioParameterId: "c6-additional-defense-to-attack-percent",
+              coefficientMultiplierScenarioParameterScale: 0.01,
+              coefficientParameterId: "sweeping-time-normal-hit-one-attack-ratio",
+              snapshotChecks: [
+                { expectedCoefficient: 0.7912, talentLevel: 1 },
+                { expectedCoefficient: 1.564, talentLevel: 10 }
+              ],
+              stat: "defense"
             }
           ]
         },
@@ -111,6 +121,16 @@ export const noelleCombatCoverage: CharacterCombatCoverage = {
                 { expectedCoefficient: 0.4, talentLevel: 1 },
                 { expectedCoefficient: 0.72, talentLevel: 10 }
               ],
+              coefficientParameterId: "sweeping-time-normal-hit-two-attack-ratio",
+              snapshotChecks: [
+                { expectedCoefficient: 0.73358, talentLevel: 1 },
+                { expectedCoefficient: 1.4501, talentLevel: 10 }
+              ],
+              stat: "defense"
+            },
+            {
+              coefficientMultiplierScenarioParameterId: "c6-additional-defense-to-attack-percent",
+              coefficientMultiplierScenarioParameterScale: 0.01,
               coefficientParameterId: "sweeping-time-normal-hit-two-attack-ratio",
               snapshotChecks: [
                 { expectedCoefficient: 0.73358, talentLevel: 1 },
@@ -143,6 +163,16 @@ export const noelleCombatCoverage: CharacterCombatCoverage = {
                 { expectedCoefficient: 1.7051, talentLevel: 10 }
               ],
               stat: "defense"
+            },
+            {
+              coefficientMultiplierScenarioParameterId: "c6-additional-defense-to-attack-percent",
+              coefficientMultiplierScenarioParameterScale: 0.01,
+              coefficientParameterId: "sweeping-time-normal-hit-three-attack-ratio",
+              snapshotChecks: [
+                { expectedCoefficient: 0.86258, talentLevel: 1 },
+                { expectedCoefficient: 1.7051, talentLevel: 10 }
+              ],
+              stat: "defense"
             }
           ]
         },
@@ -163,6 +193,16 @@ export const noelleCombatCoverage: CharacterCombatCoverage = {
                 { expectedCoefficient: 0.4, talentLevel: 1 },
                 { expectedCoefficient: 0.72, talentLevel: 10 }
               ],
+              coefficientParameterId: "sweeping-time-normal-hit-four-attack-ratio",
+              snapshotChecks: [
+                { expectedCoefficient: 1.13434, talentLevel: 1 },
+                { expectedCoefficient: 2.2423, talentLevel: 10 }
+              ],
+              stat: "defense"
+            },
+            {
+              coefficientMultiplierScenarioParameterId: "c6-additional-defense-to-attack-percent",
+              coefficientMultiplierScenarioParameterScale: 0.01,
               coefficientParameterId: "sweeping-time-normal-hit-four-attack-ratio",
               snapshotChecks: [
                 { expectedCoefficient: 1.13434, talentLevel: 1 },
@@ -212,6 +252,18 @@ export const noelleCombatCoverage: CharacterCombatCoverage = {
           parameterIndex: 2,
           source: "talent",
           talentSlot: "burst"
+        }
+      ],
+      scenarioParameters: [
+        {
+          defaultValue: 0,
+          id: "c6-additional-defense-to-attack-percent",
+          label: "C6 大扫除额外防御力转攻击力百分比",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 50, maximumValue: 50, minimumSourceConstellation: 6, minimumValue: 50 }
+          ]
         }
       ],
       status: "verified",
@@ -309,7 +361,7 @@ export const noelleCombatCoverage: CharacterCombatCoverage = {
       characterId: "Noelle",
       id: "noelle.burst.sweeping_time.normal_attack_combo",
       kind: "damage",
-      label: "大扫除 / C0 四段普通攻击",
+      label: "大扫除 / 四段普通攻击（C6额外防御力转攻击自动生效）",
       sourceActionId: "noelle.burst.sweeping_time.normal_attack_combo",
       status: "verified",
       target: "enemy"
@@ -418,7 +470,7 @@ export const noelleCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected support profile verifies Breastplate's initial DEF-scaled shield, one heal, and its talent-level trigger probability, including C3 talent levels. One uninfused normal hit, Breastplate hit, and burst initial swing remain baseline damage actions. Sweeping Time's C0 four-hit Normal Attack uses each Normal Attack ratio plus its burst defense-to-attack conversion. C1 guaranteed healing and C6 conversion remain in progress.",
+    "The selected support profile verifies Breastplate's initial DEF-scaled shield, one heal, and its talent-level trigger probability, including C3 talent levels. One uninfused normal hit, Breastplate hit, and burst initial swing remain baseline damage actions. Sweeping Time's four-hit Normal Attack uses each Normal Attack ratio plus its burst defense-to-attack conversion. At C6, the same action adds its own 50% Defense-to-Attack conversion to every one of the four normal-hit base terms; the C0 scenario value is zero and the C6 value is fixed at 50%. C1 guaranteed healing remains in progress.",
   label: noelleDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

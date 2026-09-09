@@ -1,4 +1,5 @@
 import type { CharacterCombatCoverage } from "../../combat/types.js"
+import { moonsignCharacterIds } from "../../rules/moonsign.js"
 
 import { jahodaDefinition } from "./definition.js"
 
@@ -119,6 +120,28 @@ export const jahodaCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "burst"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
+      id: "jahoda.constellation.6.full_flask.moonsign_recipient.crit_rate",
+      label: "诡计百出 · C6满辉月兆且秘藏瓶装满后（月兆角色暴击率提高5%）",
+      source: { characterId: "Jahoda", kind: "character", minimumSourceConstellation: 6 },
+      target: "critRate",
+      targetFilter: { recipientCharacterIds: [...moonsignCharacterIds] },
+      value: { kind: "fixed", value: 0.05 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
+      id: "jahoda.constellation.6.full_flask.moonsign_recipient.crit_damage",
+      label: "诡计百出 · C6满辉月兆且秘藏瓶装满后（月兆角色暴击伤害提高40%）",
+      source: { characterId: "Jahoda", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { recipientCharacterIds: [...moonsignCharacterIds] },
+      value: { kind: "fixed", value: 0.4 }
+    }
+  ],
   characterId: "Jahoda",
   metrics: [
     {
@@ -161,7 +184,7 @@ export const jahodaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit, one Smoke Bomb hit, and Hidden Aces: Seven Tools of the Hunter's initial hit remain separately verified baseline C0 attack-scaling damage actions, but none is a selected Jahoda metric because her role-correct output is healing. The selected support metric is one Purrsonal Coordinated Assistance Robot base healing tick for one selected recipient: Jahoda's Attack × burst[3] plus burst[4], then Jahoda's Healing Bonus and that recipient's Incoming Healing Bonus; C3 adds three Burst levels. The pinned 6.7 snapshot maps burst[3] and burst[4] to the robot's base healing multiplier and flat value. It deliberately does not model the separate burst[5] plus burst[6] additional heal because it requires both the normally healed active character to be above 70% HP and a nearby party member to be the team's relative lowest-HP character; the current recipient requirements can express only absolute HP thresholds, not that party-wide ordering. It also excludes robot target selection and count, duration, the Hydro A1 healing multiplier, elemental conversion, C1/C2/C4/C5/C6, the A4 Elemental Mastery buff, external effects, timing, and rotation behavior.",
+    "One first normal-attack hit, one Smoke Bomb hit, and Hidden Aces: Seven Tools of the Hunter's initial hit remain separately verified baseline C0 attack-scaling damage actions, but none is a selected Jahoda metric because her role-correct output is healing. The selected support metric is one Purrsonal Coordinated Assistance Robot base healing tick for one selected recipient: Jahoda's Attack × burst[3] plus burst[4], then Jahoda's Healing Bonus and that recipient's Incoming Healing Bonus; C3 adds three Burst levels. The pinned 6.7 snapshot maps burst[3] and burst[4] to the robot's base healing multiplier and flat value. It deliberately does not model the separate burst[5] plus burst[6] additional heal because it requires both the normally healed active character to be above 70% HP and a nearby party member to be the team's relative lowest-HP character; the current recipient requirements can express only absolute HP thresholds, not that party-wide ordering. At C6 and Ascendant Gleam, the maximum-reachable full-flask snapshot grants only the versioned Moonsign-character roster 5% Crit Rate and 40% Crit DMG; ordinary recipients remain ineligible. It excludes robot target selection and count, duration, the Hydro A1 healing multiplier, elemental conversion, C1/C2/C4/C5, the A4 Elemental Mastery buff, external effects, timing, and rotation behavior.",
   label: jahodaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

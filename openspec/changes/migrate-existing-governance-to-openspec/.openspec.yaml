@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-08-31
+goal: 将现有 ADR 与 AGENTS.md 中仍有效的行为契约和架构约束迁移到 OpenSpec，同时保留 ADR 原文和职责边界
+skip_specs: true

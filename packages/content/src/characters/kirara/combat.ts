@@ -119,7 +119,7 @@ export const kiraraCombatCoverage: CharacterCombatCoverage = {
       },
       id: "kirara.skill.meow_teorite_kick.curio_shield.initial_absorption",
       kind: "scalar",
-      label: "呜喵町飞足 / 猫又抓板护盾基础吸收量（C0、非草元素伤害）",
+      label: "呜喵町飞足 / 猫又抓板护盾基础吸收量（非草元素伤害）",
       ratioParameter: {
         reference: {
           groupId: "skill",

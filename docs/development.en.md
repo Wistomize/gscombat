@@ -34,12 +34,56 @@ docs/
 ├── adr/          Accepted architecture decisions
 ├── deployment/   Deployment and operations guides
 └── plans/        Feature designs and implementation plans
+openspec/         Behavioral specs, designs, and tasks for significant changes
 ```
 
 Character actions, passives, constellations, and support metrics live under
 `packages/content/src/characters/<character>/`. Weapon and artifact effects belong to their respective content
 directories, while party rules live under `rules/`. The calculator imports no character or equipment content.
 Content declares game semantics, and the Analyzer composes scenarios, effects, and calculation pipelines.
+
+## OpenSpec change management
+
+The project uses OpenSpec selectively. Create an OpenSpec change before implementing work that changes calculation
+semantics, HTTP or TypeBox contracts, workspace compatibility, data migrations, or security rules, or that implements
+one feature across three or more `apps/*` / `packages/*` workspaces. Character or equipment content also qualifies when
+it introduces a generic multiplier, effect stage, reaction type, or shared rule.
+
+Ordinary character, weapon, and artifact declarations that fit the existing typed model do not require a change by
+default. Neither do pinned-data refreshes without schema or semantic changes, generated assets, copy edits, or small
+fixes with a clear scope. A pure refactor may still use a proposal, design, and tasks, but must set `skip_specs: true`
+instead of inventing behavioral requirements.
+
+After installing the OpenSpec CLI, inspect active changes and configuration with:
+
+```bash
+openspec list
+openspec context
+openspec validate --all
+```
+
+See the root [`AGENTS.md`](../AGENTS.md) for mandatory Agent triggers and
+[ADR-0019](adr/0019-adopt-selective-openspec-change-management.md) for the full decision. OpenSpec does not replace
+`docs/adr/`; durable architecture choices remain separate decisions.
+
+Each governance location has one primary responsibility:
+
+| Location | Responsibility |
+|---|---|
+| [`AGENTS.md`](../AGENTS.md) | Mandatory Agent entry rules applied before implementation |
+| [`openspec/config.yaml`](../openspec/config.yaml) | Shared project context, artifact rules, and apply/archive constraints |
+| [`openspec/specs/`](../openspec/specs) | Baseline of current observable behavior |
+| [`openspec/changes/`](../openspec/changes) | Proposal, delta, design, tasks, and validation state for one change |
+| [`docs/adr/`](adr/README.md) | Context, alternatives, and consequences for durable architecture choices |
+| `docs/plans/` | Historical design and execution context, not current change status |
+
+The current baseline covers [core-action results](../openspec/specs/analysis/core-action-results/spec.md),
+[action semantics](../openspec/specs/analysis/action-semantics/spec.md),
+[build persistence](../openspec/specs/workspace/build-persistence/spec.md),
+[the Content authoring contract](../openspec/specs/content/authoring-contract/spec.md), and
+[public entrypoints](../openspec/specs/architecture/public-entrypoints/spec.md). See the
+[governance migration map](../openspec/governance-migration-map.md) for the current status and live evidence behind
+every existing ADR.
 
 ## Local development
 

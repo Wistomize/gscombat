@@ -9,6 +9,9 @@ import {
 } from "@gscombat/content"
 import type { CombatAuthoringAuditReport, CombatCoverageReport } from "@gscombat/contracts"
 
+type SerializedCombatAction = CombatCoverageReport["characters"][number]["actions"][number]
+type SerializedCombatTimelineEvent = NonNullable<SerializedCombatAction["timeline"]>["damageEvents"][number]
+
 function hasMultipleScalingTerms(part: CombatDamagePart): part is MultiScalingCombatDamagePart {
   return part.scalingTerms !== undefined
 }
@@ -16,7 +19,7 @@ function hasMultipleScalingTerms(part: CombatDamagePart): part is MultiScalingCo
 /** Projects immutable combat content into mutable JSON-safe coverage response data. */
 export function serializeCombatAction(
   action: CombatActionMetadata
-): CombatCoverageReport["characters"][number]["actions"][number] {
+): SerializedCombatAction {
   const {
     damageParts,
     intrinsicEffects,
@@ -33,7 +36,11 @@ export function serializeCombatAction(
             if (hasMultipleScalingTerms(part)) {
               return {
                 id: part.id,
-                scalingTerms: part.scalingTerms.map(({ snapshotChecks: _snapshotChecks, ...term }) => ({ ...term }))
+                scalingTerms: part.scalingTerms.map(
+                  ({ coefficientMultiplierSnapshotChecks: _multiplierChecks, snapshotChecks: _snapshotChecks, ...term }) => ({
+                    ...term
+                  })
+                )
               }
             }
             const { snapshotChecks: _snapshotChecks, ...serializedPart } = part
@@ -45,34 +52,7 @@ export function serializeCombatAction(
     ...(timeline
       ? {
           timeline: {
-            damageEvents: timeline.damageEvents.map(({ coefficientMultiplier, elementalApplication, ...event }) => ({
-              ...event,
-              ...(coefficientMultiplier
-                ? {
-                    coefficientMultiplier:
-                      coefficientMultiplier.kind === "scenario_parameter_lookup"
-                        ? {
-                            ...coefficientMultiplier,
-                            values: coefficientMultiplier.values.map((value) => ({ ...value }))
-                          }
-                        : {
-                            base: coefficientMultiplier.base,
-                            kind: coefficientMultiplier.kind,
-                            parameterId: coefficientMultiplier.parameterId,
-                            perParameterTalentCoefficientId:
-                              coefficientMultiplier.perParameterTalentCoefficientId
-                          }
-                  }
-                : {}),
-              ...(elementalApplication
-                ? {
-                    elementalApplication: {
-                      ...elementalApplication,
-                      icd: { ...elementalApplication.icd }
-                    }
-                  }
-                : {})
-            })),
+            damageEvents: timeline.damageEvents.map(serializeCombatTimelineEvent),
             duration: timeline.duration
           }
         }
@@ -109,6 +89,79 @@ export function serializeCombatAction(
         }
       : {})
   }
+}
+
+/** Copies one discriminated timeline event without leaking maintainer-only snapshot checks. */
+function serializeCombatTimelineEvent(
+  event: NonNullable<CombatActionMetadata["timeline"]>["damageEvents"][number]
+): SerializedCombatTimelineEvent {
+  const baseTiming = {
+    at: event.at,
+    ...(event.hitCount === undefined
+      ? {}
+      : { hitCount: typeof event.hitCount === "number" ? event.hitCount : { ...event.hitCount } }),
+    id: event.id,
+    ...(event.maximumSourceConstellation === undefined
+      ? {}
+      : { maximumSourceConstellation: event.maximumSourceConstellation }),
+    ...(event.minimumSourceConstellation === undefined
+      ? {}
+      : { minimumSourceConstellation: event.minimumSourceConstellation })
+  }
+  const timing = event.snapshot === "time"
+    ? { ...baseTiming, snapshot: "time" as const, snapshotAt: event.snapshotAt }
+    : { ...baseTiming, snapshot: event.snapshot }
+  if (event.stellarSwirlReaction !== undefined) {
+    const stellarSwirlReaction = event.stellarSwirlReaction.event === "trigger"
+      ? { event: "trigger" as const }
+      : {
+          event: "vortex" as const,
+          vortexLevel: requireStellarVortexLevel(event.stellarSwirlReaction.vortexLevel, event.id)
+        }
+    return {
+      ...timing,
+      stellarSwirlReaction
+    }
+  }
+
+  const coefficientMultiplier = event.coefficientMultiplier
+  const elementalApplication = event.elementalApplication
+  return {
+    ...timing,
+    ...(coefficientMultiplier
+      ? {
+          coefficientMultiplier:
+            coefficientMultiplier.kind === "scenario_parameter_lookup"
+              ? {
+                  ...coefficientMultiplier,
+                  values: coefficientMultiplier.values.map((value) => ({ ...value }))
+                }
+              : {
+                  base: coefficientMultiplier.base,
+                  kind: coefficientMultiplier.kind,
+                  parameterId: coefficientMultiplier.parameterId,
+                  perParameterTalentCoefficientId: coefficientMultiplier.perParameterTalentCoefficientId
+                }
+        }
+      : {}),
+    damagePartId: event.damagePartId,
+    ...(elementalApplication
+      ? {
+          elementalApplication: {
+            ...elementalApplication,
+            icd: { ...elementalApplication.icd }
+          }
+        }
+      : {}),
+    ...(event.elementOverrideTarget === undefined ? {} : { elementOverrideTarget: event.elementOverrideTarget }),
+    ...(event.specialReaction === undefined ? {} : { specialReaction: { ...event.specialReaction } })
+  }
+}
+
+/** Narrows an audited Stellar-Vortex level for the public discriminated response schema. */
+function requireStellarVortexLevel(level: 1 | 2 | undefined, eventId: string): 1 | 2 {
+  if (level === 1 || level === 2) return level
+  throw new Error(`Stellar-Swirl vortex event ${eventId} must declare level 1 or 2`)
 }
 
 /** Copies one action-owned intrinsic effect into the mutable JSON coverage response. */
@@ -177,6 +230,9 @@ export function serializeCombatMetric(
     id: metric.id,
     kind: metric.kind,
     label: normalizeProjectedMetricLabel(metric.label),
+    ...(metric.minimumSourceConstellation === undefined
+      ? {}
+      : { minimumSourceConstellation: metric.minimumSourceConstellation }),
     sourceActionId: metric.sourceActionId,
     status: metric.status,
     target: metric.target

@@ -116,6 +116,15 @@ export const keqingCombatCoverage: CharacterCombatCoverage = {
       target: "attackPercent",
       targetFilter: { recipientSourceRelation: "source" },
       value: { kind: "fixed", value: 0.25 }
+    },
+    {
+      activation: "active",
+      id: "keqing.constellation.6.tenacious_star.full_stacks.electro_damage_bonus",
+      label: "抵天雷罚 · C6 普攻、重击、元素战技、元素爆发各触发一次后（雷元素伤害加成提高24%）",
+      source: { characterId: "Keqing", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: { elements: ["electro"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.24 }
     }
   ],
   characterId: "Keqing",
@@ -125,14 +134,14 @@ export const keqingCombatCoverage: CharacterCombatCoverage = {
       characterId: "Keqing",
       id: "keqing.skill.stellar_restoration.recast_slash",
       kind: "damage",
-      label: "星斗归位 / 回刺斩（C0，无反应）",
+      label: "星斗归位 / 回刺斩（无反应）",
       sourceActionId: "keqing.skill.stellar_restoration.recast_slash",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "Stellar Restoration's initial Lightning Stiletto hit and Starward Sword's initial hit remain verified baseline C0 attack-scaling Electro actions. The selected core action is exactly one Stellar Restoration recast slash after a Lightning Stiletto has already been placed: Attack × skill[1]. The pinned 6.7 snapshot gives skill[1] as 168.0% Attack at Skill Level 1 and 302.4% at Level 10, and the fixed Genshin Optimizer sheet maps its Skill slash node to that parameter. The action's sole precondition is an existing Stiletto; it does not infer placement, projectile travel, teleport position, or a rotation. It declares no target aura or reaction. The C4 reaction Attack increase is an explicit user-selected self snapshot after a confirmed Electro-related reaction and does not infer its trigger, duration, or timing. The initial Stiletto, Charged Attack Thunderclap Slash, recast-created five-second Electro infusion, Jade-Stellar's post-burst Critical Rate and Energy Recharge, C1 recast AoEs, C6 Electro Damage Bonus, the burst's remaining hits, and all other passives, constellations, timing, external effects, and character states remain excluded.",
+    "Stellar Restoration's initial Lightning Stiletto hit and Starward Sword's initial hit remain verified baseline C0 attack-scaling Electro actions. The selected core action is exactly one Stellar Restoration recast slash after a Lightning Stiletto has already been placed: Attack × skill[1]. The pinned 6.7 snapshot gives skill[1] as 168.0% Attack at Skill Level 1 and 302.4% at Level 10, and the fixed Genshin Optimizer sheet maps its Skill slash node to that parameter. The action's sole precondition is an existing Stiletto; it does not infer placement, projectile travel, teleport position, or a rotation. It declares no target aura or reaction. The C4 reaction Attack increase is an explicit user-selected self snapshot after a confirmed Electro-related reaction and does not infer its trigger, duration, or timing. C6 separately exposes the full four independent Normal Attack, Charged Attack, Skill, and Burst stack snapshot as 24% Electro Damage Bonus for Keqing's current Electro action; it does not infer the four actions or their eight-second windows. The initial Stiletto, Charged Attack Thunderclap Slash, recast-created five-second Electro infusion, Jade-Stellar's post-burst Critical Rate and Energy Recharge, C1 recast AoEs, the burst's remaining hits, and all other passives, constellations, timing, external effects, and character states remain excluded.",
   label: keqingDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

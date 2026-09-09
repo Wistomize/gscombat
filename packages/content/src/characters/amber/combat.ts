@@ -158,7 +158,7 @@ export const amberCombatCoverage: CharacterCombatCoverage = {
       characterId: "Amber",
       id: "amber.skill.explosive_puppet.baron_bunny.explosion",
       kind: "damage",
-      label: "爆弹玩偶 / 兔兔伯爵单次爆炸伤害（C0、无反应）",
+      label: "爆弹玩偶 / 兔兔伯爵单次爆炸伤害（无反应）",
       sourceActionId: "amber.skill.explosive_puppet.baron_bunny.explosion",
       status: "verified",
       target: "enemy"

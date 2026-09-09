@@ -41,6 +41,13 @@ const MetricConditionSchema = Type.Union([
     satisfied: Type.Boolean()
   }),
   Type.Object({
+    actualConstellation: Type.Integer({ maximum: 6, minimum: 0 }),
+    kind: Type.Literal("source_constellation"),
+    label: Type.String(),
+    minimumConstellation: Type.Integer({ maximum: 6, minimum: 1 }),
+    satisfied: Type.Boolean()
+  }),
+  Type.Object({
     comparison: Type.Union([Type.Literal("at_most"), Type.Literal("above")]),
     currentHpFraction: Type.Number(),
     kind: Type.Literal("source_hp_fraction"),
@@ -133,7 +140,7 @@ export const SupportMetricResultSchema = Type.Cyclic(
         scalingStat: HealingScalingStatSchema,
         scalingValue: Type.Number(),
         sourceValue: Type.Number(),
-        talentLevel: Type.Integer({ minimum: 1, maximum: 15 }),
+        talentLevel: Type.Optional(Type.Integer({ minimum: 1, maximum: 15 })),
         unit: Type.Literal("hp")
       }),
       Type.Object({

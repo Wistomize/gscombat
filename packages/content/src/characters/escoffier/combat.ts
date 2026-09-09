@@ -87,9 +87,137 @@ export const escoffierCombatCoverage: CharacterCombatCoverage = {
       scalingStat: "attack",
       status: "verified",
       talentSlot: "skill"
+    },
+    {
+      characterId: "Escoffier",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "low-temperature-cooking-skill-damage",
+          id: "c6-special-grade-frosty-parfait-proxy",
+          snapshotChecks: [{ expectedCoefficient: 0.504, talentLevel: 1 }]
+        }
+      ],
+      element: escoffierDefinition.element,
+      evaluator: "declared_direct",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.single_hit",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "low-temperature-cooking-skill-damage",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-special-grade-frosty-parfait-ready",
+          label: "C6 缤纷茶会：特级冻冻芭菲已触发",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "skill",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-special-grade-frosty-parfait-ready",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 0, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "c6-special-grade-frosty-parfait-proxy",
+            id: "c6-special-grade-frosty-parfait-proxy",
+            snapshot: "hit"
+          }
+        ],
+        duration: 1
+      }
+    },
+    {
+      characterId: "Escoffier",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "low-temperature-cooking-skill-damage",
+          id: "c6-special-grade-frosty-parfait-proxy",
+          snapshotChecks: [{ expectedCoefficient: 0.504, talentLevel: 1 }]
+        }
+      ],
+      element: escoffierDefinition.element,
+      evaluator: "declared_direct",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "low-temperature-cooking-skill-damage",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-special-grade-frosty-parfait-ready",
+          label: "C6 缤纷茶会：同一料理机关冷藏模式的6次特级冻冻芭菲",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "skill",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-special-grade-frosty-parfait-ready",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 0, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "c6-special-grade-frosty-parfait-proxy",
+            id: "c6-special-grade-frosty-parfait-proxy",
+            snapshot: "hit"
+          }
+        ],
+        duration: 1
+      }
     }
   ],
   actionEffects: [
+    {
+      activation: "maximum_reachable",
+      condition: { elements: ["cryo", "hydro"], kind: "team_element_count", minimum: 4 },
+      id: "escoffier.constellation.1.pre_dinner_dance_for_your_tastebuds.freshly_prepared_delicacy.cryo_crit_damage",
+      label: "味蕾绽放的餐前旋舞 · C1 四名水/冰角色时施放战技或爆发（冰元素伤害暴击伤害提高60%）",
+      source: { characterId: "Escoffier", kind: "character", minimumSourceConstellation: 1 },
+      target: "critDamage",
+      targetFilter: { elements: ["cryo"] },
+      value: { kind: "fixed", value: 0.6 }
+    },
     {
       activation: "automatic",
       condition: { elements: ["cryo", "hydro"], kind: "team_element_count", minimum: 1 },
@@ -129,6 +257,167 @@ export const escoffierCombatCoverage: CharacterCombatCoverage = {
       target: "enemyResistanceReduction",
       targetFilter: { elements: ["cryo", "hydro"] },
       value: { kind: "fixed", value: 0.4 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.single_hit",
+      label: "缤纷茶会 · C6 特级冻冻芭菲（500%爱可菲攻击力冰元素战技伤害）",
+      source: { characterId: "Escoffier", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: [
+          "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.single_hit"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 5 },
+        element: "cryo",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits.first",
+      label: "缤纷茶会 · C6 特级冻冻芭菲第1次（500%爱可菲攻击力冰元素战技伤害）",
+      source: { characterId: "Escoffier", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: [
+          "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 5 },
+        element: "cryo",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits.second",
+      label: "缤纷茶会 · C6 特级冻冻芭菲第2次（500%爱可菲攻击力冰元素战技伤害）",
+      source: { characterId: "Escoffier", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: [
+          "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 5 },
+        element: "cryo",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits.third",
+      label: "缤纷茶会 · C6 特级冻冻芭菲第3次（500%爱可菲攻击力冰元素战技伤害）",
+      source: { characterId: "Escoffier", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: [
+          "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 5 },
+        element: "cryo",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits.fourth",
+      label: "缤纷茶会 · C6 特级冻冻芭菲第4次（500%爱可菲攻击力冰元素战技伤害）",
+      source: { characterId: "Escoffier", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: [
+          "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 5 },
+        element: "cryo",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits.fifth",
+      label: "缤纷茶会 · C6 特级冻冻芭菲第5次（500%爱可菲攻击力冰元素战技伤害）",
+      source: { characterId: "Escoffier", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: [
+          "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 5 },
+        element: "cryo",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits.sixth",
+      label: "缤纷茶会 · C6 特级冻冻芭菲第6次（500%爱可菲攻击力冰元素战技伤害）",
+      source: { characterId: "Escoffier", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: [
+          "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 5 },
+        element: "cryo",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
     }
   ],
   characterId: "Escoffier",
@@ -170,10 +459,32 @@ export const escoffierCombatCoverage: CharacterCombatCoverage = {
       sourceActionId: "escoffier.burst.scoring_cut.party_healing",
       status: "verified",
       target: "friendly_recipient"
+    },
+    {
+      actionId: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.single_hit",
+      characterId: "Escoffier",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.single_hit",
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "C6 缤纷茶会 / 特级冻冻芭菲单次",
+      sourceActionId: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.single_hit",
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits",
+      characterId: "Escoffier",
+      id: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits",
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "C6 缤纷茶会 / 特级冻冻芭菲6次合计",
+      sourceActionId: "escoffier.constellation.6.tea_parties_bursting_with_color.special_grade_frosty_parfait.maximum_six_hits",
+      status: "verified",
+      target: "enemy"
     }
   ],
   detail:
-    "Scoring Cut's initial hit and one Low-Temperature Cooking tap initial hit remain verified raw C0 attack-scaling Cryo actions. Escoffier's selected role metric is one nearby party member's Scoring Cut cast healing: Attack × burst[1] + burst[2], then healing bonus, with burst Talent Level +3 at C5. The pinned 6.7 snapshot maps the ratio to 1.72032 at Talent Level 1 and 3.096576 at Level 10, and the flat value to 1078.5255 and 2372.936. Better than Medicine is automatically resolved as the current 12-second window after Low-Temperature Cooking or Scoring Cut hits: each configured Hydro or Cryo party member contributes its cumulative 5%/5%/5%/40% tier, reducing eligible Hydro and Cryo resistance by 5%/10%/15%/55%. It does not model the number of healed teammates, Cooking Mek's passive heal, hold behavior, timing, external effects, or other character states.",
+    "Scoring Cut's initial hit and one Low-Temperature Cooking tap initial hit remain verified attack-scaling Cryo actions. Escoffier's selected role metric is one nearby party member's Scoring Cut cast healing: Attack × burst[1] + burst[2], then healing bonus, with burst Talent Level +3 at C5. The pinned snapshot maps the ratio to 1.72032 at Talent Level 1 and 3.096576 at Level 10, and the flat value to 1078.5255 and 2372.936. C6 provides owner-scoped Special-Grade Frosty Parfait metrics: each event is 500% of Escoffier's own Attack as Crit-eligible Cryo Skill damage, so it uses her own Cryo bonus, Crit, and Skill bonus; the maximum metric retains all six separate 0.5-second-cooldown events from one Cold Storage Cooking Mek. These metrics are zero below C6. In an all-Hydro/Cryo four-character party, C1's maximum-reachable post-Skill-or-Burst state also contributes 60% Cryo Crit DMG to every Parfait hit. Better than Medicine is automatically resolved as the current 12-second window after Low-Temperature Cooking or Scoring Cut hits: each configured Hydro or Cryo party member contributes its cumulative 5%/5%/5%/40% tier, reducing eligible Hydro and Cryo resistance by 5%/10%/15%/55%. It does not model the number of healed teammates, Cooking Mek's passive heal, hold behavior, timing, external effects, or other character states.",
   label: escoffierDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

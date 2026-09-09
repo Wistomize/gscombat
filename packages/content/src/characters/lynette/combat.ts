@@ -95,6 +95,17 @@ export const lynetteCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "burst"
     }
   ],
+  actionEffects: [
+    {
+      activation: "active",
+      id: "lynette.constellation.6.watchful_eye.after_enigma_thrust.anemo_damage_bonus",
+      label: "示辨真意的眼 · C6 施放谜影突刺后风元素伤害加成20%（6秒）",
+      source: { characterId: "Lynette", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: { elements: ["anemo"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.2 }
+    }
+  ],
   characterId: "Lynette",
   metrics: [
     {
@@ -102,14 +113,14 @@ export const lynetteCombatCoverage: CharacterCombatCoverage = {
       characterId: "Lynette",
       id: "lynette.skill.enigmatic_feint.enigma_thrust",
       kind: "damage",
-      label: "谜影障身法 / 谜影突刺（C0、无反应）",
+      label: "谜影障身法 / 谜影突刺（无反应）",
       sourceActionId: "lynette.skill.enigmatic_feint.enigma_thrust",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One Enigma Thrust from an Enigmatic Feint press is the selected C0, no-reaction, attack-scaling Anemo damage metric. It uses the skill's first parameter (268% ATK at talent level 1; 482.4% at level 10). One first normal-attack hit and Magic Trick: Astonishing Shift's initial AoE are separately verified. The selected metric excludes Bogglecat Box periodic damage, conversion bullets, duration, elemental aura and reactions, passives, constellations, external buffs, timing, and rotation behavior. No infusion, hold movement, Surging Blade, healing, or HP effects are modeled.",
+    "One Enigma Thrust from an Enigmatic Feint press is the selected no-reaction, attack-scaling Anemo damage metric. At C6, the explicit post-thrust six-second snapshot adds 20% Anemo Damage Bonus; the accompanying self Anemo infusion affects later weapon attacks rather than changing this action's element. One first normal hit and the Burst's initial AoE remain separately verified. Bogglecat Box ticks, conversion bullets, timing, and rotation remain outside this metric.",
   label: lynetteDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

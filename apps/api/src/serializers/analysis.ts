@@ -12,8 +12,18 @@ import type {
 } from "@gscombat/contracts"
 
 function serializeRotationTraceEntry(trace: RotationTraceEntry) {
-  if (trace.kind !== "scaling_terms") return { ...trace }
-  return { ...trace, terms: trace.terms.map((term) => ({ ...term })) }
+  if (trace.kind === "scaling_terms") return { ...trace, terms: trace.terms.map((term) => ({ ...term })) }
+  if (trace.kind === "stellar_swirl_participant_aggregation") {
+    return {
+      ...trace,
+      participants: trace.participants.map((participant) => ({
+        ...participant,
+        appliedEffectIds: [...participant.appliedEffectIds],
+        trace: participant.trace.map((entry) => ({ ...entry, formula: { ...entry.formula } }))
+      }))
+    }
+  }
+  return { ...trace }
 }
 
 /** Projects an internal rotation event into a JSON-safe analysis response with its event-level formula trace. */

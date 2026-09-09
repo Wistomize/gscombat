@@ -2,6 +2,9 @@ import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { neuvilletteDefinition } from "./definition.js"
 
+const neuvilletteC6WaterfallActionId =
+  "neuvillette.constellation.6.wrathful_recompense.three_droplets.six_waterfalls"
+
 export const neuvilletteCombatCoverage: CharacterCombatCoverage = {
   actions: [
     {
@@ -133,9 +136,95 @@ export const neuvilletteCombatCoverage: CharacterCombatCoverage = {
         ],
         duration: 1
       }
+    },
+    {
+      attackKind: "charged",
+      characterId: "Neuvillette",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "equitable-judgment-continuous-damage",
+          id: "wrathful-recompense-waterfall",
+          snapshotChecks: [
+            { expectedCoefficient: 0.073186, talentLevel: 1 },
+            { expectedCoefficient: 0.14467, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: neuvilletteDefinition.element,
+      evaluator: "declared_direct",
+      id: neuvilletteC6WaterfallActionId,
+      intrinsicEffects: [
+        {
+          fixedValue: 0.3,
+          kind: "flat",
+          label: "固有天赋 · 至高仲裁的纪律",
+          minimumSourceAscension: 4,
+          target: "damageBonus"
+        }
+      ],
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "auto",
+          id: "equitable-judgment-continuous-damage",
+          parameterIndex: 4,
+          source: "talent",
+          talentSlot: "normal"
+        }
+      ],
+      scalingStat: "hp",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-three-sourcewater-droplets-absorbed",
+          label: "C6 衔泪的君主：衡平推裁期间吸收三枚源水之滴",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "normal",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-three-sourcewater-droplets-absorbed",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 0, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "wrathful-recompense-waterfall",
+            hitCount: 6,
+            id: "wrathful-recompense-six-waterfalls",
+            snapshot: "hit"
+          }
+        ],
+        duration: 6
+      }
     }
   ],
   actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "neuvillette.constellation.6.wrathful_recompense.full_past_draconic_glories.max_hp_damage",
+      label: "衔泪的君主 · C6 追加水流（10%生命值上限 × 满3层遗龙之荣160%）",
+      source: { characterId: "Neuvillette", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: { actionIds: [neuvilletteC6WaterfallActionId], recipientSourceRelation: "source" },
+      value: {
+        coefficient: { kind: "fixed", value: 0.16 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "hp"
+      }
+    },
     {
       activation: "active",
       id: "neuvillette.constellation.2.judicial_exhortation.full_past_draconic_glories.crit_damage",
@@ -143,7 +232,10 @@ export const neuvilletteCombatCoverage: CharacterCombatCoverage = {
       source: { characterId: "Neuvillette", kind: "character", minimumSourceConstellation: 2 },
       target: "critDamage",
       targetFilter: {
-        actionIds: ["neuvillette.normal.charged_attack.equitable_judgment.single_tick"],
+        actionIds: [
+          "neuvillette.normal.charged_attack.equitable_judgment.single_tick",
+          neuvilletteC6WaterfallActionId
+        ],
         recipientSourceRelation: "source"
       },
       value: { kind: "fixed", value: 0.42 }
@@ -151,6 +243,17 @@ export const neuvilletteCombatCoverage: CharacterCombatCoverage = {
   ],
   characterId: "Neuvillette",
   metrics: [
+    {
+      actionId: neuvilletteC6WaterfallActionId,
+      characterId: "Neuvillette",
+      id: neuvilletteC6WaterfallActionId,
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "衔泪的君主 / C6 三枚源水之滴追加六道水流总伤害（满3层遗龙之荣）",
+      sourceActionId: neuvilletteC6WaterfallActionId,
+      status: "verified",
+      target: "enemy"
+    },
     {
       actionId: "neuvillette.normal.charged_attack.equitable_judgment.single_tick",
       characterId: "Neuvillette",
@@ -163,7 +266,7 @@ export const neuvilletteCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "O Tears, I Shall Repay's Water Cascade and O Tides, I Have Returned's opening wave are verified as baseline C0 health-scaling Hydro hits. One Charged Attack: Equitable Judgment tick is verified as a hit-time Hydro hit scaling from max HP. Its selected 0–3 Past Draconic Glories stacks apply the documented 100/110/125/160% special multiplier, defaulting to three C0 stacks from distinct Hydro-related reactions. C2 is a separate explicit full-three-stack snapshot for the same tick and adds 42% Crit DMG; it does not derive the stack count from reactions. At ascension 4 and above, the metric also includes Discipline of the Supreme Judicator's conventional full 30% Hydro damage bonus without exposing current HP as a manual input. The burst excludes waterfalls and Sourcewater Droplets. The full beam duration and tick count, sourcewater absorption, HP restore/loss, reactions, C1/C6, timing outside the selected tick, and other character states remain unmodeled.",
+    "O Tears, I Shall Repay's Water Cascade and O Tides, I Have Returned's opening wave are verified health-scaling Hydro hits. One Charged Attack: Equitable Judgment tick is verified as a hit-time Hydro hit scaling from max HP. Its selected 0–3 Past Draconic Glories stacks apply the documented 100/110/125/160% special multiplier, defaulting to three stacks from distinct Hydro-related reactions. C2 adds 42% Crit DMG to Equitable Judgment and its C6 waterfalls. At ascension 4 and above, both metrics include Discipline of the Supreme Judicator's full 30% Hydro damage bonus. The C6 metric totals the six 10%-Max-HP waterfalls produced after absorbing three Sourcewater Droplets and uses the maintained full-three-stack 160% Past Draconic Glories multiplier, so each waterfall contributes 16% max HP before shared damage multipliers. The burst excludes waterfalls and Sourcewater Droplets. HP restore/loss, reactions, C1 interruption resistance, and timing outside the selected events remain unmodeled.",
   label: neuvilletteDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

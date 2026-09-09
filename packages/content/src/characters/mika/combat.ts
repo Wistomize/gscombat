@@ -106,6 +106,40 @@ export const mikaCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "skill"
     }
   ],
+  actionEffects: [
+    {
+      activation: "active",
+      id: "mika.passive.suppressive_barrage.maximum_detector_stacks.physical_damage_bonus",
+      label: "速射牵制 · 灵风状态下侦明效果满4层（物理伤害提高40%）",
+      source: { characterId: "Mika", kind: "character", minimumSourceAscension: 4 },
+      target: "damageBonus",
+      targetFilter: { elements: ["physical"] },
+      value: { kind: "fixed", value: 0.4 }
+    },
+    {
+      activation: "active",
+      id: "mika.constellation.6.companions_counsel.extra_detector_stack.physical_damage_bonus",
+      label: "依随的策援 · C6 侦明上限额外1层（满5层时额外10%物理伤害加成）",
+      source: {
+        characterId: "Mika",
+        kind: "character",
+        minimumSourceAscension: 1,
+        minimumSourceConstellation: 6
+      },
+      target: "damageBonus",
+      targetFilter: { elements: ["physical"] },
+      value: { kind: "fixed", value: 0.1 }
+    },
+    {
+      activation: "active",
+      id: "mika.constellation.6.companions_counsel.spiritwind.physical_crit_damage",
+      label: "依随的策援 · C6 灵风状态下当前场上角色物理伤害暴击伤害提高60%",
+      source: { characterId: "Mika", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { elements: ["physical"] },
+      value: { kind: "fixed", value: 0.6 }
+    }
+  ],
   characterId: "Mika",
   metrics: [
     {
@@ -180,7 +214,7 @@ export const mikaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected Mika profile reports only his own support outputs: Skyfeather Song's cast heal for one nearby party member, calculated as max HP × burst[1] plus burst[0], then Mika's Healing Bonus and the recipient's Incoming Healing Bonus; C3 adds three Burst levels. Starfrost Swirl grants a nearby party member who receives its action-owned Spiritwind state skill[3] Normal Attack Speed; C5 adds three Skill levels. Flowfrost Arrow and one Rimestar Flare remain lower-level baseline Cryo actions, not selected support metrics. Eagleplume's on-hit healing, Rimestar Shards, multi-target behavior, physical-damage buffs, elemental aura and reactions, passives, other constellations, external buffs, timing, and rotation behavior remain outside these metrics.",
+    "The selected Mika profile reports Skyfeather Song's cast heal and Starfrost Swirl's Spiritwind Normal Attack Speed. The explicit Spiritwind snapshots now also expose the conventional maximum four Detector stacks as 40% Physical Damage Bonus. At C6, the extra stack raises that maximum to 50% and the current active recipient gains 60% Physical Crit DMG. These damage effects do not change Mika's healing or speed scalar results, but they apply to eligible Physical actions evaluated with Mika in the party. Multi-target stack acquisition, duration, and rotation behavior remain explicit rather than inferred.",
   label: mikaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

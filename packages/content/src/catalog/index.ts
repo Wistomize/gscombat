@@ -34,6 +34,7 @@ export type WeaponType = CatalogWeaponType
 export interface CharacterPrimaryAction {
   readonly id: string
   readonly label: string
+  readonly minimumSourceConstellation?: number
   /** Optional manual snapshot inputs that the selected action validates. */
   readonly scenarioParameters?: readonly CombatActionIntegerScenarioParameter[]
   /** Optional formula-display instruction inherited from the maintained action declaration. */
@@ -47,6 +48,7 @@ export interface CharacterSupportMetric {
   readonly id: string
   readonly kind: Exclude<CombatMetricDefinition["kind"], "damage">
   readonly label: string
+  readonly minimumSourceConstellation?: number
   /** Optional action-owned inputs used by this metric's source action. */
   readonly scenarioParameters?: readonly CombatActionIntegerScenarioParameter[]
   /** Source HP-state conditions required by a source-owned healing modifier. */
@@ -166,11 +168,14 @@ function cloneRecipientHpFractionRequirement(
 function createPrimaryAction(
   action: CombatActionMetadata,
   presentation: CharacterCatalogPresentation,
-  metricLabel?: string
+  metric: CombatDamageMetricDefinition
 ): CharacterPrimaryAction {
   return {
     id: action.id,
-    label: getPrimaryActionLabel(action, presentation, metricLabel),
+    label: getPrimaryActionLabel(action, presentation, metric.label),
+    ...(metric.minimumSourceConstellation === undefined
+      ? {}
+      : { minimumSourceConstellation: metric.minimumSourceConstellation }),
     ...(action.scenarioParameters?.length
       ? { scenarioParameters: action.scenarioParameters.map(cloneScenarioParameter) }
       : {}),
@@ -198,16 +203,24 @@ function createSupportMetric(
       : undefined
   const conditionalRecipientRequirements =
     metric.kind === "healing"
-      ? metric.conditionalScalingBonuses?.map((bonus) => ({
-          minimumSourceConstellation: bonus.minimumSourceConstellation,
-          requirement: cloneRecipientHpFractionRequirement(bonus.recipientRequirement)
-        }))
+      ? [
+          ...("conditionalScalingBonuses" in metric ? metric.conditionalScalingBonuses ?? [] : []),
+          ...(metric.recipientIncomingHealingBonuses ?? [])
+        ].map(
+          (bonus) => ({
+            minimumSourceConstellation: bonus.minimumSourceConstellation,
+            requirement: cloneRecipientHpFractionRequirement(bonus.recipientRequirement)
+          })
+        )
       : undefined
   return {
     ...(conditionalRecipientRequirements?.length ? { conditionalRecipientRequirements } : {}),
     id: metric.id,
     kind: metric.kind,
     label: normalizeProjectedMetricLabel(metric.label),
+    ...(metric.minimumSourceConstellation === undefined
+      ? {}
+      : { minimumSourceConstellation: metric.minimumSourceConstellation }),
     ...(sourceAction.scenarioParameters?.length
       ? { scenarioParameters: sourceAction.scenarioParameters.map(cloneScenarioParameter) }
       : {}),
@@ -291,7 +304,7 @@ function createSupportedCharacters(): readonly CharacterCatalogEntry[] {
     const supportMetrics = supportMetricsByCharacter.get(presentation.characterId) ?? []
     if (!actions && supportMetrics.length === 0) return []
     const primaryActions =
-      actions?.map(({ action, metric }) => createPrimaryAction(action, presentation, metric.label)) ?? []
+      actions?.map(({ action, metric }) => createPrimaryAction(action, presentation, metric)) ?? []
     return [
       {
         characterId: presentation.characterId,

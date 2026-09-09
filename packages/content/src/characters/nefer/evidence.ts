@@ -112,5 +112,148 @@ export const reviewedMultiScalingEvidence = [
         talentSlot: "skill"
       }
     ]
+  },
+  {
+    actionId: "nefer.skill.senet_strategy.phantom_performance.second_hit",
+    damagePartId: "phantom-performance-shade-first-hit",
+    source: {
+      sourcePath: "libs/gi/sheets/src/Characters/Nefer/index.tsx",
+      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+      upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
+    },
+    terms: [
+      {
+        coefficientParameterId: "phantom-performance-shade-first-hit-elemental-mastery",
+        explanation: "The pinned sheet maps skill[8] to the first shade hit before the Veil multiplier.",
+        groupId: "skill",
+        parameterIndex: 8,
+        snapshotChecks: [
+          { expectedCoefficient: 0.96, talentLevel: 1 },
+          { expectedCoefficient: 1.728, talentLevel: 10 }
+        ],
+        stat: "elementalMastery",
+        symbol: "shade1EleMas",
+        talentSlot: "skill"
+      },
+      {
+        explanation: "Nefer C1 adds 60% Elemental Mastery to this same Lunar-Bloom base hit before Veil.",
+        fixedCoefficient: 0.6,
+        minimumSourceConstellation: 1,
+        stat: "elementalMastery",
+        symbol: "c1LunarBloomEleMas"
+      }
+    ]
+  },
+  {
+    actionId: "nefer.skill.senet_strategy.phantom_performance.second_hit",
+    damagePartId: "phantom-performance-shade-second-hit",
+    source: {
+      sourcePath: "libs/gi/sheets/src/Characters/Nefer/index.tsx",
+      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+      upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
+    },
+    terms: [
+      {
+        coefficientParameterId: "phantom-performance-shade-second-hit-elemental-mastery",
+        explanation: "The pinned sheet maps skill[9] to the second shade hit before the Veil multiplier.",
+        groupId: "skill",
+        parameterIndex: 9,
+        snapshotChecks: [
+          { expectedCoefficient: 0.96, talentLevel: 1 },
+          { expectedCoefficient: 1.728, talentLevel: 10 }
+        ],
+        stat: "elementalMastery",
+        symbol: "shade2EleMas",
+        talentSlot: "skill"
+      },
+      {
+        explanation: "Nefer C1 adds 60% Elemental Mastery to this same Lunar-Bloom base hit before Veil.",
+        fixedCoefficient: 0.6,
+        minimumSourceConstellation: 1,
+        stat: "elementalMastery",
+        symbol: "c1LunarBloomEleMas"
+      }
+    ]
+  },
+  {
+    actionId: "nefer.skill.senet_strategy.phantom_performance.second_hit",
+    damagePartId: "phantom-performance-shade-third-hit",
+    source: {
+      sourcePath: "libs/gi/sheets/src/Characters/Nefer/index.tsx",
+      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+      upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
+    },
+    terms: [
+      {
+        coefficientParameterId: "phantom-performance-shade-third-hit-elemental-mastery",
+        explanation: "The pinned sheet maps skill[10] to the third shade hit before the Veil multiplier.",
+        groupId: "skill",
+        parameterIndex: 10,
+        snapshotChecks: [
+          { expectedCoefficient: 1.28, talentLevel: 1 },
+          { expectedCoefficient: 2.304, talentLevel: 10 }
+        ],
+        stat: "elementalMastery",
+        symbol: "shade3EleMas",
+        talentSlot: "skill"
+      },
+      {
+        explanation: "Nefer C1 adds 60% Elemental Mastery to this same Lunar-Bloom base hit before Veil.",
+        fixedCoefficient: 0.6,
+        minimumSourceConstellation: 1,
+        stat: "elementalMastery",
+        symbol: "c1LunarBloomEleMas"
+      }
+    ]
+  },
+  {
+    actionId: "nefer.skill.senet_strategy.phantom_performance.second_hit",
+    damagePartId: "phantom-performance-c6-self-second-hit",
+    source: {
+      sourcePath: "libs/gi/sheets/src/Characters/Nefer/index.tsx",
+      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+      upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
+    },
+    terms: [
+      {
+        explanation: "Nefer C6 replaces the second self hit with 85% Elemental Mastery Lunar-Bloom damage.",
+        fixedCoefficient: 0.85,
+        minimumSourceConstellation: 6,
+        stat: "elementalMastery",
+        symbol: "c6SecondSelfHitEleMas"
+      },
+      {
+        explanation: "The C6 replacement remains cumulative with Nefer C1's 60% Elemental Mastery term.",
+        fixedCoefficient: 0.6,
+        minimumSourceConstellation: 1,
+        stat: "elementalMastery",
+        symbol: "c1LunarBloomEleMas"
+      }
+    ]
+  },
+  {
+    actionId: "nefer.skill.senet_strategy.phantom_performance.second_hit",
+    damagePartId: "phantom-performance-c6-ending-hit",
+    source: {
+      sourcePath: "libs/gi/sheets/src/Characters/Nefer/index.tsx",
+      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+      upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
+    },
+    terms: [
+      {
+        explanation: "Nefer C6 adds a final 120% Elemental Mastery Lunar-Bloom hit after Phantom Performance.",
+        fixedCoefficient: 1.2,
+        minimumSourceConstellation: 6,
+        stat: "elementalMastery",
+        symbol: "c6EndingHitEleMas"
+      },
+      {
+        explanation: "The C6 ending hit remains cumulative with Nefer C1's 60% Elemental Mastery term.",
+        fixedCoefficient: 0.6,
+        minimumSourceConstellation: 1,
+        stat: "elementalMastery",
+        symbol: "c1LunarBloomEleMas"
+      }
+    ]
   }
 ] as const satisfies readonly ReviewedMultiScalingEvidenceRecord[]

@@ -108,6 +108,13 @@ export type CombatMetricConditionEvaluation =
       readonly satisfied: boolean
     }
   | {
+      readonly actualConstellation: number
+      readonly kind: "source_constellation"
+      readonly label: string
+      readonly minimumConstellation: number
+      readonly satisfied: boolean
+    }
+  | {
       readonly comparison: "at_most" | "above"
       readonly currentHpFraction: number
       readonly kind: "source_hp_fraction"
@@ -197,7 +204,8 @@ export interface CombatHealingMetricEvaluation extends CombatMetricEvaluationBas
   readonly scalingStat: Exclude<CombatMetricScalingStat, "base_attack">
   readonly scalingValue: number
   readonly sourceValue: number
-  readonly talentLevel: number
+  /** Present when the primary healing ratio comes from a levelled talent parameter. */
+  readonly talentLevel?: number
   readonly unit: "hp"
 }
 

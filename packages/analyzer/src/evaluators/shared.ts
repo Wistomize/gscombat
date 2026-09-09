@@ -12,12 +12,14 @@ import {
   type ScalingStat,
   type SpecialReactionBaseDamageTerm,
   type SpecialReactionDamageResult,
+  type StellarSwirlReactionExpectedDamageResult,
   type SustainedAuraWindow
 } from "@gscombat/calculator"
 import type {
   CombatActionMetadata,
   CombatDamageEventTemplate,
   CombatDamagePart,
+  CombatDamageScalingTerm,
   CombatDirectSpecialReactionConfig,
   MoonsignLevel
 } from "@gscombat/content"
@@ -50,7 +52,7 @@ import {
 import {
   resolveSourceFinalAttackByBuildId,
   resolveSourceFinalDefenseByBuildId,
-  resolveSourceFinalElementalMasteryByBuildId,
+  resolveSourceElementalMasterySnapshotsByBuildId,
   resolveSourceFinalHpByBuildId,
   resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId
 } from "./source-stats.js"
@@ -60,8 +62,11 @@ export { getScenarioParameterMinimumSourceConstellation, resolveActionScenarioPa
 import type {
   DeclaredDamageTimeline,
   DeclaredDamageTimelineEvent,
+  DeclaredDamagePartTimelineEvent,
   DeclaredDirectActionPartEvaluation,
-  DeclaredDirectActionScalingTermEvaluation, ResolvedDeclaredScenarioStats,
+  DeclaredDirectActionScalingTermEvaluation,
+  DeclaredStellarSwirlReactionTimelineEvent,
+  ResolvedDeclaredScenarioStats,
   ResolvedStatContribution
 } from "./types.js"
 
@@ -225,6 +230,16 @@ export function assertDeclaredMixedSpecialReactionEvent(
   action: CombatActionMetadata,
   event: CombatDamageEventTemplate
 ): void {
+  if (event.stellarSwirlReaction) {
+    const { event: reactionEvent, vortexLevel } = event.stellarSwirlReaction
+    if (
+      (reactionEvent === "trigger" && vortexLevel !== undefined) ||
+      (reactionEvent === "vortex" && vortexLevel !== 1 && vortexLevel !== 2)
+    ) {
+      throw new Error(`Actual Stellar-Swirl event ${event.id} for action ${action.id} has an invalid event snapshot`)
+    }
+    return
+  }
   const config = event.specialReaction
   if (!config) return
   if (event.elementalApplication || event.elementOverrideTarget) {
@@ -235,13 +250,29 @@ export function assertDeclaredMixedSpecialReactionEvent(
 
 /** Identifies a direct action that evaluates both ordinary and independent special-reaction damage events. */
 export function hasDeclaredMixedSpecialReactionEvents(action: CombatActionMetadata): boolean {
-  return action.timeline?.damageEvents.some((event) => event.specialReaction !== undefined) ?? false
+  return action.timeline?.damageEvents.some(
+    (event) => event.specialReaction !== undefined || event.stellarSwirlReaction !== undefined
+  ) ?? false
 }
 
 export function isDeclaredSpecialReactionTimelineEvent(
   event: DeclaredDamageTimelineEvent
-): event is DeclaredDamageTimelineEvent & { readonly specialReaction: CombatDirectSpecialReactionConfig } {
+): event is DeclaredDamagePartTimelineEvent & { readonly specialReaction: CombatDirectSpecialReactionConfig } {
   return event.specialReaction !== undefined
+}
+
+/** Identifies one participant-aggregated actual Stellar-Swirl trigger or Vortex event. */
+export function isDeclaredStellarSwirlReactionTimelineEvent(
+  event: DeclaredDamageTimelineEvent
+): event is DeclaredStellarSwirlReactionTimelineEvent {
+  return event.stellarSwirlReaction !== undefined
+}
+
+/** Identifies an ordinary or direct-special event backed by one declared character damage part. */
+export function isDeclaredDamagePartTimelineEvent(
+  event: DeclaredDamageTimelineEvent
+): event is DeclaredDamagePartTimelineEvent {
+  return event.part !== undefined
 }
 
 export function resolveStats(
@@ -844,7 +875,7 @@ export function createDirectSpecialReactionRotation(
 export function createDeclaredSpecialReactionRotationEvent(
   action: CombatActionMetadata,
   ownerId: string,
-  event: DeclaredDamageTimelineEvent & { readonly specialReaction: CombatDirectSpecialReactionConfig },
+  event: DeclaredDamagePartTimelineEvent & { readonly specialReaction: CombatDirectSpecialReactionConfig },
   result: SpecialReactionDamageResult,
   appliedEffects: readonly AppliedCombatActionEffect[]
 ): RotationEventResult {
@@ -868,6 +899,80 @@ export function createDeclaredSpecialReactionRotationEvent(
         kind: "special_reaction" as const,
         stage: entry.stage
       })),
+      ...(event.hitCount === 1
+        ? []
+        : [{ after: expectedDamage, before: result.expectedDamage, hitCount: event.hitCount, kind: "hit_count" as const }])
+    ]
+  }
+}
+
+/** Presentation metadata paired with one actual Stellar-Swirl participant calculation. */
+export interface DeclaredStellarSwirlParticipantPresentation {
+  readonly appliedEffects: readonly AppliedCombatActionEffect[]
+  readonly label: string
+  readonly participantId: string
+}
+
+/** Projects one participant-aggregated actual Stellar-Swirl result into the shared rotation response. */
+export function createDeclaredStellarSwirlReactionRotationEvent(
+  action: CombatActionMetadata,
+  ownerId: string,
+  event: DeclaredStellarSwirlReactionTimelineEvent,
+  result: StellarSwirlReactionExpectedDamageResult,
+  participantPresentations: readonly DeclaredStellarSwirlParticipantPresentation[]
+): RotationEventResult {
+  const presentationsById = new Map(
+    participantPresentations.map((participant) => [participant.participantId, participant])
+  )
+  const contributionsById = new Map(
+    result.expectedContributions.map((contribution) => [contribution.participantId, contribution.expectedDamage])
+  )
+  const participantDetails = result.participants.map((participant) => {
+    const presentation = presentationsById.get(participant.participantId)
+    if (!presentation) throw new Error(`Missing Stellar-Swirl presentation for ${participant.participantId}`)
+    return {
+      appliedEffectIds: presentation.appliedEffects.map((effect) => effect.id),
+      critDamage: participant.damage.critDamage,
+      critRate: participant.critRate,
+      expectedContribution: contributionsById.get(participant.participantId) ?? 0,
+      expectedDamage: participant.damage.expectedDamage,
+      label: presentation.label,
+      nonCritDamage: participant.damage.nonCritDamage,
+      participantId: participant.participantId,
+      trace: participant.damage.trace.map((entry) => ({
+        after: entry.after,
+        before: entry.before,
+        formula: entry.formula,
+        stage: entry.stage
+      }))
+    }
+  })
+  const allNonCritical = result.outcomes.find((outcome) => outcome.criticalParticipantIds.length === 0)
+  const allCritical = result.outcomes.find(
+    (outcome) => outcome.criticalParticipantIds.length === result.participants.length
+  )
+  const expectedDamage = result.expectedDamage * event.hitCount
+  const appliedEffectIds = [...new Set(participantDetails.flatMap((participant) => participant.appliedEffectIds))]
+  return {
+    appliedEffectIds,
+    critDamage: (allCritical?.weightedDamage ?? 0) * event.hitCount,
+    element: action.element,
+    expectedDamage,
+    hitCount: event.hitCount,
+    id: `${action.id}.${event.id}`,
+    nonCritDamage: (allNonCritical?.weightedDamage ?? 0) * event.hitCount,
+    ownerId,
+    statSnapshotTime: event.statSnapshotTime,
+    time: event.time,
+    trace: [
+      {
+        after: result.expectedDamage,
+        before: 0,
+        event: result.event,
+        kind: "stellar_swirl_participant_aggregation",
+        participants: participantDetails,
+        reactionCoefficient: result.reactionCoefficient
+      },
       ...(event.hitCount === 1
         ? []
         : [{ after: expectedDamage, before: result.expectedDamage, hitCount: event.hitCount, kind: "hit_count" as const }])
@@ -986,7 +1091,10 @@ export function resolveScenarioActionEffectContext(input: {
     input.enemyCount,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
-  const sourceFinalElementalMasteryByBuildId = resolveSourceFinalElementalMasteryByBuildId(
+  const {
+    sourceElementalMasteryBeforeShareByBuildId,
+    sourceFinalElementalMasteryByBuildId
+  } = resolveSourceElementalMasterySnapshotsByBuildId(
     input.build,
     input.teammates,
     input.action,
@@ -994,6 +1102,8 @@ export function resolveScenarioActionEffectContext(input: {
     input.buffs,
     input.artifactStatDeltas,
     input.enemyCount,
+    resolvedActiveEffectIds,
+    input.activeEffectSourceBuildIds,
     sourceFinalHpByBuildId,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
@@ -1039,6 +1149,7 @@ export function resolveScenarioActionEffectContext(input: {
     sourceFinalAttackByBuildId,
     sourceFinalDefenseByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     sourceFinalHpByBuildId,
     teamUniqueElementCount
   }
@@ -1112,9 +1223,25 @@ export function resolveDeclaredTimeline(
   const partsById = new Map(parts.map((part) => [part.id, part]))
   const events: DeclaredDamageTimelineEvent[] = []
   for (const event of actionTimeline.damageEvents) {
+    if (
+      (event.minimumSourceConstellation !== undefined &&
+        build.constellation < event.minimumSourceConstellation) ||
+      (event.maximumSourceConstellation !== undefined &&
+        build.constellation > event.maximumSourceConstellation)
+    ) continue
     assertDeclaredMixedSpecialReactionEvent(action, event)
     const hitCount = resolveDeclaredEventHitCount(event, actionParameters, action.id)
     if (hitCount === 0) continue
+    if (event.stellarSwirlReaction) {
+      events.push({
+        hitCount,
+        id: event.id,
+        statSnapshotTime: resolveDeclaredEventSnapshotTime(event, actionTimeline.duration, action.id),
+        stellarSwirlReaction: event.stellarSwirlReaction,
+        time: event.at
+      })
+      continue
+    }
     const part = partsById.get(event.damagePartId)
     if (!part) {
       throw new Error(`Damage event ${event.id} for action ${action.id} references missing part ${event.damagePartId}`)
@@ -1215,6 +1342,9 @@ export function createDeclaredRotationEvent(
   defenseIgnore: number,
   amplifyingReactionBonus: number
 ): RotationDamageEvent {
+  if (!isDeclaredDamagePartTimelineEvent(event)) {
+    throw new Error(`Actual Stellar-Swirl event ${event.id} cannot use the character damage-part evaluator`)
+  }
   const base = {
     canCrit: true,
     element: action.element,
@@ -1270,13 +1400,18 @@ export function createDeclaredRotationEvent(
 
 /** Maps self-owned resolved same-hit equipment terms into calculator scaling terms after final stats are available. */
 export function resolveMatchedActionDamageScalingTerms(
-  effects: Pick<ResolvedCombatActionEffects, "matchedActionAdditiveDamageTerms">
+  effects: Pick<ResolvedCombatActionEffects, "matchedActionAdditiveDamageTerms">,
+  actionParameters: ReadonlyMap<string, number>
 ): readonly DamageScalingTerm[] {
-  return effects.matchedActionAdditiveDamageTerms.map((term) => ({
-    coefficient: term.coefficient,
-    label: term.label,
-    stat: term.scalingStat
-  }))
+  return effects.matchedActionAdditiveDamageTerms.map((term) => {
+    const parameterId = term.coefficientMultiplierScenarioParameterId
+    const parameterValue = parameterId === undefined ? 1 : actionParameters.get(parameterId)
+    if (parameterValue === undefined) {
+      throw new Error(`Same-hit additive damage term ${term.id} references missing action snapshot ${parameterId}`)
+    }
+    const coefficient = term.coefficient * parameterValue * (term.coefficientMultiplierScenarioParameterScale ?? 1)
+    return { coefficient, label: term.label, stat: term.scalingStat }
+  })
 }
 
 /** Builds the legacy direct-result term list without mutating audited character damage-part declarations. */
@@ -1316,6 +1451,7 @@ export function createAdditionalDamageRotationEvent(
   ownerId: string,
   stats: RotationStats,
   event: ResolvedAdditionalDamageEvent,
+  appliedEffects: readonly AppliedCombatActionEffect[],
   time: number,
   statSnapshotTime: number,
   resistanceReduction: number,
@@ -1325,6 +1461,7 @@ export function createAdditionalDamageRotationEvent(
     throw new Error(`Additional damage event ${event.id} must explicitly disable reactions`)
   }
   return {
+    appliedEffectIds: appliedEffects.map((effect) => effect.id),
     canCrit: event.canCrit,
     ...(event.critPolicy === undefined ? {} : { critPolicy: event.critPolicy }),
     element: event.element,
@@ -1462,45 +1599,26 @@ export function hasResolvedMultipleScalingTerms(
 export function resolveScalingTerms(
   action: CombatActionMetadata,
   build: CharacterBuild,
-  terms: readonly [
-    {
-      readonly coefficientMultiplierParameterId?: string
-      readonly coefficientMultiplierScenarioParameterId?: string
-      readonly coefficientMultiplierScenarioParameterScale?: number
-      readonly coefficientParameterId: string
-      readonly minimumSourceAscension?: number
-      readonly stat: ScalingStat
-    },
-    ...{
-      readonly coefficientMultiplierParameterId?: string
-      readonly coefficientMultiplierScenarioParameterId?: string
-      readonly coefficientMultiplierScenarioParameterScale?: number
-      readonly coefficientParameterId: string
-      readonly minimumSourceAscension?: number
-      readonly stat: ScalingStat
-    }[]
-  ],
+  terms: readonly [CombatDamageScalingTerm, ...CombatDamageScalingTerm[]],
   gameData: GameDataRepository,
   actionParameters: ReadonlyMap<string, number>
 ): readonly [DeclaredDirectActionScalingTermEvaluation, ...DeclaredDirectActionScalingTermEvaluation[]] {
   const [first, ...rest] = terms
-  const resolveTerm = (term: {
-    readonly coefficientMultiplierParameterId?: string
-    readonly coefficientMultiplierScenarioParameterId?: string
-    readonly coefficientMultiplierScenarioParameterScale?: number
-    readonly coefficientParameterId: string
-    readonly minimumSourceAscension?: number
-    readonly stat: ScalingStat
-  }) => {
-    if (term.minimumSourceAscension !== undefined && build.ascension < term.minimumSourceAscension) {
+  const resolveTerm = (term: CombatDamageScalingTerm) => {
+    if (
+      (term.minimumSourceAscension !== undefined && build.ascension < term.minimumSourceAscension) ||
+      (term.minimumSourceConstellation !== undefined && build.constellation < term.minimumSourceConstellation)
+    ) {
       return { coefficient: 0, stat: term.stat }
     }
-    const coefficient = resolveDeclaredTalentCoefficientValue({
-      action,
-      build,
-      coefficientParameterId: term.coefficientParameterId,
-      gameData
-    })
+    const coefficient =
+      term.fixedCoefficient ??
+      resolveDeclaredTalentCoefficientValue({
+        action,
+        build,
+        coefficientParameterId: term.coefficientParameterId,
+        gameData
+      })
     const multiplierParameterId = term.coefficientMultiplierParameterId
     const multiplier =
       multiplierParameterId === undefined
@@ -1516,7 +1634,8 @@ export function resolveScalingTerms(
       scenarioMultiplierParameterId === undefined ? 1 : actionParameters.get(scenarioMultiplierParameterId)
     if (scenarioMultiplier === undefined || !Number.isInteger(scenarioMultiplier) || scenarioMultiplier < 0) {
       throw new Error(
-        `Damage term ${term.coefficientParameterId} for action ${action.id} has no valid scenario multiplier parameter`
+        `Damage term ${term.coefficientParameterId ?? "fixed coefficient"} for action ${action.id} has no valid ` +
+          "scenario multiplier parameter"
       )
     }
     return {

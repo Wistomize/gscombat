@@ -130,6 +130,44 @@ export const ainoCombatCoverage: CharacterCombatCoverage = {
       target: "elementalMastery",
       targetFilter: { recipientSourceRelation: "not_source" },
       value: { kind: "fixed", value: 80 }
+    },
+    {
+      activation: "active",
+      id: "aino.constellation.6.bursts_and_bonds.reaction_window.electro_charged_bloom_damage_bonus",
+      label: "溢泻的回响 · C6 元素爆发后的15秒（感电、绽放反应伤害提高15%）",
+      source: { characterId: "Aino", kind: "character", minimumSourceConstellation: 6 },
+      target: "reactionDamageBonus",
+      targetFilter: { reactionKinds: ["electro_charged", "bloom"] },
+      value: { kind: "fixed", value: 0.15 }
+    },
+    {
+      activation: "active",
+      id: "aino.constellation.6.bursts_and_bonds.reaction_window.lunar_charged_lunar_bloom_damage_bonus",
+      label: "溢泻的回响 · C6 元素爆发后的15秒（月感电、月绽放、月结晶反应伤害提高15%）",
+      source: { characterId: "Aino", kind: "character", minimumSourceConstellation: 6 },
+      target: "specialReactionDamageBonus",
+      targetFilter: { specialReactionKinds: ["lunar_charged", "lunar_bloom", "lunar_crystallize"] },
+      value: { kind: "fixed", value: 0.15 }
+    },
+    {
+      activation: "active",
+      condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
+      id: "aino.constellation.6.bursts_and_bonds.ascendant_gleam.electro_charged_bloom_damage_bonus",
+      label: "溢泻的回响 · C6 满辉（月感电、月绽放外的感电、绽放反应额外提高20%）",
+      source: { characterId: "Aino", kind: "character", minimumSourceConstellation: 6 },
+      target: "reactionDamageBonus",
+      targetFilter: { reactionKinds: ["electro_charged", "bloom"] },
+      value: { kind: "fixed", value: 0.2 }
+    },
+    {
+      activation: "active",
+      condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
+      id: "aino.constellation.6.bursts_and_bonds.ascendant_gleam.lunar_charged_lunar_bloom_damage_bonus",
+      label: "溢泻的回响 · C6 满辉（月感电、月绽放、月结晶反应额外提高20%）",
+      source: { characterId: "Aino", kind: "character", minimumSourceConstellation: 6 },
+      target: "specialReactionDamageBonus",
+      targetFilter: { specialReactionKinds: ["lunar_charged", "lunar_bloom", "lunar_crystallize"] },
+      value: { kind: "fixed", value: 0.2 }
     }
   ],
   characterId: "Aino",
@@ -139,14 +177,14 @@ export const ainoCombatCoverage: CharacterCombatCoverage = {
       characterId: "Aino",
       id: "aino.burst.precision_hydronic_cooler.water_ball",
       kind: "damage",
-      label: "精密水冷仪 / 单颗水球伤害（C0，无反应）",
+      label: "精密水冷仪 / 单颗水球伤害（无反应）",
       sourceActionId: "aino.burst.precision_hydronic_cooler.water_ball",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One first normal-attack hit, one initial Musecatcher Stage 1 hit, and one Precision Hydronic Cooler water ball are locked to the pinned 6.7 game-data snapshot from Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073. The selected C0 metric is one Water ball against one target: Burst parameter burst[0], or 20.112% Attack at Talent Level 1 and 36.2016% at Level 10. At ascension 4+, A4 also adds Elemental Mastery × passive2[0] (0.5) before shared multipliers. C1 provides separately selected self and nearby-on-field-teammate snapshots after Aino casts her Skill or Burst: each adds 80 Elemental Mastery for 15 seconds. The latter does not infer who was on field at cast time. It declares no target aura, Vaporize, or other fixed reaction. Stage 2 damage, self-dragging and movement endpoint targeting, hold aiming, target count, water-bullet recurrence and duration, Moonsign Full Moon cadence and area enhancement, external infusions, C2's extra hybrid water bullet, C6 reaction bonuses, inferred C3 Burst and C5 Skill levels, timing, and character states remain unmodeled.",
+    "One first normal-attack hit, one initial Musecatcher Stage 1 hit, and one Precision Hydronic Cooler water ball are locked to the pinned 6.7 game-data snapshot from Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073. The selected metric is one Water ball against one target: Burst parameter burst[0], or 20.112% Attack at Talent Level 1 and 36.2016% at Level 10. At ascension 4+, A4 also adds Elemental Mastery × passive2[0] (0.5) before shared multipliers. C1 provides separately selected self and nearby-on-field-teammate snapshots after Aino casts her Skill or Burst: each adds 80 Elemental Mastery for 15 seconds. The latter does not infer who was on field at cast time. C6 exposes explicit Burst-window snapshots for 15% Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reaction damage; Ascendant Gleam adds another 20% to each matching reaction. It declares no target aura, Vaporize, or other fixed reaction. Stage 2 damage, self-dragging and movement endpoint targeting, hold aiming, target count, water-bullet recurrence and duration, Moonsign Full Moon cadence and area enhancement, external infusions, C2's extra hybrid water bullet, timing, and character states remain unmodeled.",
   label: ainoDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

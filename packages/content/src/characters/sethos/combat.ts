@@ -126,7 +126,7 @@ export const sethosCombatCoverage: CharacterCombatCoverage = {
       characterId: "Sethos",
       id: "sethos.normal.royal_reed_archery.shadowpiercing_shot",
       kind: "damage",
-      label: "王家苇箭术 / 贯影箭单次伤害（C0、无反应）",
+      label: "王家苇箭术 / 贯影箭单次伤害（无反应）",
       sourceActionId: "sethos.normal.royal_reed_archery.shadowpiercing_shot",
       status: "verified",
       target: "enemy"

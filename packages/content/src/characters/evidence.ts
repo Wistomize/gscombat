@@ -8,24 +8,45 @@ export interface ReviewedMultiScalingEvidenceSnapshotCheck {
   readonly talentLevel: 1 | 10
 }
 
-/** One manually reviewed stat-specific term in a multi-scaling damage part. */
-export interface ReviewedMultiScalingEvidenceTerm {
+/** Shared reviewed provenance for one stat-specific term in a multi-scaling damage part. */
+interface ReviewedMultiScalingEvidenceTermBase {
   readonly coefficientMultiplierParameterId?: string
   readonly coefficientMultiplierScenarioParameterId?: string
   readonly coefficientMultiplierSnapshotChecks?: readonly ReviewedMultiScalingEvidenceSnapshotCheck[]
-  readonly coefficientParameterId: string
   readonly explanation: string
-  readonly groupId: CombatTalentParameterReference["groupId"]
   readonly minimumSourceAscension?: number
+  readonly minimumSourceConstellation?: number
+  readonly stat: ScalingStat
+  readonly symbol: string
+}
+
+/** One talent-table term with pinned snapshot guards. */
+export interface ReviewedTalentMultiScalingEvidenceTerm extends ReviewedMultiScalingEvidenceTermBase {
+  readonly coefficientParameterId: string
+  readonly fixedCoefficient?: never
+  readonly groupId: CombatTalentParameterReference["groupId"]
   readonly parameterIndex: number
   readonly snapshotChecks: readonly [
     ReviewedMultiScalingEvidenceSnapshotCheck,
     ...ReviewedMultiScalingEvidenceSnapshotCheck[]
   ]
-  readonly stat: ScalingStat
-  readonly symbol: string
   readonly talentSlot: CombatTalentParameterReference["talentSlot"]
 }
+
+/** One fixed coefficient whose source path and constellation gate were manually reviewed. */
+export interface ReviewedFixedMultiScalingEvidenceTerm extends ReviewedMultiScalingEvidenceTermBase {
+  readonly coefficientParameterId?: never
+  readonly fixedCoefficient: number
+  readonly groupId?: never
+  readonly parameterIndex?: never
+  readonly snapshotChecks?: never
+  readonly talentSlot?: never
+}
+
+/** One manually reviewed stat-specific term in a multi-scaling damage part. */
+export type ReviewedMultiScalingEvidenceTerm =
+  | ReviewedFixedMultiScalingEvidenceTerm
+  | ReviewedTalentMultiScalingEvidenceTerm
 
 /** Immutable source location that reviewers used to map a damage part's scaling terms. */
 export interface ReviewedMultiScalingEvidenceSource {

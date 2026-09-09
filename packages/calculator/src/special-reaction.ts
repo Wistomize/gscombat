@@ -54,6 +54,8 @@ export type DirectSpecialReactionDamageInput =
 
 /** Per-character inputs for one manually declared participant in a reaction Moon instance. */
 export interface LunarReactionParticipantInput {
+  /** Flat addition to the level-scaled reaction base before dedicated multipliers. */
+  readonly baseDamageFlat?: number
   /** Additive ratio in the shared base-damage-multiplier stage. */
   readonly baseDamageMultiplier?: number
   /** Additive ratio in Moon's independent base-damage-bonus stage. */
@@ -277,7 +279,8 @@ export function calculateLunarReactionParticipantDamage(
 
   return calculateSpecialReactionDamage({
     ascensionBonus: requireFinite("Lunar reaction ascension bonus", input.ascensionBonus ?? 0),
-    baseDamage: getReactionBaseDamage(input.level),
+    baseDamage:
+      getReactionBaseDamage(input.level) + requireFinite("Lunar reaction base damage addition", input.baseDamageFlat ?? 0),
     baseDamageMultiplier: requireFinite(
       "Lunar reaction base damage multiplier bonus",
       input.baseDamageMultiplier ?? 0
@@ -305,7 +308,9 @@ export function calculateStellarSwirlReactionParticipantDamage(
   assertCharacterLevel(input.level)
   return calculateSpecialReactionDamage({
     ascensionBonus: requireFinite("Stellar-Swirl ascension bonus", input.ascensionBonus ?? 0),
-    baseDamage: getReactionBaseDamage(input.level),
+    baseDamage:
+      getReactionBaseDamage(input.level) +
+      requireFinite("Stellar-Swirl base damage addition", input.baseDamageFlat ?? 0),
     baseDamageBonus: requireFinite("Stellar-Swirl base damage bonus", input.baseDamageBonus ?? 0),
     baseDamageMultiplier: requireFinite(
       "Stellar-Swirl base damage multiplier bonus",
@@ -596,8 +601,8 @@ function assertLunarParticipantReactionKind(kind: string): asserts kind is Lunar
 }
 
 function assertCharacterLevel(level: number): void {
-  if (!Number.isInteger(level) || level < 1 || level > 90) {
-    throw new Error("Special-reaction participant level must be an integer from 1 through 90")
+  if (!Number.isInteger(level) || level < 1 || level > 100) {
+    throw new Error("Special-reaction participant level must be an integer from 1 through 100")
   }
 }
 

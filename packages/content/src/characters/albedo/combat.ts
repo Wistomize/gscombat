@@ -148,6 +148,14 @@ export const albedoCombatCoverage: CharacterCombatCoverage = {
       target: "damageBonus",
       targetFilter: { attackKinds: ["plunge"] },
       value: { kind: "fixed", value: 0.3 }
+    },
+    {
+      activation: "active",
+      id: "albedo.constellation.6.dust_of_purification.solar_isotoma.protected_active_character.damage_bonus",
+      label: "无垢之土 · C6 阳华领域内且受结晶护盾保护或领域内存在月笼时伤害提升17%",
+      source: { characterId: "Albedo", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      value: { kind: "fixed", value: 0.17 }
     }
   ],
   characterId: "Albedo",
@@ -177,7 +185,7 @@ export const albedoCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected profile verifies one Transient Blossom and Homuncular Nature's 125 Elemental Mastery buff as independent outputs. Solar Isotoma deployment and burst initial hit remain verified baseline actions. C4's in-field Plunging Attack damage bonus is an explicit current-action snapshot. The seven Fatal Blossoms, passive HP threshold, constructs, remaining constellations, reactions, timing, and crystallize remain unmodeled.",
+    "The selected profile verifies one Transient Blossom and Homuncular Nature's 125 Elemental Mastery buff as independent outputs. Solar Isotoma deployment and burst initial hit remain verified baseline actions. C4's in-field Plunging Attack damage bonus is an explicit current-action snapshot. C6's 17% damage bonus is another explicit snapshot requiring the active recipient to remain inside Solar Isotoma and either have a Crystallize shield or have a Lunar Cage in the field. Its Hexerei Fatal-Blossom DEF addendum does not alter the selected Transient Blossom metric. The seven Fatal Blossoms, passive HP threshold, constructs, reactions, timing, and shield or Lunar-Cage creation remain unmodeled.",
   label: albedoDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

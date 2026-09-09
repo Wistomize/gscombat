@@ -63,6 +63,7 @@ export function evaluateDeclaredSpecialReactionScenarioAction(
     sourceFinalAttackByBuildId,
     sourceFinalDefenseByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     sourceFinalHpByBuildId,
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
@@ -93,6 +94,7 @@ export function evaluateDeclaredSpecialReactionScenarioAction(
     sourceFinalAttackByBuildId,
     sourceFinalHpByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
     ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
     ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),

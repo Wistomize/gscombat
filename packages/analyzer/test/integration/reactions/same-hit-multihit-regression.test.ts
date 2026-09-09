@@ -27,17 +27,21 @@ function withOriginalEventMultiplier(
   parameterId: string
 ): CombatActionTimeline["damageEvents"] {
   const [firstEvent, ...remainingEvents] = damageEvents
-  const withMultiplier = (event: CombatActionTimeline["damageEvents"][number]) => ({
-    ...event,
-    coefficientMultiplier: {
-      kind: "scenario_parameter_lookup" as const,
-      parameterId,
-      values: [
-        { multiplier: 1, parameterValue: 0 },
-        { multiplier: 2, parameterValue: 1 }
-      ]
+  const withMultiplier = (event: CombatActionTimeline["damageEvents"][number]) => {
+    if (event.damagePartId === undefined) throw new Error(`Event ${event.id} must reference one damage part`)
+    return {
+      ...event,
+      coefficientMultiplier: {
+        kind: "scenario_parameter_lookup" as const,
+        parameterId,
+        values: [
+          { multiplier: 1, parameterValue: 0 },
+          { multiplier: 2, parameterValue: 1 }
+        ]
+      },
+      damagePartId: event.damagePartId
     }
-  })
+  }
   return [withMultiplier(firstEvent), ...remainingEvents.map(withMultiplier)]
 }
 

@@ -155,7 +155,7 @@ function addMaximumReachableEquipmentEffects(
       (effect.activation !== "active" && effect.activation !== "maximum_reachable") ||
       (effect.source.kind === "character" && effect.activation !== "maximum_reachable") ||
       effect.selectionMode !== undefined ||
-      effect.target === "additionalDamageEvent" ||
+      (effect.target === "additionalDamageEvent" && effect.source.kind !== "character") ||
       (effect.target === "matchedActionAdditiveDamageTerm" &&
         (effect.source.kind !== "character" || effect.activation !== "maximum_reachable")) ||
       effect.requiredActiveEffectIds !== undefined ||
@@ -212,7 +212,7 @@ function selectAutomaticEffectSources(
       (effect.source.kind === "weapon" && effect.source.resolveAllMatchingPartySources === true)
     ) continue
     const sources = [...getEquipmentEffectSourceBuilds(effect, scenario)]
-    if (sources.length < 2 || selectedSources[effectId] !== undefined) continue
+    if (sources.length === 0 || selectedSources[effectId] !== undefined) continue
     sources.sort((left, right) => right.weapon.refinement - left.weapon.refinement)
     selectedSources[effectId] = sources[0]!.buildId
   }

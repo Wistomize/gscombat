@@ -108,7 +108,7 @@ export const lanYanCombatCoverage: CharacterCombatCoverage = {
       },
       id: "lan_yan.skill.swallow_wisp_pinion.shield.initial_absorption",
       kind: "scalar",
-      label: "凤缕随翦舞 / 翦月环护盾基础吸收量（C0、非风元素伤害）",
+      label: "凤缕随翦舞 / 翦月环护盾基础吸收量（非风元素伤害）",
       ratioParameter: {
         reference: {
           groupId: "skill",
@@ -132,7 +132,7 @@ export const lanYanCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One Lustrous Moonrise hit and one outgoing Feathermoon Ring first hit remain verified lower-level actions from the pinned 6.7 game-data snapshot at Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073, but neither is a selected display metric because Lan Yan's role-correct output here is her shield. The selected C0 support metric calculates one Swallow-Wisp Pinion shield delivered to the current active friendly recipient as total Attack × skill[1] plus skill[2], before that recipient's Shield Strength; C3 adds three Skill levels. It excludes the 250% Anemo-damage absorption branch, duration, self-Anemo application, C2 shield restoration, ring damage and return/bounce behavior, absorbed-element damage, burst hits, passives, other constellations, reactions, external effects, timing, and other character states.",
+    "One Lustrous Moonrise hit and one outgoing Feathermoon Ring first hit remain verified lower-level actions from the pinned 6.7 game-data snapshot at Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073, but neither is a selected display metric because Lan Yan's role-correct output here is her shield. The selected support metric calculates one Swallow-Wisp Pinion shield delivered to the current active friendly recipient as total Attack × skill[1] plus skill[2], before that recipient's Shield Strength; C3 adds three Skill levels. Fixed 7.0 C6 text grants one additional Skill use only: it has no shield-ratio, flat-absorption, or Shield Strength value, so the single-shield metric is unchanged at C6 and no fake numeric modifier is added. It excludes the 250% Anemo-damage absorption branch, duration, self-Anemo application, C2 shield restoration, ring damage and return/bounce behavior, absorbed-element damage, burst hits, passives, reactions, external effects, timing, and other character states.",
   label: lanYanDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

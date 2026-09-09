@@ -65,6 +65,37 @@ export const xianyunCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "skill"
     },
     {
+      attackKind: "plunge",
+      characterId: "Xianyun",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "white-clouds-at-dawn-third-skyladder-driftcloud-wave-damage",
+          id: "third-skyladder-driftcloud-wave",
+          snapshotChecks: [
+            { expectedCoefficient: 3.376, talentLevel: 1 },
+            { expectedCoefficient: 6.0768, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: xianyunDefinition.element,
+      evaluator: "declared_direct",
+      id: "xianyun.skill.white_clouds_at_dawn.third_skyladder.driftcloud_wave",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "white-clouds-at-dawn-third-skyladder-driftcloud-wave-damage",
+          parameterIndex: 3,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "attack",
+      status: "verified",
+      talentSlot: "skill"
+    },
+    {
       characterId: "Xianyun",
       element: xianyunDefinition.element,
       id: "xianyun.burst.stars_gather_at_dusk.instant_healing",
@@ -133,6 +164,19 @@ export const xianyunCombatCoverage: CharacterCombatCoverage = {
       target: "attackPercent",
       targetFilter: { recipientSourceRelation: "source" },
       value: { kind: "fixed", value: 0.2 }
+    },
+    {
+      activation: "automatic",
+      id: "xianyun.constellation.6.they_call_her_cloud_retainer.third_skyladder.crit_damage",
+      label: "知是留云僊 · C6 三次步天梯后的闲云冲击波暴击伤害提高70%",
+      source: { characterId: "Xianyun", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: {
+        actionIds: ["xianyun.skill.white_clouds_at_dawn.third_skyladder.driftcloud_wave"],
+        attackKinds: ["plunge"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.7 }
     }
   ],
   characterId: "Xianyun",
@@ -176,10 +220,20 @@ export const xianyunCombatCoverage: CharacterCombatCoverage = {
       sourceActionId: "xianyun.burst.stars_gather_at_dusk.instant_healing",
       status: "verified",
       target: "friendly_recipient"
+    },
+    {
+      actionId: "xianyun.skill.white_clouds_at_dawn.third_skyladder.driftcloud_wave",
+      characterId: "Xianyun",
+      id: "xianyun.skill.white_clouds_at_dawn.third_skyladder.driftcloud_wave",
+      kind: "damage",
+      label: "朝起鹤云 / 三次步天梯后的闲云冲击波（无反应）",
+      sourceActionId: "xianyun.skill.white_clouds_at_dawn.third_skyladder.driftcloud_wave",
+      status: "verified",
+      target: "enemy"
     }
   ],
   detail:
-    "The selected Xianyun profile reports one core self-produced support result: Stars Gather at Dusk's cast heal for one selected nearby party member. Its formula is Xianyun's Attack × burst[3] + burst[2], then Xianyun's Healing Bonus and the recipient's Incoming Healing Bonus; the pinned 6.7 snapshot gives burst[3] as 0.9216 at Talent Level 1 and 1.65888 at Level 10, and burst[2] as 577.7816 and 1271.216. C3 adds three Burst levels. Consider, the Adeptus in Her Realm is represented as one maximum-reachable Plunging Attack impact base-damage addition: 200% of Xianyun's final Attack, capped at 9,000. At C2, its selected replacement includes the C2 Stepladder self Attack snapshot, then uses 400% of final Attack capped at 18,000. One first normal-attack hit and one first Skyladder from White Clouds at Dawn remain verified lower-level attack-scaling Anemo actions, but are not selected as role metrics. The metric excludes the Starwicker's periodic healing and coordinated damage, all remaining Cloud Transmogrification state, Adeptal Assistance stack count and consumption, its one-target-per-impact and 0.4-second restrictions, Driftcloud Wave and its jump-count scaling, external infusion, reactions, timing, C1/C4/C5/C6, external effects, party-size aggregation, and all other character states.",
+    "The selected Xianyun profile reports Stars Gather at Dusk's cast heal and one three-Skyladder Driftcloud Wave. The heal is Xianyun's Attack × burst[3] + burst[2], followed by source Healing Bonus and recipient Incoming Healing Bonus; C3 adds three Burst levels. The Driftcloud Wave uses skill[3] and Plunging Attack classification. Consider, the Adeptus in Her Realm contributes 200% of Xianyun's final Attack capped at 9,000, while C2 replaces it with 400% capped at 18,000 and includes C2's 20% self Attack snapshot after Skyladder. C5 raises the Skill coefficient, and C6 automatically adds the full three-Skyladder 70% Crit DMG to this selected wave. C6's cooldown bypass changes how many waves fit into sixteen seconds rather than the value of this one hit. One first normal hit and one first Skyladder remain verified lower-level actions. Starwicker periodic healing/coordinated damage, C4's triggered party heal, complete eight-use cadence, target count, reactions, external effects, and rotation behavior remain outside these metrics.",
   label: xianyunDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

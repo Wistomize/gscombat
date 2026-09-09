@@ -59,5 +59,34 @@ export const reviewedMultiScalingEvidence = [
         talentSlot: "normal"
       }
     ]
+  },
+  {
+    actionId: "yoimiya.constellation.6.naganohara_meteor_swarm.fifth_hit.expected_blazing_arrow.no_reaction",
+    damagePartId: "c6-niwabi-fire-dance-fifth-hit-blazing-arrow",
+    source: {
+      sourcePath: "libs/gi/sheets/src/Characters/Yoimiya/index.tsx",
+      upstreamCommit: "21c98eb60355160274a8c4cecfc5671e2151a073",
+      upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
+    },
+    terms: [
+      {
+        coefficientMultiplierParameterId: "niwabi-fire-dance-normal-damage-multiplier",
+        coefficientMultiplierSnapshotChecks: [
+          { expectedCoefficient: 1.37909, talentLevel: 1 },
+          { expectedCoefficient: 1.61744, talentLevel: 10 }
+        ],
+        coefficientParameterId: "niwabi-fire-dance-fifth-hit-damage",
+        explanation: "The C6 expected Blazing Arrow preserves the reviewed fifth-hit auto[4] × skill[3] Attack base before its event-level 30% expectation multiplier.",
+        groupId: "auto",
+        parameterIndex: 4,
+        snapshotChecks: [
+          { expectedCoefficient: 1.05864, talentLevel: 1 },
+          { expectedCoefficient: 1.88871, talentLevel: 10 }
+        ],
+        stat: "attack",
+        symbol: "normal.hitArr[4] × normalDmg_ × expectedC6Arrow",
+        talentSlot: "normal"
+      }
+    ]
   }
 ] as const satisfies readonly ReviewedMultiScalingEvidenceRecord[]

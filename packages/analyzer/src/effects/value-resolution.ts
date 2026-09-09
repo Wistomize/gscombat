@@ -59,7 +59,10 @@ export function resolveEffectValue(
   if (effect.value.kind === "final_elemental_mastery") {
     const multiplier = resolveComputedEffectScalar(effect.value.multiplier, effect.id, input, source)
     if (effect.target === "finalElementalMasteryToFlatAttack") return multiplier
-    const finalElementalMastery = input.sourceFinalElementalMasteryByBuildId?.get(source.buildId)
+    const elementalMasteryByBuildId = effect.target === "elementalMastery"
+      ? input.sourceElementalMasteryBeforeShareByBuildId ?? input.sourceFinalElementalMasteryByBuildId
+      : input.sourceFinalElementalMasteryByBuildId
+    const finalElementalMastery = elementalMasteryByBuildId?.get(source.buildId)
     if (finalElementalMastery === undefined) {
       throw new Error(`Source final-elemental-mastery conversion ${effect.id} requires elemental mastery for ${source.buildId}`)
     }
@@ -184,6 +187,7 @@ export function resolveAdditionalDamageEvent(
     throw new Error(`Additional damage event ${effect.id} requires the recipient's native elemental identity`)
   }
   return {
+    ...(event.attackKind === undefined ? {} : { attackKind: event.attackKind }),
     canCrit: event.canCrit,
     ...(event.critPolicy === undefined ? {} : { critPolicy: event.critPolicy }),
     coefficient: resolveEffectScalar(event.coefficient, source),
@@ -194,16 +198,28 @@ export function resolveAdditionalDamageEvent(
     label: effect.label,
     reactionPolicy: event.reactionPolicy,
     scalingStat: event.scalingStat,
-    sourceId: source.buildId
+    sourceId: source.buildId,
+    ...(event.talentSlot === undefined ? {} : { talentSlot: event.talentSlot })
   }
 }
 
 export function resolveMatchedActionAdditiveDamageTerm(
   effect: Extract<CombatActionEffect, { readonly target: "matchedActionAdditiveDamageTerm" }>,
-  source: CharacterBuild
+  source: CharacterBuild,
+  input: ResolveCombatActionEffectCandidatesInput
 ): ResolvedMatchedActionAdditiveDamageTerm {
+  const coefficient = effect.value.coefficient
   return {
-    coefficient: resolveEffectScalar(effect.value.coefficient, source),
+    coefficient:
+      coefficient.kind === "final_elemental_mastery"
+        ? resolveFinalElementalMasteryScalar(coefficient, effect.id, input, source)
+        : resolveEffectScalar(coefficient, source),
+    ...(effect.value.coefficientMultiplierScenarioParameterId === undefined
+      ? {}
+      : { coefficientMultiplierScenarioParameterId: effect.value.coefficientMultiplierScenarioParameterId }),
+    ...(effect.value.coefficientMultiplierScenarioParameterScale === undefined
+      ? {}
+      : { coefficientMultiplierScenarioParameterScale: effect.value.coefficientMultiplierScenarioParameterScale }),
     id: effect.id,
     label: effect.label,
     scalingStat: effect.value.scalingStat,
@@ -266,6 +282,23 @@ function resolveComputedEffectScalar(
     throw new Error(`Missing talent parameter ${reference.id} for ${source.characterId} at level ${talentLevel}`)
   }
   return parameter * (value.multiplier ?? 1)
+}
+
+function resolveFinalElementalMasteryScalar(
+  value: Extract<CombatActionEffect["value"], { readonly kind: "final_elemental_mastery" }>,
+  effectId: string,
+  input: ResolveCombatActionEffectCandidatesInput,
+  source: CharacterBuild
+): number {
+  const finalElementalMastery = input.sourceFinalElementalMasteryByBuildId?.get(source.buildId)
+  if (finalElementalMastery === undefined) {
+    throw new Error(`Source final-elemental-mastery coefficient ${effectId} requires elemental mastery for ${source.buildId}`)
+  }
+  const multiplier = resolveComputedEffectScalar(value.multiplier, effectId, input, source)
+  const coefficient = Math.max(finalElementalMastery + (value.offset ?? 0), 0) * multiplier
+  return value.maximumValue === undefined
+    ? coefficient
+    : Math.min(coefficient, resolveComputedEffectScalar(value.maximumValue, effectId, input, source))
 }
 
 function resolveTeamBurstEnergyCost(

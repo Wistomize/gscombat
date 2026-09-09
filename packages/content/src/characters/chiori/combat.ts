@@ -131,6 +131,88 @@ export const chioriCombatCoverage: CharacterCombatCoverage = {
       ],
       status: "verified",
       talentSlot: "burst"
+    },
+    {
+      attackKind: "normal",
+      characterId: "Chiori",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "normal-attack-first-hit-damage",
+          id: "c6-tailor-made-normal-attack-first-hit",
+          snapshotChecks: [
+            { expectedCoefficient: 0.494104, talentLevel: 1 },
+            { expectedCoefficient: 0.976718, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: chioriDefinition.element,
+      evaluator: "declared_direct",
+      id: "chiori.constellation.6.sole_principle_pursuit.tailor_made.normal_attack.first_hit",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "auto",
+          id: "normal-attack-first-hit-damage",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "normal"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-tailor-made-normal-attack-current",
+          label: "C6 万理一空：已触发量体裁衣后续效果并进行普通攻击",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "normal",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-tailor-made-normal-attack-current",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 1, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "c6-tailor-made-normal-attack-first-hit",
+            id: "c6-tailor-made-normal-attack-first-hit",
+            snapshot: "hit"
+          }
+        ],
+        duration: 1
+      }
+    }
+  ],
+  actionEffects: [
+    {
+      activation: "automatic",
+      id: "chiori.constellation.6.sole_principle_pursuit.normal_attack.defense_additive_damage",
+      label: "万理一空 · C6 触发量体裁衣后续效果后普通攻击伤害追加235%防御力",
+      source: { characterId: "Chiori", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: ["chiori.constellation.6.sole_principle_pursuit.tailor_made.normal_attack.first_hit"],
+        attackKinds: ["normal"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 2.35 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "defense"
+      }
     }
   ],
   characterId: "Chiori",
@@ -164,10 +246,21 @@ export const chioriCombatCoverage: CharacterCombatCoverage = {
       sourceActionId: "chiori.burst.hiyoku_twin_blades",
       status: "verified",
       target: "enemy"
+    },
+    {
+      actionId: "chiori.constellation.6.sole_principle_pursuit.tailor_made.normal_attack.first_hit",
+      characterId: "Chiori",
+      id: "chiori.constellation.6.sole_principle_pursuit.tailor_made.normal_attack.first_hit",
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "万理一空 / C6 裁锦岩附魔普通攻击首段（235%防御力加算，无反应）",
+      sourceActionId: "chiori.constellation.6.sole_principle_pursuit.tailor_made.normal_attack.first_hit",
+      status: "verified",
+      target: "enemy"
     }
   ],
   detail:
-    "The selected profile verifies one dual-scaling Tamoto attack, its same-damage coordinated trigger, and Hiyoku: Twin Blades. Tamoto count still depends on Geo constructs and constellations; timing, passives, reactions, infusion, and character states remain in progress.",
+    "The selected profile verifies one dual-scaling Tamoto attack, its same-damage coordinated trigger, and Hiyoku: Twin Blades. C6's dedicated Tailor-Made action is zero through C5 and, at C6, evaluates one first Normal Attack hit after Chiori triggers Tailor-Made's follow-up and receives its Geo infusion: the normal talent's Attack coefficient plus 235% of final Defense in the same base-damage stage. The fixed 7.0 Simplified Chinese constellation text applies this Defense addition only to Normal Attacks, not Charged or Plunging Attacks. Its 12-second Skill cooldown reduction changes frequency and is outside this single-hit metric. Tamoto count still depends on Geo constructs and constellations; timing, other passives, reactions, and other character states remain in progress.",
   label: chioriDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

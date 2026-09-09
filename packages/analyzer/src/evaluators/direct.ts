@@ -1,4 +1,5 @@
 import {
+  calculateStellarSwirlReactionExpectedDamage,
   calculateDirectSpecialReactionDamage,
   evaluateExpectedDamage,
   evaluateRotation, type DamageAction, type ExpectedDamageResult,
@@ -83,6 +84,7 @@ export function evaluateDeclaredDirectScenarioAction(
     sourceFinalAttackByBuildId,
     sourceFinalDefenseByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     sourceFinalHpByBuildId,
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
@@ -126,6 +128,7 @@ export function evaluateDeclaredDirectScenarioAction(
     sourceFinalAttackByBuildId,
     sourceFinalHpByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
     ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
     ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
@@ -157,7 +160,10 @@ export function evaluateDeclaredDirectScenarioAction(
     actionEffects.amplifyingReactionBonus
   )
   const declaredReaction = additiveReaction ?? amplifyingReaction
-  const matchedActionDamageScalingTerms = shared.resolveMatchedActionDamageScalingTerms(actionEffects)
+  const matchedActionDamageScalingTerms = shared.resolveMatchedActionDamageScalingTerms(
+    actionEffects,
+    resolvedActionParameters
+  )
   const talentMultiplier = multiScalingPart
     ? null
     : parts.reduce((total, part) => total + (part.coefficient ?? 0), 0)
@@ -281,6 +287,7 @@ export function evaluateDeclaredDirectScenarioAction(
   )
   const additionalDamageEventTime = timeline.events[0]?.time ?? 0
   const additionalDamageEventSnapshotTime = timeline.events[0]?.statSnapshotTime ?? 0
+  const additionalDamageEventAppliedEffects: AppliedCombatActionEffect[] = []
   const additionalDamageRotationEvents = actionEffects.additionalDamageEvents.map((event) => {
     const additionalDamageEventEffects = resolveAdditionalDamageEventEffects({
       action,
@@ -297,6 +304,7 @@ export function evaluateDeclaredDirectScenarioAction(
       sourceFinalAttackByBuildId,
       sourceFinalHpByBuildId,
       sourceFinalElementalMasteryByBuildId,
+      sourceElementalMasteryBeforeShareByBuildId,
       ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
       ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
       ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
@@ -312,11 +320,18 @@ export function evaluateDeclaredDirectScenarioAction(
       resolvedActionParameters,
       additionalDamageEventEffects
     )
+    const eventAppliedEffects = shared.materializeDeferredStatEffects(
+      additionalDamageEventEffects.appliedEffects,
+      additionalDamageEventStats.rotation.hp,
+      additionalDamageEventStats.elementalMasteryForAttackConversion
+    )
+    additionalDamageEventAppliedEffects.push(...eventAppliedEffects)
     return shared.createAdditionalDamageRotationEvent(
       action.id,
       build.buildId,
       additionalDamageEventStats.additionalDamageEventRotation,
       event,
+      eventAppliedEffects,
       additionalDamageEventTime,
       additionalDamageEventSnapshotTime,
       additionalDamageEventEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
@@ -335,7 +350,13 @@ export function evaluateDeclaredDirectScenarioAction(
     ...(rotationAuras ? { sustainedAuras: rotationAuras } : {}),
     events: [...declaredRotationEvents, ...additionalDamageRotationEvents].sort((left, right) => left.time - right.time)
   })
-  return { appliedEffects, parts, result, rotation, stats: scenarioStats }
+  return {
+    appliedEffects: shared.deduplicateAppliedEffects([...appliedEffects, ...additionalDamageEventAppliedEffects]),
+    parts,
+    result,
+    rotation,
+    stats: scenarioStats
+  }
 }
 
 /**
@@ -371,8 +392,10 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     shared.resolveDamagePart(action, build, part, gameData, resolvedActionParameters)
   )
   let timeline = shared.resolveDeclaredTimeline(action, build, gameData, parts, resolvedActionParameters)
-  let ordinaryEvents = timeline.events.filter((event) => event.specialReaction === undefined)
+  let damagePartEvents = timeline.events.filter(shared.isDeclaredDamagePartTimelineEvent)
+  let ordinaryEvents = damagePartEvents.filter((event) => event.specialReaction === undefined)
   let specialEvents = timeline.events.filter(shared.isDeclaredSpecialReactionTimelineEvent)
+  let stellarSwirlReactionEvents = timeline.events.filter(shared.isDeclaredStellarSwirlReactionTimelineEvent)
   const ordinaryTimeline = { duration: timeline.duration, events: ordinaryEvents }
   const effectiveElements = shared.resolveDeclaredActionEffectElements(
     action,
@@ -389,6 +412,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     sourceFinalAttackByBuildId,
     sourceFinalDefenseByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     sourceFinalHpByBuildId,
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
@@ -432,13 +456,19 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     sourceFinalAttackByBuildId,
     sourceFinalHpByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
     ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
     ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
     teamElements: resolvePartyElements(build, teammates, gameData),
     teammates
   }
-  const specialReactionKinds = [...new Set(specialEvents.map((event) => event.specialReaction.kind))]
+  const specialReactionKinds = [
+    ...new Set([
+      ...specialEvents.map((event) => event.specialReaction.kind),
+      ...(stellarSwirlReactionEvents.length > 0 ? ["stellar_swirl" as const] : [])
+    ])
+  ]
   const parameterEffects = resolveCombatActionEffects({
     ...actionEffectContext,
     candidateSpecialReactionKinds: specialReactionKinds
@@ -446,8 +476,10 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
   shared.applyActionParameterEffects(action, resolvedActionParameters, parameterEffects.appliedEffects)
   parts = action.damageParts.map((part) => shared.resolveDamagePart(action, build, part, gameData, resolvedActionParameters))
   timeline = shared.resolveDeclaredTimeline(action, build, gameData, parts, resolvedActionParameters)
-  ordinaryEvents = timeline.events.filter((event) => event.specialReaction === undefined)
+  damagePartEvents = timeline.events.filter(shared.isDeclaredDamagePartTimelineEvent)
+  ordinaryEvents = damagePartEvents.filter((event) => event.specialReaction === undefined)
   specialEvents = timeline.events.filter(shared.isDeclaredSpecialReactionTimelineEvent)
+  stellarSwirlReactionEvents = timeline.events.filter(shared.isDeclaredStellarSwirlReactionTimelineEvent)
   const resolvedOrdinaryTimeline = { duration: timeline.duration, events: ordinaryEvents }
   const ordinaryActionEffects = resolveCombatActionEffects({
     ...actionEffectContext,
@@ -491,7 +523,10 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     ordinaryActionEffects.amplifyingReactionBonus
   )
   const declaredReaction = additiveReaction ?? amplifyingReaction
-  const matchedActionDamageScalingTerms = shared.resolveMatchedActionDamageScalingTerms(ordinaryActionEffects)
+  const matchedActionDamageScalingTerms = shared.resolveMatchedActionDamageScalingTerms(
+    ordinaryActionEffects,
+    resolvedActionParameters
+  )
   const ordinaryAppliedEffects = shared.materializeDeferredStatEffects(
     ordinaryActionEffects.appliedEffects,
     ordinaryStats.rotation.hp,
@@ -514,6 +549,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
   )
   const additionalDamageEventTime = ordinaryEvents[0]?.time ?? 0
   const additionalDamageEventSnapshotTime = ordinaryEvents[0]?.statSnapshotTime ?? 0
+  const additionalDamageEventAppliedEffects: AppliedCombatActionEffect[] = []
   const additionalDamageRotationEvents = ordinaryActionEffects.additionalDamageEvents.map((event) => {
     const additionalDamageEventEffects = resolveAdditionalDamageEventEffects({
       ...actionEffectContext,
@@ -530,11 +566,18 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       resolvedActionParameters,
       additionalDamageEventEffects
     )
+    const eventAppliedEffects = shared.materializeDeferredStatEffects(
+      additionalDamageEventEffects.appliedEffects,
+      additionalDamageEventStats.rotation.hp,
+      additionalDamageEventStats.elementalMasteryForAttackConversion
+    )
+    additionalDamageEventAppliedEffects.push(...eventAppliedEffects)
     return shared.createAdditionalDamageRotationEvent(
       action.id,
       build.buildId,
       additionalDamageEventStats.additionalDamageEventRotation,
       event,
+      eventAppliedEffects,
       additionalDamageEventTime,
       additionalDamageEventSnapshotTime,
       additionalDamageEventEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
@@ -553,21 +596,24 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     ...(rotationAuras ? { sustainedAuras: rotationAuras } : {}),
     events: [...declaredRotationEvents, ...additionalDamageRotationEvents].sort((left, right) => left.time - right.time)
   })
-  const specialEffectsByKind = new Map<string, ResolvedCombatActionEffects>()
-  const specialStatsByKind = new Map<string, ReturnType<typeof shared.resolveStats>>()
-  const resolveSpecialEffects = (kind: NonNullable<CombatActionMetadata["specialReaction"]>["kind"]) => {
-    const known = specialEffectsByKind.get(kind)
+  const specialEffectsByEventId = new Map<string, ResolvedCombatActionEffects>()
+  const specialStatsByEventId = new Map<string, ReturnType<typeof shared.resolveStats>>()
+  const resolveSpecialEffects = (
+    event: (typeof specialEvents)[number]
+  ) => {
+    const known = specialEffectsByEventId.get(event.id)
     if (known) return known
     const effects = resolveCombatActionEffects({
       ...actionEffectContext,
-      candidateSpecialReactionKinds: [kind],
+      candidateEventId: event.id,
+      candidateSpecialReactionKinds: [event.specialReaction.kind],
       effectiveElements: [action.element]
     })
-    specialEffectsByKind.set(kind, effects)
+    specialEffectsByEventId.set(event.id, effects)
     return effects
   }
-  const resolveSpecialStats = (kind: NonNullable<CombatActionMetadata["specialReaction"]>["kind"]) => {
-    const known = specialStatsByKind.get(kind)
+  const resolveSpecialStats = (event: (typeof specialEvents)[number]) => {
+    const known = specialStatsByEventId.get(event.id)
     if (known) return known
     const stats = shared.resolveStats(
       build,
@@ -576,14 +622,14 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       buffs,
       artifactStatDeltas,
       resolvedActionParameters,
-      resolveSpecialEffects(kind)
+      resolveSpecialEffects(event)
     )
-    specialStatsByKind.set(kind, stats)
+    specialStatsByEventId.set(event.id, stats)
     return stats
   }
   const specialEventResults = specialEvents.map((event) => {
-    const effects = resolveSpecialEffects(event.specialReaction.kind)
-    const stats = resolveSpecialStats(event.specialReaction.kind)
+    const effects = resolveSpecialEffects(event)
+    const stats = resolveSpecialStats(event)
     const scenarioStats = shared.createDeclaredScenarioStats(
       action,
       resolvedActionParameters,
@@ -618,16 +664,125 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     ).filter(shared.isSpecialReactionStatEffect)
     return { appliedEffects, event, result, scenarioStats }
   })
+  const party = [build, ...teammates]
+  const stellarSwirlReactionEventResults = stellarSwirlReactionEvents.map((event) => {
+    const participantEvaluations = party.map((participant) => {
+      const participantTeammates = party.filter((candidate) => candidate.buildId !== participant.buildId)
+      const participantAction: CombatActionMetadata = { ...action, characterId: participant.characterId }
+      const participantDeltas = participant.buildId === build.buildId ? artifactStatDeltas : undefined
+      const participantContext = shared.resolveScenarioActionEffectContext({
+        action: participantAction,
+        activeEffectIds: resolvedActiveEffectIds,
+        ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
+        ...(participantDeltas === undefined ? {} : { artifactStatDeltas: participantDeltas }),
+        build: participant,
+        buffs,
+        enemyCount,
+        gameData,
+        moonsignLevel,
+        resolvedActionParameters,
+        teammates: participantTeammates
+      })
+      const effects = resolveCombatActionEffects({
+        action: participantAction,
+        activeEffectIds: participantContext.resolvedActiveEffectIds,
+        ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
+        baseEnergyRecharge: participantContext.baseStats.scenario.energyRecharge,
+        candidateEventId: event.id,
+        candidateSpecialReactionKinds: ["stellar_swirl"],
+        effectiveElements: [action.element],
+        enemyCount,
+        gameData,
+        moonsignLevel,
+        primary: participant,
+        ...(participantContext.primaryElement === null ? {} : { primaryElement: participantContext.primaryElement }),
+        sourceFinalAttackByBuildId: participantContext.sourceFinalAttackByBuildId,
+        sourceFinalDefenseByBuildId: participantContext.sourceFinalDefenseByBuildId,
+        sourceFinalElementalMasteryByBuildId: participantContext.sourceFinalElementalMasteryByBuildId,
+        sourceElementalMasteryBeforeShareByBuildId:
+          participantContext.sourceElementalMasteryBeforeShareByBuildId,
+        sourceFinalHpByBuildId: participantContext.sourceFinalHpByBuildId,
+        ...(participantContext.primaryDifferentElementTeammateCount === null
+          ? {}
+          : { primaryDifferentElementTeammateCount: participantContext.primaryDifferentElementTeammateCount }),
+        ...(participantContext.primarySameElementTeammateCount === null
+          ? {}
+          : { primarySameElementTeammateCount: participantContext.primarySameElementTeammateCount }),
+        ...(participantContext.teamUniqueElementCount === null
+          ? {}
+          : { teamUniqueElementCount: participantContext.teamUniqueElementCount }),
+        teamElements: resolvePartyElements(participant, participantTeammates, gameData),
+        teammates: participantTeammates
+      })
+      const stats = shared.resolveStats(
+        participant,
+        participantAction,
+        gameData,
+        buffs,
+        participantDeltas,
+        resolvedActionParameters,
+        effects
+      )
+      const appliedEffects = shared.materializeDeferredStatEffects(
+        effects.appliedEffects,
+        stats.rotation.hp,
+        stats.elementalMasteryForAttackConversion
+      ).filter(shared.isSpecialReactionStatEffect)
+      return {
+        appliedEffects,
+        input: {
+          ascensionBonus: effects.specialReactionElevation,
+          baseDamageBonus: effects.specialReactionBaseDamageBonus,
+          baseDamageFlat: effects.specialReactionBaseDamageFlat,
+          baseDamageMultiplier: effects.specialReactionBaseDamageMultiplier,
+          critDamage: stats.rotation.critDamage,
+          critRate: stats.rotation.critRate,
+          elementalMastery: stats.rotation.elementalMastery,
+          enemyResistance: enemy.resistance,
+          flatDamageAddition: effects.specialReactionFlatDamageAddition,
+          level: participant.level,
+          participantId: participant.buildId,
+          reactionDamageBonus:
+            effects.specialReactionDamageBonus + getBuffTotal(buffs, "special_reaction_damage_bonus"),
+          resistanceReduction:
+            effects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction")
+        },
+        label: participant.label,
+        participantId: participant.buildId
+      }
+    })
+    const result = calculateStellarSwirlReactionExpectedDamage({
+      event: event.stellarSwirlReaction.event,
+      participants: participantEvaluations.map((participant) => participant.input),
+      ...(event.stellarSwirlReaction.vortexLevel === undefined
+        ? {}
+        : { vortexLevel: event.stellarSwirlReaction.vortexLevel })
+    })
+    const rotationEvent = shared.createDeclaredStellarSwirlReactionRotationEvent(
+      action,
+      build.buildId,
+      event,
+      result,
+      participantEvaluations
+    )
+    return { appliedEffects: participantEvaluations.flatMap((participant) => participant.appliedEffects), rotationEvent }
+  })
   const specialRotationEvents = specialEventResults.map(({ appliedEffects, event, result }) =>
     shared.createDeclaredSpecialReactionRotationEvent(action, build.buildId, event, result, appliedEffects)
   )
-  const rotationEvents = [...ordinaryRotation.events, ...specialRotationEvents].sort((left, right) => left.time - right.time)
+  const rotationEvents = [
+    ...ordinaryRotation.events,
+    ...specialRotationEvents,
+    ...stellarSwirlReactionEventResults.map((entry) => entry.rotationEvent)
+  ].sort((left, right) => left.time - right.time)
   const dpr = rotationEvents.reduce((total, event) => total + event.expectedDamage, 0)
   const rotation: RotationResult = { dpr, dps: dpr / timeline.duration, duration: timeline.duration, events: rotationEvents }
   const constellationTalentBonuses = resolveDeclaredActionTalentLevelConstellationBonuses(action, build)
   const appliedEffects = shared.deduplicateAppliedEffects([
     ...ordinaryAppliedEffects,
+    ...additionalDamageEventAppliedEffects,
     ...specialEventResults.flatMap((entry) => entry.appliedEffects),
+    ...stellarSwirlReactionEventResults.flatMap((entry) => entry.appliedEffects),
     ...constellationTalentBonuses.map((bonus) => ({
       id: bonus.id,
       label: bonus.label,

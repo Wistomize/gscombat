@@ -72,7 +72,7 @@ export const lisaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Lisa",
       id: "lisa.skill.violet_arc.held_three_conductive_stacks",
       kind: "damage",
-      label: "苍雷 / 长按三层引雷伤害（C0、无反应）",
+      label: "苍雷 / 长按三层引雷伤害（无反应）",
       sourceActionId: "lisa.skill.violet_arc.held_three_conductive_stacks",
       status: "verified",
       target: "enemy"

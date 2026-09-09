@@ -21,6 +21,7 @@ import {
 } from "./trace-shared"
 
 export function getRotationTraceStage(entry: RotationTraceEntry): PipelineStage {
+  if (entry.kind === "stellar_swirl_participant_aggregation") return "reaction_coefficient"
   if (entry.kind === "special_reaction") return entry.stage
   if (entry.kind === "scaling" || entry.kind === "scaling_terms") return "scaling"
   if (entry.kind === "expected_crit") return "crit"
@@ -56,6 +57,47 @@ export function RotationTraceFormula({
   readonly showMasterySources?: boolean
   readonly targetAction: CatalogPrimaryAction | undefined
 }) {
+  if (entry.kind === "stellar_swirl_participant_aggregation") {
+    return (
+      <div className="formulaLines">
+        <FormulaEquation label={entry.event === "trigger" ? "星扩散触发伤害" : "星涡伤害"}>
+          四名角色分别结算后，按 60% / 30% / 5% / 5% 排名加权 ={" "}
+          <FormulaValue stage="reaction_coefficient">{formatFormulaNumber(entry.after)}</FormulaValue>
+        </FormulaEquation>
+        <p className="formulaAuxiliary">
+          本次反应系数 ={" "}
+          <FormulaValue stage="reaction_coefficient">{formatFormulaNumber(entry.reactionCoefficient)}</FormulaValue>
+        </p>
+        {entry.participants.map((participant) => {
+          const participantEffectIds = new Set(participant.appliedEffectIds)
+          const participantEffects = analysis.evaluation.appliedEffects.filter((effect) =>
+            participantEffectIds.has(effect.id)
+          )
+          return (
+            <details className="traceContributionDetails" key={participant.participantId}>
+              <summary>
+                {participant.label} · 独立期望 {formatFormulaNumber(participant.expectedDamage)} · 加权贡献{" "}
+                {formatFormulaNumber(participant.expectedContribution)}
+              </summary>
+              <div className="formulaLines">
+                {participant.trace.map((participantEntry, index) => (
+                  <SpecialReactionTraceFormula
+                    after={participantEntry.after}
+                    before={participantEntry.before}
+                    effects={participantEffects}
+                    formula={participantEntry.formula}
+                    key={`${participant.participantId}-${participantEntry.stage}-${index}`}
+                    previousStage={participant.trace[index - 1]?.stage ?? participantEntry.stage}
+                    stats={undefined}
+                  />
+                ))}
+              </div>
+            </details>
+          )
+        })}
+      </div>
+    )
+  }
   if (entry.kind === "special_reaction") {
     return <SpecialReactionTraceFormula after={entry.after} before={entry.before} effects={analysis.evaluation.appliedEffects} formula={entry.formula} previousStage={previousStage} showCritSources={showCritSources} showMasterySources={showMasterySources} stats={analysis.evaluation.stats} />
   }
@@ -188,6 +230,11 @@ export function RotationTraceFormula({
     )
   }
   if (entry.kind === "expected_crit") {
+    const usesTransformativeReactionCrit = analysis.evaluation.appliedEffects.some(
+      (effect) =>
+        effect.target === "transformativeReactionCritRate" ||
+        effect.target === "transformativeReactionCritDamage"
+    )
     return (
       <div className="formulaLines">
         <FormulaEquation label="暴击期望伤害">
@@ -196,7 +243,14 @@ export function RotationTraceFormula({
           <FormulaValue stage="crit">{formatFormulaPercent(entry.critDamage)}</FormulaValue>] ={" "}
           <FormulaValue stage="crit">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
-        {showCritSources ? <CritSourceBreakdown stats={analysis.evaluation.stats} /> : null}
+        {usesTransformativeReactionCrit
+          ? <ActionEffectSources
+              effects={analysis.evaluation.appliedEffects}
+              targets={["transformativeReactionCritRate", "transformativeReactionCritDamage"]}
+            />
+          : showCritSources
+            ? <CritSourceBreakdown stats={analysis.evaluation.stats} />
+            : null}
       </div>
     )
   }

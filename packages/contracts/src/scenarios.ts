@@ -90,6 +90,8 @@ export const MetricFriendlyRecipientContextSchema = Type.Object({
   /** Whether the selected active recipient currently has Moonsign for source-defined target routing. */
   isMoonsign: Type.Optional(Type.Boolean()),
   isWithinSourceArea: Type.Optional(Type.Boolean()),
+  /** Explicit final maximum HP when the selected metric uses the recipient's HP as a formula operand. */
+  maximumHp: Type.Optional(Type.Number({ exclusiveMinimum: 0 })),
   /** Exact current HP deficit when the caller wants the actual restored HP rather than only healing capacity. */
   missingHp: Type.Optional(Type.Number({ minimum: 0 }))
 }, { additionalProperties: false })

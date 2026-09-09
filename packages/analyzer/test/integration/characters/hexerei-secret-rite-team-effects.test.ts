@@ -63,6 +63,51 @@ describe("Hexerei Secret Rite team effects", () => {
     expect(active.actionExpectedDamage).toBeGreaterThan(inactive.actionExpectedDamage * 1.5)
   })
 
+  it("gates Klee C1 behind Hexerei and composes her C6 party and Hexerei self bonuses", () => {
+    const actionId = "klee.normal.charged_attack.single_hit"
+    const c1EffectId = "klee.constellation.1.chained_reactions.spark_triggered.attack_percent"
+    const kleeC0 = makeBuild("Klee", "test.hexerei.klee.c0")
+    const kleeC1 = { ...kleeC0, buildId: "test.hexerei.klee.c1", constellation: 1 }
+    const kleeC6 = { ...kleeC0, buildId: "test.hexerei.klee.c6", constellation: 6 }
+    const sucrose = makeBuild("Sucrose", "test.hexerei.sucrose.for-klee-constellations")
+    const xiangling = makeBuild("Xiangling", "test.hexerei.xiangling.for-klee-c6")
+    const selectedSoloScenario = makeScenario(kleeC1, actionId, [])
+    const selectedHexereiScenario = makeScenario(kleeC1, actionId, [sucrose])
+    const c1WithoutHexerei = evaluateScenario(
+      {
+        ...selectedSoloScenario,
+        conditions: { ...selectedSoloScenario.conditions, activeEffectIds: [c1EffectId] }
+      },
+      gameData
+    )
+    const c1WithHexerei = evaluateScenario(
+      {
+        ...selectedHexereiScenario,
+        conditions: { ...selectedHexereiScenario.conditions, activeEffectIds: [c1EffectId] }
+      },
+      gameData
+    )
+    const soloC0 = evaluateScenario(makeScenario(kleeC0, actionId, []), gameData)
+    const soloC6 = evaluateScenario(makeScenario(kleeC6, actionId, []), gameData)
+    const hexereiC0 = evaluateScenario(makeScenario(kleeC0, actionId, [sucrose]), gameData)
+    const hexereiC6 = evaluateScenario(makeScenario(kleeC6, actionId, [sucrose]), gameData)
+    const teammateC0 = evaluateScenario(
+      makeScenario(xiangling, "xiangling.skill.guoba.single_flame_breath", [kleeC0]),
+      gameData
+    )
+    const teammateC6 = evaluateScenario(
+      makeScenario(xiangling, "xiangling.skill.guoba.single_flame_breath", [kleeC6]),
+      gameData
+    )
+
+    expect(c1WithoutHexerei.appliedEffects.map((effect) => effect.id)).not.toContain(c1EffectId)
+    expect(c1WithHexerei.appliedEffects.map((effect) => effect.id)).toContain(c1EffectId)
+    expect(c1WithHexerei.stats.attackPercent - c1WithoutHexerei.stats.attackPercent).toBeCloseTo(0.6)
+    expect(soloC6.stats.damageBonus - soloC0.stats.damageBonus).toBeCloseTo(0.1)
+    expect(hexereiC6.stats.damageBonus - hexereiC0.stats.damageBonus).toBeCloseTo(0.5)
+    expect(teammateC6.stats.damageBonus - teammateC0.stats.damageBonus).toBeCloseTo(0.1)
+  })
+
   it("keeps Hexerei-only recipient bonuses off non-Hexerei characters while retaining party-wide bonuses", () => {
     const xiangling = makeBuild("Xiangling", "test.hexerei.xiangling")
     const sucrose = makeBuild("Sucrose", "test.hexerei.sucrose.for-xiangling")

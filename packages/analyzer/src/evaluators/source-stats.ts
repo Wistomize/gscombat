@@ -11,8 +11,9 @@ import {
 } from "../core/build-variant.js"
 import {
   listSelectedSourceAttackSnapshotActivationEffectIds, listSelectedSourceDefenseSnapshotActivationEffectIds, resolveCombatActionAttackEffects,
+  resolveCombatActionCharacterElementalMasteryEffects,
   resolveCombatActionDefenseEffects,
-  resolveCombatActionElementalMasteryEffects,
+  resolveCombatActionFinalElementalMasteryShareEffects,
   resolveFinalHpToElementalMastery,
   resolveSelfAutomaticEquipmentEffects,
   resolveSelfMaximumReachableCharacterHpEffects,
@@ -238,8 +239,8 @@ export function resolveSourceFinalHpByBuildId(
   )
 }
 
-/** Resolves each configured source build's final elemental mastery before an active party effect reads that source stat. */
-export function resolveSourceFinalElementalMasteryByBuildId(
+/** Resolves each source build's elemental mastery immediately before and after non-recursive final-EM party shares. */
+export function resolveSourceElementalMasterySnapshotsByBuildId(
   primary: CharacterBuild,
   teammates: readonly CharacterBuild[],
   action: CombatActionMetadata,
@@ -247,12 +248,18 @@ export function resolveSourceFinalElementalMasteryByBuildId(
   buffs: readonly ExternalBuff[],
   deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined,
   enemyCount: number,
+  activeEffectIds: readonly string[],
+  activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined,
   sourceFinalHpByBuildId: ReadonlyMap<string, number>,
   sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>
-): ReadonlyMap<string, number> {
+): {
+  readonly sourceElementalMasteryBeforeShareByBuildId: ReadonlyMap<string, number>
+  readonly sourceFinalElementalMasteryByBuildId: ReadonlyMap<string, number>
+} {
   const party = [primary, ...teammates]
   const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
-  return new Map(
+  const moonsignLevel = resolveTeamState(primary, teammates, gameData).moonsign.level
+  const preShareElementalMasteryByBuildId = new Map(
     party.map((source) => {
       const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
       const base = resolveBaseCombatStats(source, gameData, action.element)
@@ -267,11 +274,28 @@ export function resolveSourceFinalElementalMasteryByBuildId(
         sourceTeammates,
         gameData
       )
-      const automaticEffects = resolveCombatActionElementalMasteryEffects({
+      const automaticEquipmentEffects = resolveSelfAutomaticEquipmentEffects({
         action,
-        activeEffectIds: [],
         baseEnergyRecharge: base.energyRecharge,
         enemyCount,
+        gameData,
+        ...(primaryElement === null ? {} : { primaryElement }),
+        primary: source,
+        ...(primaryDifferentElementTeammateCount === null
+          ? {}
+          : { primaryDifferentElementTeammateCount }),
+        ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
+        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
+        teammates: sourceTeammates
+      })
+      const characterEffects = resolveCombatActionCharacterElementalMasteryEffects({
+        action,
+        activeEffectIds,
+        ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
+        baseEnergyRecharge: base.energyRecharge,
+        enemyCount,
+        gameData,
+        moonsignLevel,
         ...(primaryElement === null ? {} : { primaryElement }),
         primary: source,
         sourceFinalHpByBuildId,
@@ -292,13 +316,62 @@ export function resolveSourceFinalElementalMasteryByBuildId(
       const isPrimary = source.buildId === primary.buildId
       const elementalMastery =
         base.elementalMastery +
-        automaticEffects.elementalMastery +
+        automaticEquipmentEffects.elementalMastery +
+        characterEffects.elementalMastery +
         maximumReachableEffects.elementalMastery +
-        resolveFinalHpToElementalMastery(sourceFinalHp, automaticEffects) +
+        resolveFinalHpToElementalMastery(sourceFinalHp, automaticEquipmentEffects) +
+        resolveFinalHpToElementalMastery(sourceFinalHp, characterEffects) +
+        resolveFinalHpToElementalMastery(sourceFinalHp, maximumReachableEffects) +
         (isPrimary ? getDelta(deltas, "elemental_mastery") + getBuffTotal(buffs, "elemental_mastery") : 0)
       return [source.buildId, elementalMastery] as const
     })
   )
+  const sourceFinalElementalMasteryByBuildId = new Map(
+    party.map((source) => {
+      const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
+      const base = resolveBaseCombatStats(source, gameData, action.element)
+      const primaryElement = resolveBuildElement(source, gameData)
+      const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
+        source,
+        sourceTeammates,
+        gameData
+      )
+      const primarySameElementTeammateCount = resolvePrimarySameElementTeammateCount(
+        source,
+        sourceTeammates,
+        gameData
+      )
+      const shareEffects = resolveCombatActionFinalElementalMasteryShareEffects({
+        action,
+        activeEffectIds,
+        ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
+        baseEnergyRecharge: base.energyRecharge,
+        enemyCount,
+        gameData,
+        moonsignLevel,
+        ...(primaryElement === null ? {} : { primaryElement }),
+        primary: source,
+        sourceFinalElementalMasteryByBuildId: preShareElementalMasteryByBuildId,
+        sourceFinalHpByBuildId,
+        ...(primaryDifferentElementTeammateCount === null
+          ? {}
+          : { primaryDifferentElementTeammateCount }),
+        ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
+        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
+        teamElements: resolvePartyElements(source, sourceTeammates, gameData),
+        teammates: sourceTeammates
+      })
+      const preShareElementalMastery = preShareElementalMasteryByBuildId.get(source.buildId)
+      if (preShareElementalMastery === undefined) {
+        throw new Error(`Missing pre-share final Elemental Mastery for source build ${source.buildId}`)
+      }
+      return [source.buildId, preShareElementalMastery + shareEffects.elementalMastery] as const
+    })
+  )
+  return {
+    sourceElementalMasteryBeforeShareByBuildId: preShareElementalMasteryByBuildId,
+    sourceFinalElementalMasteryByBuildId
+  }
 }
 
 /** Resolves each source build's defense at the explicit state captured by a source-defense conversion. */
@@ -514,6 +587,7 @@ export function resolveScenarioSourceStatMaps(input: {
   readonly sourceFinalAttackByBuildId: ReadonlyMap<string, number>
   readonly sourceFinalDefenseByBuildId: ReadonlyMap<string, number>
   readonly sourceFinalElementalMasteryByBuildId: ReadonlyMap<string, number>
+  readonly sourceElementalMasteryBeforeShareByBuildId: ReadonlyMap<string, number>
   readonly sourceFinalHpByBuildId: ReadonlyMap<string, number>
 } {
   const sourceSelfMaximumEquipmentEffectsByBuildId = resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
@@ -535,7 +609,10 @@ export function resolveScenarioSourceStatMaps(input: {
     input.enemyCount,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
-  const sourceFinalElementalMasteryByBuildId = resolveSourceFinalElementalMasteryByBuildId(
+  const {
+    sourceElementalMasteryBeforeShareByBuildId,
+    sourceFinalElementalMasteryByBuildId
+  } = resolveSourceElementalMasterySnapshotsByBuildId(
     input.primary,
     input.teammates,
     input.action,
@@ -543,6 +620,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.buffs,
     input.artifactStatDeltas,
     input.enemyCount,
+    input.activeEffectIds,
+    input.activeEffectSourceBuildIds,
     sourceFinalHpByBuildId,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
@@ -574,6 +653,7 @@ export function resolveScenarioSourceStatMaps(input: {
     sourceFinalAttackByBuildId,
     sourceFinalDefenseByBuildId,
     sourceFinalElementalMasteryByBuildId,
+    sourceElementalMasteryBeforeShareByBuildId,
     sourceFinalHpByBuildId
   }
 }

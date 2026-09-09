@@ -18,6 +18,7 @@ import {
   type AdditiveReaction,
   type AmplifyingReaction
 } from "./reaction.js"
+import type { StellarSwirlReactionEvent } from "./special-reaction.js"
 
 export type { AdditiveReaction, AmplifyingReaction } from "./reaction.js"
 
@@ -153,6 +154,10 @@ export type DamageScaling = SingleDamageScaling | MultiDamageScaling
 
 export interface ReactionConfig {
   readonly bonus: number
+  /** Independent CRIT DMG used only when an ordinary transformative reaction is explicitly allowed to CRIT. */
+  readonly critDamage?: number
+  /** Independent CRIT Rate used only when an ordinary transformative reaction is explicitly allowed to CRIT. */
+  readonly critRate?: number
   /** Required only for transformative reactions whose damage element cannot be inferred from the reaction kind. */
   readonly damageElement?: Element
   /** Adds once per transformative reaction hit after its reaction multiplier, before resistance. */
@@ -161,6 +166,8 @@ export interface ReactionConfig {
 }
 
 export interface RotationDamageEvent {
+  /** Action effects already resolved directly for this event before rotation-window effects are applied. */
+  readonly appliedEffectIds?: readonly string[]
   /** Added only when an event-level aura resolves to Vaporize or Melt. */
   readonly amplifyingReactionBonus?: number
   readonly canCrit: boolean
@@ -299,6 +306,29 @@ export type RotationTraceEntry =
       readonly kind: "special_reaction"
       readonly stage: SpecialReactionTraceStage
     }
+  | {
+      readonly after: number
+      readonly before: number
+      readonly event: StellarSwirlReactionEvent
+      readonly kind: "stellar_swirl_participant_aggregation"
+      readonly participants: readonly {
+        readonly appliedEffectIds: readonly string[]
+        readonly critDamage: number
+        readonly critRate: number
+        readonly expectedContribution: number
+        readonly expectedDamage: number
+        readonly label: string
+        readonly nonCritDamage: number
+        readonly participantId: string
+        readonly trace: readonly {
+          readonly after: number
+          readonly before: number
+          readonly formula: SpecialReactionTraceFormula
+          readonly stage: SpecialReactionTraceStage
+        }[]
+      }[]
+      readonly reactionCoefficient: number
+    }
 
 export interface RotationEventResult {
   readonly appliedEffectIds: readonly string[]
@@ -435,7 +465,9 @@ export function evaluateRotation(input: RotationInput): RotationResult {
     )
     return {
       ...result,
-      appliedEffectIds: activeEffects.map((effect) => effect.id),
+      appliedEffectIds: [
+        ...new Set([...(event.appliedEffectIds ?? []), ...activeEffects.map((effect) => effect.id)])
+      ],
       ...(elementalApplication ? { elementalApplication: elementalApplication.outcome } : {}),
       ...(elementOverride
         ? {
@@ -814,26 +846,36 @@ function evaluateTransformativeEvent(
     multiplier *
     (1 + transformativeReactionBonus(event.stats.elementalMastery, reaction.bonus))
   const flatDamageAddition = reaction.flatDamageAddition ?? 0
-  const beforeResistance = (reactionDamage + flatDamageAddition) * hitCount
+  const beforeCrit = (reactionDamage + flatDamageAddition) * hitCount
+  const critRate = clampTransformativeReactionCritRate(reaction.critRate ?? 0)
+  const critDamage = requireNonNegativeFinite(reaction.critDamage ?? 0, "Transformative-reaction CRIT DMG")
+  const critMultiplier = 1 + critRate * critDamage
+  const beforeResistance = beforeCrit * critMultiplier
   const baseResistance = getElementResistance(enemy, damageElement)
   const resistanceReduction = event.resistanceReduction ?? 0
   const effectiveResistance = baseResistance - resistanceReduction
   const resistanceMultiplier = calculateResistanceMultiplier(effectiveResistance)
+  const nonCritDamage = beforeCrit * resistanceMultiplier
+  const criticalDamage = beforeCrit * (1 + critDamage) * resistanceMultiplier
   const expectedDamage = beforeResistance * resistanceMultiplier
+  const critTrace: RotationTraceEntry[] =
+    critRate === 0 && critDamage === 0
+      ? []
+      : [{ after: beforeResistance, before: beforeCrit, critDamage, critRate, kind: "expected_crit", multiplier: critMultiplier }]
   return {
     appliedEffectIds: [],
-    critDamage: expectedDamage,
+    critDamage: criticalDamage,
     element: event.element,
     expectedDamage,
     hitCount,
     id: event.id,
-    nonCritDamage: expectedDamage,
+    nonCritDamage,
     ownerId: event.ownerId,
     statSnapshotTime: event.statSnapshotTime ?? event.time,
     time: event.time,
     trace: [
       {
-        after: beforeResistance,
+        after: beforeCrit,
         baseDamage,
         before: 0,
         bonus: reaction.bonus,
@@ -844,6 +886,7 @@ function evaluateTransformativeEvent(
         multiplier,
         reaction: reaction.kind
       },
+      ...critTrace,
       {
         after: expectedDamage,
         baseResistance,
@@ -857,6 +900,16 @@ function evaluateTransformativeEvent(
       }
     ]
   }
+}
+
+function clampTransformativeReactionCritRate(value: number): number {
+  if (!Number.isFinite(value)) throw new Error("Transformative-reaction CRIT Rate must be finite")
+  return Math.min(Math.max(value, 0), 1)
+}
+
+function requireNonNegativeFinite(value: number, label: string): number {
+  if (!Number.isFinite(value) || value < 0) throw new Error(`${label} must be a non-negative finite number`)
+  return value
 }
 
 function validateEffectWindow(effect: RotationEffectWindow, duration: number): void {

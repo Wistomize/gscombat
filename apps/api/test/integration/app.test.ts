@@ -98,7 +98,10 @@ describe("API", () => {
     }
 
     const serialized = serializeCombatAction(action)
-    const serializedApplication = serialized.timeline?.damageEvents[0]?.elementalApplication
+    const serializedEvent = serialized.timeline?.damageEvents[0]
+    const serializedApplication = serializedEvent && "elementalApplication" in serializedEvent
+      ? serializedEvent.elementalApplication
+      : undefined
 
     expect(serializedApplication).toEqual(elementalApplication)
     expect(serializedApplication).not.toBe(elementalApplication)
@@ -140,7 +143,10 @@ describe("API", () => {
       }
     }
 
-    const multiplier = serializeCombatAction(action).timeline?.damageEvents[0]?.coefficientMultiplier
+    const serializedEvent = serializeCombatAction(action).timeline?.damageEvents[0]
+    const multiplier = serializedEvent && "coefficientMultiplier" in serializedEvent
+      ? serializedEvent.coefficientMultiplier
+      : undefined
 
     expect(multiplier).toEqual({
       base: 1,

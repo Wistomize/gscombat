@@ -129,9 +129,47 @@ export const alhaithamCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "skill"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "alhaitham.constellation.2.debate.max_stacks.elemental_mastery",
+      label: "辩章 · C2 琢光镜产生效果叠满4层（元素精通提高200点）",
+      source: { characterId: "Alhaitham", kind: "character", minimumSourceConstellation: 2 },
+      target: "elementalMastery",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 200 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "alhaitham.constellation.4.elucidation.burst_generated_three_mirrors.dendro_damage_bonus",
+      label: "义贯 · C4 施放元素爆发产生3枚琢光镜（草元素伤害加成30%）",
+      source: { characterId: "Alhaitham", kind: "character", minimumSourceConstellation: 4 },
+      target: "damageBonus",
+      targetFilter: { elements: ["dendro"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.3 }
+    },
+    {
+      activation: "active",
+      id: "alhaitham.constellation.6.structuration.excess_mirror.crit_rate",
+      label: "正理 · C6 琢光镜已达上限时再次产生琢光镜（暴击率提升10%）",
+      source: { characterId: "Alhaitham", kind: "character", minimumSourceConstellation: 6 },
+      target: "critRate",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.1 }
+    },
+    {
+      activation: "active",
+      id: "alhaitham.constellation.6.structuration.excess_mirror.crit_damage",
+      label: "正理 · C6 琢光镜已达上限时再次产生琢光镜（暴击伤害提升70%）",
+      source: { characterId: "Alhaitham", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.7 }
+    }
+  ],
   characterId: "Alhaitham",
   detail:
-    "One first normal-attack hit is verified as a baseline C0 attack-scaling Physical hit. It can receive a maintained external melee normal-attack infusion, such as Chongyun's field; Alhaitham's self infusion, passives, constellations, and other states remain unmodeled. A second verified action models a C0 three-mirror Chisel-Light Mirror Projection Attack (one projection) under Quicken Spread as declared direct Dendro skill damage scaling on attack and elemental mastery. At ascension 4+, its capped Elemental-Mastery-derived projection damage bonus is included; the full 1/2/3-mirror totals, dendro infusion, A1, constellations, timing, ICD, and other states remain unmodeled.",
+    "One first normal-attack hit is verified as a baseline attack-scaling Physical hit. It can receive a maintained external melee normal-attack infusion, such as Chongyun's field; Alhaitham's self infusion and A1 remain unmodeled. A second verified action models one three-mirror Chisel-Light Mirror Projection Attack under Quicken Spread as declared direct Dendro skill damage scaling on attack and elemental mastery. At ascension 4+, its capped Elemental-Mastery-derived projection damage bonus is included. A maximum-reachable C2 snapshot includes all four Debate stacks for 200 Elemental Mastery, and C4 includes the 30% Dendro damage bonus reached when the Burst generates three mirrors. At C6, the explicit excess-mirror snapshot adds 10% Crit Rate and 70% Crit DMG for six seconds after another mirror is generated while already at three mirrors. Full 1/2/3-mirror totals, duration extension, timing, ICD, and other states remain unmodeled.",
   label: alhaithamDefinition.name,
   metrics: [
     {

@@ -61,7 +61,10 @@ function listActionSpecialReactionKinds(
   return [
     ...new Set([
       ...(action.specialReaction ? [action.specialReaction.kind] : []),
-      ...(action.timeline?.damageEvents.flatMap((event) => (event.specialReaction ? [event.specialReaction.kind] : [])) ?? [])
+      ...(action.timeline?.damageEvents.flatMap((event) => [
+        ...(event.specialReaction ? [event.specialReaction.kind] : []),
+        ...(event.stellarSwirlReaction ? ["stellar_swirl" as const] : [])
+      ]) ?? [])
     ])
   ]
 }

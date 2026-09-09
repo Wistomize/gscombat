@@ -9,7 +9,8 @@ export type {
   ReviewedMultiScalingEvidenceRegistry,
   ReviewedMultiScalingEvidenceSnapshotCheck,
   ReviewedMultiScalingEvidenceSource,
-  ReviewedMultiScalingEvidenceTerm
+  ReviewedMultiScalingEvidenceTerm,
+  ReviewedTalentMultiScalingEvidenceTerm
 } from "./characters/evidence.js"
 
 /** Versioned aggregate of character-owned reviewed mappings required by ADR 0010. */

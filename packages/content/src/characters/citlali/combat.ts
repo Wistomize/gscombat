@@ -119,6 +119,26 @@ export const citlaliCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "burst"
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "citlali.constellation.6.teoiztac_secret_pact.maximum_secret_law.pyro_hydro_damage_bonus",
+      label: "原动天的密契 · C6 秘律之数40点时全队火元素与水元素伤害加成60%",
+      source: { characterId: "Citlali", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: { elements: ["pyro", "hydro"] },
+      value: { kind: "fixed", value: 0.6 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "citlali.constellation.6.teoiztac_secret_pact.maximum_secret_law.self_damage_bonus",
+      label: "原动天的密契 · C6 秘律之数40点时茜特菈莉造成的伤害提升100%",
+      source: { characterId: "Citlali", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 1 }
+    }
+  ],
   characterId: "Citlali",
   metrics: [
     {
@@ -138,7 +158,7 @@ export const citlaliCombatCoverage: CharacterCombatCoverage = {
       },
       id: "citlali.skill.dawnfrost_darkstar.opal_shield.base_absorption",
       kind: "scalar",
-      label: "霜昼黑星 / 白曜护盾基础吸收量（C0、非冰元素伤害）",
+      label: "霜昼黑星 / 白曜护盾基础吸收量（非冰元素伤害）",
       ratioParameter: {
         reference: {
           groupId: "skill",
@@ -162,7 +182,7 @@ export const citlaliCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit, one Dawnfrost Darkstar deployment hit, and Edict of Entwined Splendor's Ice Storm remain verified lower-level C0 attack-scaling actions from the pinned 6.7 Genshin Optimizer snapshot at commit 21c98eb60355160274a8c4cecfc5671e2151a073, but none is selected as Citlali's display output. The selected support metric calculates one Opal Shield's non-Cryo base absorption delivered to one friendly recipient as Citlali's Elemental Mastery × skill[1] plus skill[2], before that recipient's Shield Strength; C3 adds three Skill levels. It excludes the 250% Cryo-damage absorption branch, shield duration and transfer timing, Nightsoul mechanics, Obsidian Tzitzimitl and Frostfall Storm damage, A1 Pyro/Hydro resistance reduction, A4's Elemental Mastery-to-damage bonuses, C2's self and team Elemental Mastery changes, all other constellations, external effects, and character states.",
+    "The selected support metric calculates one Opal Shield's non-Cryo base absorption delivered to one friendly recipient as Citlali's Elemental Mastery × skill[1] plus skill[2], before that recipient's Shield Strength; C3 adds three Skill levels. At C6, the maximum forty Secret-Law points automatically contribute 60% Pyro and Hydro Damage Bonus to all party recipients and 100% all-damage bonus to Citlali herself; neither bonus changes shield absorption. It excludes the 250% Cryo-damage absorption branch, shield duration and transfer timing, Nightsoul consumption timing, Obsidian Tzitzimitl and Frostfall Storm damage, A1 Pyro/Hydro resistance reduction, A4's Elemental Mastery-to-damage bonuses, C2's Elemental Mastery changes, external effects, and character states.",
   label: citlaliDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

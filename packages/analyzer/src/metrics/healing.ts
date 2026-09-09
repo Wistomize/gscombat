@@ -1,25 +1,22 @@
 import {
-  listHealingEquipmentEffects, normalizeProjectedMetricLabel,
-  resolveHealingEquipmentEffectValue, type CombatScaledHealingMetricDefinition
+  listHealingEquipmentEffects,
+  normalizeProjectedMetricLabel,
+  resolveHealingEquipmentEffectValue,
+  type CombatScaledHealingMetricDefinition
 } from "@gscombat/content"
-import {
-  type CharacterBuild
-} from "@gscombat/contracts"
+import type { CharacterBuild } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 import {
   addFormula,
   applyConditions,
-  constantTerm, minimumFormula,
+  constantTerm,
+  minimumFormula,
   modifierTerm,
   multiplyFormula,
   recipientStateTerm,
   sourceStatTerm
 } from "./formula.js"
-
-
-import type {
-  CombatHealingMetricEvaluation, CombatMetricFormulaNode, CombatMetricSourceContext
-} from "./types.js"
+import type { CombatHealingMetricEvaluation, CombatMetricFormulaNode, CombatMetricSourceContext } from "./types.js"
 
 export type {
   CombatDamageMetricEvaluation,
@@ -57,13 +54,24 @@ export function evaluateHealingMetric(
 ): CombatHealingMetricEvaluation {
   const label = normalizeProjectedMetricLabel(metric.label)
   const stats = runtime.resolveMetricSourceCombatStats(metric, build, sourceContext, teammates, gameData)
-  const percentage = runtime.resolveMetricParameter(metric, metric.percentageParameter, build, gameData)
+  const percentageParameter = metric.percentageParameter
+  const resolvedPercentageParameter = percentageParameter
+    ? runtime.resolveMetricParameter(metric, percentageParameter, build, gameData)
+    : undefined
+  const percentage = resolvedPercentageParameter?.value ?? metric.ratio
+  if (percentage === undefined) {
+    throw new Error(`Combat metric ${metric.id} must declare one fixed or talent-derived healing ratio`)
+  }
   const flatParameter = metric.flatParameter
   const resolvedFlatParameter = flatParameter
     ? runtime.resolveMetricParameter(metric, flatParameter, build, gameData)
     : undefined
   const flatAmount = (metric.flat ?? 0) + (resolvedFlatParameter?.value ?? 0)
-  if (resolvedFlatParameter && percentage.talentLevel !== resolvedFlatParameter.talentLevel) {
+  if (
+    resolvedFlatParameter &&
+    resolvedPercentageParameter &&
+    resolvedPercentageParameter.talentLevel !== resolvedFlatParameter.talentLevel
+  ) {
     throw new Error(`Combat metric ${metric.id} resolves its healing parameters at inconsistent talent levels`)
   }
 
@@ -87,10 +95,19 @@ export function evaluateHealingMetric(
   const artifactSetHealingBonus = metric.includeHealingBonus ? stats.artifactSetHealingBonus : 0
   const sourceScaling = multiplyFormula("治疗百分比部分", [
     sourceStatTerm(metric.scalingStat, scalingValue),
-    runtime.talentParameterTerm("单跳治疗百分比", metric.percentageParameter, percentage)
+    percentageParameter && resolvedPercentageParameter
+      ? runtime.talentParameterTerm("单跳治疗百分比", percentageParameter, resolvedPercentageParameter)
+      : constantTerm("单跳治疗固定倍率", percentage)
   ])
   const conditionalScalingBonuses = (metric.conditionalScalingBonuses ?? []).map((bonus) =>
     runtime.resolveConditionalHealingScalingBonus(metric, bonus, build, recipient, scalingValue)
+  )
+  const recipientIncomingHealingBonuses = (metric.recipientIncomingHealingBonuses ?? []).map((bonus) =>
+    runtime.resolveHealingRecipientIncomingBonus(bonus, build, recipient)
+  )
+  sourceConditions.push(
+    ...conditionalScalingBonuses.flatMap((bonus) => bonus.conditions),
+    ...recipientIncomingHealingBonuses.flatMap((bonus) => bonus.conditions)
   )
   const baseHealing = addFormula("基础单跳治疗", [
     sourceScaling,
@@ -99,7 +116,7 @@ export function evaluateHealingMetric(
       : []),
     ...(metric.flat === undefined ? [] : [constantTerm("单跳固定治疗", metric.flat)]),
     ...additionalScalingTerms.map((term) => term.formula),
-    ...conditionalScalingBonuses
+    ...conditionalScalingBonuses.map((bonus) => bonus.formula)
   ])
   const sourceHealingBonusOperands: CombatMetricFormulaNode[] = [
     constantTerm("基础倍率", 1),
@@ -125,7 +142,8 @@ export function evaluateHealingMetric(
     modifierTerm("recipient_modifier", "手填受益角色受疗加成", recipient.manualIncomingHealingBonus),
     ...recipientIncomingHealingEffects.map((effect) =>
       modifierTerm("recipient_modifier", effect.label, effect.value)
-    )
+    ),
+    ...recipientIncomingHealingBonuses.map((bonus) => bonus.formula)
   ])
   const potentialFormula = multiplyFormula("受益角色单跳治疗量", [sourceFormula, recipientHealingMultiplier])
   const formula = applyConditions(potentialFormula, recipient.conditions)
@@ -149,17 +167,19 @@ export function evaluateHealingMetric(
     formula,
     healingBonus,
     id: metric.id,
-    incomingHealingBonus: recipient.incomingHealingBonus,
+    incomingHealingBonus:
+      recipient.incomingHealingBonus +
+      recipientIncomingHealingBonuses.reduce((total, bonus) => total + bonus.formula.value, 0),
     kind: "healing",
     label,
-    percentage: percentage.value,
+    percentage,
     potentialValue: potentialFormula.value,
     recipient: recipient.recipient,
     scalingStat: metric.scalingStat,
     scalingValue,
     sourceActionId: metric.sourceActionId,
     sourceValue: sourceFormula.value,
-    talentLevel: percentage.talentLevel,
+    ...(resolvedPercentageParameter === undefined ? {} : { talentLevel: resolvedPercentageParameter.talentLevel }),
     unit: "hp",
     value: formula.value
   }

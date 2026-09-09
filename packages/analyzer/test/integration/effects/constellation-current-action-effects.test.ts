@@ -1528,6 +1528,12 @@ describe("current-action constellation effects", () => {
       weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "FavoniusCodex" }
     }
     const kleeC6 = { ...kleeC0, buildId: "test.klee.c6", constellation: 6 }
+    const kleeHexereiTeammate = {
+      ...kleeC0,
+      buildId: "test.klee.c1-condition.sucrose",
+      characterId: "Sucrose",
+      constellation: 0
+    }
 
     expect(() =>
       resolveCombatActionEffects({
@@ -1621,7 +1627,7 @@ describe("current-action constellation effects", () => {
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: kleeC6,
-      teammates: []
+      teammates: [kleeHexereiTeammate]
     })
     const kleeSnapshot = resolveCombatActionEffects({
       action: kleeAction,
@@ -1629,7 +1635,7 @@ describe("current-action constellation effects", () => {
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: kleeC6,
-      teammates: []
+      teammates: [kleeHexereiTeammate]
     })
 
     expect(dehyaC1Effects.hpPercent - dehyaBaseline.hpPercent).toBeCloseTo(0.2)

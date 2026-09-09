@@ -190,6 +190,45 @@ export const naviaCombatCoverage: CharacterCombatCoverage = {
         excludedActionIds: ["navia.burst.as_the_sunlit_skys_singing_salute.initial_aoe"]
       },
       value: { kind: "fixed", value: 0.2 }
+    },
+    {
+      activation: "active",
+      id: "navia.constellation.2.the_presidents_pursuit_of_victory.three_shrapnel.crit_rate",
+      label: "总指挥的乘胜追击 · C2 本次典仪式晶火消耗至少3枚裂晶弹片（暴击率+36%）",
+      source: { characterId: "Navia", kind: "character", minimumSourceConstellation: 2 },
+      target: "critRate",
+      targetFilter: { actionIds: ["navia.skill.ceremonial_crystalshot"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.36 }
+    },
+    {
+      activation: "active",
+      exclusivity: { group: "navia-c6-excess-crystal-shrapnel", variant: "one" },
+      id: "navia.constellation.6.flexible_finesse.one_excess_crystal_shrapnel.crit_damage",
+      label: "刺玫会长的灵活手腕 · C6 本次典仪式晶火消耗4枚裂晶弹片（暴击伤害+45%）",
+      source: { characterId: "Navia", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { actionIds: ["navia.skill.ceremonial_crystalshot"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.45 }
+    },
+    {
+      activation: "active",
+      exclusivity: { group: "navia-c6-excess-crystal-shrapnel", variant: "two" },
+      id: "navia.constellation.6.flexible_finesse.two_excess_crystal_shrapnel.crit_damage",
+      label: "刺玫会长的灵活手腕 · C6 本次典仪式晶火消耗5枚裂晶弹片（暴击伤害+90%）",
+      source: { characterId: "Navia", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { actionIds: ["navia.skill.ceremonial_crystalshot"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.9 }
+    },
+    {
+      activation: "active",
+      exclusivity: { group: "navia-c6-excess-crystal-shrapnel", variant: "three" },
+      id: "navia.constellation.6.flexible_finesse.three_excess_crystal_shrapnel.crit_damage",
+      label: "刺玫会长的灵活手腕 · C6 本次典仪式晶火消耗6枚裂晶弹片（暴击伤害+135%）",
+      source: { characterId: "Navia", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { actionIds: ["navia.skill.ceremonial_crystalshot"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 1.35 }
     }
   ],
   characterId: "Navia",
@@ -226,7 +265,7 @@ export const naviaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "Ceremonial Crystalshot resolves its actual Rosula Shard hits against the selected 0–3 Crystal Shrapnel count, including its character-specific same-target total multiplier. One initial burst AoE and one support cannonfire are also verified. C4 Geo resistance reduction after a burst hit is an explicit current-action snapshot. Extra Shrapnel above three, shard generation, long-hold timing, reactions, passives, other constellations, infusion, and character states remain unmodeled. No ordinary Crystallize shield metric is exposed.",
+    "Ceremonial Crystalshot resolves its actual Rosula Shard hits against the selected 0–3 Crystal Shrapnel count, including its character-specific same-target total multiplier. C2's full 36% Crit Rate is an explicit current-action snapshot selected only when at least three Crystal Shrapnel are consumed. One initial burst AoE and one support cannonfire are also verified. C4 Geo resistance reduction after a burst hit remains an explicit current-action snapshot, and C6 exposes mutually exclusive 45%/90%/135% Crit-DMG states for four, five, or six consumed Shrapnel. Shard generation, long-hold timing, reactions, passives, infusion, and other character states remain unmodeled. No ordinary Crystallize shield metric is exposed.",
   label: naviaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

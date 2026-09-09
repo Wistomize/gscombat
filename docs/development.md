@@ -34,12 +34,52 @@ docs/
 ├── adr/          已确认的架构决策
 ├── deployment/   部署与运维说明
 └── plans/        功能设计与实施计划
+openspec/         重大变更的行为规格、设计与任务
 ```
 
 角色动作、固有天赋、命座和辅助指标放在
 `packages/content/src/characters/<character>/`。武器与圣遗物效果分别属于 `weapons/` 和 `artifacts/`，队伍规则
 属于 `rules/`。`calculator` 不导入任何角色或装备内容；角色和队伍语义由 `content` 声明，`analyzer` 负责把场景、
 效果和计算流水线组合起来。
+
+## OpenSpec 变更管理
+
+项目选择性使用 OpenSpec。修改计算语义、HTTP/TypeBox 契约、工作空间兼容性、数据迁移、安全规则，或者同时
+影响三个及以上 `apps/*` / `packages/*` workspace 的功能，实施前必须建立 OpenSpec change。角色或装备内容如果
+引入新的通用乘区、效果阶段、反应类型或共享规则，也属于重大变更。
+
+符合现有类型化模型的普通角色、武器和圣遗物声明，不改变 Schema 和行为语义的固定数据刷新，生成资产、文案和
+范围明确的小修复默认不建立 change。纯重构可以建立 proposal、design 和 tasks，但应设置 `skip_specs: true`，不伪造
+行为需求。
+
+本机安装 OpenSpec CLI 后，可通过以下命令检查 active changes 和配置：
+
+```bash
+openspec list
+openspec context
+openspec validate --all
+```
+
+Agent 的强制触发规则见根目录 [`AGENTS.md`](../AGENTS.md)，完整决策见
+[ADR-0019](adr/0019-adopt-selective-openspec-change-management.md)。OpenSpec 不替代 `docs/adr/`；长期有效的架构选择仍应单独记录。
+
+治理文档各自只有一个主要职责：
+
+| 位置 | 职责 |
+|---|---|
+| [`AGENTS.md`](../AGENTS.md) | Agent 在实现前必须执行的入口规则 |
+| [`openspec/config.yaml`](../openspec/config.yaml) | 所有 change 共享的项目背景、产物规则和 apply/archive 约束 |
+| [`openspec/specs/`](../openspec/specs) | 当前可观察行为基线 |
+| [`openspec/changes/`](../openspec/changes) | 单次变更的 proposal、delta、design、tasks 与验证状态 |
+| [`docs/adr/`](adr/README.md) | 长期架构选择的背景、备选方案和后果 |
+| `docs/plans/` | 历史设计与执行上下文，不表示当前 change 状态 |
+
+当前基线规格覆盖[核心动作结果](../openspec/specs/analysis/core-action-results/spec.md)、
+[动作语义](../openspec/specs/analysis/action-semantics/spec.md)、
+[Build 持久化](../openspec/specs/workspace/build-persistence/spec.md)、
+[Content 作者契约](../openspec/specs/content/authoring-contract/spec.md)和
+[公开入口](../openspec/specs/architecture/public-entrypoints/spec.md)。现有 ADR 的迁移状态与实时实现证据见
+[治理迁移台账](../openspec/governance-migration-map.md)。
 
 ## 本地开发
 

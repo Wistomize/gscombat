@@ -1,6 +1,111 @@
-import type { CharacterCombatCoverage } from "../../combat/types.js"
+import type {
+  CharacterCombatCoverage,
+  CombatActionMetadata,
+  CombatDamageMetricDefinition
+} from "../../combat/types.js"
 
 import { mavuikaDefinition } from "./definition.js"
+
+const mavuikaC6NightsoulHitActionIds = {
+  flamestriderCrash: {
+    melt: "mavuika.constellation.6.humanitys_name_unfettered.flamestrider_crash.melt",
+    none: "mavuika.constellation.6.humanitys_name_unfettered.flamestrider_crash.none",
+    vaporize: "mavuika.constellation.6.humanitys_name_unfettered.flamestrider_crash.vaporize"
+  },
+  scorchingRing: {
+    melt: "mavuika.constellation.6.humanitys_name_unfettered.scorching_ring.melt",
+    none: "mavuika.constellation.6.humanitys_name_unfettered.scorching_ring.none",
+    vaporize: "mavuika.constellation.6.humanitys_name_unfettered.scorching_ring.vaporize"
+  }
+} as const
+
+const mavuikaC6FlamestriderCrashActionIds = Object.values(mavuikaC6NightsoulHitActionIds.flamestriderCrash)
+const mavuikaC6ScorchingRingActionIds = Object.values(mavuikaC6NightsoulHitActionIds.scorchingRing)
+const mavuikaC6NightsoulActionIds = [...mavuikaC6FlamestriderCrashActionIds, ...mavuikaC6ScorchingRingActionIds]
+
+function createMavuikaC6NightsoulHitAction(
+  id: string,
+  reaction: CombatActionMetadata["amplifyingReaction"]
+): CombatActionMetadata {
+  const damagePartId = id.split(".").slice(-2).join("-")
+  return {
+    ...(reaction ? { amplifyingReaction: reaction } : {}),
+    characterId: "Mavuika",
+    damageKind: "direct",
+    damageParts: [
+      {
+        coefficientParameterId: "the-named-moment-skill-damage",
+        id: damagePartId,
+        snapshotChecks: [
+          { expectedCoefficient: 0.744, talentLevel: 1 },
+          { expectedCoefficient: 1.3392, talentLevel: 10 }
+        ]
+      }
+    ],
+    element: mavuikaDefinition.element,
+    evaluator: "declared_direct",
+    id,
+    kind: "damage",
+    parameterReferences: [
+      {
+        groupId: "skill",
+        id: "the-named-moment-skill-damage",
+        parameterIndex: 0,
+        source: "talent",
+        talentSlot: "skill"
+      }
+    ],
+    scalingStat: "attack",
+    scenarioParameters: [
+      {
+        allowedValues: [0, 1],
+        defaultValue: 0,
+        id: "c6-all-fire-armaments-hit-ready",
+        label: "C6 「人之名」解放：对应诸火武装追加攻击命中",
+        maximumValue: 0,
+        minimumValue: 0,
+        rangeBySourceConstellation: [
+          { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+        ]
+      }
+    ],
+    status: "verified",
+    talentSlot: "skill",
+    timeline: {
+      damageEvents: [
+        {
+          at: 0,
+          coefficientMultiplier: {
+            kind: "scenario_parameter_lookup",
+            parameterId: "c6-all-fire-armaments-hit-ready",
+            values: [
+              { multiplier: 0, parameterValue: 0 },
+              { multiplier: 0, parameterValue: 1 }
+            ]
+          },
+          damagePartId,
+          id: damagePartId,
+          snapshot: "hit"
+        }
+      ],
+      duration: 1
+    }
+  }
+}
+
+function createMavuikaC6DamageMetric(actionId: string, label: string): CombatDamageMetricDefinition {
+  return {
+    actionId,
+    characterId: "Mavuika",
+    id: actionId,
+    kind: "damage",
+    minimumSourceConstellation: 6,
+    label,
+    sourceActionId: actionId,
+    status: "verified",
+    target: "enemy"
+  }
+}
 
 export const mavuikaCombatCoverage: CharacterCombatCoverage = {
   actions: [
@@ -229,7 +334,25 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
       ],
       status: "verified",
       talentSlot: "burst"
-    }
+    },
+    createMavuikaC6NightsoulHitAction(mavuikaC6NightsoulHitActionIds.flamestriderCrash.none, undefined),
+    createMavuikaC6NightsoulHitAction(mavuikaC6NightsoulHitActionIds.flamestriderCrash.vaporize, {
+      bonus: 0,
+      kind: "vaporize_reverse"
+    }),
+    createMavuikaC6NightsoulHitAction(mavuikaC6NightsoulHitActionIds.flamestriderCrash.melt, {
+      bonus: 0,
+      kind: "melt_forward"
+    }),
+    createMavuikaC6NightsoulHitAction(mavuikaC6NightsoulHitActionIds.scorchingRing.none, undefined),
+    createMavuikaC6NightsoulHitAction(mavuikaC6NightsoulHitActionIds.scorchingRing.vaporize, {
+      bonus: 0,
+      kind: "vaporize_reverse"
+    }),
+    createMavuikaC6NightsoulHitAction(mavuikaC6NightsoulHitActionIds.scorchingRing.melt, {
+      bonus: 0,
+      kind: "melt_forward"
+    })
   ],
   actionEffects: [
     {
@@ -260,7 +383,8 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
       targetFilter: {
         actionIds: [
           "mavuika.burst.hour_of_burning_skies.sunfell_slice.hydro_aura_vaporize",
-          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt"
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt",
+          ...mavuikaC6NightsoulActionIds
         ],
         recipientSourceRelation: "source"
       },
@@ -299,11 +423,38 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
       targetFilter: {
         actionIds: [
           "mavuika.burst.hour_of_burning_skies.sunfell_slice.hydro_aura_vaporize",
-          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt"
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt",
+          ...mavuikaC6NightsoulActionIds
         ],
         recipientSourceRelation: "source"
       },
       value: { kind: "fixed", value: 0.1 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "mavuika.constellation.6.humanitys-name-unfettered.ring.flamestrider-crash.damage",
+      label: "「人之名」解放 · C6 焚曜之环命中追加驰轮车冲撞（200%攻击力）",
+      source: { characterId: "Mavuika", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: { actionIds: mavuikaC6FlamestriderCrashActionIds, recipientSourceRelation: "source" },
+      value: {
+        coefficient: { kind: "fixed", value: 2 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "attack"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "mavuika.constellation.6.humanitys-name-unfettered.flamestrider.scorching-ring.damage",
+      label: "「人之名」解放 · C6 驰轮车形态灼热焚曜之环单次命中（500%攻击力）",
+      source: { characterId: "Mavuika", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: { actionIds: mavuikaC6ScorchingRingActionIds, recipientSourceRelation: "source" },
+      value: {
+        coefficient: { kind: "fixed", value: 5 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "attack"
+      }
     },
     {
       activation: "maximum_reachable",
@@ -314,7 +465,8 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
       targetFilter: {
         actionIds: [
           "mavuika.burst.hour_of_burning_skies.sunfell_slice.hydro_aura_vaporize",
-          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt"
+          "mavuika.burst.hour_of_burning_skies.sunfell_slice.cryo_aura_melt",
+          ...mavuikaC6NightsoulActionIds
         ],
         recipientSourceRelation: "source"
       },
@@ -323,6 +475,30 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
   ],
   characterId: "Mavuika",
   metrics: [
+    createMavuikaC6DamageMetric(
+      mavuikaC6NightsoulHitActionIds.flamestriderCrash.none,
+      "「人之名」解放 / C6 焚曜之环追加驰轮车冲撞·无反应"
+    ),
+    createMavuikaC6DamageMetric(
+      mavuikaC6NightsoulHitActionIds.flamestriderCrash.vaporize,
+      "「人之名」解放 / C6 焚曜之环追加驰轮车冲撞·水底蒸发"
+    ),
+    createMavuikaC6DamageMetric(
+      mavuikaC6NightsoulHitActionIds.flamestriderCrash.melt,
+      "「人之名」解放 / C6 焚曜之环追加驰轮车冲撞·冰底融化"
+    ),
+    createMavuikaC6DamageMetric(
+      mavuikaC6NightsoulHitActionIds.scorchingRing.none,
+      "「人之名」解放 / C6 驰轮车形态灼热焚曜之环单次命中·无反应"
+    ),
+    createMavuikaC6DamageMetric(
+      mavuikaC6NightsoulHitActionIds.scorchingRing.vaporize,
+      "「人之名」解放 / C6 驰轮车形态灼热焚曜之环单次命中·水底蒸发"
+    ),
+    createMavuikaC6DamageMetric(
+      mavuikaC6NightsoulHitActionIds.scorchingRing.melt,
+      "「人之名」解放 / C6 驰轮车形态灼热焚曜之环单次命中·冰底融化"
+    ),
     {
       actionId: "mavuika.burst.hour_of_burning_skies.sunfell_slice.hydro_aura_vaporize",
       characterId: "Mavuika",
@@ -345,7 +521,7 @@ export const mavuikaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One uninfused first normal hit and The Named Moment's initial hit remain verified raw actions. The selected core hit is one Hour of Burning Skies Sunfell Slice: Attack × (burst[0] + Fighting Spirit × burst[2]). Fighting Spirit is an action-owned manual integer input from 100 through 200 and defaults to the full 200. At full Fighting Spirit, the pinned 6.7 snapshot resolves to 764.8% Attack at Burst Level 1 and 1376.64% at Level 10. The Fighting Spirit term is added to base damage before the shared damage multipliers, not treated as a damage-bonus percentage. At Ascension 1+, Gift of Flaming Flowers automatically adds 30% Attack after a party-reachable Nightsoul Burst. At Ascension 4+, the initial Sunfell Slice includes Kiongozi's 0.002 × Fighting Spirit Damage Bonus: 40% at the default full 200 Fighting Spirit. C1 remains an explicit current snapshot because its eight-second Attack window depends on when Fighting Spirit was last gained. C2 automatically adds 200 Base Attack before every Attack-percent multiplier and adds another 120% of final Attack to the same Sunfell Slice base-damage stage. C3 raises Burst level through the shared constellation talent mechanism. C4 adds its extra 10% Kiongozi Damage Bonus; the non-decay clause does not create another multiplier at the selected maximum snapshot. C5 affects only Skill level. At C6, riding the Flamestrider also summons the Ring of Searing Radiance, so its 20% nearby-enemy Defense reduction applies to Sunfell Slice; C6's independent All-Fire Armament hits remain outside this one-hit metric. Hydro-aura Vaporize and Cryo-aura Melt are mutually exclusive alternatives for this exact one hit. Nightsoul generation, post-burst Flamestrider attacks, timing, and rotation behavior remain excluded.",
+    "One uninfused first normal hit and The Named Moment's initial hit remain verified raw actions. The selected core hit is one Hour of Burning Skies Sunfell Slice: Attack × (burst[0] + Fighting Spirit × burst[2]). Fighting Spirit is an action-owned manual integer input from 100 through 200 and defaults to the full 200. At full Fighting Spirit, the pinned 6.7 snapshot resolves to 764.8% Attack at Burst Level 1 and 1376.64% at Level 10. At Ascension 1+, Gift of Flaming Flowers automatically adds 30% Attack after a party-reachable Nightsoul Burst. At Ascension 4+, the initial Sunfell Slice includes Kiongozi's 0.002 × Fighting Spirit Damage Bonus: 40% at the default full 200 Fighting Spirit. C1 remains an explicit current snapshot because its eight-second Attack window depends on when Fighting Spirit was last gained. C2 automatically adds 200 Base Attack before every Attack-percent multiplier and adds another 120% of final Attack to the same Sunfell Slice base-damage stage. C3 raises Burst level, and C4 adds its extra 10% Kiongozi Damage Bonus. At C6, the maintained independent metrics include the 200%-Attack Flamestrider crash triggered by a Ring hit and the once-per-three-seconds 500%-Attack Scorching Ring hit while riding the Flamestrider. Both include the C2 Base Attack increase, C4 maximum post-Burst bonus, and the applicable 20% nearby-enemy Defense reduction; each is exposed as no-reaction, Hydro-aura Vaporize, and Cryo-aura Melt. Nightsoul generation, traversal, trigger cadence beyond the selected hit, and full rotations remain outside these metrics.",
   label: mavuikaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

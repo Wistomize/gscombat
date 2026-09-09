@@ -1,6 +1,7 @@
 import {
   getCombatActionDefinition, listCharacterTalentLevelConstellationBonuses, listRecipientEquipmentEffects, resolveRecipientEquipmentEffectValue, type CombatDamageMetricDefinition, type CombatHealingAdditionalScalingTerm,
   type CombatHealingConditionalScalingBonus,
+  type CombatHealingRecipientIncomingHealingBonus,
   type CombatHealingSourceBonus,
   type CombatMetricDefinition,
   type CombatMetricRatioScenarioParameter,
@@ -17,7 +18,7 @@ import {
 } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 import {
-  applyConditions, modifierTerm,
+  applyConditions, constantTerm, minimumFormula, modifierTerm,
   multiplyFormula, sourceStatTerm
 } from "./formula.js"
 
@@ -115,6 +116,15 @@ export function assertMetricBuild(
   if (metric.status !== "verified") throw new Error(`Combat metric ${metric.id} is not verified`)
   if (metric.characterId !== build.characterId) {
     throw new Error(`Combat metric ${metric.id} belongs to ${metric.characterId}, not ${build.characterId}`)
+  }
+  if (
+    metric.minimumSourceConstellation !== undefined &&
+    build.constellation < metric.minimumSourceConstellation
+  ) {
+    throw new Error(
+      `Combat metric ${metric.id} requires source constellation ${metric.minimumSourceConstellation}, ` +
+        `but build has constellation ${build.constellation}`
+    )
   }
   const sourceAction = getCombatActionDefinition(metric.sourceActionId)
   if (!sourceAction) throw new Error(`Combat metric ${metric.id} references missing source action ${metric.sourceActionId}`)
@@ -398,11 +408,33 @@ export function resolveHealingAdditionalScalingTerm(
   stats: ResolvedCoreCombatStats
 ): ResolvedHealingSourceContribution {
   const scalingValue = getMetricScalingValue(term.scalingStat, stats)
-  const formula = multiplyFormula(term.label, [
+  const uncappedFormula = multiplyFormula(term.label, [
     sourceStatTerm(term.scalingStat, scalingValue),
     modifierTerm("source_modifier", "额外治疗倍率", term.ratio)
   ])
-  return applySourceAscensionRequirement(term.label, term.minimumSourceAscension, build, formula)
+  const formula =
+    term.maximumValue === undefined
+      ? uncappedFormula
+      : minimumFormula(`${term.label}（单项上限）`, [
+          uncappedFormula,
+          constantTerm("单项治疗上限", term.maximumValue)
+        ])
+  const ascensionContribution = applySourceAscensionRequirement(
+    term.label,
+    term.minimumSourceAscension,
+    build,
+    formula
+  )
+  const constellationContribution = applySourceConstellationRequirement(
+    term.label,
+    term.minimumSourceConstellation,
+    build,
+    ascensionContribution.formula
+  )
+  return {
+    conditions: [...ascensionContribution.conditions, ...constellationContribution.conditions],
+    formula: constellationContribution.formula
+  }
 }
 
 export function resolveHealingSourceBonus(
@@ -443,6 +475,24 @@ export function applySourceAscensionRequirement(
   return { conditions: [condition], formula: applyConditions(formula, [condition]) }
 }
 
+export function applySourceConstellationRequirement(
+  label: string,
+  minimumSourceConstellation: number | undefined,
+  build: CharacterBuild,
+  formula: CombatMetricFormulaNode
+): ResolvedHealingSourceContribution {
+  if (minimumSourceConstellation === undefined) return { conditions: [], formula }
+
+  const condition: CombatMetricConditionEvaluation = {
+    actualConstellation: build.constellation,
+    kind: "source_constellation",
+    label: `${label}（需要${minimumSourceConstellation}命）`,
+    minimumConstellation: minimumSourceConstellation,
+    satisfied: build.constellation >= minimumSourceConstellation
+  }
+  return { conditions: [condition], formula: applyConditions(formula, [condition]) }
+}
+
 export function evaluateSourceHpFractionRequirement(
   requirement: CombatMetricSourceHpFractionRequirement,
   sourceContext: CombatMetricSourceContext | undefined,
@@ -472,21 +522,50 @@ export function resolveConditionalHealingScalingBonus(
   build: CharacterBuild,
   recipient: ResolvedFriendlyRecipient,
   scalingValue: number
-): CombatMetricFormulaNode {
-  if (build.constellation < bonus.minimumSourceConstellation) {
-    return {
-      kind: "term",
-      label: `${bonus.label}（${bonus.minimumSourceConstellation}命未激活）`,
-      role: "source_constellation",
-      value: 0
-    }
-  }
+): ResolvedHealingSourceContribution {
   const conditionalFormula = multiplyFormula(bonus.label, [
     sourceStatTerm(metric.scalingStat, scalingValue),
     modifierTerm("source_modifier", "条件追加治疗倍率", bonus.ratio)
   ])
+  const constellationContribution = applySourceConstellationRequirement(
+    bonus.label,
+    bonus.minimumSourceConstellation,
+    build,
+    conditionalFormula
+  )
+  if (constellationContribution.conditions.some((condition) => !condition.satisfied)) {
+    return constellationContribution
+  }
   const condition = evaluateRecipientRequirement(bonus.recipientRequirement, recipient.recipientContext, build)
-  return applyConditions(conditionalFormula, [condition])
+  return {
+    conditions: [...constellationContribution.conditions, condition],
+    formula: applyConditions(constellationContribution.formula, [condition])
+  }
+}
+
+export function resolveHealingRecipientIncomingBonus(
+  bonus: CombatHealingRecipientIncomingHealingBonus,
+  build: CharacterBuild,
+  recipient: ResolvedFriendlyRecipient
+): ResolvedHealingSourceContribution {
+  const constellationContribution = applySourceConstellationRequirement(
+    bonus.label,
+    bonus.minimumSourceConstellation,
+    build,
+    modifierTerm("recipient_modifier", bonus.label, bonus.value)
+  )
+  if (constellationContribution.conditions.some((condition) => !condition.satisfied)) {
+    return constellationContribution
+  }
+  const recipientCondition = evaluateRecipientRequirement(
+    bonus.recipientRequirement,
+    recipient.recipientContext,
+    build
+  )
+  return {
+    conditions: [...constellationContribution.conditions, recipientCondition],
+    formula: applyConditions(constellationContribution.formula, [recipientCondition])
+  }
 }
 
 export function talentParameterTerm(

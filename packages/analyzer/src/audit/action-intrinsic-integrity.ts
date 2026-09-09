@@ -455,11 +455,48 @@ function validateActionScenarioParameterDefinition(
       parameterId: definition.id
     })
   }
+  const constellationRanges = definition.rangeBySourceConstellation ?? []
+  const constellationThresholds = new Set<number>()
+  for (const range of constellationRanges) {
+    const minimumValue = range.minimumValue ?? definition.minimumValue
+    const maximumValue = range.maximumValue ?? definition.maximumValue
+    const defaultValue = range.defaultValue ?? definition.defaultValue
+    const isValidRange =
+      Number.isInteger(range.minimumSourceConstellation) &&
+      range.minimumSourceConstellation >= 1 &&
+      range.minimumSourceConstellation <= 6 &&
+      !constellationThresholds.has(range.minimumSourceConstellation) &&
+      (range.minimumValue !== undefined || range.maximumValue !== undefined || range.defaultValue !== undefined) &&
+      Number.isInteger(minimumValue) &&
+      Number.isInteger(maximumValue) &&
+      Number.isInteger(defaultValue) &&
+      minimumValue <= maximumValue &&
+      defaultValue >= minimumValue &&
+      defaultValue <= maximumValue
+    if (!isValidRange) {
+      issues.push({
+        actionId: action.id,
+        characterId,
+        code: "invalid-action-scenario-parameter",
+        message: `Scenario parameter ${definition.id} for action ${action.id} has an invalid constellation range`,
+        parameterId: definition.id
+      })
+    }
+    constellationThresholds.add(range.minimumSourceConstellation)
+  }
   if (!definition.allowedValues) return
   const allowedValues = new Set<number>()
   for (const value of definition.allowedValues) {
     const isValidValue =
-      Number.isInteger(value) && value >= definition.minimumValue && value <= definition.maximumValue
+      Number.isInteger(value) &&
+      (isWithinScenarioParameterRange(value, definition.minimumValue, definition.maximumValue) ||
+        constellationRanges.some((range) =>
+          isWithinScenarioParameterRange(
+            value,
+            range.minimumValue ?? definition.minimumValue,
+            range.maximumValue ?? definition.maximumValue
+          )
+        ))
     if (!isValidValue || allowedValues.has(value)) {
       issues.push({
         actionId: action.id,
@@ -481,4 +518,21 @@ function validateActionScenarioParameterDefinition(
       parameterId: definition.id
     })
   }
+  for (const range of constellationRanges) {
+    const defaultValue = range.defaultValue ?? definition.defaultValue
+    if (allowedValues.has(defaultValue)) continue
+    issues.push({
+      actionId: action.id,
+      characterId,
+      code: "invalid-action-scenario-parameter",
+      message:
+        `Scenario parameter ${definition.id} for action ${action.id} excludes constellation default ` +
+        `${defaultValue} from allowed values`,
+      parameterId: definition.id
+    })
+  }
+}
+
+function isWithinScenarioParameterRange(value: number, minimumValue: number, maximumValue: number): boolean {
+  return value >= minimumValue && value <= maximumValue
 }

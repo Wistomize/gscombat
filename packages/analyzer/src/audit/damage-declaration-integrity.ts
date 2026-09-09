@@ -1,5 +1,5 @@
 import {
-  type CombatActionMetadata, type CombatDamagePart, type ReviewedMultiScalingEvidenceRecord,
+  type CombatActionMetadata, type CombatDamagePart, type CombatDamageScalingTerm, type ReviewedMultiScalingEvidenceRecord,
   type ReviewedMultiScalingEvidenceTerm
 } from "@gscombat/content"
 import type { GameDataRepository } from "@gscombat/game-data"
@@ -143,27 +143,40 @@ export function validateDeclaredDirectDamageParts(
         issues
       )
       for (const term of part.scalingTerms) {
-        if (term.minimumSourceAscension !== undefined && !isValidMetricAscension(term.minimumSourceAscension)) {
+        const termId = term.coefficientParameterId ?? "fixed coefficient"
+        const hasInvalidAscension =
+          term.minimumSourceAscension !== undefined && !isValidMetricAscension(term.minimumSourceAscension)
+        const hasInvalidConstellation =
+          term.minimumSourceConstellation !== undefined &&
+          (!Number.isInteger(term.minimumSourceConstellation) ||
+            term.minimumSourceConstellation < 1 ||
+            term.minimumSourceConstellation > 6)
+        const hasInvalidFixedCoefficient =
+          term.fixedCoefficient !== undefined &&
+          (!Number.isFinite(term.fixedCoefficient) || term.fixedCoefficient < 0)
+        if (hasInvalidAscension || hasInvalidConstellation || hasInvalidFixedCoefficient) {
           issues.push({
             actionId: action.id,
             characterId,
             code: "invalid-damage-scaling-term",
             damagePartId: part.id,
-            message: `Damage term ${term.coefficientParameterId} for action ${action.id} has an invalid source ascension requirement`,
-            parameterId: term.coefficientParameterId
+            message: `Damage term ${termId} for action ${action.id} has an invalid coefficient or source requirement`,
+            ...(term.coefficientParameterId === undefined ? {} : { parameterId: term.coefficientParameterId })
           })
         }
         for (const talentParameterOwnerId of talentParameterOwnerIds) {
-          validateDamagePartCoefficient(
-            characterId,
-            talentParameterOwnerId,
-            action,
-            part.id,
-            term.coefficientParameterId,
-            term.snapshotChecks,
-            gameData,
-            issues
-          )
+          if (term.coefficientParameterId !== undefined) {
+            validateDamagePartCoefficient(
+              characterId,
+              talentParameterOwnerId,
+              action,
+              part.id,
+              term.coefficientParameterId,
+              term.snapshotChecks,
+              gameData,
+              issues
+            )
+          }
           if (term.coefficientMultiplierParameterId !== undefined) {
             validateDamagePartCoefficient(
               characterId,
@@ -298,15 +311,7 @@ function validateReviewedMultiScalingEvidenceSources(
 
 function hasMatchingReviewedTermSources(
   action: CombatActionMetadata,
-  declaredTerms: readonly {
-    readonly coefficientMultiplierParameterId?: string
-    readonly coefficientMultiplierScenarioParameterId?: string
-    readonly coefficientMultiplierSnapshotChecks?: readonly { readonly expectedCoefficient: number; readonly talentLevel: number }[]
-    readonly coefficientParameterId: string
-    readonly minimumSourceAscension?: number
-    readonly snapshotChecks?: readonly { readonly expectedCoefficient: number; readonly talentLevel: number }[]
-    readonly stat: string
-  }[],
+  declaredTerms: readonly CombatDamageScalingTerm[],
   reviewedTerms: readonly ReviewedMultiScalingEvidenceTerm[]
 ): boolean {
   const remainingTerms = [...reviewedTerms]
@@ -316,7 +321,9 @@ function hasMatchingReviewedTermSources(
         reviewedTerm.coefficientMultiplierParameterId === declaredTerm.coefficientMultiplierParameterId &&
         reviewedTerm.coefficientMultiplierScenarioParameterId === declaredTerm.coefficientMultiplierScenarioParameterId &&
         reviewedTerm.coefficientParameterId === declaredTerm.coefficientParameterId &&
+        reviewedTerm.fixedCoefficient === declaredTerm.fixedCoefficient &&
         reviewedTerm.minimumSourceAscension === declaredTerm.minimumSourceAscension &&
+        reviewedTerm.minimumSourceConstellation === declaredTerm.minimumSourceConstellation &&
         reviewedTerm.stat === declaredTerm.stat
     )
     if (termIndex < 0) return false
@@ -329,16 +336,19 @@ function hasMatchingReviewedTermSources(
 
 function hasMatchingReviewedTermSource(
   action: CombatActionMetadata,
-  declaredTerm: {
-    readonly coefficientParameterId: string
-    readonly coefficientMultiplierParameterId?: string
-    readonly coefficientMultiplierScenarioParameterId?: string
-    readonly coefficientMultiplierSnapshotChecks?: readonly { readonly expectedCoefficient: number; readonly talentLevel: number }[]
-    readonly minimumSourceAscension?: number
-    readonly snapshotChecks?: readonly { readonly expectedCoefficient: number; readonly talentLevel: number }[]
-  },
+  declaredTerm: CombatDamageScalingTerm,
   reviewedTerm: ReviewedMultiScalingEvidenceTerm
 ): boolean {
+  if (declaredTerm.fixedCoefficient !== undefined) {
+    return (
+      reviewedTerm.fixedCoefficient === declaredTerm.fixedCoefficient &&
+      reviewedTerm.coefficientMultiplierParameterId === declaredTerm.coefficientMultiplierParameterId &&
+      reviewedTerm.coefficientMultiplierScenarioParameterId === declaredTerm.coefficientMultiplierScenarioParameterId &&
+      reviewedTerm.minimumSourceAscension === declaredTerm.minimumSourceAscension &&
+      reviewedTerm.minimumSourceConstellation === declaredTerm.minimumSourceConstellation
+    )
+  }
+  if (reviewedTerm.fixedCoefficient !== undefined) return false
   const reference = getTalentReference(action, declaredTerm.coefficientParameterId)
   const multiplierParameterId = declaredTerm.coefficientMultiplierParameterId
   if (
@@ -356,6 +366,7 @@ function hasMatchingReviewedTermSource(
     multiplierParameterId === reviewedTerm.coefficientMultiplierParameterId &&
     declaredTerm.coefficientMultiplierScenarioParameterId === reviewedTerm.coefficientMultiplierScenarioParameterId &&
     declaredTerm.minimumSourceAscension === reviewedTerm.minimumSourceAscension &&
+    declaredTerm.minimumSourceConstellation === reviewedTerm.minimumSourceConstellation &&
     hasMatchingSnapshotChecks(
       declaredTerm.coefficientMultiplierSnapshotChecks,
       reviewedTerm.coefficientMultiplierSnapshotChecks ?? []
@@ -380,20 +391,8 @@ function getSnapshotCheckKey(check: { readonly expectedCoefficient: number; read
 }
 
 function hasMatchingScalingTermPairs(
-  declaredTerms: readonly {
-    readonly coefficientMultiplierParameterId?: string
-    readonly coefficientMultiplierScenarioParameterId?: string
-    readonly coefficientParameterId: string
-    readonly minimumSourceAscension?: number
-    readonly stat: string
-  }[],
-  reviewedTerms: readonly {
-    readonly coefficientMultiplierParameterId?: string
-    readonly coefficientMultiplierScenarioParameterId?: string
-    readonly coefficientParameterId: string
-    readonly minimumSourceAscension?: number
-    readonly stat: string
-  }[]
+  declaredTerms: readonly CombatDamageScalingTerm[],
+  reviewedTerms: readonly ReviewedMultiScalingEvidenceTerm[]
 ): boolean {
   const declaredPairs = declaredTerms.map(getScalingTermPairKey).sort()
   const reviewedPairs = reviewedTerms.map(getScalingTermPairKey).sort()
@@ -406,15 +405,19 @@ function hasMatchingScalingTermPairs(
 function getScalingTermPairKey(term: {
   readonly coefficientMultiplierParameterId?: string
   readonly coefficientMultiplierScenarioParameterId?: string
-  readonly coefficientParameterId: string
+  readonly coefficientParameterId?: string
+  readonly fixedCoefficient?: number
   readonly minimumSourceAscension?: number
+  readonly minimumSourceConstellation?: number
   readonly stat: string
 }): string {
   return JSON.stringify([
-    term.coefficientParameterId,
+    term.coefficientParameterId ?? null,
+    term.fixedCoefficient ?? null,
     term.coefficientMultiplierParameterId ?? null,
     term.coefficientMultiplierScenarioParameterId ?? null,
     term.minimumSourceAscension ?? null,
+    term.minimumSourceConstellation ?? null,
     term.stat
   ])
 }

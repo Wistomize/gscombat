@@ -969,6 +969,11 @@ describe("character metrics with explicit target context", () => {
         label: "冲浪时光 / 满层鲨鲨撕咬（火底蒸发需火附着）"
       }),
       expect.objectContaining({
+        actionId: "mualani.constellation.6.spirit_of_the_springs.c1_sharkys_surging_bite.maximum_reachable",
+        kind: "damage",
+        label: "夏日的气息 / C6 三次满层鲨鲨撕咬（C1生命值加算自动生效）"
+      }),
+      expect.objectContaining({
         actionId: "mualani.burst.boomsharka_laka.tracking_missile",
         kind: "damage",
         label: "爆瀑飞弹 / 飞弹伤害（逐浪心得按队伍最大可达层数）"
@@ -996,6 +1001,35 @@ describe("character metrics with explicit target context", () => {
       expect.arrayContaining([expect.objectContaining({ kind: "amplifying_reaction", reaction: "vaporize_forward" })])
     )
     expect(vaporize.value).toBeCloseTo(hydro.value * 2)
+
+    const mualaniC6AtEffectiveSkillLevel10: CharacterBuild = {
+      ...mualani,
+      buildId: "test.metric.Mualani.c6-effective-skill-10",
+      constellation: 6,
+      talents: { ...mualani.talents, skill: 7 }
+    }
+    const c6Scenario = {
+      ...baselineScenario,
+      primary: mualaniC6AtEffectiveSkillLevel10
+    }
+    const c6Bites = evaluateCombatMetric({
+      build: mualaniC6AtEffectiveSkillLevel10,
+      gameData,
+      metricId: "mualani.constellation.6.spirit_of_the_springs.c1_sharkys_surging_bite.maximum_reachable",
+      scenario: c6Scenario
+    })
+
+    if (c6Bites.formula.kind !== "rotation_events") throw new Error("Expected event-level damage formula")
+    expect(c6Bites.formula.events).toHaveLength(3)
+    for (const event of c6Bites.formula.events) {
+      const scaling = event.trace.find((entry) => entry.kind === "scaling_terms")
+      if (!scaling || scaling.kind !== "scaling_terms") throw new Error("Expected HP scaling terms")
+      expect(scaling.terms).toHaveLength(2)
+      expect(scaling.terms[0]?.stat).toBe("hp")
+      expect(scaling.terms[0]?.coefficient).toBeCloseTo(0.7812)
+      expect(scaling.terms[1]?.stat).toBe("hp")
+      expect(scaling.terms[1]?.coefficient).toBeCloseTo(0.66)
+    }
   })
 
   it("evaluates Kazuha's swirled-element damage bonus as an independent source output", () => {

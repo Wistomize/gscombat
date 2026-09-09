@@ -6,6 +6,7 @@ import type {
   RotationElementalApplication,
   RotationElementOverrideTarget,
   ScalingStat,
+  StellarSwirlReactionEvent,
   TransformativeReaction
 } from "@gscombat/calculator"
 import type { TravelerElement } from "@gscombat/contracts"
@@ -85,8 +86,8 @@ export interface CombatTalentCoefficientSnapshotCheck {
   readonly talentLevel: number
 }
 
-/** One stat-specific coefficient that contributes to a single declared damage hit. */
-export interface CombatDamageScalingTerm {
+/** Shared multipliers and source gates for one stat-specific contribution to a declared damage hit. */
+interface CombatDamageScalingTermBase {
   /** Optionally multiplies this term by another talent parameter, such as a burst stat-conversion ratio. */
   readonly coefficientMultiplierParameterId?: string
   /** Locks the optional multiplier parameter to its reviewed values in the immutable snapshot. */
@@ -95,12 +96,29 @@ export interface CombatDamageScalingTerm {
   readonly coefficientMultiplierScenarioParameterId?: string
   /** Converts the integer scenario value into the ratio used by this coefficient, such as percent to decimal. */
   readonly coefficientMultiplierScenarioParameterScale?: number
-  readonly coefficientParameterId: string
   /** Keeps an ascension passive term out of the base damage until the source reaches the required ascension. */
   readonly minimumSourceAscension?: number
-  readonly snapshotChecks?: readonly CombatTalentCoefficientSnapshotCheck[]
+  /** Keeps a constellation term out of lower-constellation builds while higher constellations remain cumulative. */
+  readonly minimumSourceConstellation?: number
   readonly stat: ScalingStat
 }
+
+/** One talent-table coefficient that contributes to a single declared damage hit. */
+export interface CombatTalentDamageScalingTerm extends CombatDamageScalingTermBase {
+  readonly coefficientParameterId: string
+  readonly fixedCoefficient?: never
+  readonly snapshotChecks?: readonly CombatTalentCoefficientSnapshotCheck[]
+}
+
+/** One reviewed fixed coefficient, typically sourced from a constellation table, in the same base-damage hit. */
+export interface CombatFixedDamageScalingTerm extends CombatDamageScalingTermBase {
+  readonly coefficientParameterId?: never
+  readonly fixedCoefficient: number
+  readonly snapshotChecks?: never
+}
+
+/** One stat-specific coefficient that contributes to a single declared damage hit. */
+export type CombatDamageScalingTerm = CombatFixedDamageScalingTerm | CombatTalentDamageScalingTerm
 
 /** Resolves a bounded action snapshot value into a multiplier for one action-owned effect. */
 export interface CombatActionScenarioParameterLookupMultiplier {
@@ -272,9 +290,20 @@ export type CombatEventScenarioParameterCoefficientMultiplier =
   | CombatEventScenarioParameterLookupMultiplier
   | CombatEventScenarioParameterTalentLinearMultiplier
 
-/** Shared timing and damage-part fields for one scheduled damage event. */
+/** Shared timing and source-build gates for one scheduled damage event. */
 interface CombatDamageEventTemplateBase {
   readonly at: number
+  /** Represents repeated identical hits after all action-specific constraints have been resolved. */
+  readonly hitCount?: CombatEventHitCount
+  readonly id: string
+  /** Removes an event once a later constellation replaces rather than augments its formula. */
+  readonly maximumSourceConstellation?: number
+  /** Keeps a constellation-owned event out of lower-constellation builds while preserving cumulative unlocks. */
+  readonly minimumSourceConstellation?: number
+}
+
+/** Connects one scheduled event to a character-owned damage part. */
+interface CombatDamagePartEventTemplate extends CombatDamageEventTemplateBase {
   /** Optional bounded multiplier applied before the damage formula is evaluated. */
   readonly coefficientMultiplier?: CombatEventScenarioParameterCoefficientMultiplier
   readonly damagePartId: string
@@ -282,30 +311,44 @@ interface CombatDamageEventTemplateBase {
   readonly elementalApplication?: RotationElementalApplication
   /** Allows a physical normal-attack event to receive an explicit elemental override window. */
   readonly elementOverrideTarget?: RotationElementOverrideTarget
-  /** Represents repeated identical hits after all action-specific constraints have been resolved. */
-  readonly hitCount?: CombatEventHitCount
-  readonly id: string
   /**
    * Resolves this one event with the independent Moon or Stellar direct-reaction formula.
    * Such an event does not consume or derive an ordinary elemental aura, and cannot receive an elemental override.
    */
   readonly specialReaction?: CombatDirectSpecialReactionConfig
+  readonly stellarSwirlReaction?: never
 }
 
+/** Declares one actual participant-aggregated Stellar-Swirl reaction event without a character damage part. */
+export interface CombatStellarSwirlReactionEventTemplate extends CombatDamageEventTemplateBase {
+  readonly coefficientMultiplier?: never
+  readonly damagePartId?: never
+  readonly elementalApplication?: never
+  readonly elementOverrideTarget?: never
+  readonly specialReaction?: never
+  readonly stellarSwirlReaction: {
+    readonly event: StellarSwirlReactionEvent
+    /** One or two for a Stellar Vortex event; absent for a trigger event. */
+    readonly vortexLevel?: 1 | 2
+  }
+}
+
+type CombatDamageEventPayload = CombatDamagePartEventTemplate | CombatStellarSwirlReactionEventTemplate
+
 /** Binds one scheduled damage event to its action cast-time stat snapshot. */
-export interface CombatCastDamageEventTemplate extends CombatDamageEventTemplateBase {
+export type CombatCastDamageEventTemplate = CombatDamageEventPayload & {
   readonly snapshot: "cast"
   readonly snapshotAt?: never
 }
 
 /** Binds one scheduled damage event to its own hit-time stat snapshot. */
-export interface CombatHitDamageEventTemplate extends CombatDamageEventTemplateBase {
+export type CombatHitDamageEventTemplate = CombatDamageEventPayload & {
   readonly snapshot: "hit"
   readonly snapshotAt?: never
 }
 
 /** Binds one scheduled damage event to an explicit action-relative stat snapshot time. */
-export interface CombatTimedDamageEventTemplate extends CombatDamageEventTemplateBase {
+export type CombatTimedDamageEventTemplate = CombatDamageEventPayload & {
   readonly snapshot: "time"
   readonly snapshotAt: number
 }
@@ -443,6 +486,8 @@ interface CombatMetricDefinitionBase {
   readonly characterId: string
   readonly id: string
   readonly label: string
+  /** The source build must reach this constellation before the metric is selectable or evaluable. */
+  readonly minimumSourceConstellation?: number
   readonly sourceActionId: string
   readonly status: CombatCoverageStatus
 }
@@ -460,26 +505,50 @@ export interface CombatDamageMetricDefinition extends CombatMetricDefinitionBase
   readonly target: "enemy"
 }
 
-/** Calculates one selected recipient's healing from source scaling and recipient-side context. */
-export interface CombatScaledHealingMetricDefinition extends CombatFriendlyRecipientMetricDefinitionBase {
+/** Shared declaration fields for one selected recipient's healing and recipient-side context. */
+interface CombatHealingMetricDefinitionBase extends CombatFriendlyRecipientMetricDefinitionBase {
+  readonly includeHealingBonus: boolean
+  readonly kind: "healing"
+  /** Source-kit modifiers that belong in the selected recipient's incoming-healing multiplier. */
+  readonly recipientIncomingHealingBonuses?: readonly CombatHealingRecipientIncomingHealingBonus[]
+  /** Fixed healing modifiers granted by the source character kit, separate from build-derived healing bonus. */
+  readonly sourceHealingBonuses?: readonly CombatHealingSourceBonus[]
+}
+
+/** Shared declaration fields for healing that starts from one of the source character's final stats. */
+interface CombatScaledHealingMetricDefinitionBase extends CombatHealingMetricDefinitionBase {
   /** Additional source-stat healing terms that join the base percentage and flat healing before healing bonuses. */
   readonly additionalScalingTerms?: readonly CombatHealingAdditionalScalingTerm[]
   /** Conditional source-stat healing terms that join the base healing before healing-bonus multipliers. */
   readonly conditionalScalingBonuses?: readonly CombatHealingConditionalScalingBonus[]
   readonly flat?: number
   readonly flatParameter?: CombatMetricTalentParameter
-  readonly includeHealingBonus: boolean
-  readonly kind: "healing"
-  readonly percentageParameter: CombatMetricTalentParameter
   readonly scalingStat: Exclude<CombatMetricScalingStat, "base_attack">
-  /** Fixed healing modifiers granted by the source character kit, separate from build-derived healing bonus. */
-  readonly sourceHealingBonuses?: readonly CombatHealingSourceBonus[]
 }
 
-/** Adds one source-stat healing contribution unlocked at a declared source ascension. */
+/** Calculates healing from either a talent-table percentage or one fixed source-stat ratio. */
+export type CombatScaledHealingMetricDefinition = CombatScaledHealingMetricDefinitionBase &
+  (
+    | {
+        readonly percentageParameter: CombatMetricTalentParameter
+        readonly ratio?: never
+      }
+    | {
+        readonly percentageParameter?: never
+        readonly ratio: number
+      }
+  )
+
+/** Any maintained healing output resolved by the shared source-stat healing pipeline. */
+export type CombatHealingMetricDefinition = CombatScaledHealingMetricDefinition
+
+/** Adds one independently capped source-stat healing contribution unlocked by source progression. */
 export interface CombatHealingAdditionalScalingTerm {
   readonly label: string
   readonly minimumSourceAscension?: number
+  readonly minimumSourceConstellation?: number
+  /** Caps this contribution before source healing bonus and recipient incoming-healing multipliers. */
+  readonly maximumValue?: number
   readonly ratio: number
   readonly scalingStat: Exclude<CombatMetricScalingStat, "base_attack">
 }
@@ -498,6 +567,14 @@ export interface CombatHealingConditionalScalingBonus {
   readonly minimumSourceConstellation: number
   readonly ratio: number
   readonly recipientRequirement: CombatMetricRecipientHpFractionRequirement
+}
+
+/** Adds a source-kit modifier to the selected recipient's incoming-healing multiplier. */
+export interface CombatHealingRecipientIncomingHealingBonus {
+  readonly label: string
+  readonly minimumSourceConstellation: number
+  readonly recipientRequirement: CombatMetricRecipientHpFractionRequirement
+  readonly value: number
 }
 
 /** Calculates a flat stat contribution delivered to one selected friendly recipient. */
@@ -564,8 +641,8 @@ export type CombatScalarMetricDefinition =
 export type CombatMetricDefinition =
   | CombatDamageMetricDefinition
   | CombatFlatStatBuffMetricDefinition
+  | CombatHealingMetricDefinition
   | CombatScalarMetricDefinition
-  | CombatScaledHealingMetricDefinition
 
 /** The melee weapon families that can receive the currently modeled normal-attack infusions. */
 export type CombatMeleeWeaponType = "claymore" | "polearm" | "sword"
@@ -593,6 +670,10 @@ export type CombatActionEffectTarget =
   | "reactionDamageBonus"
   /** Adds after an eligible transformative reaction's level, multiplier, and reaction-bonus calculation, before resistance. */
   | "transformativeReactionFlatDamageAddition"
+  /** Adds to the independent CRIT Rate used only by an eligible ordinary transformative reaction. */
+  | "transformativeReactionCritRate"
+  /** Adds to the independent CRIT DMG used only by an eligible ordinary transformative reaction. */
+  | "transformativeReactionCritDamage"
   /** Adds only to an eligible direct Moon or Stellar reaction's dedicated reaction-damage-bonus stage. */
   | "specialReactionDamageBonus"
   /** Adds directly to an eligible Moon or Stellar action's base damage before every special-reaction multiplier. */
@@ -639,6 +720,8 @@ export type CombatActionEffectTarget =
 export interface CombatActionEffectTargetFilter {
   /** Narrows an effect to one or more declared core-action IDs. */
   readonly actionIds?: readonly string[]
+  /** Narrows an effect to stable event IDs within the selected action timeline. */
+  readonly eventIds?: readonly string[]
   /** Narrows an effect to actions owned by one or more current recipient characters. */
   readonly recipientCharacterIds?: readonly string[]
   /** Requires the selected action's recipient to be a current Hexerei character. */
@@ -834,6 +917,15 @@ export interface CombatActionEffectTalentScalar {
 /** A fixed, refinement-indexed, or talent-level-aware scalar. */
 export type CombatActionEffectComputedScalar = CombatActionEffectScalar | CombatActionEffectTalentScalar
 
+/** Converts one effect owner's final Elemental Mastery into a bounded scalar. */
+export interface CombatActionEffectFinalElementalMasteryScalar {
+  readonly kind: "final_elemental_mastery"
+  readonly maximumValue?: CombatActionEffectComputedScalar
+  readonly multiplier: CombatActionEffectComputedScalar
+  /** Added to final Elemental Mastery before applying the multiplier. */
+  readonly offset?: number
+}
+
 /** Provides a fixed, refinement-indexed, or scenario-derived action effect value. */
 export type CombatActionEffectValue =
   | CombatActionEffectScalar
@@ -844,15 +936,7 @@ export type CombatActionEffectValue =
         readonly value: number
       }[]
     })
-  | {
-      /** An elemental-mastery conversion resolved after all selected elemental-mastery effects. */
-      readonly kind: "final_elemental_mastery"
-      /** Caps this final-elemental-mastery conversion after its multiplier has been applied. */
-      readonly maximumValue?: CombatActionEffectComputedScalar
-      readonly multiplier: CombatActionEffectComputedScalar
-      /** Added to the source stat before applying the multiplier. */
-      readonly offset?: number
-    }
+  | CombatActionEffectFinalElementalMasteryScalar
   | {
       /** A final-maximum-HP conversion resolved after all HP contributions, with an optional per-effect cap. */
       readonly kind: "final_hp"
@@ -908,8 +992,10 @@ export type CombatActionEffectValue =
       readonly requiresFullParty: true
     }
 
-/** A standalone equipment trigger that is evaluated as an additional direct damage event. */
+/** A standalone equipment or character trigger that is evaluated as an additional direct damage event. */
 export interface CombatActionAdditionalDamageEvent {
+  /** Declares the hit class when a character-owned event must match normal, charged, or plunge effects. */
+  readonly attackKind?: CombatAttackKind
   readonly canCrit: boolean
   /** Overrides normal crit-rate expectation when the selected trigger guarantees this independent hit will crit. */
   readonly critPolicy?: "guaranteed"
@@ -922,6 +1008,8 @@ export interface CombatActionAdditionalDamageEvent {
   /** This event intentionally cannot inherit the triggering action's reaction declaration or application. */
   readonly reactionPolicy: "none"
   readonly scalingStat: ScalingStat
+  /** Declares the damage category when a character-owned event must match talent-slot-scoped effects. */
+  readonly talentSlot?: CombatTalentSlot
   /** Adds a flat base-damage term derived from the selected recipient's final attack. */
   readonly recipientFinalAttackFlatDamageMultiplier?: CombatActionEffectComputedScalar
   /** Adds a flat base-damage term derived from the effect owner's final attack. */
@@ -930,7 +1018,12 @@ export interface CombatActionAdditionalDamageEvent {
 
 /** A stat-scaled term added to the triggering hit before that hit's reaction and common damage multipliers. */
 export interface CombatActionMatchedAdditiveDamageTerm {
-  readonly coefficient: CombatActionEffectScalar
+  /** Resolves either a static ratio or a bounded ratio derived from the effect owner's final Elemental Mastery. */
+  readonly coefficient: CombatActionEffectScalar | CombatActionEffectFinalElementalMasteryScalar
+  /** Multiplies this term by one resolved action snapshot such as the current Bond of Life percentage. */
+  readonly coefficientMultiplierScenarioParameterId?: string
+  /** Converts the integer action snapshot into the multiplier consumed by this term. */
+  readonly coefficientMultiplierScenarioParameterScale?: number
   readonly kind: "matched_action_additive_damage_term"
   readonly scalingStat: ScalingStat
 }

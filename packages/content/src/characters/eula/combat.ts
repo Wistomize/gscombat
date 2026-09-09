@@ -147,7 +147,15 @@ export const eulaCombatCoverage: CharacterCombatCoverage = {
           id: "lightfall-sword-stack-count",
           label: "光降之剑能量层数",
           maximumValue: 30,
-          minimumValue: 0
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            {
+              defaultValue: 5,
+              maximumValue: 30,
+              minimumSourceConstellation: 6,
+              minimumValue: 5
+            }
+          ]
         }
       ],
       status: "verified",
@@ -155,6 +163,15 @@ export const eulaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   actionEffects: [
+    {
+      activation: "active",
+      id: "eula.constellation.1.tidal_illusion.after_grimheart_consumption.physical_damage_bonus",
+      label: "光潮的幻象 · C1 消耗冷酷之心后的物理伤害加成（30%）",
+      source: { characterId: "Eula", kind: "character", minimumSourceConstellation: 1 },
+      target: "damageBonus",
+      targetFilter: { elements: ["physical"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.3 }
+    },
     {
       activation: "active",
       id: "eula.constellation.4.obstinacy_of_ones_inferiors.low_hp_target.lightfall_sword.damage_bonus",
@@ -182,7 +199,7 @@ export const eulaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "Glacial Illumination's Lightfall Sword explosion is the selected no-reaction, attack-scaling Physical metric: burst[1] plus the caller-selected current Lightfall Sword energy-stack count times burst[2]. The integer input accepts zero through thirty stacks and represents the explosion's current snapshot, not a count of normal attacks. C4 can be selected only when the target is already below 50% HP before this Lightfall Sword explosion, adding 25% damage bonus. The evaluator does not simulate stack generation, the 0.1-second interval, the seven-second duration, switching, expiry detonation, Grimheart, other constellations, infusions, aura/reactions, timing, or energy availability. Explicit scenario buffs still enter the shared damage pipeline. Icetide Vortex press and the initial slash remain separately verified baseline hits; hold damage remains unmodeled.",
+    "Glacial Illumination's Lightfall Sword explosion is the selected no-reaction, attack-scaling Physical metric: burst[1] plus the caller-selected current Lightfall Sword energy-stack count times burst[2]. The integer input accepts zero through thirty stacks below C6. At C6 the sword immediately has five stacks, so the valid range and default begin at five; the player still enters the actual final stack count, which naturally includes any successful 50% extra-stack procs. C1's 30% Physical damage bonus is an explicit selectable snapshot after consuming Grimheart, and C4 can be selected only when the target is already below 50% HP before this explosion, adding another 25% damage bonus. The evaluator does not simulate hit-by-hit stack generation, the 0.1-second interval, duration, switching, expiry detonation, Grimheart generation, infusions, aura/reactions, timing, or energy availability.",
   label: eulaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

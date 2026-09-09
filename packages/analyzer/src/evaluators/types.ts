@@ -7,6 +7,7 @@ import type {
   RotationResult,
   ScalingStat,
   SpecialReactionDamageResult,
+  StellarSwirlReactionEvent,
   SustainedAuraWindow
 } from "@gscombat/calculator"
 import type { CombatActionMetadata, CombatDirectSpecialReactionConfig, MoonsignLevel } from "@gscombat/content"
@@ -28,18 +29,40 @@ export interface DeclaredDirectActionScalingTermEvaluation {
   readonly stat: ScalingStat
 }
 
-/** A resolved content event that connects one damage part to its relative timing and snapshot policy. */
-export interface DeclaredDamageTimelineEvent {
-  readonly coefficientMultiplier: number
-  readonly elementalApplication?: RotationElementalApplication
-  readonly elementOverrideTarget?: RotationElementOverrideTarget
+/** Shared resolved timing for one content-declared action event. */
+interface DeclaredDamageTimelineEventBase {
   readonly hitCount: number
   readonly id: string
-  readonly part: DeclaredDirectActionPartEvaluation
-  readonly specialReaction?: CombatDirectSpecialReactionConfig
   readonly statSnapshotTime: number
   readonly time: number
 }
+
+/** A resolved content event that connects one damage part to its relative timing and snapshot policy. */
+export interface DeclaredDamagePartTimelineEvent extends DeclaredDamageTimelineEventBase {
+  readonly coefficientMultiplier: number
+  readonly elementalApplication?: RotationElementalApplication
+  readonly elementOverrideTarget?: RotationElementOverrideTarget
+  readonly part: DeclaredDirectActionPartEvaluation
+  readonly specialReaction?: CombatDirectSpecialReactionConfig
+  readonly stellarSwirlReaction?: never
+}
+
+/** One actual participant-aggregated Stellar-Swirl event which does not read a character damage part. */
+export interface DeclaredStellarSwirlReactionTimelineEvent extends DeclaredDamageTimelineEventBase {
+  readonly coefficientMultiplier?: never
+  readonly elementalApplication?: never
+  readonly elementOverrideTarget?: never
+  readonly part?: never
+  readonly specialReaction?: never
+  readonly stellarSwirlReaction: {
+    readonly event: StellarSwirlReactionEvent
+    readonly vortexLevel?: 1 | 2
+  }
+}
+
+export type DeclaredDamageTimelineEvent =
+  | DeclaredDamagePartTimelineEvent
+  | DeclaredStellarSwirlReactionTimelineEvent
 
 /** The resolved event sequence for a declared action, including its action-relative duration. */
 export interface DeclaredDamageTimeline {

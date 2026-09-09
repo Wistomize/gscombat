@@ -98,6 +98,38 @@ export const sigewinneCombatCoverage: CharacterCombatCoverage = {
       target: "enemyResistanceReduction",
       targetFilter: { elements: ["hydro"] },
       value: { kind: "fixed", value: 0.35 }
+    },
+    {
+      activation: "active",
+      id: "sigewinne.constellation.6.most_radiant_sprite.healing_crit_rate",
+      label: "「最光辉的精灵，可否为我祷告」· C6 治疗后过饱和心意注射暴击率（每1000生命值上限+0.4%，最高20%，15秒）",
+      source: { characterId: "Sigewinne", kind: "character", minimumSourceConstellation: 6 },
+      target: "critRate",
+      targetFilter: {
+        actionIds: ["sigewinne.burst.super_saturated_syringing.single_spout"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        kind: "final_hp",
+        maximumValue: { kind: "fixed", value: 0.2 },
+        multiplier: { kind: "fixed", value: 0.000004 }
+      }
+    },
+    {
+      activation: "active",
+      id: "sigewinne.constellation.6.most_radiant_sprite.healing_crit_damage",
+      label: "「最光辉的精灵，可否为我祷告」· C6 治疗后过饱和心意注射暴击伤害（每1000生命值上限+2.2%，最高110%，15秒）",
+      source: { characterId: "Sigewinne", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: {
+        actionIds: ["sigewinne.burst.super_saturated_syringing.single_spout"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        kind: "final_hp",
+        maximumValue: { kind: "fixed", value: 1.1 },
+        multiplier: { kind: "fixed", value: 0.000022 }
+      }
     }
   ],
   characterId: "Sigewinne",

@@ -119,7 +119,7 @@ export const thomaCombatCoverage: CharacterCombatCoverage = {
       },
       id: "thoma.skill.blazing_blessing.blazing_barrier.initial_absorption",
       kind: "scalar",
-      label: "烈烧佑命之侍护 / 烈烧佑命基础护盾吸收量（C0、非火元素伤害）",
+      label: "烈烧佑命之侍护 / 烈烧佑命基础护盾吸收量（非火元素伤害）",
       ratioParameter: {
         reference: {
           groupId: "skill",

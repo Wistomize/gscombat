@@ -38,6 +38,7 @@ export function validateMetricDeclaration(
     })
   }
   metricIds.add(metric.id)
+  validateMetricSourceConstellation(metric, issues)
 
   const sourceAction = coverage.actions.find((action) => action.id === metric.sourceActionId)
   if (!sourceAction) {
@@ -83,16 +84,17 @@ export function validateMetricDeclaration(
       ["attack", "defense", "elementalMastery", "hp"],
       issues
     )
-    validateMetricTalentParameter(metric, metric.percentageParameter, availableTalentParameterOwnerIds, gameData, issues)
+    if (metric.percentageParameter) {
+      validateMetricTalentParameter(
+        metric,
+        metric.percentageParameter,
+        availableTalentParameterOwnerIds,
+        gameData,
+        issues
+      )
+    }
     if (metric.flatParameter) {
       validateMetricTalentParameter(metric, metric.flatParameter, availableTalentParameterOwnerIds, gameData, issues)
-    }
-    if (metric.flat === undefined && metric.flatParameter === undefined) {
-      issues.push({
-        ...issueBase,
-        code: "invalid-healing-metric-extension",
-        message: `Healing metric ${metric.id} must declare a fixed value or talent flat parameter`
-      })
     }
     validateHealingMetricExtensions(metric, issues)
     return
@@ -133,6 +135,32 @@ export function validateMetricDeclaration(
     issues
   )
   validateMetricTalentParameter(metric, metric.ratioParameter, availableTalentParameterOwnerIds, gameData, issues)
+}
+
+function validateMetricSourceConstellation(
+  metric: CombatMetricDefinition,
+  issues: CombatRegistryIntegrityIssue[]
+): void {
+  const issueBase = { characterId: metric.characterId, metricId: metric.id }
+  const minimum = metric.minimumSourceConstellation
+  if (minimum !== undefined && !isValidMetricConstellation(minimum)) {
+    issues.push({
+      ...issueBase,
+      code: "invalid-metric-source-constellation",
+      message: `Metric ${metric.id} must declare a minimum source constellation from one through six`
+    })
+    return
+  }
+
+  const constellationIdMatch = metric.id.match(/\.constellation\.(\d)\./)
+  if (!constellationIdMatch) return
+  const constellation = Number(constellationIdMatch[1])
+  if (isValidMetricConstellation(constellation) && minimum === constellation) return
+  issues.push({
+    ...issueBase,
+    code: "invalid-metric-source-constellation",
+    message: `Constellation-owned metric ${metric.id} must require source constellation ${constellation}`
+  })
 }
 
 function validateMetricTarget(metric: CombatMetricDefinition, issues: CombatRegistryIntegrityIssue[]): void {
@@ -255,13 +283,23 @@ function validateHealingMetricExtensions(
   const additionalScalingTerms = metric.additionalScalingTerms ?? []
   const sourceHealingBonuses = metric.sourceHealingBonuses ?? []
   const conditionalScalingBonuses = metric.conditionalScalingBonuses ?? []
+  const recipientIncomingHealingBonuses = metric.recipientIncomingHealingBonuses ?? []
+  const hasPercentageParameter = metric.percentageParameter !== undefined
+  const hasFixedRatio = metric.ratio !== undefined
+  const validBaseRatio =
+    hasPercentageParameter !== hasFixedRatio &&
+    (metric.ratio === undefined || (Number.isFinite(metric.ratio) && metric.ratio >= 0))
+  const validFlat = metric.flat === undefined || (Number.isFinite(metric.flat) && metric.flat >= 0)
   const validAdditionalScalingTerms = additionalScalingTerms.every(
     (term) =>
       term.label.trim().length > 0 &&
       Number.isFinite(term.ratio) &&
       term.ratio >= 0 &&
       ["attack", "defense", "elementalMastery", "hp"].includes(term.scalingStat) &&
-      (term.minimumSourceAscension === undefined || isValidMetricAscension(term.minimumSourceAscension))
+      (term.minimumSourceAscension === undefined || isValidMetricAscension(term.minimumSourceAscension)) &&
+      (term.minimumSourceConstellation === undefined ||
+        isValidMetricConstellation(term.minimumSourceConstellation)) &&
+      (term.maximumValue === undefined || (Number.isFinite(term.maximumValue) && term.maximumValue >= 0))
   )
   const validSourceHealingBonuses = sourceHealingBonuses.every((bonus) => {
     const requirement = bonus.sourceRequirement
@@ -289,19 +327,47 @@ function validateHealingMetricExtensions(
       requirement.kind === "recipient_hp_fraction" &&
       requirement.label.trim().length > 0 &&
       (requirement.comparison === "at_most" || requirement.comparison === "above") &&
+      Number.isFinite(requirement.threshold) &&
       requirement.threshold >= 0 &&
       requirement.threshold <= 1 &&
       requirement.waivedAtSourceConstellation === undefined
     )
   })
-  if (metric.includeHealingBonus && validAdditionalScalingTerms && validSourceHealingBonuses && validConditionalScalingBonuses) {
+  const validRecipientIncomingHealingBonuses = recipientIncomingHealingBonuses.every((bonus) => {
+    const requirement = bonus.recipientRequirement
+    return (
+      bonus.label.trim().length > 0 &&
+      isValidMetricConstellation(bonus.minimumSourceConstellation) &&
+      Number.isFinite(bonus.value) &&
+      bonus.value >= 0 &&
+      requirement.kind === "recipient_hp_fraction" &&
+      requirement.label.trim().length > 0 &&
+      (requirement.comparison === "at_most" || requirement.comparison === "above") &&
+      Number.isFinite(requirement.threshold) &&
+      requirement.threshold >= 0 &&
+      requirement.threshold <= 1 &&
+      requirement.waivedAtSourceConstellation === undefined
+    )
+  })
+  if (
+    metric.includeHealingBonus &&
+    validBaseRatio &&
+    validFlat &&
+    validAdditionalScalingTerms &&
+    validSourceHealingBonuses &&
+    validConditionalScalingBonuses &&
+    validRecipientIncomingHealingBonuses
+  ) {
     return
   }
   if (
     !metric.includeHealingBonus &&
     sourceHealingBonuses.length === 0 &&
+    validBaseRatio &&
+    validFlat &&
     validAdditionalScalingTerms &&
-    validConditionalScalingBonuses
+    validConditionalScalingBonuses &&
+    validRecipientIncomingHealingBonuses
   ) {
     return
   }
@@ -309,8 +375,8 @@ function validateHealingMetricExtensions(
     characterId: metric.characterId,
     code: "invalid-healing-metric-extension",
     message:
-      `Healing metric ${metric.id} must use valid source-stat additions and finite non-negative kit healing bonuses ` +
-      "only with healing bonuses enabled, plus valid conditional source-scaling bonuses",
+      `Healing metric ${metric.id} must declare exactly one valid fixed or talent-derived base ratio, valid source-stat ` +
+      "additions and finite non-negative kit modifiers in their correct source or recipient healing stage",
     metricId: metric.id
   })
 }

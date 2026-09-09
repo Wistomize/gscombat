@@ -32,12 +32,17 @@ function rotationTraceUsesMastery(entry: RotationTraceEntry): boolean {
     entry.kind === "amplifying_reaction" ||
     entry.kind === "additive_reaction" ||
     entry.kind === "transformative_reaction" ||
+    entry.kind === "stellar_swirl_participant_aggregation" ||
     (entry.kind === "special_reaction" && entry.formula.kind === "special_reaction_damage_bonus")
   )
 }
 
 function rotationTraceUsesCrit(entry: RotationTraceEntry): boolean {
-  return entry.kind === "expected_crit" || (entry.kind === "special_reaction" && entry.formula.kind === "expected_crit")
+  return (
+    entry.kind === "expected_crit" ||
+    entry.kind === "stellar_swirl_participant_aggregation" ||
+    (entry.kind === "special_reaction" && entry.formula.kind === "expected_crit")
+  )
 }
 
 function damageTraceUsesMastery(entry: DamageTraceEntry): boolean {

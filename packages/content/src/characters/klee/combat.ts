@@ -143,6 +143,7 @@ export const kleeCombatCoverage: CharacterCombatCoverage = {
     },
     {
       activation: "active",
+      condition: { kind: "hexerei_secret_rite" },
       id: "klee.constellation.1.chained_reactions.spark_triggered.attack_percent",
       label: "连环轰隆 · C1 火花已触发后（攻击力提高60%，12秒）",
       source: { characterId: "Klee", kind: "character", minimumSourceConstellation: 1 },
@@ -157,6 +158,34 @@ export const kleeCombatCoverage: CharacterCombatCoverage = {
       source: { characterId: "Klee", kind: "character", minimumSourceConstellation: 2 },
       target: "enemyDefenseReduction",
       value: { kind: "fixed", value: 0.23 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "klee.constellation.6.blazing_delight.after_burst.self_pyro_damage_bonus",
+      label: "火力全开 · C6 施放轰轰火花后可莉火元素伤害加成10%（25秒）",
+      source: { characterId: "Klee", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: { elements: ["pyro"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.1 }
+    },
+    {
+      activation: "maximum_reachable",
+      condition: { kind: "hexerei_secret_rite" },
+      id: "klee.constellation.6.blazing_delight.after_burst.hexerei_self_pyro_damage_bonus",
+      label: "火力全开 · C6 魔导秘仪生效时可莉额外获得40%火元素伤害加成（25秒）",
+      source: { characterId: "Klee", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: { elements: ["pyro"], recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.4 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "klee.constellation.6.blazing_delight.after_burst.party_pyro_damage_bonus",
+      label: "火力全开 · C6 施放轰轰火花后队伍其他角色火元素伤害加成10%（25秒）",
+      source: { characterId: "Klee", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: { elements: ["pyro"], recipientSourceRelation: "not_source" },
+      value: { kind: "fixed", value: 0.1 }
     }
   ],
   metrics: [
@@ -172,7 +201,7 @@ export const kleeCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected metric is one charged-attack hit with dynamic Vaporize from an explicit Hydro aura. Spark Magic now resolves the maximum three Boom Badges as an independent 150% original-damage multiplier under Hexerei: Secret Rite. C1 and C2 remain explicit snapshots; mines, remaining bounces, burst recurrence, timing, and other constellations remain unmodeled.",
+    "The selected metric is one charged-attack hit with dynamic Vaporize from an explicit Hydro aura. Spark Magic resolves the maximum three Boom Badges as an independent 150% original-damage multiplier under Hexerei: Secret Rite. C1's 60% Attack snapshot is likewise gated by Hexerei, while C2 remains an explicit target-defense snapshot. At C6, the maximum-reachable post-Burst window grants the whole party 10% Pyro Damage Bonus; Hexerei grants Klee another 40%, for 50% on herself. The energy restoration and Hexerei normal-attack follow-up do not alter this one charged hit; mines, burst recurrence, and timing remain unmodeled.",
   label: kleeDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

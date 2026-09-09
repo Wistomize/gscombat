@@ -138,7 +138,7 @@ export const ganyuCombatCoverage: CharacterCombatCoverage = {
       characterId: "Ganyu",
       id: "ganyu.normal.frostflake_arrow.level_two.hit_and_bloom",
       kind: "damage",
-      label: "流天射术 / C0 二段蓄力霜华矢 + 霜华绽发（无反应）",
+      label: "流天射术 / 二段蓄力霜华矢 + 霜华绽发（无反应）",
       sourceActionId: "ganyu.normal.frostflake_arrow.level_two.hit_and_bloom",
       status: "verified",
       target: "enemy"

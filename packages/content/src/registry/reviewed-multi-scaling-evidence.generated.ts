@@ -13,6 +13,7 @@ import { reviewedMultiScalingEvidence as characterEulaEvidence } from "../charac
 import { reviewedMultiScalingEvidence as characterIllugaEvidence } from "../characters/illuga/evidence.js"
 import { reviewedMultiScalingEvidence as characterKachinaEvidence } from "../characters/kachina/evidence.js"
 import { reviewedMultiScalingEvidence as characterKamisatoAyatoEvidence } from "../characters/kamisato-ayato/evidence.js"
+import { reviewedMultiScalingEvidence as characterLaylaEvidence } from "../characters/layla/evidence.js"
 import { reviewedMultiScalingEvidence as characterMavuikaEvidence } from "../characters/mavuika/evidence.js"
 import { reviewedMultiScalingEvidence as characterNahidaEvidence } from "../characters/nahida/evidence.js"
 import { reviewedMultiScalingEvidence as characterNeferEvidence } from "../characters/nefer/evidence.js"
@@ -22,8 +23,11 @@ import { reviewedMultiScalingEvidence as characterRazorEvidence } from "../chara
 import { reviewedMultiScalingEvidence as characterSethosEvidence } from "../characters/sethos/evidence.js"
 import { reviewedMultiScalingEvidence as characterShikanoinHeizouEvidence } from "../characters/shikanoin-heizou/evidence.js"
 import { reviewedMultiScalingEvidence as characterVaresaEvidence } from "../characters/varesa/evidence.js"
+import { reviewedMultiScalingEvidence as characterVarkaEvidence } from "../characters/varka/evidence.js"
 import { reviewedMultiScalingEvidence as characterWandererEvidence } from "../characters/wanderer/evidence.js"
+import { reviewedMultiScalingEvidence as characterYelanEvidence } from "../characters/yelan/evidence.js"
 import { reviewedMultiScalingEvidence as characterYoimiyaEvidence } from "../characters/yoimiya/evidence.js"
+import { reviewedMultiScalingEvidence as characterYumemizukiMizukiEvidence } from "../characters/yumemizuki-mizuki/evidence.js"
 import { reviewedMultiScalingEvidence as characterZhongliEvidence } from "../characters/zhongli/evidence.js"
 
 export const reviewedMultiScalingEvidenceRecords: readonly ReviewedMultiScalingEvidenceRecord[] = [
@@ -39,6 +43,7 @@ export const reviewedMultiScalingEvidenceRecords: readonly ReviewedMultiScalingE
   ...characterIllugaEvidence,
   ...characterKachinaEvidence,
   ...characterKamisatoAyatoEvidence,
+  ...characterLaylaEvidence,
   ...characterMavuikaEvidence,
   ...characterNahidaEvidence,
   ...characterNeferEvidence,
@@ -48,7 +53,10 @@ export const reviewedMultiScalingEvidenceRecords: readonly ReviewedMultiScalingE
   ...characterSethosEvidence,
   ...characterShikanoinHeizouEvidence,
   ...characterVaresaEvidence,
+  ...characterVarkaEvidence,
   ...characterWandererEvidence,
+  ...characterYelanEvidence,
   ...characterYoimiyaEvidence,
+  ...characterYumemizukiMizukiEvidence,
   ...characterZhongliEvidence
 ]

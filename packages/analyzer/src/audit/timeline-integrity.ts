@@ -41,15 +41,6 @@ export function validateActionTimeline(
       message: `Action ${action.id} cannot declare a damage timeline without the declared-direct damage evaluator`
     })
   }
-  if (action.additiveReaction || action.amplifyingReaction) {
-    issues.push({
-      actionId: action.id,
-      characterId,
-      code: "timeline-action-level-reaction-unsupported",
-      message: `Action ${action.id} must declare reaction assumptions per event before using an explicit timeline`
-    })
-  }
-
   const damageEvents = Array.isArray(timeline.damageEvents) ? timeline.damageEvents : []
   if (damageEvents.length === 0) {
     issues.push({
@@ -59,6 +50,14 @@ export function validateActionTimeline(
       message: `Timeline for action ${action.id} must declare at least one damage event`
     })
     return
+  }
+  if ((action.additiveReaction || action.amplifyingReaction) && damageEvents.length > 1) {
+    issues.push({
+      actionId: action.id,
+      characterId,
+      code: "timeline-action-level-reaction-unsupported",
+      message: `Multi-event action ${action.id} must declare reaction assumptions per event`
+    })
   }
 
   const hasValidDuration = Number.isFinite(timeline.duration) && timeline.duration > 0
@@ -87,6 +86,7 @@ export function validateActionTimeline(
       })
     }
     validateDamageEventSnapshot(characterId, action, event, timeline.duration, issues)
+    validateDamageEventSourceConstellation(characterId, action, event, issues)
     validateDamageEventScenarioParameters(
       characterId,
       talentParameterOwnerIds,
@@ -143,6 +143,11 @@ export function validateActionTimeline(
     }
     if (hasValidEventTime) previousEventTime = event.at
 
+    if (event.stellarSwirlReaction) {
+      validateStellarSwirlReactionEvent(characterId, action, event, issues)
+      continue
+    }
+
     if (!declaredDamagePartIds.has(event.damagePartId)) {
       issues.push({
         actionId: action.id,
@@ -167,6 +172,50 @@ export function validateActionTimeline(
       message: `Declared damage part ${damagePartId} for action ${action.id} is not mapped by its timeline`
     })
   }
+}
+
+function validateStellarSwirlReactionEvent(
+  characterId: string,
+  action: CombatActionMetadata,
+  event: Extract<CombatDamageEventTemplate, { readonly stellarSwirlReaction: unknown }>,
+  issues: CombatRegistryIntegrityIssue[]
+): void {
+  const reaction = event.stellarSwirlReaction
+  const isValid =
+    (reaction.event === "trigger" && reaction.vortexLevel === undefined) ||
+    (reaction.event === "vortex" && (reaction.vortexLevel === 1 || reaction.vortexLevel === 2))
+  if (isValid) return
+  issues.push({
+    actionId: action.id,
+    characterId,
+    code: "invalid-stellar-swirl-reaction-event",
+    damageEventId: event.id,
+    message:
+      `Actual Stellar-Swirl event ${event.id} for action ${action.id} must be a trigger without a Vortex level ` +
+      "or a level-one/level-two Vortex"
+  })
+}
+
+function validateDamageEventSourceConstellation(
+  characterId: string,
+  action: CombatActionMetadata,
+  event: CombatDamageEventTemplate,
+  issues: CombatRegistryIntegrityIssue[]
+): void {
+  const minimum = event.minimumSourceConstellation
+  const maximum = event.maximumSourceConstellation
+  const hasValidMinimum = minimum === undefined || (Number.isInteger(minimum) && minimum >= 1 && minimum <= 6)
+  const hasValidMaximum = maximum === undefined || (Number.isInteger(maximum) && maximum >= 0 && maximum <= 5)
+  const hasReachableRange = minimum === undefined || maximum === undefined || minimum <= maximum
+  if (hasValidMinimum && hasValidMaximum && hasReachableRange) return
+  issues.push({
+    actionId: action.id,
+    characterId,
+    code: "invalid-damage-event-source-constellation",
+    damageEventId: event.id,
+    message:
+      `Damage event ${event.id} for action ${action.id} must declare a reachable constellation range within zero through six`
+  })
 }
 
 function validateDamageEventScenarioParameters(

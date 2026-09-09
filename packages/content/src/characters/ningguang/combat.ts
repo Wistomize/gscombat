@@ -70,7 +70,10 @@ export const ningguangCombatCoverage: CharacterCombatCoverage = {
           id: "star-jade-count",
           label: "当前星璇数量",
           maximumValue: 3,
-          minimumValue: 0
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 7, maximumValue: 7, minimumSourceConstellation: 6 }
+          ]
         }
       ],
       status: "verified",
@@ -245,7 +248,7 @@ export const ningguangCombatCoverage: CharacterCombatCoverage = {
       characterId: "Ningguang",
       id: "ningguang.normal.charged_attack.with_star_jades",
       kind: "damage",
-      label: "普通攻击·千金掷 / 重击与当前星璇",
+      label: "普通攻击·千金掷 / 重击与当前星璇（C6施放天权崩玉后默认7枚）",
       sourceActionId: "ningguang.normal.charged_attack.with_star_jades",
       status: "verified",
       target: "enemy"
@@ -275,7 +278,7 @@ export const ningguangCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected C0 core metric reuses one charged attack: its Geo base hit plus the selected zero to three current Star Jades (default three), sourced from the pinned 6.7 game-data snapshot's auto[1] and auto[2] coefficients. At talent levels one and ten, those coefficients are 1.7408 and 3.13344 for the charged hit, then 0.496 and 0.8928 for each Star Jade. It declares no target aura, elemental application, or reaction. At Ascension 4 or above, the conventional post-Jade-Screen state adds 12% Geo Damage Bonus to both selected self-damage metrics. The three-Jade limit is the C0 Normal Attack limit; normal attacks needed to generate Jades, the A1 stamina waiver, C6's seven post-burst Jades, projectile targeting or travel, timing, and external effects remain unmodeled. Starshatter separately resolves exactly six gems without Jade Screen or twelve with it. Projectile blocking and other state changes remain unmodeled.",
+    "The selected core metric reuses one charged attack: its Geo base hit plus the selected current Star Jades, sourced from the pinned 6.7 game-data snapshot's auto[1] and auto[2] coefficients. At talent levels one and ten, those coefficients are 1.7408 and 3.13344 for the charged hit, then 0.496 and 0.8928 for each Star Jade. C0 permits zero through three Jades; C6 changes the same current-state range to zero through seven and defaults to its seven Jades immediately after Starshatter. It declares no target aura, elemental application, or reaction. At Ascension 4 or above, the conventional post-Jade-Screen state adds 12% Geo Damage Bonus to both selected self-damage metrics. Normal attacks needed to generate Jades, the A1 stamina waiver, projectile targeting or travel, timing, and external effects remain unmodeled. Starshatter separately resolves exactly six gems without Jade Screen or twelve with it. Projectile blocking and other state changes remain unmodeled.",
   label: ningguangDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

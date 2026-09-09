@@ -107,8 +107,46 @@ export const wandererCombatCoverage: CharacterCombatCoverage = {
           talentSlot: "skill"
         }
       ],
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-kuugo-fushoudan-additional-instance",
+          label: "C6 空居·终期：风行状态普攻命中后的追加风弹",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
       status: "verified",
-      talentSlot: "normal"
+      talentSlot: "normal",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            damagePartId: "windfavored-normal-attack-first-hit",
+            id: "windfavored-normal-attack-first-hit",
+            snapshot: "hit"
+          },
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-kuugo-fushoudan-additional-instance",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 0.4, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "windfavored-normal-attack-first-hit",
+            id: "c6-kuugo-fushoudan-additional-instance",
+            snapshot: "hit"
+          }
+        ],
+        duration: 1
+      }
     }
   ],
   characterId: "Wanderer",
@@ -118,14 +156,14 @@ export const wandererCombatCoverage: CharacterCombatCoverage = {
       characterId: "Wanderer",
       id: "wanderer.skill.hanega_song_of_the_wind.windfavored.normal.first_hit",
       kind: "damage",
-      label: "羽画·风姿华歌 / 风行状态普攻一段（C0，无反应）",
+      label: "羽画·风姿华歌 / 风行状态普攻一段（无反应；C6自动追加风弹）",
       sourceActionId: "wanderer.skill.hanega_song_of_the_wind.windfavored.normal.first_hit",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One first normal-attack hit and one Hanega: Song of the Wind initial AoE remain verified raw C0 attack-scaling Anemo hits. The selected metric is one Normal Attack first hit during Windfavored: auto[0] times skill[1] times Attack, where auto[0] is 68.714% at Normal Talent Level 1 and 135.83% at Level 10, while skill[1] is the Windfavored Normal Attack multiplier of 132.9825% at Skill Level 1 and 153.72% at Level 10. It does not preset a target aura or reaction. Kuugo attacks, Kuugoryoku point consumption, absorption-related passives, external infusion, reactions, timing, constellations, external effects, and other character states remain unmodeled.",
+    "One first normal-attack hit and one Hanega: Song of the Wind initial AoE remain verified raw C0 attack-scaling Anemo hits. The selected metric is one Normal Attack first hit during Windfavored: auto[0] times skill[1] times Attack, where auto[0] is 68.714% at Normal Talent Level 1 and 135.83% at Level 10, while skill[1] is the Windfavored Normal Attack multiplier of 132.9825% at Skill Level 1 and 153.72% at Level 10. C6 automatically adds one Kuugo: Fushoudan instance at 40% of that same attack's original damage. It does not preset a target aura or reaction. Kuugoryoku point consumption, absorption-related passives, external infusion, reactions, timing, external effects, and other character states remain unmodeled.",
   label: wandererDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

@@ -134,6 +134,121 @@ export const mualaniCombatCoverage: CharacterCombatCoverage = {
         ],
         duration: 1
       }
+    },
+    {
+      characterId: "Mualani",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "sharkys-bite-base-damage",
+          id: "c6-c1-sharkys-surging-bite",
+          snapshotChecks: [
+            { expectedCoefficient: 0.0868, talentLevel: 1 },
+            { expectedCoefficient: 0.15624, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: mualaniDefinition.element,
+      evaluator: "declared_direct",
+      id: "mualani.constellation.6.spirit_of_the_springs.c1_sharkys_surging_bite.maximum_reachable",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "sharkys-bite-base-damage",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "skill"
+        },
+        {
+          groupId: "skill",
+          id: "wave-momentum-damage-bonus",
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "skill"
+        },
+        {
+          groupId: "skill",
+          id: "sharkys-surging-bite-damage-bonus",
+          parameterIndex: 2,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "hp",
+      scenarioParameters: [
+        {
+          allowedValues: [3],
+          defaultValue: 3,
+          id: "wave-momentum-stack-count",
+          label: "浪势层数（本指标固定满层）",
+          maximumValue: 3,
+          minimumValue: 3
+        },
+        {
+          allowedValues: [0, 3],
+          defaultValue: 0,
+          id: "c6-c1-sharkys-surging-bite-count",
+          label: "C6 首次鲨鲨撕咬生命值加算触发次数（每3秒一次，最多3次）",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 3, maximumValue: 3, minimumSourceConstellation: 6, minimumValue: 3 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "normal",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-c1-sharkys-surging-bite-count",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 5, parameterValue: 3 }
+              ]
+            },
+            damagePartId: "c6-c1-sharkys-surging-bite",
+            elementalApplication: { icd: { kind: "none" } },
+            id: "c6-c1-sharkys-surging-bite-one",
+            snapshot: "hit"
+          },
+          {
+            at: 3,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-c1-sharkys-surging-bite-count",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 5, parameterValue: 3 }
+              ]
+            },
+            damagePartId: "c6-c1-sharkys-surging-bite",
+            elementalApplication: { icd: { kind: "none" } },
+            id: "c6-c1-sharkys-surging-bite-two",
+            snapshot: "hit"
+          },
+          {
+            at: 6,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-c1-sharkys-surging-bite-count",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 5, parameterValue: 3 }
+              ]
+            },
+            damagePartId: "c6-c1-sharkys-surging-bite",
+            elementalApplication: { icd: { kind: "none" } },
+            id: "c6-c1-sharkys-surging-bite-three",
+            snapshot: "hit"
+          }
+        ],
+        duration: 7
+      }
     }
   ],
   actionEffects: [
@@ -206,6 +321,22 @@ export const mualaniCombatCoverage: CharacterCombatCoverage = {
         kind: "matched_action_additive_damage_term",
         scalingStat: "hp"
       }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "mualani.constellation.6.spirit_of_the_springs.c1_sharkys_surging_bite.hp_additive_damage",
+      label: "夏日的气息 · C6 夜魂加持期间每3秒的鲨鲨撕咬（共3次，生命值上限66%同一命中加算）",
+      source: { characterId: "Mualani", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: ["mualani.constellation.6.spirit_of_the_springs.c1_sharkys_surging_bite.maximum_reachable"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 0.66 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "hp"
+      }
     }
   ],
   characterId: "Mualani",
@@ -221,6 +352,17 @@ export const mualaniCombatCoverage: CharacterCombatCoverage = {
       target: "enemy"
     },
     {
+      actionId: "mualani.constellation.6.spirit_of_the_springs.c1_sharkys_surging_bite.maximum_reachable",
+      characterId: "Mualani",
+      id: "mualani.constellation.6.spirit_of_the_springs.c1_sharkys_surging_bite.maximum_reachable",
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "夏日的气息 / C6 三次满层鲨鲨撕咬（C1生命值加算自动生效）",
+      sourceActionId: "mualani.constellation.6.spirit_of_the_springs.c1_sharkys_surging_bite.maximum_reachable",
+      status: "verified",
+      target: "enemy"
+    },
+    {
       actionId: "mualani.burst.boomsharka_laka.tracking_missile",
       characterId: "Mualani",
       id: "mualani.burst.boomsharka_laka.tracking_missile",
@@ -232,7 +374,7 @@ export const mualaniCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One full three-stack Wave Momentum Sharky's Surging Bite is verified as a single-target Nightsoul-aligned Hydro normal-attack hit that scales from max HP. Its hit event has no ICD and resolves as forward Vaporize only with an explicit Pyro aura. C1 adds Max HP × 66% to the first selected Bite after entering Nightsoul's Blessing. Boomsharka-laka's single tracking missile is also a selected HP-scaling Hydro metric; Natlan's Greatest Guide automatically adds 15%/30%/45% Max HP according to the maximum reachable Nightsoul Burst overlap in the configured party. Target-count reduction, Shark Missiles, Puffer recovery, other constellations, and rotation timing remain unmodeled.",
+    "One full three-stack Wave Momentum Sharky's Surging Bite is verified as a single-target Nightsoul-aligned Hydro normal-attack hit that scales from max HP. Its hit event has no ICD and resolves as forward Vaporize only with an explicit Pyro aura. C1 adds Max HP × 66% to the first selected Bite after entering Nightsoul's Blessing. At C6, that same C1 addend is no longer limited to one trigger: a separate maximum-reachable metric exposes three full-Wave-Momentum Bites at 0, 3, and 6 seconds. Every Bite uses five times the base Sharky's Bite coefficient (78.12% Max HP at effective Skill level 10) and then adds the C1/C6 66% Max HP term to the same hit. Boomsharka-laka's single tracking missile is also a selected HP-scaling Hydro metric; Natlan's Greatest Guide automatically adds 15%/30%/45% Max HP according to the maximum reachable Nightsoul Burst overlap in the configured party. Target-count reduction, Shark Missiles, Puffer recovery, and rotation timing remain unmodeled.",
   label: mualaniDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

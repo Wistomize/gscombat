@@ -185,6 +185,14 @@ export const pruneCombatCoverage: CharacterCombatCoverage = {
         },
         offset: -2000
       }
+    },
+    {
+      activation: "active",
+      id: "prune.constellation.6.story_ending.resonant_ringing.reaction_triggered.flat_attack",
+      label: "故事结尾在这儿，念给伙伴听完 · C6 振铃鼓舞角色触发反应后（自身与附近当前场上其他受振铃鼓舞角色攻击力+350，5秒）",
+      source: { characterId: "Prune", kind: "character", minimumSourceConstellation: 6 },
+      target: "flatAttack",
+      value: { kind: "fixed", value: 350 }
     }
   ],
   characterId: "Prune",

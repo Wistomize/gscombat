@@ -1,5 +1,5 @@
 import { raidenNationalBuiltinBuild, raidenNationalBuiltinScenario } from "@gscombat/content"
-import type { CharacterBuild } from "@gscombat/contracts"
+import type { CharacterBuild, ExternalBuff } from "@gscombat/contracts"
 import { afterAll, describe, expect, it } from "vitest"
 
 import { buildApp } from "../../src/app.js"
@@ -18,7 +18,12 @@ interface SpecialReactionEvaluation {
   readonly result: {
     readonly expectedDamage: number
     readonly trace: readonly {
-      readonly formula: { readonly kind: string }
+      readonly formula: {
+        readonly critDamage?: number
+        readonly critRate?: number
+        readonly kind: string
+        readonly multiplier?: number
+      }
       readonly stage: string
     }[]
   }
@@ -58,6 +63,15 @@ interface SpecialReactionEvaluation {
   }
 }
 
+interface SpecialReactionAnalysis {
+  readonly analysis: {
+    readonly marginalSubstats: readonly { readonly gainRatio: number; readonly stat: string }[]
+    readonly progressionGains: readonly { readonly gainRatio: number; readonly id: string }[]
+    readonly weapons: readonly { readonly expectedDamage: number; readonly weaponId: string }[]
+  }
+  readonly evaluation: SpecialReactionEvaluation
+}
+
 function createBuild(
   characterId: string,
   weaponId: CharacterBuild["weapon"]["weaponId"],
@@ -89,12 +103,23 @@ function withTriplePercentMainStats(
   }
 }
 
-async function evaluate(
+function withTripleElementalMasteryMainStats(build: CharacterBuild): CharacterBuild {
+  return {
+    ...build,
+    artifacts: build.artifacts.map((artifact) => {
+      if (artifact.slot === "flower" || artifact.slot === "plume") return artifact
+      return { ...artifact, mainStat: { stat: "elemental_mastery", value: 187 } }
+    })
+  }
+}
+
+async function analyze(
   primary: CharacterBuild,
   teammates: readonly CharacterBuild[],
   targetActionId: string,
-  actionParameters: Readonly<Record<string, number>> = {}
-): Promise<SpecialReactionEvaluation> {
+  actionParameters: Readonly<Record<string, number>> = {},
+  externalBuffs: readonly ExternalBuff[] = []
+): Promise<SpecialReactionAnalysis> {
   const response = await app.inject({
     method: "POST",
     payload: {
@@ -105,7 +130,7 @@ async function evaluate(
         enemyCount: 1,
         equipmentEffectMode: "maximum_reachable"
       },
-      externalBuffs: [],
+      externalBuffs,
       primary,
       targetActionId,
       teammates
@@ -114,7 +139,17 @@ async function evaluate(
   })
 
   expect(response.statusCode, response.body).toBe(200)
-  return response.json().evaluation as SpecialReactionEvaluation
+  return response.json() as SpecialReactionAnalysis
+}
+
+async function evaluate(
+  primary: CharacterBuild,
+  teammates: readonly CharacterBuild[],
+  targetActionId: string,
+  actionParameters: Readonly<Record<string, number>> = {},
+  externalBuffs: readonly ExternalBuff[] = []
+): Promise<SpecialReactionEvaluation> {
+  return (await analyze(primary, teammates, targetActionId, actionParameters, externalBuffs)).evaluation
 }
 
 function findEffect(evaluation: SpecialReactionEvaluation, effectId: string) {
@@ -589,4 +624,238 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(aggravate.result.expectedDamage).toBeGreaterThan(direct.result.expectedDamage)
     expect(aggravate.result.trace.some((entry) => entry.formula.kind === "additive_reaction")).toBe(true)
   }, 20_000)
+
+  it("publishes Yae Miko's 200% ATK Purification Proclamation Stellar-Superconduct metric", async () => {
+    const actionId = "yae_miko.locked_passive.purification_proclamation.radiance.stellar_superconduct"
+    const actionParameters = { "stored-elemental-applications": 12 }
+    const [constellationFive, constellationSix, catalogResponse] = await Promise.all([
+      evaluate(createBuild("YaeMiko", "TheWidsith", "test.yae.c5.stellar", 5), [], actionId, actionParameters),
+      evaluate(createBuild("YaeMiko", "TheWidsith", "test.yae.c6.stellar", 6), [], actionId, actionParameters),
+      app.inject({ method: "GET", url: "/v1/catalog" })
+    ])
+
+    expect(catalogResponse.statusCode).toBe(200)
+    const catalogYae = (catalogResponse.json().characters as readonly {
+      readonly characterId: string
+      readonly primaryActionIds: readonly string[]
+    }[]).find((character) => character.characterId === "YaeMiko")
+    expect(catalogYae?.primaryActionIds).toContain(actionId)
+
+    const baseDamage = constellationFive.rotation.events[0]?.trace.find((entry) => entry.stage === "base_damage")
+    expect(baseDamage?.formula.terms).toEqual([
+      expect.objectContaining({ coefficient: 2, stat: "attack", value: constellationFive.stats.effectiveAttack })
+    ])
+    expect(findEffect(constellationFive, "yae_miko.constellation.6.self.stellar_superconduct.crit_damage"))
+      .toBeUndefined()
+    expect(findEffect(constellationSix, "yae_miko.constellation.6.self.stellar_superconduct.crit_damage")?.value)
+      .toBe(2)
+    expect(constellationSix.stats.critDamage).toBeCloseTo(constellationFive.stats.critDamage + 2)
+    expect(constellationSix.result.expectedDamage).toBeGreaterThan(constellationFive.result.expectedDamage)
+  }, 20_000)
+
+  it("evaluates Mizuki's Radiance Stellar-Swirl linkage as one constellation-aware event sum", async () => {
+    const actionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.radiance_stellar_swirl_combo"
+    const teammates = [
+      createBuild("Sucrose", "FavoniusCodex", "test.mizuki.stellar.sucrose"),
+      createBuild("Fischl", "FavoniusWarbow", "test.mizuki.stellar.fischl"),
+      createBuild("Bennett", "FavoniusSword", "test.mizuki.stellar.bennett")
+    ]
+    const [constellationZero, constellationOne, constellationSix, catalogResponse] = await Promise.all([
+      evaluate(
+        withTripleElementalMasteryMainStats(
+          createBuild("YumemizukiMizuki", "FavoniusCodex", "test.mizuki.stellar.c0", 0)
+        ),
+        teammates,
+        actionId
+      ),
+      evaluate(
+        withTripleElementalMasteryMainStats(
+          createBuild("YumemizukiMizuki", "FavoniusCodex", "test.mizuki.stellar.c1", 1)
+        ),
+        teammates,
+        actionId
+      ),
+      evaluate(
+        withTripleElementalMasteryMainStats(
+          createBuild("YumemizukiMizuki", "FavoniusCodex", "test.mizuki.stellar.c6", 6)
+        ),
+        teammates,
+        actionId
+      ),
+      app.inject({ method: "GET", url: "/v1/catalog" })
+    ])
+
+    expect(catalogResponse.statusCode).toBe(200)
+    const catalogMizuki = (catalogResponse.json().characters as readonly {
+      readonly characterId: string
+      readonly primaryActions: readonly { readonly id: string }[]
+    }[]).find((character) => character.characterId === "YumemizukiMizuki")
+    expect(catalogMizuki?.primaryActions.filter((action) => action.id.includes("stellar_swirl"))).toEqual([
+      expect.objectContaining({ id: actionId })
+    ])
+
+    const eventIds = (evaluation: SpecialReactionEvaluation) =>
+      evaluation.rotation.events.map((event) => event.id.replace(`${actionId}.`, ""))
+    expect(eventIds(constellationZero)).toEqual([
+      "radiance-stellar-swirl-trigger",
+      "revelation-radiance-stellar-swirl-damage"
+    ])
+    expect(eventIds(constellationOne)).toEqual([
+      "radiance-stellar-swirl-trigger",
+      "revelation-radiance-stellar-swirl-damage",
+      "c1-awaiting-stellar-swirl-damage"
+    ])
+    expect(eventIds(constellationSix)).toEqual(eventIds(constellationOne))
+
+    const a4ElementalMasteryId = "yumemizuki_mizuki.passive.daydream_night_dream.phec_hit.elemental_mastery"
+    const partyElementalMasteryId =
+      "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery"
+    const stellarSwirlDamageBonusId =
+      "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus"
+    const c2ResistanceReductionId =
+      "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction"
+    const partyElementalMastery = findEffect(constellationZero, partyElementalMasteryId)?.value
+    expect(findEffect(constellationZero, a4ElementalMasteryId)?.value).toBe(100)
+    expect(partyElementalMastery).toBeGreaterThan(0)
+    expect(partyElementalMastery).toBeCloseTo((constellationZero.stats.elementalMastery - (partyElementalMastery ?? 0)) * 0.1)
+    expect(findEffect(constellationZero, stellarSwirlDamageBonusId)?.value).toBeGreaterThan(0)
+    expect(findEffect(constellationOne, c2ResistanceReductionId)).toBeUndefined()
+    expect(findEffect(constellationSix, c2ResistanceReductionId)?.value).toBe(0.2)
+
+    const trigger = constellationOne.rotation.events[0]
+    const revelation = constellationOne.rotation.events[1]
+    const awaiting = constellationOne.rotation.events[2]
+    if (!trigger || !revelation || !awaiting) throw new Error("Expected Mizuki's three C1 Stellar-Swirl events")
+    const aggregation = trigger.trace.find(
+      (entry) => (entry as { readonly kind?: string }).kind === "stellar_swirl_participant_aggregation"
+    ) as unknown as
+      | {
+          readonly participants: readonly {
+            readonly participantId: string
+            readonly trace: readonly {
+              readonly formula: { readonly flatDamageAddition?: number }
+              readonly stage: string
+            }[]
+          }[]
+          readonly reactionCoefficient: number
+        }
+      | undefined
+    const mizukiParticipant = aggregation?.participants.find(
+      (participant) => participant.participantId === "test.mizuki.stellar.c1"
+    )
+    const c1FlatDamage = mizukiParticipant?.trace.find((entry) => entry.stage === "flat_damage_addition")
+    expect(aggregation?.reactionCoefficient).toBeCloseTo(0.75)
+    expect(aggregation?.participants).toHaveLength(4)
+    expect(c1FlatDamage?.formula.flatDamageAddition).toBeCloseTo(constellationOne.stats.elementalMastery * 5.5)
+    expect(revelation.trace.find((entry) => entry.stage === "base_damage")?.formula.terms?.[0]?.coefficient).toBe(10)
+    expect(awaiting.trace.find((entry) => entry.stage === "base_damage")?.formula.terms?.[0]?.coefficient).toBe(4)
+    expect(revelation.trace.find((entry) => entry.stage === "flat_damage_addition")?.formula.flatDamageAddition).toBe(0)
+    expect(awaiting.trace.find((entry) => entry.stage === "flat_damage_addition")?.formula.flatDamageAddition).toBe(0)
+    expect(constellationOne.rotation.dpr).toBeCloseTo(
+      constellationOne.rotation.events.reduce((total, event) => total + event.expectedDamage, 0)
+    )
+    expect(constellationZero.rotation.dpr).toBeCloseTo(
+      constellationZero.rotation.events.reduce((total, event) => total + event.expectedDamage, 0)
+    )
+    expect(findEffect(constellationZero, "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition"))
+      .toBeUndefined()
+    expect(findEffect(constellationOne, "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition")?.value)
+      .toBeCloseTo(constellationOne.stats.elementalMastery * 5.5)
+    expect(constellationOne.result.expectedDamage).toBeGreaterThan(constellationZero.result.expectedDamage)
+  }, 60_000)
+
+  it("applies every damage-relevant part of Yumemizuki Mizuki's C6 without leaking reaction crit", async () => {
+    const mizukiC5 = withTripleElementalMasteryMainStats(
+      createBuild("YumemizukiMizuki", "FavoniusCodex", "test.mizuki.c5", 5)
+    )
+    const mizukiC6 = { ...mizukiC5, buildId: "test.mizuki.c6", constellation: 6 }
+    const mizukiActionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.initial_hit"
+    const odetteActionId = "odette.skill.adagio_phantom_night_dancers.solo_dance_double.plume.stellar_swirl"
+    const mizukiSwirlActionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_pyro_swirl"
+    const sucroseSwirlActionId = "sucrose.skill.astable_anemohypostasis_creation_6308.single_pyro_swirl"
+    const hyperbloomActionId = "kuki_shinobu.skill.sanctifying_ring.grass_ring.single_hyperbloom"
+    const [
+      selfC5,
+      selfC6,
+      partyC5,
+      partyC6,
+      ownSwirlC5,
+      ownSwirlC6Analysis,
+      ownSwirlC6WithPanelCritBuffs,
+      teammateSwirlC5,
+      teammateSwirlC6,
+      hyperbloomC5,
+      hyperbloomC6
+    ] = await Promise.all([
+      evaluate(mizukiC5, [], mizukiActionId),
+      evaluate(mizukiC6, [], mizukiActionId),
+      evaluate(createBuild("Odette", "FavoniusSword", "test.odette.mizuki-c5"), [mizukiC5], odetteActionId),
+      evaluate(createBuild("Odette", "FavoniusSword", "test.odette.mizuki-c6"), [mizukiC6], odetteActionId),
+      evaluate(mizukiC5, [], mizukiSwirlActionId),
+      analyze(mizukiC6, [], mizukiSwirlActionId),
+      evaluate(mizukiC6, [], mizukiSwirlActionId, {}, [
+        { label: "测试面板暴击率", sourceId: "test.panel-crit-rate", stat: "crit_rate", value: 0.5 },
+        { label: "测试面板暴击伤害", sourceId: "test.panel-crit-damage", stat: "crit_damage", value: 1 }
+      ]),
+      evaluate(createBuild("Sucrose", "FavoniusCodex", "test.sucrose.mizuki-c5"), [mizukiC5], sucroseSwirlActionId),
+      evaluate(createBuild("Sucrose", "FavoniusCodex", "test.sucrose.mizuki-c6"), [mizukiC6], sucroseSwirlActionId),
+      evaluate(createBuild("KukiShinobu", "FavoniusSword", "test.kuki.mizuki-c5"), [mizukiC5], hyperbloomActionId),
+      evaluate(createBuild("KukiShinobu", "FavoniusSword", "test.kuki.mizuki-c6"), [mizukiC6], hyperbloomActionId)
+    ])
+    const ownSwirlC6 = ownSwirlC6Analysis.evaluation
+
+    const expectedCritRate = Math.min(Math.max(selfC6.stats.elementalMastery - 500, 0) * 0.0004, 0.2)
+    const expectedCritDamage = Math.min(Math.max(selfC6.stats.elementalMastery - 500, 0) * 0.0016, 0.8)
+    const selfCritRateId = "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_rate"
+    const selfCritDamageId = "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_damage"
+    const partyCritRateId = "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate"
+    const partyCritDamageId = "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
+    const swirlCritRateId = "yumemizuki_mizuki.constellation.6.dreamdrifter.party_swirl.crit_rate"
+    const swirlCritDamageId = "yumemizuki_mizuki.constellation.6.dreamdrifter.party_swirl.crit_damage"
+
+    expect(findEffect(selfC5, selfCritRateId)).toBeUndefined()
+    expect(findEffect(selfC5, selfCritDamageId)).toBeUndefined()
+    expect(findEffect(selfC6, selfCritRateId)?.value).toBeCloseTo(expectedCritRate)
+    expect(findEffect(selfC6, selfCritDamageId)?.value).toBeCloseTo(expectedCritDamage)
+    expect(selfC6.stats.critRate).toBeCloseTo(selfC5.stats.critRate + expectedCritRate)
+    expect(selfC6.stats.critDamage).toBeCloseTo(selfC5.stats.critDamage + expectedCritDamage)
+    expect(findEffect(partyC5, partyCritRateId)).toBeUndefined()
+    expect(findEffect(partyC5, partyCritDamageId)).toBeUndefined()
+    expect(findEffect(partyC6, partyCritRateId)?.value).toBeCloseTo(0.1)
+    expect(findEffect(partyC6, partyCritDamageId)?.value).toBeCloseTo(0.2)
+    expect(partyC6.stats.critRate).toBeCloseTo(partyC5.stats.critRate + 0.1)
+    expect(partyC6.stats.critDamage).toBeCloseTo(partyC5.stats.critDamage + 0.2)
+    expect(partyC6.result.expectedDamage).toBeGreaterThan(partyC5.result.expectedDamage)
+    expect(findEffect(ownSwirlC5, swirlCritRateId)).toBeUndefined()
+    expect(findEffect(ownSwirlC5, swirlCritDamageId)).toBeUndefined()
+    expect(findEffect(ownSwirlC6, swirlCritRateId)?.value).toBe(0.3)
+    expect(findEffect(ownSwirlC6, swirlCritDamageId)?.value).toBe(1)
+    expect(ownSwirlC6.result.expectedDamage / ownSwirlC5.result.expectedDamage).toBeCloseTo(1.3)
+    expect(ownSwirlC6WithPanelCritBuffs.result.expectedDamage).toBeCloseTo(ownSwirlC6.result.expectedDamage)
+    expect(findEffect(teammateSwirlC5, swirlCritRateId)).toBeUndefined()
+    expect(findEffect(teammateSwirlC5, swirlCritDamageId)).toBeUndefined()
+    expect(findEffect(teammateSwirlC6, swirlCritRateId)?.value).toBe(0.3)
+    expect(findEffect(teammateSwirlC6, swirlCritDamageId)?.value).toBe(1)
+    expect(teammateSwirlC6.result.expectedDamage / teammateSwirlC5.result.expectedDamage).toBeCloseTo(1.3)
+    expect(findEffect(hyperbloomC6, swirlCritRateId)).toBeUndefined()
+    expect(findEffect(hyperbloomC6, swirlCritDamageId)).toBeUndefined()
+    expect(hyperbloomC6.result.expectedDamage).toBeCloseTo(hyperbloomC5.result.expectedDamage)
+    expect(ownSwirlC6.result.trace.find((entry) => entry.stage === "crit")?.formula).toMatchObject({
+      critDamage: 1,
+      critRate: 0.3,
+      kind: "expected_crit",
+      multiplier: 1.3
+    })
+    expect(
+      ownSwirlC6Analysis.analysis.marginalSubstats.find((result) => result.stat === "crit_rate")?.gainRatio
+    ).toBe(0)
+    expect(
+      ownSwirlC6Analysis.analysis.marginalSubstats.find((result) => result.stat === "crit_damage")?.gainRatio
+    ).toBe(0)
+    expect(
+      ownSwirlC6Analysis.analysis.marginalSubstats.find((result) => result.stat === "elemental_mastery")?.gainRatio
+    ).toBeGreaterThan(0)
+    expect(ownSwirlC6Analysis.analysis.progressionGains.length).toBeGreaterThan(0)
+    expect(ownSwirlC6Analysis.analysis.weapons.length).toBeGreaterThan(0)
+  }, 120_000)
 })

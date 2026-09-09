@@ -104,6 +104,27 @@ export const yaoyaoCombatCoverage: CharacterCombatCoverage = {
       target: "damageBonus",
       targetFilter: { elements: ["dendro"] },
       value: { kind: "fixed", value: 0.15 }
+    },
+    {
+      activation: "active",
+      id: "yaoyao.constellation.6.bountiful.white_jade_radish.mega_radish.additional_damage",
+      label: "慈惠仁心 · C6 本次白玉萝卜为超厉害萝卜（75%攻击力草元素爆炸伤害）",
+      source: { characterId: "Yaoyao", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: {
+        actionIds: ["yaoyao.skill.raphanus_sky_cluster.white_jade_radish.explosion"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 0.75 },
+        element: yaoyaoDefinition.element,
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack",
+        talentSlot: "skill"
+      }
     }
   ],
   characterId: "Yaoyao",
@@ -145,10 +166,26 @@ export const yaoyaoCombatCoverage: CharacterCombatCoverage = {
       sourceActionId: "yaoyao.skill.raphanus_sky_cluster.white_jade_radish.explosion",
       status: "verified",
       target: "friendly_recipient"
+    },
+    {
+      characterId: "Yaoyao",
+      id: "yaoyao.constellation.6.bountiful.mega_radish.active_character.healing",
+      includeHealingBonus: true,
+      kind: "healing",
+      label: "慈惠仁心 / C6 超厉害萝卜当前场上角色治疗量",
+      minimumSourceConstellation: 6,
+      ratio: 0.075,
+      recipientRequirements: [
+        { kind: "recipient_in_source_area", label: "受治疗角色为超厉害萝卜炸裂范围内的当前场上角色" }
+      ],
+      scalingStat: "hp",
+      sourceActionId: "yaoyao.skill.raphanus_sky_cluster.white_jade_radish.explosion",
+      status: "verified",
+      target: "friendly_recipient"
     }
   ],
   detail:
-    "One first normal-attack hit, one White Jade Radish explosion, and Moonjade Descent's initial AoE are verified as baseline C0 attack-scaling hits. The selected support metric is one Raphanus Sky Cluster Yuegui Throwing Mode White Jade Radish heal, calculated as max HP × skill[1] plus skill[2], then source and recipient healing modifiers, for a selected recipient within the explosion area; C3's +3 Skill levels are included. C1 can be selected as an explicit current-action snapshot after the user confirms the on-field recipient is inside a White Jade Radish explosion: that current character gains 15% Dendro damage bonus. It does not infer the explosion, recipient position, eight-second duration, timing, or a rotation. Yuegui's nearby-HP-at-or-below-70% branch only changes radish target selection and is not used as recipient eligibility. Starscatter's Adeptal Legacy movement throws, In Others' Shoes' separate 0.8% max-HP-per-second five-second healing, and C6's distinct Mega Radish 7.5% max-HP active-character heal are excluded. The burst uses raw burst[3] skill damage with attack scaling, but is retained only as a bottom-layer action rather than a selected support indicator. It excludes Adeptal Legacy, Yuegui, radishes, healing, Dendro resistance, movement speed, duration, exit cleanup, passives, other constellations, reactions, external infusions, character states, and multi-target count.",
+    "One first normal-attack hit, one White Jade Radish explosion, and Moonjade Descent's initial AoE are verified as baseline C0 attack-scaling hits. The selected support metric is one Raphanus Sky Cluster Yuegui Throwing Mode White Jade Radish heal, calculated as max HP × skill[1] plus skill[2], then source and recipient healing modifiers, for a selected recipient within the explosion area; C3's +3 Skill levels are included. C1 can be selected as an explicit current-action snapshot after the user confirms the on-field recipient is inside a White Jade Radish explosion: that current character gains 15% Dendro damage bonus. It does not infer the explosion, recipient position, eight-second duration, timing, or a rotation. At C6, the explicit current-throw snapshot adds the distinct 75% Attack Dendro Mega Radish damage event to a White Jade Radish explosion; it is unavailable below C6 and does not infer the prior two throws. A separate C6-only support metric calculates the same Mega Radish's active-character healing as 7.5% of Yaoyao's max HP before source and recipient healing modifiers. Yuegui's nearby-HP-at-or-below-70% branch only changes radish target selection and is not used as recipient eligibility. Starscatter's Adeptal Legacy movement throws and In Others' Shoes' separate 0.8% max-HP-per-second five-second healing remain excluded. The burst uses raw burst[3] skill damage with attack scaling, but is retained only as a bottom-layer action rather than a selected support indicator. It excludes Adeptal Legacy, Yuegui, radishes, healing, Dendro resistance, movement speed, duration, exit cleanup, passives, other constellations, reactions, external infusions, character states, and multi-target count.",
   label: yaoyaoDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

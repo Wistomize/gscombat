@@ -133,6 +133,14 @@ export const durinCombatCoverage: CharacterCombatCoverage = {
         recipientSourceRelation: "source"
       },
       value: { kind: "fixed", value: 0.3 }
+    },
+    {
+      activation: "active",
+      id: "durin.constellation.6.dual_birth.white_flame.enemy_defense_reduction",
+      label: "双重诞生 · C6 白化法或白焰之龙命中后目标防御力降低30%（6秒）",
+      source: { characterId: "Durin", kind: "character", minimumSourceConstellation: 6 },
+      target: "enemyDefenseReduction",
+      value: { kind: "fixed", value: 0.3 }
     }
   ],
   metrics: [
@@ -141,14 +149,14 @@ export const durinCombatCoverage: CharacterCombatCoverage = {
       characterId: "Durin",
       id: "durin.skill.binary_formula.purity_transformation",
       kind: "damage",
-      label: "二元式·聚分熔炼 / 转变·白化之是单次命中（C0，无反应）",
+      label: "二元式·聚分熔炼 / 转变·白化之是单次命中（无反应）",
       sourceActionId: "durin.skill.binary_formula.purity_transformation",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "The selected metric is one Binary Formula Purity transformation hit. Light Spirit Manifestation's White-Flame resistance branches and Dark-Decay Vaporize/Melt bonus are explicit form snapshots; Sublimation Hymn adds the documented 75% numerical increase when Hexerei: Secret Rite is active. Burst sequences, dragon periodic damage, A4 stacks, constellations, timing, and rotation state remain unmodeled.",
+    "The selected metric is one Binary Formula Purity transformation hit. Light Spirit Manifestation's White-Flame resistance branches and Dark-Decay Vaporize/Melt bonus are explicit form snapshots; Sublimation Hymn adds the documented 75% numerical increase when Hexerei: Secret Rite is active. C6's White-form 30% enemy Defense Reduction is an explicit post-hit snapshot that can benefit a following action. Its universal 30% Burst DEF ignore and Dark-form additional 40% Burst DEF ignore do not alter this selected Skill hit. Burst sequences, dragon periodic damage, A4 stacks, timing, and rotation state remain unmodeled.",
   label: durinDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

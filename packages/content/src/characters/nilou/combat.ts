@@ -125,6 +125,32 @@ export const nilouCombatCoverage: CharacterCombatCoverage = {
         },
         offset: -30000
       }
+    },
+    {
+      activation: "automatic",
+      id: "nilou.constellation.6.frostbreakers_melody.crit_rate",
+      label: "断霜的弦歌 · C6 每1000点生命值上限（暴击率提高0.6%，至多30%）",
+      source: { characterId: "Nilou", kind: "character", minimumSourceConstellation: 6 },
+      target: "critRate",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: {
+        kind: "final_hp",
+        maximumValue: { kind: "fixed", value: 0.3 },
+        multiplier: { kind: "fixed", value: 0.000006 }
+      }
+    },
+    {
+      activation: "automatic",
+      id: "nilou.constellation.6.frostbreakers_melody.crit_damage",
+      label: "断霜的弦歌 · C6 每1000点生命值上限（暴击伤害提高1.2%，至多60%）",
+      source: { characterId: "Nilou", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: {
+        kind: "final_hp",
+        maximumValue: { kind: "fixed", value: 0.6 },
+        multiplier: { kind: "fixed", value: 0.000012 }
+      }
     }
   ],
   characterId: "Nilou",
@@ -157,7 +183,7 @@ export const nilouCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "Dance of Abzendegi's first hit and Dance of Haftkarsvar's initial Pirouette entry hit remain verified lower-level max-health-scaling Hydro actions, but neither is selected as Nilou's role metric. The selected scalar is Dreamy Dance of Aeons' Bountiful Core damage increase: max(0, Nilou's Max HP - 30,000) × passive2[0] ÷ 1,000, capped at 4. The pinned 6.7 data fixes passive2[0] at 0.09, passive2[1] at 30,000, and passive2[2] at 4, so this is 9% Bountiful Core damage per 1,000 Max HP above 30,000, capped at 400%. The fixed threshold and cap are hand-entered because the scalar schema currently accepts numeric bounds while passive2 references preserve their upstream mapping. Court of Dancing Petals is an explicit usage condition for this metric: the party must contain at least one Hydro and one Dendro character with no other elements, and Nilou must have completed the required Dance of Haftkarsvar step to obtain Golden Chalice's Bounty. The result is a source-owned team scalar, not a calculation of a particular teammate's final damage; it applies only to Bloom damage from the resulting Bountiful Cores, never Hyperbloom or Burgeon. It excludes Bountiful Core trigger ownership, target count, core timing, the separate A1 Elemental Mastery effect, C1/C2/C4/C6, aura and reactions beyond the declared Bountiful Core condition, external buffs, and rotation behavior.",
+    "Dance of Abzendegi's first hit and Dance of Haftkarsvar's initial Pirouette entry hit remain verified lower-level max-health-scaling Hydro actions, but neither is selected as Nilou's role metric. The selected scalar is Dreamy Dance of Aeons' Bountiful Core damage increase: max(0, Nilou's Max HP - 30,000) × passive2[0] ÷ 1,000, capped at 4. The pinned 6.7 data fixes passive2[0] at 0.09, passive2[1] at 30,000, and passive2[2] at 4, so this is 9% Bountiful Core damage per 1,000 Max HP above 30,000, capped at 400%. The fixed threshold and cap are hand-entered because the scalar schema currently accepts numeric bounds while passive2 references preserve their upstream mapping. Court of Dancing Petals is an explicit usage condition for this metric: the party must contain at least one Hydro and one Dendro character with no other elements, and Nilou must have completed the required Dance of Haftkarsvar step to obtain Golden Chalice's Bounty. The result is a source-owned team scalar, not a calculation of a particular teammate's final damage; it applies only to Bloom damage from the resulting Bountiful Cores, never Hyperbloom or Burgeon. C6 automatically converts Nilou's final maximum HP into up to 30% Crit Rate and 60% Crit DMG for her own eligible damage actions; Bountiful Cores remain non-CRIT transformative events. It excludes Bountiful Core trigger ownership, target count, core timing, the separate A1 Elemental Mastery effect, C1/C2/C4, aura and reactions beyond the declared Bountiful Core condition, external buffs, and rotation behavior.",
   label: nilouDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

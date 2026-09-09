@@ -41,17 +41,24 @@ const CombatParameterReferenceSchema = Type.Union([
   })
 ])
 
-const CombatDamageScalingTermSchema = Type.Object({
+const CombatDamageScalingTermBaseSchema = {
+  coefficientMultiplierParameterId: Type.Optional(Type.String({ minLength: 1 })),
   coefficientMultiplierScenarioParameterId: Type.Optional(Type.String({ minLength: 1 })),
-  coefficientParameterId: Type.String({ minLength: 1 }),
+  coefficientMultiplierScenarioParameterScale: Type.Optional(Type.Number()),
   minimumSourceAscension: Type.Optional(Type.Integer({ minimum: 0, maximum: 6 })),
+  minimumSourceConstellation: Type.Optional(Type.Integer({ minimum: 1, maximum: 6 })),
   stat: Type.Union([
     Type.Literal("attack"),
     Type.Literal("defense"),
     Type.Literal("elementalMastery"),
     Type.Literal("hp")
   ])
-})
+} as const
+
+const CombatDamageScalingTermSchema = Type.Union([
+  Type.Object({ ...CombatDamageScalingTermBaseSchema, coefficientParameterId: Type.String({ minLength: 1 }) }),
+  Type.Object({ ...CombatDamageScalingTermBaseSchema, fixedCoefficient: Type.Number() })
+])
 
 const CombatDamagePartSchema = Type.Union([
   Type.Object({
@@ -124,24 +131,47 @@ const CombatEventScenarioParameterCoefficientMultiplierSchema = Type.Union([
   })
 ])
 
-const CombatDamageEventTemplateBaseSchema = {
+const CombatDamageEventTimingSchema = {
   at: Type.Number({ minimum: 0 }),
+  hitCount: Type.Optional(CombatEventHitCountSchema),
+  id: Type.String({ minLength: 1 }),
+  maximumSourceConstellation: Type.Optional(Type.Integer({ minimum: 0, maximum: 5 })),
+  minimumSourceConstellation: Type.Optional(Type.Integer({ minimum: 1, maximum: 6 }))
+}
+
+const CombatDamagePartEventPayloadSchema = Type.Object({
   coefficientMultiplier: Type.Optional(CombatEventScenarioParameterCoefficientMultiplierSchema),
   damagePartId: Type.String({ minLength: 1 }),
   elementalApplication: Type.Optional(RotationElementalApplicationSchema),
   elementOverrideTarget: Type.Optional(Type.Literal("normal_attack")),
-  hitCount: Type.Optional(CombatEventHitCountSchema),
-  id: Type.String({ minLength: 1 }),
   specialReaction: Type.Optional(CombatEventSpecialReactionConfigSchema)
-}
+})
+
+const CombatStellarSwirlReactionEventPayloadSchema = Type.Object({
+  stellarSwirlReaction: Type.Union([
+    Type.Object({ event: Type.Literal("trigger") }),
+    Type.Object({ event: Type.Literal("vortex"), vortexLevel: Type.Union([Type.Literal(1), Type.Literal(2)]) })
+  ])
+})
+
+const CombatDamageEventPayloadSchema = Type.Union([
+  CombatDamagePartEventPayloadSchema,
+  CombatStellarSwirlReactionEventPayloadSchema
+])
 
 const CombatDamageEventTemplateSchema = Type.Union([
-  Type.Object({ ...CombatDamageEventTemplateBaseSchema, snapshot: CombatEventSnapshotSchema }),
+  Type.Intersect([
+    Type.Object({ ...CombatDamageEventTimingSchema, snapshot: CombatEventSnapshotSchema }),
+    CombatDamageEventPayloadSchema
+  ]),
+  Type.Intersect([
   Type.Object({
-    ...CombatDamageEventTemplateBaseSchema,
+      ...CombatDamageEventTimingSchema,
     snapshot: Type.Literal("time"),
     snapshotAt: Type.Number({ minimum: 0 })
-  })
+    }),
+    CombatDamageEventPayloadSchema
+  ])
 ])
 
 const CombatActionTimelineSchema = Type.Object({
@@ -389,6 +419,7 @@ export const CombatMetricMetadataSchema = Type.Object({
     Type.Literal("stat_buff")
   ]),
   label: Type.String({ minLength: 1 }),
+  minimumSourceConstellation: Type.Optional(Type.Integer({ minimum: 1, maximum: 6 })),
   sourceActionId: Type.String({ minLength: 1 }),
   status: CombatCoverageStatusSchema,
   target: Type.Union([Type.Literal("enemy"), Type.Literal("friendly_recipient"), Type.Literal("self")])

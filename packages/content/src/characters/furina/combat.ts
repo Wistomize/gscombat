@@ -1,6 +1,78 @@
-import type { CharacterCombatCoverage } from "../../combat/types.js"
+import type { CharacterCombatCoverage, CombatActionMetadata } from "../../combat/types.js"
 
 import { furinaDefinition } from "./definition.js"
+
+const furinaC6NormalActionIds = {
+  ousia: "furina.constellation.6.center_of_attention.ousia.normal.first_hit",
+  pneuma: "furina.constellation.6.center_of_attention.pneuma.normal.first_hit"
+} as const
+
+function createCenterOfAttentionNormalAction(arkhe: keyof typeof furinaC6NormalActionIds): CombatActionMetadata {
+  return {
+    attackKind: "normal",
+    characterId: "Furina",
+    damageKind: "direct",
+    damageParts: [
+      {
+        coefficientParameterId: "normal-attack-first-hit-damage",
+        id: `center-of-attention-${arkhe}-normal-first-hit`,
+        snapshotChecks: [
+          { expectedCoefficient: 0.483862, talentLevel: 1 },
+          { expectedCoefficient: 0.956471, talentLevel: 10 }
+        ]
+      }
+    ],
+    element: furinaDefinition.element,
+    evaluator: "declared_direct",
+    id: furinaC6NormalActionIds[arkhe],
+    kind: "damage",
+    parameterReferences: [
+      {
+        groupId: "auto",
+        id: "normal-attack-first-hit-damage",
+        parameterIndex: 0,
+        source: "talent",
+        talentSlot: "normal"
+      }
+    ],
+    scalingStat: "attack",
+    scenarioParameters: [
+      {
+        allowedValues: [0, 1],
+        defaultValue: 0,
+        id: "c6-center-of-attention-ready",
+        label: "C6 万众瞩目：孤心沙龙施放后的前6次普攻/重击/下落攻击",
+        maximumValue: 0,
+        minimumValue: 0,
+        rangeBySourceConstellation: [
+          { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+        ]
+      }
+    ],
+    status: "verified",
+    talentSlot: "normal",
+    timeline: {
+      damageEvents: [
+        {
+          at: 0,
+          coefficientMultiplier: {
+            kind: "scenario_parameter_lookup",
+            parameterId: "c6-center-of-attention-ready",
+            values: [
+              { multiplier: 0, parameterValue: 0 },
+              { multiplier: 1, parameterValue: 1 }
+            ]
+          },
+          damagePartId: `center-of-attention-${arkhe}-normal-first-hit`,
+          hitCount: { kind: "scenario_parameter", parameterId: "c6-center-of-attention-ready" },
+          id: `center-of-attention-${arkhe}-normal-first-hit`,
+          snapshot: "hit"
+        }
+      ],
+      duration: 1
+    }
+  }
+}
 
 export const furinaCombatCoverage: CharacterCombatCoverage = {
   actions: [
@@ -162,9 +234,20 @@ export const furinaCombatCoverage: CharacterCombatCoverage = {
         ],
         duration: 1
       }
-    }
+    },
+    createCenterOfAttentionNormalAction("ousia"),
+    createCenterOfAttentionNormalAction("pneuma")
   ],
   actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "furina.constellation.2.overflow_fanfare.maximum_hp_percent",
+      label: "女人皆善变，仿若水中萍 · C2 超出上限400点气氛值（生命值上限提高140%）",
+      source: { characterId: "Furina", kind: "character", minimumSourceConstellation: 2 },
+      target: "hpPercent",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 1.4 }
+    },
     {
       activation: "automatic",
       id: "furina.burst.let-the-people-rejoice.maximum-fanfare.damage-bonus",
@@ -183,10 +266,61 @@ export const furinaCombatCoverage: CharacterCombatCoverage = {
           talentSlot: "burst"
         }
       }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "furina.constellation.6.center_of_attention.common.max_hp_additive_damage",
+      label: "万众瞩目 · C6 前6次普攻/重击/下落攻击追加18%生命值上限基础伤害",
+      source: { characterId: "Furina", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: {
+        actionIds: [furinaC6NormalActionIds.ousia, furinaC6NormalActionIds.pneuma],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        coefficient: { kind: "fixed", value: 0.18 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "hp"
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "furina.constellation.6.center_of_attention.pneuma.max_hp_additive_damage",
+      label: "万众瞩目 · C6 芒性命中额外追加25%生命值上限基础伤害",
+      source: { characterId: "Furina", kind: "character", minimumSourceConstellation: 6 },
+      target: "matchedActionAdditiveDamageTerm",
+      targetFilter: { actionIds: [furinaC6NormalActionIds.pneuma], recipientSourceRelation: "source" },
+      value: {
+        coefficient: { kind: "fixed", value: 0.25 },
+        kind: "matched_action_additive_damage_term",
+        scalingStat: "hp"
+      }
     }
   ],
   characterId: "Furina",
   metrics: [
+    {
+      actionId: furinaC6NormalActionIds.ousia,
+      characterId: "Furina",
+      id: furinaC6NormalActionIds.ousia,
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "万众瞩目 / C6 荒性水附魔普通攻击第一段（追加18%生命值上限）",
+      sourceActionId: furinaC6NormalActionIds.ousia,
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: furinaC6NormalActionIds.pneuma,
+      characterId: "Furina",
+      id: furinaC6NormalActionIds.pneuma,
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "万众瞩目 / C6 芒性水附魔普通攻击第一段（追加43%生命值上限）",
+      sourceActionId: furinaC6NormalActionIds.pneuma,
+      status: "verified",
+      target: "enemy"
+    },
     {
       actionId: "furina.skill.salon_solitaire.mademoiselle_crabaletta.single_hit",
       characterId: "Furina",
@@ -222,10 +356,26 @@ export const furinaCombatCoverage: CharacterCombatCoverage = {
       status: "verified",
       target: "friendly_recipient",
       unit: "ratio"
+    },
+    {
+      characterId: "Furina",
+      id: "furina.constellation.6.center_of_attention.ousia.nearby_party.heal_tick",
+      includeHealingBonus: true,
+      kind: "healing",
+      label: "万众瞩目 / C6 荒性命中后附近队伍单次治疗量",
+      minimumSourceConstellation: 6,
+      ratio: 0.04,
+      recipientRequirements: [
+        { kind: "recipient_in_source_area", label: "受治疗角色为荒性命中后附近的队伍角色" }
+      ],
+      scalingStat: "hp",
+      sourceActionId: furinaC6NormalActionIds.ousia,
+      status: "verified",
+      target: "friendly_recipient"
     }
   ],
   detail:
-    "One first normal-attack hit is verified as a baseline attack-scaling Physical hit. One Ousia Mademoiselle Crabaletta hit is verified as a Hydro hit that scales from Furina's max HP and reads stats at hit time. Its selected 0–4 successful HP-consumption participants apply the documented 100–140% member-attack multiplier, defaulting to four. At ascension 4+, A4's min(HP / 1000 × 0.7%, 28%) Salon-member damage bonus is included. The selected source-owned support metric calculates Let the People Rejoice's all-damage bonus for one friendly recipient as current Fanfare point count × burst[4]. Its action snapshot uses C0's 0–300 range, while C1+ begins Burst at 150 points and caps at 400; when no manual state is supplied, the evaluator uses the full reachable cap (300 at C0 and 400 at C1+). C3 adds three Burst levels. The Ousia initial bubble, Gentilhomme Usher, Surintendante Chevalmarin, Pneuma's Singer of Many Waters, member cadence, actual HP drain and participant eligibility, Burst healing bonus, reactions, external infusions, Arkhe switching, other passives, C2/C4/C6, and rotation behavior remain unmodeled.",
+    "One Ousia Mademoiselle Crabaletta hit is a selected Hydro hit that scales from Furina's max HP and reads stats at hit time. Its selected 0–4 successful HP-consumption participants apply the documented 100–140% member-attack multiplier, defaulting to four. At ascension 4+, A4's min(HP / 1000 × 0.7%, 28%) Salon-member damage bonus is included. The selected source-owned support metric calculates Let the People Rejoice's all-damage bonus for one friendly recipient as current Fanfare point count × burst[4]. Its action snapshot uses a 0–300 range at C0, while C1+ begins Burst at 150 points and caps the damage buff at 400; C3 adds three Burst levels. At C2, the maximum-reachable 400 excess Fanfare points automatically grant Furina 140% maximum HP. At C6, dedicated Ousia and Pneuma Normal-Attack metrics are absent through C5, use Hydro conversion, and add the common 18% maximum-HP base term; Pneuma adds another 25%, for 43% total. A separate C6-only support metric exposes one Ousia-triggered nearby-party healing tick at 4% of Furina's maximum HP before source and recipient healing modifiers, while Pneuma's 1% current-HP drain remains a non-healing state change. Tick cadence, duration, and multi-recipient aggregation are not inferred. The Ousia initial bubble, other Salon Members, Singer of Many Waters, member cadence, reactions, external infusions, Arkhe switching, C4 Energy restoration, and rotation behavior remain outside these single-event metrics.",
   label: furinaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

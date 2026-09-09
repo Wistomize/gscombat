@@ -12,7 +12,7 @@ import {
   validateActionScenarioParameters
 } from "./action-intrinsic-integrity.js"
 import { validateDeclaredDirectDamageParts, validateReactionDeclarations } from "./damage-declaration-integrity.js"
-import { validateElementOverrideEffect } from "./effect-integrity.js"
+import { validateActionEffect, validateElementOverrideEffect } from "./effect-integrity.js"
 import { validateMetricDeclaration } from "./metric-integrity.js"
 import {
   getActionTalentParameterOwnerIds
@@ -77,9 +77,13 @@ export function validateCombatRegistryIntegrity(
   const registry = input.registry ?? characterCombatCoverageRegistry
   const reviewedMultiScalingEvidence =
     input.reviewedMultiScalingEvidence ?? reviewedMultiScalingEvidenceRegistry.records
+  const actionsById = new Map(
+    registry.flatMap((coverage) => coverage.actions.map((action) => [action.id, action] as const))
+  )
   const issues: CombatRegistryIntegrityIssue[] = []
   const characterIds = new Set<string>()
   const actionIds = new Set<string>()
+  const actionEffectIds = new Set<string>()
   const effectIds = new Set<string>()
   const metricIds = new Set<string>()
 
@@ -89,6 +93,8 @@ export function validateCombatRegistryIntegrity(
       input.gameData,
       characterIds,
       actionIds,
+      actionEffectIds,
+      actionsById,
       effectIds,
       metricIds,
       reviewedMultiScalingEvidence,
@@ -113,6 +119,8 @@ function validateCoverageDeclaration(
   gameData: GameDataRepository,
   characterIds: Set<string>,
   actionIds: Set<string>,
+  actionEffectIds: Set<string>,
+  actionsById: ReadonlyMap<string, CombatActionMetadata>,
   effectIds: Set<string>,
   metricIds: Set<string>,
   reviewedMultiScalingEvidence: readonly ReviewedMultiScalingEvidenceRecord[],
@@ -149,6 +157,9 @@ function validateCoverageDeclaration(
   }
   for (const metric of coverage.metrics ?? []) {
     validateMetricDeclaration(coverage, metric, gameData, metricIds, issues)
+  }
+  for (const effect of coverage.actionEffects ?? []) {
+    validateActionEffect(coverage.characterId, effect, actionEffectIds, actionsById, issues)
   }
   for (const effect of coverage.effects ?? []) {
     validateElementOverrideEffect(coverage.characterId, effect, gameData, effectIds, issues)

@@ -28,6 +28,7 @@ export interface AppliedCombatActionEffect {
 
 /** An independently evaluated, equipment-owned hit added to one selected core action. */
 export interface ResolvedAdditionalDamageEvent {
+  readonly attackKind?: CombatActionAdditionalDamageEvent["attackKind"]
   readonly canCrit: CombatActionAdditionalDamageEvent["canCrit"]
   readonly critPolicy?: CombatActionAdditionalDamageEvent["critPolicy"]
   readonly coefficient: number
@@ -39,11 +40,14 @@ export interface ResolvedAdditionalDamageEvent {
   readonly reactionPolicy: CombatActionAdditionalDamageEvent["reactionPolicy"]
   readonly scalingStat: CombatActionAdditionalDamageEvent["scalingStat"]
   readonly sourceId: string
+  readonly talentSlot?: CombatActionAdditionalDamageEvent["talentSlot"]
 }
 
 /** One stat-scaled contribution added to the selected action's existing hit rather than a new hit. */
 export interface ResolvedMatchedActionAdditiveDamageTerm {
   readonly coefficient: number
+  readonly coefficientMultiplierScenarioParameterId?: string
+  readonly coefficientMultiplierScenarioParameterScale?: number
   readonly id: string
   readonly label: string
   readonly scalingStat: ScalingStat
@@ -74,6 +78,10 @@ export interface ResolvedCombatActionEffects {
   readonly reactionDamageBonus: number
   /** Adds after a selected transformative reaction's level, multiplier, and reaction-bonus calculation. */
   readonly transformativeReactionFlatDamageAddition: number
+  /** Independent CRIT Rate used only by the selected ordinary transformative reaction. */
+  readonly transformativeReactionCritRate: number
+  /** Independent CRIT DMG used only by the selected ordinary transformative reaction. */
+  readonly transformativeReactionCritDamage: number
   /** Adds only to the selected direct Moon or Stellar reaction's dedicated formula stage. */
   readonly specialReactionDamageBonus: number
   /** Adds directly to the selected special-reaction event's base damage before its dedicated multipliers. */
@@ -132,6 +140,8 @@ export const EMPTY_COMBAT_ACTION_EFFECTS: ResolvedCombatActionEffects = {
   amplifyingReactionBonus: 0,
   reactionDamageBonus: 0,
   transformativeReactionFlatDamageAddition: 0,
+  transformativeReactionCritRate: 0,
+  transformativeReactionCritDamage: 0,
   specialReactionDamageBonus: 0,
   specialReactionBaseDamageFlat: 0,
   specialReactionBaseDamageMultiplier: 0,
@@ -157,6 +167,8 @@ export const EMPTY_COMBAT_ACTION_EFFECTS: ResolvedCombatActionEffects = {
 
 export interface ResolveCombatActionEffectCandidatesInput {
   readonly action: CombatActionMetadata
+  /** Stable action-relative event ID used by event-scoped effect filters. */
+  readonly candidateEventId?: string
   /** Event-level Vaporize or Melt kinds possible from the scenario's explicit target-aura windows. */
   readonly candidateAmplifyingReactionKinds?: readonly AmplifyingReactionConfig["kind"][]
   /** Ordinary reaction kinds directly declared by the metric or derived from its explicit target setup. */
@@ -183,6 +195,8 @@ export interface ResolveCombatActionEffectCandidatesInput {
   readonly sourceFinalHpByBuildId?: ReadonlyMap<string, number>
   /** Final elemental mastery keyed by eligible effect source build, resolved before source-owned conversion effects. */
   readonly sourceFinalElementalMasteryByBuildId?: ReadonlyMap<string, number>
+  /** Elemental mastery before final-EM party sharing, used to keep those shares non-recursive. */
+  readonly sourceElementalMasteryBeforeShareByBuildId?: ReadonlyMap<string, number>
   /** Final defense keyed by eligible effect source build, resolved before source-owned conversion effects. */
   readonly sourceFinalDefenseByBuildId?: ReadonlyMap<string, number>
   /** Final attack keyed by eligible effect source build, resolved before source-owned conversion effects. */

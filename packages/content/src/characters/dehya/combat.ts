@@ -112,7 +112,7 @@ export const dehyaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Dehya",
       id: "dehya.burst.flame_manes_fist",
       kind: "damage",
-      label: "炎啸狮子咬 / 炽鬃之拳单次命中（C0、无反应）",
+      label: "炎啸狮子咬 / 炽鬃之拳单次命中（无反应）",
       sourceActionId: "dehya.burst.flame_manes_fist",
       status: "verified",
       target: "enemy"

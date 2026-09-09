@@ -71,11 +71,18 @@ export function isCombatActionEffectApplicable(
   recipientWeaponType?: CatalogWeaponType,
   candidateAmplifyingReactionKinds: readonly NonNullable<CombatActionMetadata["amplifyingReaction"]>["kind"][] = [],
   candidateReactionKinds: readonly CombatActionReactionKind[] = [],
-  candidateSpecialReactionKinds?: readonly NonNullable<CombatActionMetadata["specialReaction"]>["kind"][]
+  candidateSpecialReactionKinds?: readonly NonNullable<CombatActionMetadata["specialReaction"]>["kind"][],
+  candidateEventId?: string
 ): boolean {
   const filter = effect.targetFilter
   if (!filter) return true
   if (filter.actionIds && !filter.actionIds.includes(action.id)) return false
+  if (filter.eventIds) {
+    const matchesEvent = candidateEventId === undefined
+      ? action.timeline?.damageEvents.some((event) => filter.eventIds!.includes(event.id)) === true
+      : filter.eventIds.includes(candidateEventId)
+    if (!matchesEvent) return false
+  }
   if (filter.recipientCharacterIds && !filter.recipientCharacterIds.includes(action.characterId)) return false
   if (filter.recipientHexereiRequired && !isHexereiCharacter(action.characterId)) return false
   if (filter.excludedActionIds?.includes(action.id)) return false
@@ -119,7 +126,10 @@ function listDeclaredSpecialReactionKinds(
   return [
     ...new Set([
       ...(action.specialReaction ? [action.specialReaction.kind] : []),
-      ...(action.timeline?.damageEvents.flatMap((event) => (event.specialReaction ? [event.specialReaction.kind] : [])) ?? [])
+      ...(action.timeline?.damageEvents.flatMap((event) => [
+        ...(event.specialReaction ? [event.specialReaction.kind] : []),
+        ...(event.stellarSwirlReaction ? ["stellar_swirl" as const] : [])
+      ]) ?? [])
     ])
   ]
 }

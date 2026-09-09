@@ -59,6 +59,20 @@ export const sangonomiyaKokomiCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "skill"
     }
   ],
+  actionEffects: [
+    {
+      activation: "active",
+      id: "sangonomiya_kokomi.constellation.6.sango_isshin.bake_kurage_heal.hydro_damage_bonus",
+      label: "珊瑚一心 · C6 海人化羽期间普攻/重击治疗生命值不低于80%角色后（水元素伤害加成+40%，4秒）",
+      source: { characterId: "SangonomiyaKokomi", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      targetFilter: {
+        actionIds: ["sangonomiya_kokomi.normal.auto.first_hit"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.4 }
+    }
+  ],
   characterId: "SangonomiyaKokomi",
   metrics: [
     {

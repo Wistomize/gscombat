@@ -218,6 +218,14 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
       target: "attackPercent",
       targetFilter: { recipientSourceRelation: "not_source" },
       value: { kind: "fixed", value: 0.3 }
+    },
+    {
+      activation: "active",
+      id: "iansan.constellation.6.teachings_of_the_collective_of_plenty.extreme_force.damage_bonus",
+      label: "丰饶邦土的训诲 · C6 夜魂值恢复溢出后的3秒内（当前场上角色伤害提高25%）",
+      source: { characterId: "Iansan", kind: "character", minimumSourceConstellation: 6 },
+      target: "damageBonus",
+      value: { kind: "fixed", value: 0.25 }
     }
   ],
   characterId: "Iansan",
@@ -326,7 +334,7 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected support metrics calculate Kinetic Scale's Attack bonus for one friendly recipient from Iansan's current Attack: at 42 or more Nightsoul points, Attack × burst[1]; at 1–41, Attack × burst[2] × the hand-filled current Nightsoul value, capped by burst[3]. Enhanced Resistance Training automatically adds 20% Attack during the maximum-reachable Precise Movement state. Kinetic Energy Gradient Test also exposes one Warming Up heal after a reachable Nightsoul Burst: Iansan's Attack × passive2[1] (60%). C5 adds three Burst levels, while C2 remains a selected off-field 30% Attack snapshot. Repeated healing cadence, Nightsoul consumption, C6, and rotation timing remain outside these source-owned outputs.",
+    "The selected support metrics calculate Kinetic Scale's Attack bonus for one friendly recipient from Iansan's current Attack: at 42 or more Nightsoul points, Attack × burst[1]; at 1–41, Attack × burst[2] × the hand-filled current Nightsoul value, capped by burst[3]. Enhanced Resistance Training automatically adds 20% Attack during the maximum-reachable Precise Movement state. Kinetic Energy Gradient Test also exposes one Warming Up heal after a reachable Nightsoul Burst: Iansan's Attack × passive2[1] (60%). C5 adds three Burst levels, while C2 remains a selected off-field 30% Attack snapshot. C6's three-second Extreme Force after a confirmed Nightsoul-restoration overflow is an explicit 25% current-active-character Damage Bonus snapshot; its three-second Kinetic Energy Scale duration extension and overflow generation remain timing behavior. Repeated healing cadence, Nightsoul consumption, and rotation timing remain outside these source-owned outputs.",
   label: iansanDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

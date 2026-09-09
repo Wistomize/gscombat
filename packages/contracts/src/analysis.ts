@@ -283,6 +283,21 @@ const RotationElementOverrideSchema = Type.Object({
   id: Type.String()
 })
 
+const RotationSpecialReactionTraceEntrySchema = Type.Object({
+  after: Type.Number(),
+  before: Type.Number(),
+  formula: SpecialReactionTraceFormulaSchema,
+  kind: Type.Literal("special_reaction"),
+  stage: SpecialReactionTraceStageSchema
+})
+
+const StellarSwirlParticipantFormulaTraceEntrySchema = Type.Object({
+  after: Type.Number(),
+  before: Type.Number(),
+  formula: SpecialReactionTraceFormulaSchema,
+  stage: SpecialReactionTraceStageSchema
+})
+
 const RotationTraceEntrySchema = Type.Union([
   Type.Object({
     after: Type.Number(),
@@ -401,12 +416,27 @@ const RotationTraceEntrySchema = Type.Union([
       Type.Literal("swirl")
     ])
   }),
+  RotationSpecialReactionTraceEntrySchema,
   Type.Object({
     after: Type.Number(),
     before: Type.Number(),
-    formula: SpecialReactionTraceFormulaSchema,
-    kind: Type.Literal("special_reaction"),
-    stage: SpecialReactionTraceStageSchema
+    event: Type.Union([Type.Literal("trigger"), Type.Literal("vortex")]),
+    kind: Type.Literal("stellar_swirl_participant_aggregation"),
+    participants: Type.Array(
+      Type.Object({
+        appliedEffectIds: Type.Array(Type.String()),
+        critDamage: Type.Number(),
+        critRate: Type.Number(),
+        expectedContribution: Type.Number(),
+        expectedDamage: Type.Number(),
+        label: Type.String(),
+        nonCritDamage: Type.Number(),
+        participantId: Type.String(),
+        trace: Type.Array(StellarSwirlParticipantFormulaTraceEntrySchema)
+      }),
+      { minItems: 1, maxItems: 4 }
+    ),
+    reactionCoefficient: Type.Number()
   })
 ])
 
@@ -507,6 +537,8 @@ export const AnalysisResponseSchema = Type.Object({
           Type.Literal("amplifyingReactionBonus"),
           Type.Literal("reactionDamageBonus"),
           Type.Literal("transformativeReactionFlatDamageAddition"),
+          Type.Literal("transformativeReactionCritRate"),
+          Type.Literal("transformativeReactionCritDamage"),
           Type.Literal("specialReactionBaseDamageFlat"),
           Type.Literal("specialReactionBaseDamageMultiplier"),
           Type.Literal("specialReactionBaseDamageBonus"),

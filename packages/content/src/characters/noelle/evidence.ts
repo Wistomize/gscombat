@@ -41,6 +41,20 @@ export const reviewedMultiScalingEvidence = [
         stat: "defense",
         symbol: "normal.hitArr[0] × defToAtk",
         talentSlot: "normal"
+      },
+      {
+        coefficientMultiplierScenarioParameterId: "c6-additional-defense-to-attack-percent",
+        coefficientParameterId: "sweeping-time-normal-hit-one-attack-ratio",
+        explanation: "At C6, the bounded 50% Defense conversion is multiplied by auto[0] for the first normal hit.",
+        groupId: "auto",
+        parameterIndex: 0,
+        snapshotChecks: [
+          { expectedCoefficient: 0.7912, talentLevel: 1 },
+          { expectedCoefficient: 1.564, talentLevel: 10 }
+        ],
+        stat: "defense",
+        symbol: "normal.hitArr[0] × c6DefToAtk",
+        talentSlot: "normal"
       }
     ]
   },
@@ -82,6 +96,20 @@ export const reviewedMultiScalingEvidence = [
         ],
         stat: "defense",
         symbol: "normal.hitArr[1] × defToAtk",
+        talentSlot: "normal"
+      },
+      {
+        coefficientMultiplierScenarioParameterId: "c6-additional-defense-to-attack-percent",
+        coefficientParameterId: "sweeping-time-normal-hit-two-attack-ratio",
+        explanation: "At C6, the bounded 50% Defense conversion is multiplied by auto[1] for the second normal hit.",
+        groupId: "auto",
+        parameterIndex: 1,
+        snapshotChecks: [
+          { expectedCoefficient: 0.73358, talentLevel: 1 },
+          { expectedCoefficient: 1.4501, talentLevel: 10 }
+        ],
+        stat: "defense",
+        symbol: "normal.hitArr[1] × c6DefToAtk",
         talentSlot: "normal"
       }
     ]
@@ -125,6 +153,20 @@ export const reviewedMultiScalingEvidence = [
         stat: "defense",
         symbol: "normal.hitArr[2] × defToAtk",
         talentSlot: "normal"
+      },
+      {
+        coefficientMultiplierScenarioParameterId: "c6-additional-defense-to-attack-percent",
+        coefficientParameterId: "sweeping-time-normal-hit-three-attack-ratio",
+        explanation: "At C6, the bounded 50% Defense conversion is multiplied by auto[2] for the third normal hit.",
+        groupId: "auto",
+        parameterIndex: 2,
+        snapshotChecks: [
+          { expectedCoefficient: 0.86258, talentLevel: 1 },
+          { expectedCoefficient: 1.7051, talentLevel: 10 }
+        ],
+        stat: "defense",
+        symbol: "normal.hitArr[2] × c6DefToAtk",
+        talentSlot: "normal"
       }
     ]
   },
@@ -166,6 +208,20 @@ export const reviewedMultiScalingEvidence = [
         ],
         stat: "defense",
         symbol: "normal.hitArr[3] × defToAtk",
+        talentSlot: "normal"
+      },
+      {
+        coefficientMultiplierScenarioParameterId: "c6-additional-defense-to-attack-percent",
+        coefficientParameterId: "sweeping-time-normal-hit-four-attack-ratio",
+        explanation: "At C6, the bounded 50% Defense conversion is multiplied by auto[3] for the fourth normal hit.",
+        groupId: "auto",
+        parameterIndex: 3,
+        snapshotChecks: [
+          { expectedCoefficient: 1.13434, talentLevel: 1 },
+          { expectedCoefficient: 2.2423, talentLevel: 10 }
+        ],
+        stat: "defense",
+        symbol: "normal.hitArr[3] × c6DefToAtk",
         talentSlot: "normal"
       }
     ]

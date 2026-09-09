@@ -251,7 +251,7 @@ describe("evaluateRotation", () => {
     expect(result.events[0]!.expectedDamage).toBeGreaterThan(2_000)
   })
 
-  it("calculates transformative reactions without critical or defense multipliers", () => {
+  it("calculates transformative reactions without character critical or defense multipliers", () => {
     const result = evaluateRotation({
       duration: 2,
       enemy: { ...enemy, resistance: 0 },
@@ -308,6 +308,94 @@ describe("evaluateRotation", () => {
       resistance: -0.05,
       resistanceReduction: 0.05
     })
+  })
+
+  it("applies only an explicit transformative-reaction CRIT profile after flat damage and before resistance", () => {
+    const result = evaluateRotation({
+      duration: 1,
+      enemy: { ...enemy, resistance: 0.1 },
+      events: [
+        {
+          canCrit: false,
+          element: "pyro",
+          id: "mizuki.pyro-swirl.c6",
+          ownerId: "mizuki",
+          reaction: {
+            bonus: 0,
+            critDamage: 1,
+            critRate: 0.3,
+            damageElement: "pyro",
+            flatDamageAddition: 500,
+            kind: "swirl"
+          },
+          scaling: { coefficient: 0, stat: "elementalMastery" },
+          stats: {
+            attack: 1000,
+            critDamage: 4,
+            critRate: 1,
+            damageBonus: 4,
+            defense: 700,
+            elementalMastery: 1000,
+            hp: 20_000,
+            level: 90
+          },
+          time: 0
+        }
+      ]
+    })
+
+    const event = result.events[0]!
+    const reaction = event.trace.find((entry) => entry.kind === "transformative_reaction")
+    const crit = event.trace.find((entry) => entry.kind === "expected_crit")
+    const resistance = event.trace.find((entry) => entry.kind === "resistance")
+    if (!reaction || reaction.kind !== "transformative_reaction") throw new Error("Expected reaction trace")
+    if (!crit || crit.kind !== "expected_crit") throw new Error("Expected reaction CRIT trace")
+    if (!resistance || resistance.kind !== "resistance") throw new Error("Expected resistance trace")
+
+    expect(event.trace.map((entry) => entry.kind)).toEqual([
+      "transformative_reaction",
+      "expected_crit",
+      "resistance"
+    ])
+    expect(crit).toMatchObject({ before: reaction.after, critDamage: 1, critRate: 0.3, multiplier: 1.3 })
+    expect(crit.after).toBeCloseTo(reaction.after * 1.3)
+    expect(resistance.before).toBeCloseTo(crit.after)
+    expect(event.nonCritDamage).toBeCloseTo(reaction.after * 0.9)
+    expect(event.critDamage).toBeCloseTo(reaction.after * 2 * 0.9)
+    expect(event.expectedDamage).toBeCloseTo(reaction.after * 1.3 * 0.9)
+  })
+
+  it("clamps an explicit transformative-reaction CRIT Rate above 100%", () => {
+    const result = evaluateRotation({
+      duration: 1,
+      enemy: { ...enemy, resistance: 0 },
+      events: [
+        {
+          canCrit: false,
+          element: "pyro",
+          id: "test.pyro-swirl.overcapped-crit",
+          ownerId: "test-owner",
+          reaction: { bonus: 0, critDamage: 1, critRate: 1.5, damageElement: "pyro", kind: "swirl" },
+          scaling: { coefficient: 0, stat: "elementalMastery" },
+          stats: {
+            attack: 1000,
+            critDamage: 0,
+            critRate: 0,
+            damageBonus: 0,
+            defense: 700,
+            elementalMastery: 500,
+            hp: 20_000,
+            level: 90
+          },
+          time: 0
+        }
+      ]
+    })
+
+    const event = result.events[0]!
+    expect(event.expectedDamage).toBeCloseTo(event.critDamage)
+    expect(event.trace.find((entry) => entry.kind === "expected_crit"))
+      .toMatchObject({ critRate: 1, multiplier: 2 })
   })
 
   it.each([

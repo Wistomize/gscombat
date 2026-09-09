@@ -24,6 +24,7 @@ import {
   type ResolveAdditionalDamageEventEffectsInput,
   type ResolveCombatActionEffectCandidatesInput,
   type ResolveCombatActionEffectsInput,
+  type ResolvedAdditionalDamageEvent,
   type ResolvedCombatActionEffects,
   type ResolveDependentActiveEffectIdsInput,
   type ResolveSelfAutomaticEquipmentEffectsInput
@@ -142,20 +143,35 @@ function isDeterministicallyActiveForAction(
 /**
  * Resolves global and element-compatible stat effects for one independently owned additional damage event.
  *
- * Effects scoped to the triggering action's normal, charged, plunge, talent, or action ID do not modify the
- * independent hit. Its own final element is used only for global element-filtered effects such as physical
- * resistance reduction.
+ * Character-owned events may declare their own attack kind and talent slot. Those explicit identities participate
+ * in the normal effect-filter pipeline, while an untyped equipment proc keeps the historical independent-hit
+ * behavior and does not inherit the triggering action's categories. Action-ID filters never transfer implicitly.
  */
 export function resolveAdditionalDamageEventEffects(
   input: ResolveAdditionalDamageEventEffectsInput
 ): ResolvedCombatActionEffects {
+  const event = input.additionalDamageEvent
   const candidates = listCombatActionEffects().filter((effect) =>
-    isCombatActionEffectCompatibleWithAdditionalDamageEvent(effect)
+    isCombatActionEffectCompatibleWithAdditionalDamageEvent(effect, event)
   )
+  const action = createAdditionalDamageEventAction(input.action, event)
   return resolveCombatActionEffectsForCandidates(
-    { ...input, effectiveElements: [input.additionalDamageEvent.element] },
+    { ...input, action, effectiveElements: [event.element] },
     candidates
   )
+}
+
+function createAdditionalDamageEventAction(
+  action: CombatActionMetadata,
+  event: ResolvedAdditionalDamageEvent
+): CombatActionMetadata {
+  if (event.attackKind === undefined && event.talentSlot === undefined) return action
+  const { attackKind: _triggeringAttackKind, ...actionWithoutAttackKind } = action
+  return {
+    ...actionWithoutAttackKind,
+    ...(event.attackKind === undefined ? {} : { attackKind: event.attackKind }),
+    talentSlot: event.talentSlot ?? "constellation"
+  }
 }
 
 /**
@@ -281,6 +297,31 @@ export function resolveCombatActionElementalMasteryEffects(
   return resolveCombatActionEffectsForCandidates(input, candidates)
 }
 
+/** Resolves non-circular character-owned Elemental Mastery effects for one source-stat snapshot. */
+export function resolveCombatActionCharacterElementalMasteryEffects(
+  input: ResolveCombatActionEffectsInput
+): ResolvedCombatActionEffects {
+  const candidates = listCombatActionEffects().filter(
+    (effect) =>
+      effect.source.kind === "character" &&
+      ((effect.target === "elementalMastery" &&
+        effect.value.kind !== "final_elemental_mastery" &&
+        effect.value.kind !== "source_final_defense") ||
+        effect.target === "sourceFinalHpToElementalMastery")
+  )
+  return resolveCombatActionEffectsForCandidates(input, candidates)
+}
+
+/** Resolves Elemental Mastery shares from a pre-share source snapshot, preventing recursive self-amplification. */
+export function resolveCombatActionFinalElementalMasteryShareEffects(
+  input: ResolveCombatActionEffectsInput
+): ResolvedCombatActionEffects {
+  const candidates = listCombatActionEffects().filter(
+    (effect) => effect.target === "elementalMastery" && effect.value.kind === "final_elemental_mastery"
+  )
+  return resolveCombatActionEffectsForCandidates(input, candidates)
+}
+
 import {
   hasActivatableEffectSource,
   hasActivatableElementOverrideSource
@@ -315,7 +356,8 @@ export function resolveCombatActionEffectsForCandidates(
         recipientWeaponType,
         input.candidateAmplifyingReactionKinds,
         input.candidateReactionKinds,
-        input.candidateSpecialReactionKinds
+        input.candidateSpecialReactionKinds,
+        input.candidateEventId
       )
     )
     .flatMap((effect) => resolveEligibleActionEffect(effect, input))
@@ -324,7 +366,9 @@ export function resolveCombatActionEffectsForCandidates(
     effect.target === "additionalDamageEvent" ? [resolveAdditionalDamageEvent(effect, source, input)] : []
   )
   const matchedActionAdditiveDamageTerms = eligibleEffects.flatMap(({ effect, source }) =>
-    effect.target === "matchedActionAdditiveDamageTerm" ? [resolveMatchedActionAdditiveDamageTerm(effect, source)] : []
+    effect.target === "matchedActionAdditiveDamageTerm"
+      ? [resolveMatchedActionAdditiveDamageTerm(effect, source, input)]
+      : []
   )
   const additionalDamageEventsById = new Map(additionalDamageEvents.map((event) => [event.id, event]))
   const matchedActionTermsById = new Map(matchedActionAdditiveDamageTerms.map((term) => [term.id, term]))
@@ -389,6 +433,8 @@ export function resolveCombatActionEffectsForCandidates(
     amplifyingReactionBonus: sumEffectTarget(appliedEffects, "amplifyingReactionBonus"),
     reactionDamageBonus: sumEffectTarget(appliedEffects, "reactionDamageBonus"),
     transformativeReactionFlatDamageAddition: sumEffectTarget(appliedEffects, "transformativeReactionFlatDamageAddition"),
+    transformativeReactionCritRate: sumEffectTarget(appliedEffects, "transformativeReactionCritRate"),
+    transformativeReactionCritDamage: sumEffectTarget(appliedEffects, "transformativeReactionCritDamage"),
     specialReactionDamageBonus: sumEffectTarget(appliedEffects, "specialReactionDamageBonus"),
     specialReactionBaseDamageFlat: sumEffectTarget(appliedEffects, "specialReactionBaseDamageFlat"),
     specialReactionBaseDamageMultiplier: sumEffectTarget(appliedEffects, "specialReactionBaseDamageMultiplier"),
@@ -590,12 +636,17 @@ function isCombatActionStatEffect(effect: CombatActionEffect): effect is CombatA
   return effect.target !== "additionalDamageEvent" && effect.target !== "matchedActionAdditiveDamageTerm"
 }
 
-function isCombatActionEffectCompatibleWithAdditionalDamageEvent(effect: CombatActionEffect): boolean {
+function isCombatActionEffectCompatibleWithAdditionalDamageEvent(
+  effect: CombatActionEffect,
+  event: ResolvedAdditionalDamageEvent
+): boolean {
   if (
     !isCombatActionStatEffect(effect) ||
     effect.target === "amplifyingReactionBonus" ||
     effect.target === "reactionDamageBonus" ||
     effect.target === "transformativeReactionFlatDamageAddition" ||
+    effect.target === "transformativeReactionCritRate" ||
+    effect.target === "transformativeReactionCritDamage" ||
     effect.target === "specialReactionDamageBonus" ||
     effect.target === "specialReactionBaseDamageFlat" ||
     effect.target === "specialReactionBaseDamageMultiplier" ||
@@ -611,9 +662,8 @@ function isCombatActionEffectCompatibleWithAdditionalDamageEvent(effect: CombatA
     (!filter.actionIds &&
       !filter.amplifyingReactionKinds &&
       !filter.reactionKinds &&
-      !filter.attackKinds &&
-      !filter.recipientWeaponTypes &&
-      !filter.talentSlots)
+      (!filter.attackKinds || event.attackKind !== undefined) &&
+      (!filter.talentSlots || event.talentSlot !== undefined))
   )
 }
 

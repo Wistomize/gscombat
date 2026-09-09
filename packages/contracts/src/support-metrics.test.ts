@@ -84,5 +84,50 @@ describe("SupportMetricEvaluationResponseSchema", () => {
         }
       })
     ).toBe(true)
+
+    expect(
+      Value.Check(SupportMetricEvaluationResponseSchema, {
+        engineVersion: "support-metric-1",
+        metric: {
+          conditions: [
+            {
+              actualConstellation: 6,
+              kind: "source_constellation",
+              label: "C6 独立治疗（需要6命）",
+              minimumConstellation: 6,
+              satisfied: true
+            }
+          ],
+          flatAmount: 0,
+          formula: {
+            condition: {
+              actualConstellation: 6,
+              kind: "source_constellation",
+              label: "C6 独立治疗（需要6命）",
+              minimumConstellation: 6,
+              satisfied: true
+            },
+            kind: "condition",
+            operand: { kind: "term", label: "固定治疗倍率", role: "constant", value: 2000 },
+            satisfied: true,
+            value: 2000
+          },
+          healingBonus: 0,
+          id: "test.constellation.fixed-healing",
+          incomingHealingBonus: 0.3,
+          kind: "healing",
+          label: "C6 独立治疗",
+          percentage: 0.1,
+          potentialValue: 2000,
+          recipient: { buildId: "test.recipient", characterId: "Bennett", kind: "friendly_recipient" },
+          scalingStat: "hp",
+          scalingValue: 20_000,
+          sourceActionId: "test.constellation.action",
+          sourceValue: 2000,
+          unit: "hp",
+          value: 2000
+        }
+      })
+    ).toBe(true)
   })
 })

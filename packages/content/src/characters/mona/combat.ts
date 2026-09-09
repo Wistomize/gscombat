@@ -80,6 +80,63 @@ export const monaCombatCoverage: CharacterCombatCoverage = {
       ],
       status: "verified",
       talentSlot: "burst"
+    },
+    {
+      attackKind: "charged",
+      characterId: "Mona",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "charged-attack-damage",
+          id: "c6-rhetorics-of-calamitas-charged-attack",
+          snapshotChecks: [
+            { expectedCoefficient: 1.4972, talentLevel: 1 },
+            { expectedCoefficient: 2.69496, talentLevel: 10 }
+          ]
+        }
+      ],
+      element: monaDefinition.element,
+      evaluator: "declared_direct",
+      id: "mona.normal.charged_attack.c6_illusory_torrent_movement",
+      intrinsicEffects: [
+        {
+          fixedValue: 0.6,
+          kind: "flat",
+          label: "厄运的修辞 · C6 虚实流动移动时间",
+          scenarioParameterMultiplier: {
+            base: 0,
+            parameterId: "c6-illusory-torrent-movement-seconds",
+            perParameterValue: 1
+          },
+          target: "damageBonus"
+        }
+      ],
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "auto",
+          id: "charged-attack-damage",
+          parameterIndex: 4,
+          source: "talent",
+          talentSlot: "normal"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1, 2, 3],
+          defaultValue: 0,
+          id: "c6-illusory-torrent-movement-seconds",
+          label: "C6 厄运的修辞：虚实流动移动秒数（每秒重击伤害提高60%）",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 3, maximumValue: 3, minimumSourceConstellation: 6, minimumValue: 0 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "normal"
     }
   ],
   actionEffects: [
@@ -120,6 +177,19 @@ export const monaCombatCoverage: CharacterCombatCoverage = {
       source: { characterId: "Mona", kind: "character", minimumSourceConstellation: 4 },
       target: "critRate",
       value: { kind: "fixed", value: 0.15 }
+    },
+    {
+      activation: "automatic",
+      id: "mona.passive.waterborne_destiny.energy_recharge_to_hydro_damage_bonus",
+      label: "托付于命运吧 · 元素充能效率的20%转化为水元素伤害加成",
+      source: { characterId: "Mona", kind: "character", minimumSourceAscension: 4 },
+      target: "damageBonus",
+      targetFilter: { elements: ["hydro"], recipientSourceRelation: "source" },
+      value: {
+        kind: "source_stat",
+        multiplier: { kind: "fixed", value: 0.2 },
+        sourceStat: "energyRecharge"
+      }
     }
   ],
   characterId: "Mona",
@@ -148,10 +218,20 @@ export const monaCombatCoverage: CharacterCombatCoverage = {
       status: "verified",
       target: "friendly_recipient",
       unit: "ratio"
+    },
+    {
+      actionId: "mona.normal.charged_attack.c6_illusory_torrent_movement",
+      characterId: "Mona",
+      id: "mona.normal.charged_attack.c6_illusory_torrent_movement",
+      kind: "damage",
+      label: "厄运的修辞 / 虚实流动后重击（C6 可选0–3秒、无反应）",
+      sourceActionId: "mona.normal.charged_attack.c6_illusory_torrent_movement",
+      status: "verified",
+      target: "enemy"
     }
   ],
   detail:
-    "Stellaris Phantasm's Omen remains the selected support metric. True Origin of Astral Steps contributes the maximum three Mercurial Radiance stacks as 15% Vaporize reaction bonus to another party member under Hexerei: Secret Rite. Omen extension changes duration rather than the selected hit amount; Bubble rupture, timing, and other character states remain unmodeled.",
+    "Stellaris Phantasm's Omen remains the selected support metric. True Origin of Astral Steps contributes the maximum three Mercurial Radiance stacks as 15% Vaporize reaction bonus to another party member under Hexerei: Secret Rite. Mona's A4 now automatically converts 20% of her full Energy Recharge into Hydro Damage Bonus for her Hydro actions. The charged-attack metric exposes C6 Illusory Torrent movement as a bounded zero-to-three-second action snapshot: the value is locked to zero through C5, while a C6 build defaults to the maximum three seconds and adds 60% Damage Bonus per second, up to 180%, to the next single Charged Attack. Omen extension changes duration rather than the selected hit amount; Bubble rupture, timing, and other character states remain unmodeled.",
   label: monaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

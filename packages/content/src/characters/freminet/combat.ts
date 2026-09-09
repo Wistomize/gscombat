@@ -107,6 +107,15 @@ export const freminetCombatCoverage: CharacterCombatCoverage = {
         recipientSourceRelation: "source"
       },
       value: { kind: "fixed", value: 0.15 }
+    },
+    {
+      activation: "active",
+      id: "freminet.constellation.6.moment_of_waking_and_resolve.reaction.full_stacks.crit_damage",
+      label: "梦晓与决意之刻 · C6 触发冻结、碎冰、超导或星超导后满3层（暴击伤害提升36%）",
+      source: { characterId: "Freminet", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: { kind: "fixed", value: 0.36 }
     }
   ],
   characterId: "Freminet",
@@ -116,14 +125,14 @@ export const freminetCombatCoverage: CharacterCombatCoverage = {
       characterId: "Freminet",
       id: "freminet.skill.pressurized_floe.level_4.physical_damage",
       kind: "damage",
-      label: "浮冰增压 / 四阶压力物理命中（C0、无反应）",
+      label: "浮冰增压 / 四阶压力物理命中（无反应）",
       sourceActionId: "freminet.skill.pressurized_floe.level_4.physical_damage",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One first normal-attack hit and one Pressurized Floe upward attack remain verified baseline hits in the pinned 6.7 game-data snapshot from Genshin Optimizer commit 21c98eb60355160274a8c4cecfc5671e2151a073. The selected C0 metric is one Pressurized Floe Pressure Level 4 Physical hit against one target: skill[10], or 243.44% Attack at Talent Level 1 and 438.192% at Level 10. C1 automatically adds 15% Crit Rate only to this Pressure Level 4 hit. It declares no target aura, Melt, Superconduct, Shatter, or other fixed reaction. The metric assumes the pressure has already reached Level 4; it does not infer normal-attack buildup, model lower-level Cryo or Physical payloads, Spiritbreath Thorn, Pers Time's Stalk state, A4's Shatter damage bonus, other constellations including C5 Skill levels, external infusions, timing, or other character states.",
+    "One first normal-attack hit and one Pressurized Floe upward attack remain verified baseline hits. The selected metric is one Pressurized Floe Pressure Level 4 Physical hit against one target: skill[10]. C1 automatically adds 15% Crit Rate only to this Pressure Level 4 hit. At C6, the explicit full three-stack snapshot after prior Frozen, Shatter, Superconduct, or Superconduct: Stellar reaction triggers adds 36% Crit DMG. It does not apply the stack gained by this same hit retroactively. The metric assumes the pressure has already reached Level 4; it does not infer normal-attack buildup, lower-level payloads, reaction timing, or rotation state.",
   label: freminetDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

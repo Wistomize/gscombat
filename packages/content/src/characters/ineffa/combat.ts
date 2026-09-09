@@ -6,7 +6,7 @@ export const ineffaCombatCoverage: CharacterCombatCoverage = {
   actions: [
     {
       characterId: "Ineffa",
-      damageKind: "direct",
+      damageKind: "special_reaction",
       damageParts: [
         {
           coefficientParameterId: "normal-attack-first-hit-damage",
@@ -61,6 +61,66 @@ export const ineffaCombatCoverage: CharacterCombatCoverage = {
       specialReaction: { kind: "lunar_charged" },
       status: "verified",
       talentSlot: "passive"
+    },
+    {
+      characterId: "Ineffa",
+      damageKind: "direct",
+      damageParts: [
+        {
+          coefficientParameterId: "frequency-overlimit-circuit-additional-lunar-charged-damage",
+          id: "a-dawning-morn-for-you-lunar-charged",
+          snapshotChecks: [{ expectedCoefficient: 0.65, talentLevel: 1 }]
+        }
+      ],
+      element: ineffaDefinition.element,
+      evaluator: "declared_direct",
+      id: "ineffa.constellation.6.a_dawning_morn_for_you.additional_lunar_charged",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "passive1",
+          id: "frequency-overlimit-circuit-additional-lunar-charged-damage",
+          parameterIndex: 0,
+          source: "talent",
+          talentSlot: "passive"
+        }
+      ],
+      scalingStat: "attack",
+      scenarioParameters: [
+        {
+          allowedValues: [0, 1],
+          defaultValue: 0,
+          id: "c6-carrier-flow-composite-ready",
+          label: "C6 载波流复合状态下的月感电落雷已触发（3.5秒冷却就绪）",
+          maximumValue: 0,
+          minimumValue: 0,
+          rangeBySourceConstellation: [
+            { defaultValue: 1, maximumValue: 1, minimumSourceConstellation: 6, minimumValue: 1 }
+          ]
+        }
+      ],
+      status: "verified",
+      talentSlot: "passive",
+      timeline: {
+        damageEvents: [
+          {
+            at: 0,
+            coefficientMultiplier: {
+              kind: "scenario_parameter_lookup",
+              parameterId: "c6-carrier-flow-composite-ready",
+              values: [
+                { multiplier: 0, parameterValue: 0 },
+                { multiplier: 2.076923076923077, parameterValue: 1 }
+              ]
+            },
+            damagePartId: "a-dawning-morn-for-you-lunar-charged",
+            id: "a-dawning-morn-for-you-lunar-charged",
+            snapshot: "hit",
+            specialReaction: { kind: "lunar_charged" }
+          }
+        ],
+        duration: 1
+      }
     },
     {
       characterId: "Ineffa",
@@ -227,6 +287,17 @@ export const ineffaCombatCoverage: CharacterCombatCoverage = {
       target: "enemy"
     },
     {
+      actionId: "ineffa.constellation.6.a_dawning_morn_for_you.additional_lunar_charged",
+      characterId: "Ineffa",
+      id: "ineffa.constellation.6.a_dawning_morn_for_you.additional_lunar_charged",
+      kind: "damage",
+      minimumSourceConstellation: 6,
+      label: "献予你的破晓 / C6 载波流复合状态下的月感电伤害（3.5秒冷却就绪）",
+      sourceActionId: "ineffa.constellation.6.a_dawning_morn_for_you.additional_lunar_charged",
+      status: "verified",
+      target: "enemy"
+    },
+    {
       actionId: "ineffa.skill.cleaning_mode_carrier_frequency.initial_hit",
       characterId: "Ineffa",
       id: "ineffa.skill.cleaning_mode_carrier_frequency.initial_hit",
@@ -287,7 +358,7 @@ export const ineffaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The primary metric is Frequency Overlimit Circuit's separate 65% final-Attack Lunar-Charged hit after Birgitta's nearby Thundercloud trigger has been fulfilled. It uses the dedicated Lunar-Charged coefficient and excludes ordinary damage bonus and defense. Ineffa's capped final-Attack-derived 14% base-damage bonus is team-wide; after Burst, A4 adds 6% of Ineffa's final Attack as Elemental Mastery to Ineffa and the evaluated active character. C1's reachable post-shield state adds up to 50% team Lunar-Charged reaction damage bonus. C2's separate 300% Attack and C6's separate 135% Attack Lunar-Charged events are deliberately not merged into the 65% passive action. The Skill and Burst release hits remain selectable ordinary Electro metrics. Optical Flow Shield remains a selectable support metric calculated as final Attack times skill[1] plus skill[2], before recipient Shield Strength; C3 raises Skill levels and C5 raises Burst levels. Thundercloud creation, trigger cadence, duration, energy, and rotations are not inferred.",
+    "The primary metric is Frequency Overlimit Circuit's separate 65% final-Attack Lunar-Charged hit after Birgitta's nearby Thundercloud trigger has been fulfilled. It uses the dedicated Lunar-Charged coefficient and excludes ordinary damage bonus and defense. C6 separately exposes its Carrier Flow Composite event after a nearby Thundercloud lightning burst: the same Lunar-Charged action stage resolves exactly 135% of final Attack, with its 3.5-second cooldown declared ready. Its C0–C5 scenario value is zero, while C6 automatically selects the event. Ineffa's capped final-Attack-derived 14% base-damage bonus is team-wide; after Burst, A4 adds 6% of Ineffa's final Attack as Elemental Mastery to Ineffa and the evaluated active character. C1's reachable post-shield state adds up to 50% team Lunar-Charged reaction damage bonus. C2's separate 300% Attack Lunar-Charged event is not merged into the 65% passive action. The Skill and Burst release hits remain selectable ordinary Electro metrics. Optical Flow Shield remains a selectable support metric calculated as final Attack times skill[1] plus skill[2], before recipient Shield Strength; C3 raises Skill levels and C5 raises Burst levels. Thundercloud creation, trigger cadence beyond the declared C6-ready event, duration, energy, and rotations are not inferred.",
   label: ineffaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

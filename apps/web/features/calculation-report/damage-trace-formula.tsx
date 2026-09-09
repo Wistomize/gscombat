@@ -175,6 +175,11 @@ export function TraceFormula({
     )
   }
   if (formula.kind === "expected_crit") {
+    const usesTransformativeReactionCrit = effects?.some(
+      (effect) =>
+        effect.target === "transformativeReactionCritRate" ||
+        effect.target === "transformativeReactionCritDamage"
+    ) ?? false
     return (
       <div className="formulaLines">
         <FormulaEquation label="暴击期望伤害">
@@ -186,7 +191,14 @@ export function TraceFormula({
         <p className="formulaAuxiliary">
           期望暴击乘数 = <FormulaValue stage="crit">{formatFormulaPercent(formula.multiplier)}</FormulaValue>
         </p>
-        {showCritSources && stats ? <CritSourceBreakdown stats={stats} /> : null}
+        {usesTransformativeReactionCrit
+          ? <ActionEffectSources
+              effects={effects}
+              targets={["transformativeReactionCritRate", "transformativeReactionCritDamage"]}
+            />
+          : showCritSources && stats
+            ? <CritSourceBreakdown stats={stats} />
+            : null}
       </div>
     )
   }

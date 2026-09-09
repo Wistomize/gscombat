@@ -203,7 +203,7 @@ export const beidouCombatCoverage: CharacterCombatCoverage = {
       characterId: "Beidou",
       id: "beidou.skill.tidecaller.full_counter",
       kind: "damage",
-      label: "捉浪 / 完全格挡反击（C0、无反应）",
+      label: "捉浪 / 完全格挡反击（无反应）",
       sourceActionId: "beidou.skill.tidecaller.full_counter",
       status: "verified",
       target: "enemy"
@@ -213,7 +213,7 @@ export const beidouCombatCoverage: CharacterCombatCoverage = {
       characterId: "Beidou",
       id: "beidou.burst.stormbreaker.lightning_arc",
       kind: "damage",
-      label: "斫雷 / 单次闪雷伤害（C0、无反应）",
+      label: "斫雷 / 单次闪雷伤害（无反应）",
       sourceActionId: "beidou.burst.stormbreaker.lightning_arc",
       status: "verified",
       target: "enemy"

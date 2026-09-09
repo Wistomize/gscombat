@@ -3,8 +3,9 @@ import {
   type RotationResult
 } from "@gscombat/calculator"
 import {
-  raidenNationalBuiltinScenario as contentRaidenNationalBuiltinScenario,
   getCombatActionDefinition,
+  listCombatMetrics,
+  raidenNationalBuiltinScenario as contentRaidenNationalBuiltinScenario
 } from "@gscombat/content"
 import {
   validateCharacterBuild,
@@ -55,6 +56,18 @@ function getVerifiedDamageAction(scenario: EvaluationScenario) {
   }
   if (action.characterId !== scenario.primary.characterId) {
     throw new Error(`Target action ${action.id} belongs to ${action.characterId}, not ${scenario.primary.characterId}`)
+  }
+  const selectableMetrics = listCombatMetrics().filter(
+    (metric) => metric.kind === "damage" && metric.status === "verified" && metric.actionId === action.id
+  )
+  const minimumSourceConstellation = Math.min(
+    ...selectableMetrics.map((metric) => metric.minimumSourceConstellation ?? 0)
+  )
+  if (selectableMetrics.length > 0 && scenario.primary.constellation < minimumSourceConstellation) {
+    throw new Error(
+      `Target action ${action.id} requires source constellation ${minimumSourceConstellation}, ` +
+        `but build has constellation ${scenario.primary.constellation}`
+    )
   }
   return action
 }

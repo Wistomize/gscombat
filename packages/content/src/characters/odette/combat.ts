@@ -335,6 +335,7 @@ export const odetteCombatCoverage: CharacterCombatCoverage = {
       characterId: "Odette",
       id: "odette.constellation.2.marvelous_splendor.attack_percent",
       kind: "scalar",
+      minimumSourceConstellation: 2,
       label: "华彩 / C2满6层攻击力提升",
       ratio: 0,
       ratioConstellationBonuses: [{ minimumConstellation: 2, value: 0.42 }],

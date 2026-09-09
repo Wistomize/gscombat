@@ -126,7 +126,10 @@ export const xianglingCombatCoverage: CharacterCombatCoverage = {
       target: "damageBonus",
       targetFilter: {
         elements: ["pyro"],
-        excludedActionIds: ["xiangling.burst.pyronado.reverse_vaporize"]
+        excludedActionIds: [
+          "xiangling.burst.pyronado.reverse_vaporize",
+          "xiangling.burst.pyronado.no_reaction"
+        ]
       },
       value: { kind: "fixed", value: 0.15 }
     }

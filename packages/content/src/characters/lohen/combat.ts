@@ -84,6 +84,18 @@ export const lohenCombatCoverage: CharacterCombatCoverage = {
       target: "damageBonus",
       targetFilter: { attackKinds: ["normal", "charged"], recipientSourceRelation: "source" },
       value: { kind: "fixed", value: 0.4 }
+    },
+    {
+      activation: "automatic",
+      id: "lohen.constellation.6.soul_and_body_sunk_only_joy_remains.bone_chilling_heart.crit_damage",
+      label: "身沦魂销，唯余欢悦 · C6 特殊元素战技「镂骨彻心」暴击伤害提升175%",
+      source: { characterId: "Lohen", kind: "character", minimumSourceConstellation: 6 },
+      target: "critDamage",
+      targetFilter: {
+        actionIds: ["lohen.skill.bone_chilling_heart.single_hit"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 1.75 }
     }
   ],
   metrics: [
@@ -92,14 +104,14 @@ export const lohenCombatCoverage: CharacterCombatCoverage = {
       characterId: "Lohen",
       id: "lohen.skill.bone_chilling_heart.single_hit",
       kind: "damage",
-      label: "镂骨彻心 / 单次命中（C0、争胜100、无反应）",
+      label: "镂骨彻心 / 单次命中（争胜100、无反应）",
       sourceActionId: "lohen.skill.bone_chilling_heart.single_hit",
       status: "verified",
       target: "enemy"
     }
   ],
   detail:
-    "One Cryo Bone-Chilling Heart hit is the selected no-reaction metric and defaults to 100 Will to Win consumed. Unhealing Thorn contributes its 40% Normal and Charged Attack damage snapshot under Hexerei: Secret Rite. Will generation, stance timing, burst, constellations, reactions, and rotation behavior remain unmodeled.",
+    "One Cryo Bone-Chilling Heart hit is the selected no-reaction metric and defaults to 100 Will to Win consumed. Unhealing Thorn contributes its 40% Normal and Charged Attack damage snapshot under Hexerei: Secret Rite. At C6, this special Skill hit automatically gains 175% Crit DMG; the no-consumption clause, stance extension, and two additional uses change sequence availability rather than one-hit damage. Will generation, stance timing, burst, reactions, and rotation behavior remain unmodeled.",
   label: lohenDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

@@ -233,6 +233,23 @@ export const razorCombatCoverage: CharacterCombatCoverage = {
       source: { characterId: "Razor", kind: "character", minimumSourceConstellation: 4 },
       target: "enemyDefenseReduction",
       value: { kind: "fixed", value: 0.15 }
+    },
+    {
+      activation: "active",
+      id: "razor.constellation.6.lupus_fulguris.charged_claymore.lightning_strike",
+      label: "天狼 · C6 大剑充能完毕后的下一次普通攻击（100%攻击力雷元素落雷，10秒充能）",
+      source: { characterId: "Razor", kind: "character", minimumSourceConstellation: 6 },
+      target: "additionalDamageEvent",
+      targetFilter: { attackKinds: ["normal"], recipientSourceRelation: "source" },
+      value: {
+        canCrit: true,
+        coefficient: { kind: "fixed", value: 1 },
+        element: "electro",
+        expectedTriggerProbability: 1,
+        kind: "additional_damage_event",
+        reactionPolicy: "none",
+        scalingStat: "attack"
+      }
     }
   ],
   metrics: [
@@ -241,7 +258,7 @@ export const razorCombatCoverage: CharacterCombatCoverage = {
       characterId: "Razor",
       id: "razor.burst.lightning_fang.normal.fourth_hit",
       kind: "damage",
-      label: "雷牙 / 状态普通攻击四段（C0、无反应）",
+      label: "雷牙 / 状态普通攻击四段（无反应）",
       sourceActionId: "razor.burst.lightning_fang.normal.fourth_hit",
       status: "verified",
       target: "enemy"
