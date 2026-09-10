@@ -861,7 +861,7 @@ describe("full equipment coverage ledger", () => {
     )
   })
 
-  it("keeps Finale of the Deep unpublished until partial Bond-of-Life clears are modeled", () => {
+  it("publishes Finale of the Deep under the full Bond-of-Life clear assumption", () => {
     const entry = equipmentCoverageLedger.find((candidate) => candidate.equipmentId === "FinaleOfTheDeep")
 
     expect(entry?.clauses).toEqual(
@@ -872,11 +872,11 @@ describe("full equipment coverage ledger", () => {
         }),
         expect.objectContaining({
           id: "weapon.finale-of-the-deep.bond-of-life-cleared.uncapped-or-partial.flat-attack",
-          status: "unsupported"
+          status: "not_applicable"
         })
       ])
     )
-    expect(supportedWeapons.map((weapon) => weapon.weaponId)).not.toContain("FinaleOfTheDeep")
+    expect(supportedWeapons.map((weapon) => weapon.weaponId)).toContain("FinaleOfTheDeep")
   })
 
   it("models ordinary and Moon-reaction weapon branches in separate formula stages", () => {

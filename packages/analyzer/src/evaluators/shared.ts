@@ -1091,6 +1091,18 @@ export function resolveScenarioActionEffectContext(input: {
     input.enemyCount,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
+  const sourceFinalAttackByBuildId = resolveSourceFinalAttackByBuildId(
+    input.build,
+    input.teammates,
+    input.action,
+    input.gameData,
+    input.buffs,
+    input.artifactStatDeltas,
+    input.enemyCount,
+    resolvedActiveEffectIds,
+    input.activeEffectSourceBuildIds,
+    sourceSelfMaximumEquipmentEffectsByBuildId
+  )
   const {
     sourceElementalMasteryBeforeShareByBuildId,
     sourceFinalElementalMasteryByBuildId
@@ -1105,6 +1117,7 @@ export function resolveScenarioActionEffectContext(input: {
     resolvedActiveEffectIds,
     input.activeEffectSourceBuildIds,
     sourceFinalHpByBuildId,
+    sourceFinalAttackByBuildId,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const sourceFinalDefenseByBuildId = resolveSourceFinalDefenseByBuildId(
@@ -1116,18 +1129,6 @@ export function resolveScenarioActionEffectContext(input: {
     input.artifactStatDeltas,
     input.enemyCount,
     input.activeEffectIds,
-    input.activeEffectSourceBuildIds,
-    sourceSelfMaximumEquipmentEffectsByBuildId
-  )
-  const sourceFinalAttackByBuildId = resolveSourceFinalAttackByBuildId(
-    input.build,
-    input.teammates,
-    input.action,
-    input.gameData,
-    input.buffs,
-    input.artifactStatDeltas,
-    input.enemyCount,
-    resolvedActiveEffectIds,
     input.activeEffectSourceBuildIds,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
@@ -1162,7 +1163,14 @@ export function materializeDeferredStatEffects(
   finalElementalMastery: number
 ): readonly AppliedCombatActionEffect[] {
   return appliedEffects.map((effect) => {
-    if (effect.target === "finalHpToFlatAttack") return { ...effect, target: "flatAttack", value: effect.value * finalHp }
+    if (effect.target === "finalHpToFlatAttack") {
+      const { finalHpMaximumValue: _, ...materializedEffect } = effect
+      const value =
+        effect.finalHpMaximumValue === undefined
+          ? effect.value * finalHp
+          : Math.min(effect.value * finalHp, effect.finalHpMaximumValue)
+      return { ...materializedEffect, target: "flatAttack", value }
+    }
     if (effect.target === "finalElementalMasteryToFlatAttack") {
       return { ...effect, target: "flatAttack", value: effect.value * finalElementalMastery }
     }

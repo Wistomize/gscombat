@@ -2,9 +2,14 @@ import type { ResolvedCombatActionEffects } from "./types.js"
 
 export function resolveFinalHpToFlatAttack(
   finalHp: number,
-  effects: Pick<ResolvedCombatActionEffects, "finalHpToFlatAttack">
+  effects: Pick<ResolvedCombatActionEffects, "appliedEffects" | "finalHpToFlatAttack">
 ): number {
-  return finalHp * effects.finalHpToFlatAttack
+  const conversions = effects.appliedEffects.filter((effect) => effect.target === "finalHpToFlatAttack")
+  if (conversions.length === 0) return finalHp * effects.finalHpToFlatAttack
+  return conversions.reduce((total, effect) => {
+    const value = finalHp * effect.value
+    return total + (effect.finalHpMaximumValue === undefined ? value : Math.min(value, effect.finalHpMaximumValue))
+  }, 0)
 }
 
 /** Resolves self-owned elemental mastery derived from final maximum HP. */

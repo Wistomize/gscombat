@@ -96,6 +96,43 @@ describe("counterfactual scenario analysis", () => {
     expect(analysis.weapons.every((weapon) => Number.isFinite(weapon.expectedDamage))).toBe(true)
   })
 
+  it("compares Finale of the Deep with its full Bond-of-Life clear derived from candidate final HP", () => {
+    const scenario = {
+      ...raidenNationalBuiltinScenario,
+      conditions: { ...withoutRaidenActionParameters(), activeEffectIds: [] },
+      primary: xingqiuNationalBuiltinBuild,
+      targetActionId: "xingqiu.skill.fatal_rainscreen",
+      teammates: []
+    }
+    const candidateWeapon = { ascension: 6, level: 90, refinement: 1, weaponId: "FinaleOfTheDeep" }
+    const candidateScenario = {
+      ...scenario,
+      primary: { ...scenario.primary, weapon: candidateWeapon }
+    }
+    const candidateEvaluation = evaluateScenario(candidateScenario, gameData)
+    const comparisonCandidate = analyzeScenario(scenario, gameData, {
+      weaponComparisonRefinements: { FinaleOfTheDeep: 1 }
+    }).weapons.find((weapon) => weapon.weaponId === "FinaleOfTheDeep")
+    const expectedFlatAttack = Math.min(candidateEvaluation.stats.effectiveHp * 0.25 * 0.024, 150)
+
+    expect(comparisonCandidate?.refinement).toBe(1)
+    expect(comparisonCandidate?.expectedDamage).toBeCloseTo(candidateEvaluation.actionExpectedDamage, 8)
+    expect(candidateEvaluation.appliedEffects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "weapon.finale-of-the-deep.after-skill.attack-percent",
+          target: "attackPercent",
+          value: 0.12
+        }),
+        expect.objectContaining({
+          id: "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack",
+          target: "flatAttack",
+          value: expectedFlatAttack
+        })
+      ])
+    )
+  })
+
   it("compares compatible bow weapons for a verified health-scaling target", () => {
     const yelan = {
       ...raidenNationalBuiltinBuild,

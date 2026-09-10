@@ -1,7 +1,7 @@
 import { getCombatActionDefinition, type CombatActionMetadata, xianglingNationalBuiltinBuild } from "@gscombat/content"
 import { describe, expect, it } from "vitest"
 
-import { resolveCombatActionEffects } from "../../../src/effects/action-effects.js"
+import { resolveCombatActionEffects, resolveFinalHpToFlatAttack } from "../../../src/effects/action-effects.js"
 
 function requireAction(actionId: string) {
   const action = getCombatActionDefinition(actionId)
@@ -2579,38 +2579,38 @@ describe("current-action equipment effects", () => {
     )
   })
 
-  it("resolves Finale of the Deep's selected capped Bond-of-Life snapshot at the flat-attack stage", () => {
-    const effectId = "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack"
-    const r1 = resolveCombatActionEffects({
-      action: requireAction("xingqiu.skill.fatal_rainscreen"),
-      activeEffectIds: ["weapon.finale-of-the-deep.after-skill.attack-percent", effectId],
-      baseEnergyRecharge: 1,
-      enemyCount: 1,
-      primary: withWeapon("FinaleOfTheDeep", 1),
-      teammates: []
-    })
-    const r5 = resolveCombatActionEffects({
-      action: requireAction("xingqiu.skill.fatal_rainscreen"),
-      activeEffectIds: [effectId],
-      baseEnergyRecharge: 1,
-      enemyCount: 1,
-      primary: withWeapon("FinaleOfTheDeep", 5),
-      teammates: []
-    })
-    const inactive = resolveCombatActionEffects({
-      action: requireAction("xingqiu.skill.fatal_rainscreen"),
-      activeEffectIds: [],
-      baseEnergyRecharge: 1,
-      enemyCount: 1,
-      primary: withWeapon("FinaleOfTheDeep", 5),
-      teammates: []
-    })
+  it("resolves Finale of the Deep's full Bond-of-Life clear from final HP with its refinement cap", () => {
+    const afterSkillEffectId = "weapon.finale-of-the-deep.after-skill.attack-percent"
+    const fullClearEffectId = "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack"
+    const resolveFinale = (refinement: number, finalHp: number, activeEffectIds = [afterSkillEffectId, fullClearEffectId]) => {
+      const primary = {
+        ...withWeapon("FinaleOfTheDeep", refinement),
+        buildId: `test.finale-of-the-deep.r${refinement}.${finalHp}`
+      }
+      return resolveCombatActionEffects({
+        action: requireAction("xingqiu.skill.fatal_rainscreen"),
+        activeEffectIds,
+        baseEnergyRecharge: 1,
+        enemyCount: 1,
+        primary,
+        teammates: []
+      })
+    }
+    const r1BelowCap = resolveFinale(1, 20_000)
+    const r1AtCap = resolveFinale(1, 30_000)
+    const r5BelowCap = resolveFinale(5, 20_000)
+    const inactive = resolveFinale(5, 20_000, [])
 
-    expect(r1.attackPercent).toBeCloseTo(0.12)
-    expect(r1.flatAttack).toBeCloseTo(150)
-    expect(r5.flatAttack).toBeCloseTo(300)
-    expect(inactive.flatAttack).toBeCloseTo(0)
-    expect(r1.appliedEffects).toEqual(expect.arrayContaining([expect.objectContaining({ id: effectId, value: 150 })]))
+    expect(r1BelowCap.attackPercent).toBeCloseTo(0.12)
+    expect(resolveFinalHpToFlatAttack(20_000, r1BelowCap)).toBeCloseTo(120)
+    expect(resolveFinalHpToFlatAttack(30_000, r1AtCap)).toBeCloseTo(150)
+    expect(resolveFinalHpToFlatAttack(20_000, r5BelowCap)).toBeCloseTo(240)
+    expect(resolveFinalHpToFlatAttack(20_000, inactive)).toBeCloseTo(0)
+    expect(r1BelowCap.appliedEffects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ finalHpMaximumValue: 150, id: fullClearEffectId, value: 0.006 })
+      ])
+    )
   })
 
   it("resolves Messenger's selected weak-point physical event with a guaranteed crit policy", () => {

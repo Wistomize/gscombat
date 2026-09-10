@@ -251,6 +251,7 @@ export function resolveSourceElementalMasterySnapshotsByBuildId(
   activeEffectIds: readonly string[],
   activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined,
   sourceFinalHpByBuildId: ReadonlyMap<string, number>,
+  sourceFinalAttackByBuildId: ReadonlyMap<string, number>,
   sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>
 ): {
   readonly sourceElementalMasteryBeforeShareByBuildId: ReadonlyMap<string, number>
@@ -299,6 +300,7 @@ export function resolveSourceElementalMasterySnapshotsByBuildId(
         ...(primaryElement === null ? {} : { primaryElement }),
         primary: source,
         sourceFinalHpByBuildId,
+        sourceFinalAttackByBuildId,
         ...(primaryDifferentElementTeammateCount === null
           ? {}
           : { primaryDifferentElementTeammateCount }),
@@ -609,6 +611,19 @@ export function resolveScenarioSourceStatMaps(input: {
     input.enemyCount,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
+  // Attack-derived mastery must read a complete source attack snapshot before mastery sharing starts.
+  const sourceFinalAttackByBuildId = resolveSourceFinalAttackByBuildId(
+    input.primary,
+    input.teammates,
+    input.action,
+    input.gameData,
+    input.buffs,
+    input.artifactStatDeltas,
+    input.enemyCount,
+    input.activeEffectIds,
+    input.activeEffectSourceBuildIds,
+    sourceSelfMaximumEquipmentEffectsByBuildId
+  )
   const {
     sourceElementalMasteryBeforeShareByBuildId,
     sourceFinalElementalMasteryByBuildId
@@ -623,21 +638,10 @@ export function resolveScenarioSourceStatMaps(input: {
     input.activeEffectIds,
     input.activeEffectSourceBuildIds,
     sourceFinalHpByBuildId,
+    sourceFinalAttackByBuildId,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
   const sourceFinalDefenseByBuildId = resolveSourceFinalDefenseByBuildId(
-    input.primary,
-    input.teammates,
-    input.action,
-    input.gameData,
-    input.buffs,
-    input.artifactStatDeltas,
-    input.enemyCount,
-    input.activeEffectIds,
-    input.activeEffectSourceBuildIds,
-    sourceSelfMaximumEquipmentEffectsByBuildId
-  )
-  const sourceFinalAttackByBuildId = resolveSourceFinalAttackByBuildId(
     input.primary,
     input.teammates,
     input.action,

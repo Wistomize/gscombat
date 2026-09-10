@@ -317,6 +317,7 @@ describe("supported weapon catalog", () => {
       FavoniusLance: "西风长枪",
       FavoniusSword: "西风剑",
       FavoniusWarbow: "西风猎弓",
+      FinaleOfTheDeep: "海渊终曲",
       FesteringDesire: "腐殖之剑",
       FlameForgedInsight: "拾慧铸熔",
       FadingTwilight: "落霞",

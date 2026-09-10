@@ -192,7 +192,10 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     }[]).find((character) => character.characterId === "Sandrone")
     expect(sandroneCatalog?.primaryActions.map((action) => action.id)).toEqual([
       "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
-      "sandrone.burst.phenomenon_calculus.negative_temperature_beam.stellar_superconduct"
+      "sandrone.burst.phenomenon_calculus.negative_temperature_beam.stellar_superconduct",
+      "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.ordinary",
+      "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.stellar_superconduct",
+      "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.stellar_swirl"
     ])
 
     for (const evaluation of [charged, burst]) {
@@ -384,6 +387,24 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(c6Million.result.expectedDamage).toBeGreaterThan(c4Million.result.expectedDamage)
   }, 30_000)
 
+  it("resolves Flins attack-to-mastery with Columbina, Ineffa and Sucrose in the public analysis", async () => {
+    const flins = createBuild("Flins", "CalamityQueller", "test.flins.attack-to-mastery")
+    const teammates = [
+      createBuild("Columbina", "PrototypeAmber", "test.columbina.flins-support"),
+      createBuild("Ineffa", "CalamityQueller", "test.ineffa.flins-support"),
+      withTripleElementalMasteryMainStats(createBuild("Sucrose", "SacrificialFragments", "test.sucrose.flins-support"))
+    ]
+    const result = await analyze(flins, teammates, "flins.burst.thunder_symphony.additional_lunar_charged")
+    const mastery = findEffect(result.evaluation, "flins.passive.whispers_of_the_spectral_flame.elemental_mastery")
+
+    expect(mastery?.value).toBeCloseTo(Math.min(result.evaluation.stats.effectiveAttack * 0.08, 160))
+    expect(findEffect(result.evaluation, "sucrose.passive.mollis_favonius.elemental_mastery_share")?.value)
+      .toBeGreaterThan(0)
+    expect(result.evaluation.result.expectedDamage).toBeGreaterThan(0)
+    expect(result.analysis.weapons.length).toBeGreaterThan(0)
+    expect(result.analysis.weapons.every((weapon) => Number.isFinite(weapon.expectedDamage))).toBe(true)
+  }, 20_000)
+
   it("evaluates both Flins Thunder Symphony Lunar-Charged hits through their reviewed stages", async () => {
     const flins = createBuild("Flins", "CalamityQueller", "test.flins.c6.lunar-charged", 6)
     const ineffa = createBuild("Ineffa", "CalamityQueller", "test.ineffa.c1.flins-support", 1)
@@ -460,6 +481,7 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     }[]).find((character) => character.characterId === "Ineffa")
     expect(catalogIneffa?.primaryActionIds).toEqual([
       "ineffa.passive.frequency_overlimit_circuit.additional_lunar_charged",
+      "ineffa.constellation.6.a_dawning_morn_for_you.additional_lunar_charged",
       "ineffa.skill.cleaning_mode_carrier_frequency.initial_hit",
       "ineffa.burst.supreme_instruction_cyclonic_exterminator.initial_hit"
     ])
@@ -762,7 +784,8 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(findEffect(constellationOne, "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition")?.value)
       .toBeCloseTo(constellationOne.stats.elementalMastery * 5.5)
     expect(constellationOne.result.expectedDamage).toBeGreaterThan(constellationZero.result.expectedDamage)
-  }, 60_000)
+    // Three full HTTP analyses each include all weapon, artifact and progression counterfactuals.
+  }, 120_000)
 
   it("evaluates both Coda at Dawn endings with their cumulative C1 extra hit", async () => {
     const odette = createBuild("Odette", "FavoniusSword", "test.odette.coda-c1", 1)
@@ -839,6 +862,8 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     const partyCritDamageId = "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
     const swirlCritRateId = "yumemizuki_mizuki.constellation.6.dreamdrifter.party_swirl.crit_rate"
     const swirlCritDamageId = "yumemizuki_mizuki.constellation.6.dreamdrifter.party_swirl.crit_damage"
+    const dreamdrifterElementalMasteryId =
+      "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery"
 
     expect(findEffect(selfC5, selfCritRateId)).toBeUndefined()
     expect(findEffect(selfC5, selfCritDamageId)).toBeUndefined()
@@ -853,6 +878,8 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(partyC6.stats.critRate).toBeCloseTo(partyC5.stats.critRate + 0.1)
     expect(partyC6.stats.critDamage).toBeCloseTo(partyC5.stats.critDamage + 0.2)
     expect(partyC6.result.expectedDamage).toBeGreaterThan(partyC5.result.expectedDamage)
+    expect(findEffect(partyC5, dreamdrifterElementalMasteryId)).toBeUndefined()
+    expect(findEffect(partyC6, dreamdrifterElementalMasteryId)).toBeUndefined()
     expect(findEffect(ownSwirlC5, swirlCritRateId)).toBeUndefined()
     expect(findEffect(ownSwirlC5, swirlCritDamageId)).toBeUndefined()
     expect(findEffect(ownSwirlC6, swirlCritRateId)?.value).toBe(0.3)

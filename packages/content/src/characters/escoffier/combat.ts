@@ -93,6 +93,38 @@ export const escoffierCombatCoverage: CharacterCombatCoverage = {
       damageKind: "direct",
       damageParts: [
         {
+          coefficientParameterId: "low-temperature-cooking-frosty-parfait-damage",
+          id: "cold-storage-frosty-parfait",
+          snapshotChecks: [
+            { expectedCoefficient: 1.2, talentLevel: 1 },
+            { expectedCoefficient: 2.16, talentLevel: 10 },
+            { expectedCoefficient: 2.55, talentLevel: 13 }
+          ]
+        }
+      ],
+      element: escoffierDefinition.element,
+      evaluator: "declared_direct",
+      id: "escoffier.skill.low_temperature_cooking.cold_storage.frosty_parfait.single_hit",
+      kind: "damage",
+      parameterReferences: [
+        {
+          groupId: "skill",
+          id: "low-temperature-cooking-frosty-parfait-damage",
+          // Pinned skillParams[1] is 冻霜芭菲伤害, separate from the cast hit at [0] and Ousia hit at [3].
+          parameterIndex: 1,
+          source: "talent",
+          talentSlot: "skill"
+        }
+      ],
+      scalingStat: "attack",
+      status: "verified",
+      talentSlot: "skill"
+    },
+    {
+      characterId: "Escoffier",
+      damageKind: "direct",
+      damageParts: [
+        {
           coefficientParameterId: "low-temperature-cooking-skill-damage",
           id: "c6-special-grade-frosty-parfait-proxy",
           snapshotChecks: [{ expectedCoefficient: 0.504, talentLevel: 1 }]
@@ -423,6 +455,16 @@ export const escoffierCombatCoverage: CharacterCombatCoverage = {
   characterId: "Escoffier",
   metrics: [
     {
+      actionId: "escoffier.skill.low_temperature_cooking.cold_storage.frosty_parfait.single_hit",
+      characterId: "Escoffier",
+      id: "escoffier.skill.low_temperature_cooking.cold_storage.frosty_parfait.single_hit",
+      kind: "damage",
+      label: "低温烹饪 / 低温冷藏·冻霜芭菲单次伤害",
+      sourceActionId: "escoffier.skill.low_temperature_cooking.cold_storage.frosty_parfait.single_hit",
+      status: "verified",
+      target: "enemy"
+    },
+    {
       characterId: "Escoffier",
       flatParameter: {
         reference: {
@@ -484,7 +526,7 @@ export const escoffierCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "Scoring Cut's initial hit and one Low-Temperature Cooking tap initial hit remain verified attack-scaling Cryo actions. Escoffier's selected role metric is one nearby party member's Scoring Cut cast healing: Attack × burst[1] + burst[2], then healing bonus, with burst Talent Level +3 at C5. The pinned snapshot maps the ratio to 1.72032 at Talent Level 1 and 3.096576 at Level 10, and the flat value to 1078.5255 and 2372.936. C6 provides owner-scoped Special-Grade Frosty Parfait metrics: each event is 500% of Escoffier's own Attack as Crit-eligible Cryo Skill damage, so it uses her own Cryo bonus, Crit, and Skill bonus; the maximum metric retains all six separate 0.5-second-cooldown events from one Cold Storage Cooking Mek. These metrics are zero below C6. In an all-Hydro/Cryo four-character party, C1's maximum-reachable post-Skill-or-Burst state also contributes 60% Cryo Crit DMG to every Parfait hit. Better than Medicine is automatically resolved as the current 12-second window after Low-Temperature Cooking or Scoring Cut hits: each configured Hydro or Cryo party member contributes its cumulative 5%/5%/5%/40% tier, reducing eligible Hydro and Cryo resistance by 5%/10%/15%/55%. It does not model the number of healed teammates, Cooking Mek's passive heal, hold behavior, timing, external effects, or other character states.",
+    "Scoring Cut's initial hit and one Low-Temperature Cooking tap initial hit remain verified attack-scaling Cryo actions. The regular Cold Storage Frosty Parfait metric is one periodic Cryo Skill hit using Attack × skill[1]: 120% at Talent Level 1, 216% at Level 10, or 255% at Level 13 after C3's Skill Talent Level +3. It excludes the cast hit, Ousia hit, duration totals, and C6 Special-Grade Frosty Parfait events. Escoffier's healing metric is one nearby party member's Scoring Cut cast healing: Attack × burst[1] + burst[2], then healing bonus, with burst Talent Level +3 at C5. The pinned snapshot maps the ratio to 1.72032 at Talent Level 1 and 3.096576 at Level 10, and the flat value to 1078.5255 and 2372.936. C6 provides owner-scoped Special-Grade Frosty Parfait metrics: each event is 500% of Escoffier's own Attack as Crit-eligible Cryo Skill damage, so it uses her own Cryo bonus, Crit, and Skill bonus; the maximum metric retains all six separate 0.5-second-cooldown events from one Cold Storage Cooking Mek. These metrics are zero below C6. In an all-Hydro/Cryo four-character party, C1's maximum-reachable post-Skill-or-Burst state also contributes 60% Cryo Crit DMG to every Parfait hit. Better than Medicine is automatically resolved as the current 12-second window after Low-Temperature Cooking or Scoring Cut hits: each configured Hydro or Cryo party member contributes its cumulative 5%/5%/5%/40% tier, reducing eligible Hydro and Cryo resistance by 5%/10%/15%/55%. It does not model the number of healed teammates, Cooking Mek's passive heal, hold behavior, timing, external effects, or other character states.",
   label: escoffierDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

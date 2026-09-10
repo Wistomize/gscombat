@@ -129,7 +129,9 @@ export function resolveEffectValue(
 
 export function resolveFinalHpMaximumValue(effect: CombatActionEffect, source: CharacterBuild): number | undefined {
   if (
-    (effect.target !== "finalHpToDamageBonus" && effect.target !== "finalHpToOwnElementDamageBonus") ||
+    (effect.target !== "finalHpToFlatAttack" &&
+      effect.target !== "finalHpToDamageBonus" &&
+      effect.target !== "finalHpToOwnElementDamageBonus") ||
     effect.value.kind !== "final_hp"
   ) {
     return undefined

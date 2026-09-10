@@ -20,10 +20,9 @@ export const equipmentCoverage = {
     {
       id: "weapon.finale-of-the-deep.bond-of-life-cleared.uncapped-or-partial.flat-attack",
       label: "海渊终曲 · 清除未达上限或部分生命之契后的攻击力",
-      reason: "该分支仍依赖实际清除的生命之契数值，并按数值、精炼系数与每效果上限计算平面攻击力。",
-      requiredCapability: "bond_of_life_cleared_scalar_and_hp_sourced_capped_flat_attack",
+      reason: "当前核心动作固定假设治疗量充足，并完整清除本次按生命值上限25%生成的生命之契。",
       source: weaponSource("FinaleOfTheDeep"),
-      status: "unsupported"
+      status: "not_applicable"
     }
   ],
   equipmentId: "FinaleOfTheDeep",

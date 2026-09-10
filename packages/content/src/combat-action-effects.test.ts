@@ -1746,18 +1746,30 @@ describe("combat action effects", () => {
     )
   })
 
-  it("declares Finale of the Deep's selected capped Bond-of-Life attack snapshot", () => {
-    const effectId = "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack"
-    const effect = listCombatActionEffects().find((candidate) => candidate.id === effectId)
+  it("declares Finale of the Deep's maximum-reachable full Bond-of-Life clear", () => {
+    const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
+    const afterSkillEffectId = "weapon.finale-of-the-deep.after-skill.attack-percent"
+    const fullClearEffectId = "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack"
 
-    expect(effect).toEqual({
-      activation: "active",
-      id: effectId,
-      label: "海渊终曲 · 清除生命之契后攻击力达到上限（15秒内）",
-      selectionMode: "optional",
+    expect(effectsById.get(afterSkillEffectId)).toEqual({
+      activation: "maximum_reachable",
+      id: afterSkillEffectId,
+      label: "海渊终曲 · 施放元素战技后的攻击力",
       source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },
-      target: "flatAttack",
-      value: { kind: "refinement_table", values: [150, 188, 225, 263, 300] }
+      target: "attackPercent",
+      value: { kind: "refinement_table", values: [0.12, 0.15, 0.18, 0.21, 0.24] }
+    })
+    expect(effectsById.get(fullClearEffectId)).toEqual({
+      activation: "maximum_reachable",
+      id: fullClearEffectId,
+      label: "海渊终曲 · 25%生命之契完整清除后的攻击力（15秒内）",
+      source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },
+      target: "finalHpToFlatAttack",
+      value: {
+        kind: "final_hp",
+        maximumValue: { kind: "refinement_table", values: [150, 188, 225, 263, 300] },
+        multiplier: { kind: "refinement_table", values: [0.006, 0.0075, 0.009, 0.0105, 0.012] }
+      }
     })
   })
 })

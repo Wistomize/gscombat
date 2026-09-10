@@ -2245,18 +2245,24 @@ describe("API", () => {
     expect(r5Response.json().evaluation.rotation.dpr).toBeGreaterThan(r1Response.json().evaluation.rotation.dpr)
   })
 
-  it("applies Finale of the Deep's selected capped Bond-of-Life snapshot through the public endpoint", async () => {
+  it("applies Finale of the Deep's full Bond clear and exposes it through public weapon comparison", async () => {
     const afterSkillEffectId = "weapon.finale-of-the-deep.after-skill.attack-percent"
     const cappedEffectId = "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack"
-    const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
+    const [catalogResponse, presetResponse] = await Promise.all([
+      app.inject({ method: "GET", url: "/v1/catalog" }),
+      app.inject({ method: "GET", url: "/v1/presets" })
+    ])
     const presetScenario = presetResponse.json().presets[0].scenario
-    const xingqiu = presetScenario.teammates.find((build: { readonly characterId: string }) => build.characterId === "Xingqiu")
-    const requestAnalysis = (refinement: number, activeEffectIds: readonly string[]) =>
+    const xingqiu = presetScenario.teammates.find(
+      (build: { readonly characterId: string }) => build.characterId === "Xingqiu"
+    )
+    if (!xingqiu) throw new Error("Missing Xingqiu built-in configuration")
+    const requestAnalysis = (refinement: number) =>
       app.inject({
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { activeEffectIds, enemyCount: 1 },
+          conditions: { activeEffectIds: [], enemyCount: 1, equipmentEffectMode: "maximum_reachable" },
           externalBuffs: [],
           primary: {
             ...xingqiu,
@@ -2268,31 +2274,43 @@ describe("API", () => {
             weapon: { ascension: 6, level: 90, refinement, weaponId: "FinaleOfTheDeep" }
           },
           targetActionId: "xingqiu.skill.fatal_rainscreen",
-          teammates: []
+          teammates: [],
+          weaponComparisonRefinements: { FinaleOfTheDeep: refinement }
         },
         url: "/v1/analysis"
       })
-    const baselineResponse = await requestAnalysis(1, [])
-    const r1Response = await requestAnalysis(1, [afterSkillEffectId, cappedEffectId])
-    const r5Response = await requestAnalysis(5, [cappedEffectId])
+    const [r1Response, r5Response] = await Promise.all([requestAnalysis(1), requestAnalysis(5)])
 
-    expect(baselineResponse.statusCode).toBe(200)
-    expect(r1Response.statusCode).toBe(200)
-    expect(r5Response.statusCode).toBe(200)
+    expect(catalogResponse.statusCode).toBe(200)
+    expect(r1Response.statusCode, r1Response.body).toBe(200)
+    expect(r5Response.statusCode, r5Response.body).toBe(200)
+    const r1Evaluation = r1Response.json().evaluation
+    const r5Evaluation = r5Response.json().evaluation
+    const expectedR1FlatAttack = Math.min(r1Evaluation.stats.effectiveHp * 0.25 * 0.024, 150)
+    const expectedR5FlatAttack = Math.min(r5Evaluation.stats.effectiveHp * 0.25 * 0.048, 300)
     expect(r1Response.json().evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: afterSkillEffectId, target: "attackPercent", value: 0.12 }),
-        expect.objectContaining({ id: cappedEffectId, target: "flatAttack", value: 150 })
+        expect.objectContaining({ id: cappedEffectId, target: "flatAttack", value: expectedR1FlatAttack })
       ])
     )
     expect(r5Response.json().evaluation.appliedEffects).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: cappedEffectId, target: "flatAttack", value: 300 })])
+      expect.arrayContaining([
+        expect.objectContaining({ id: afterSkillEffectId, target: "attackPercent", value: 0.24 }),
+        expect.objectContaining({ id: cappedEffectId, target: "flatAttack", value: expectedR5FlatAttack })
+      ])
     )
-    expect(r1Response.json().evaluation.stats.flatAttack).toBeCloseTo(
-      baselineResponse.json().evaluation.stats.flatAttack + 150
+    expect(catalogResponse.json().weapons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: "海渊终曲", weaponId: "FinaleOfTheDeep", weaponType: "sword" })
+      ])
     )
-    expect(r1Response.json().evaluation.rotation.dpr).toBeGreaterThan(baselineResponse.json().evaluation.rotation.dpr)
-    expect(r5Response.json().evaluation.rotation.dpr).toBeGreaterThan(baselineResponse.json().evaluation.rotation.dpr)
+    expect(r1Response.json().analysis.weapons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ expectedDamage: expect.any(Number), refinement: 1, weaponId: "FinaleOfTheDeep" })
+      ])
+    )
+    expect(r5Evaluation.rotation.dpr).toBeGreaterThan(r1Evaluation.rotation.dpr)
   })
 
   it("keeps Echoes of an Offering's selected Valley Rite on the triggering normal-hit formula", async () => {

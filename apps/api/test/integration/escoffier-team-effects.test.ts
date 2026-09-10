@@ -57,7 +57,55 @@ afterAll(async () => {
   await app.close()
 })
 
-describe("Escoffier team resistance reduction API integration", () => {
+describe("Escoffier damage metric and team effects API integration", () => {
+  it("publishes and calculates one regular Cold Storage hit with cumulative talent and team bonuses", async () => {
+    const actionId = "escoffier.skill.low_temperature_cooking.cold_storage.frosty_parfait.single_hit"
+    const catalogResponse = await app.inject({ method: "GET", url: "/v1/catalog" })
+    expect(catalogResponse.statusCode).toBe(200)
+    const characters = catalogResponse.json().characters as readonly {
+      readonly characterId: string
+      readonly primaryActions: readonly { readonly id: string; readonly label: string }[]
+    }[]
+    expect(characters.find((character) => character.characterId === "Escoffier")?.primaryActions).toContainEqual(
+      expect.objectContaining({
+        id: actionId,
+        label: "低温烹饪 / 低温冷藏·冻霜芭菲单次伤害"
+      })
+    )
+
+    for (const constellation of [0, 3, 6]) {
+      const response = await app.inject({
+        method: "POST",
+        payload: {
+          ...raidenNationalBuiltinScenario,
+          conditions: { activeEffectIds: [], enemyCount: 1, equipmentEffectMode: "maximum_reachable" },
+          externalBuffs: [],
+          primary: { ...escoffier, constellation },
+          targetActionId: actionId,
+          teammates: [skirk, furina, shenhe]
+        },
+        url: "/v1/analysis"
+      })
+
+      expect(response.statusCode, response.body).toBe(200)
+      const { analysis, evaluation } = response.json()
+      expect(evaluation.stats.talentMultiplier).toBeCloseTo(constellation >= 3 ? 2.55 : 2.16)
+      expect(evaluation.stats.resistanceReduction).toBeCloseTo(0.55)
+      expect(evaluation.rotation.events).toHaveLength(1)
+      expect(evaluation.rotation.events[0].expectedDamage).toBeGreaterThan(0)
+      expect(analysis.weapons.length).toBeGreaterThan(0)
+      expect(analysis.marginalSubstats).toContainEqual(expect.objectContaining({ stat: "atk" }))
+      if (constellation >= 1) {
+        expect(evaluation.appliedEffects).toContainEqual(expect.objectContaining({
+          id: "escoffier.constellation.1.pre_dinner_dance_for_your_tastebuds.freshly_prepared_delicacy.cryo_crit_damage",
+          sourceId: escoffier.buildId,
+          target: "critDamage",
+          value: 0.6
+        }))
+      }
+    }
+  })
+
   it("automatically applies the matching Hydro/Cryo party resistance-reduction tier to Skirk", async () => {
     const cases = [
       { expectedReduction: 0.1, teammates: [escoffier, venti, noelle] },

@@ -1,13 +1,17 @@
 import type { CombatActionEffect } from "../../combat/types.js"
 
 export const FINALE_OF_THE_DEEP_AFTER_SKILL_ATTACK_PERCENT = [0.12, 0.15, 0.18, 0.21, 0.24] as const
+export const FINALE_OF_THE_DEEP_BOND_OF_LIFE_MAX_HP_RATIO = 0.25
+export const FINALE_OF_THE_DEEP_CLEARED_BOND_ATTACK_RATIO = [0.024, 0.03, 0.036, 0.042, 0.048] as const
 export const FINALE_OF_THE_DEEP_BOND_CLEARED_AT_CAP_FLAT_ATTACK = [150, 188, 225, 263, 300] as const
+const FINALE_OF_THE_DEEP_FULL_CLEAR_FINAL_HP_MULTIPLIER = FINALE_OF_THE_DEEP_CLEARED_BOND_ATTACK_RATIO.map(
+  (ratio) => ratio * FINALE_OF_THE_DEEP_BOND_OF_LIFE_MAX_HP_RATIO
+)
 
-/** Typed selected post-skill attack contribution of Finale of the Deep. */
+/** Typed maximum-reachable post-skill attack contribution of Finale of the Deep. */
 export const finaleOfTheDeepCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
-    selectionMode: "optional",
+    activation: "maximum_reachable",
     id: "weapon.finale-of-the-deep.after-skill.attack-percent",
     label: "海渊终曲 · 施放元素战技后的攻击力",
     source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },
@@ -15,12 +19,15 @@ export const finaleOfTheDeepCombatActionEffects: readonly CombatActionEffect[] =
     value: { kind: "refinement_table", values: FINALE_OF_THE_DEEP_AFTER_SKILL_ATTACK_PERCENT }
   },
   {
-    activation: "active",
-    selectionMode: "optional",
+    activation: "maximum_reachable",
     id: "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack",
-    label: "海渊终曲 · 清除生命之契后攻击力达到上限（15秒内）",
+    label: "海渊终曲 · 25%生命之契完整清除后的攻击力（15秒内）",
     source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },
-    target: "flatAttack",
-    value: { kind: "refinement_table", values: FINALE_OF_THE_DEEP_BOND_CLEARED_AT_CAP_FLAT_ATTACK }
+    target: "finalHpToFlatAttack",
+    value: {
+      kind: "final_hp",
+      maximumValue: { kind: "refinement_table", values: FINALE_OF_THE_DEEP_BOND_CLEARED_AT_CAP_FLAT_ATTACK },
+      multiplier: { kind: "refinement_table", values: FINALE_OF_THE_DEEP_FULL_CLEAR_FINAL_HP_MULTIPLIER }
+    }
   }
 ]
