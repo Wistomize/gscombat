@@ -2,7 +2,7 @@ export {
   BENNETT_BURST_FIELD_EFFECT_ID as EFFECT_BENNETT_BURST_FIELD,
   RAIDEN_SKILL_EYE_EFFECT_ID as EFFECT_RAIDEN_SKILL_EYE
 } from "@gscombat/content"
-export { analyzeScenario } from "./analysis/analyze.js"
+export { analyzeScenario, analyzeWeaponComparison, evaluateScenarioAnalysis } from "./analysis/analyze.js"
 export type {
   EffectiveArtifactResult,
   MarginalSubstatResult,

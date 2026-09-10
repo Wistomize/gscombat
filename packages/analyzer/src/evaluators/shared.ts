@@ -1027,15 +1027,8 @@ export function resolveDamageBonusByElement(
   }
 }
 
-/**
- * Evaluates a verified direct-action declaration using base character, weapon, artifact, and selected team buffs.
- *
- * This bridge supports attack, health, defense, and elemental-mastery direct damage with explicitly declared
- * amplifying or additive reactions.
- * Maintained typed equipment effects and explicit current-action snapshots are resolved before this bridge; broader
- * kit timing and rotation states remain action-specific.
- */
-export function resolveScenarioActionEffectContext(input: {
+/** Fixed action and party inputs used to prepare source or recipient contexts. */
+interface ScenarioActionEffectContextInput {
   readonly action: CombatActionMetadata
   readonly activeEffectIds: readonly string[]
   readonly activeEffectSourceBuildIds?: Readonly<Record<string, string>>
@@ -1047,7 +1040,10 @@ export function resolveScenarioActionEffectContext(input: {
   readonly moonsignLevel: MoonsignLevel
   readonly resolvedActionParameters: ReadonlyMap<string, number>
   readonly teammates: readonly CharacterBuild[]
-}) {
+}
+
+/** Prepares only the current recipient; it does not recompute the real action owner's source maps. */
+export function resolveScenarioParticipantContext(input: ScenarioActionEffectContextInput) {
   const primaryElement = resolveBuildElement(input.build, input.gameData)
   const teamUniqueElementCount = resolveTeamUniqueElementCount([input.build, ...input.teammates], input.gameData)
   const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
@@ -1083,6 +1079,20 @@ export function resolveScenarioActionEffectContext(input: {
       })
     ])
   ]
+  const baseStats = resolveStats(
+    input.build, input.action, input.gameData, input.buffs, input.artifactStatDeltas,
+    input.resolvedActionParameters, EMPTY_COMBAT_ACTION_EFFECTS
+  )
+  return {
+    baseStats, primaryDifferentElementTeammateCount, primaryElement,
+    primarySameElementTeammateCount, resolvedActiveEffectIds, teamUniqueElementCount
+  }
+}
+
+/** Prepares a full action context, keeping source ownership distinct from temporary recipients. */
+export function resolveScenarioActionEffectContext(input: ScenarioActionEffectContextInput) {
+  const participant = resolveScenarioParticipantContext(input)
+  const { resolvedActiveEffectIds } = participant
   const sourceSelfMaximumEquipmentEffectsByBuildId = resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
     input.build,
     input.teammates,
@@ -1143,27 +1153,13 @@ export function resolveScenarioActionEffectContext(input: {
     input.activeEffectSourceBuildIds,
     sourceSelfMaximumEquipmentEffectsByBuildId
   )
-  const baseStats = resolveStats(
-    input.build,
-    input.action,
-    input.gameData,
-    input.buffs,
-    input.artifactStatDeltas,
-    input.resolvedActionParameters,
-    EMPTY_COMBAT_ACTION_EFFECTS
-  )
   return {
-    baseStats,
-    primaryDifferentElementTeammateCount,
-    primaryElement,
-    primarySameElementTeammateCount,
-    resolvedActiveEffectIds,
+    ...participant,
     sourceFinalAttackByBuildId,
     sourceFinalDefenseByBuildId,
     sourceFinalElementalMasteryByBuildId,
     sourceElementalMasteryBeforeShareByBuildId,
-    sourceFinalHpByBuildId,
-    teamUniqueElementCount
+    sourceFinalHpByBuildId
   }
 }
 

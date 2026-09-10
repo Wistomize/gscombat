@@ -680,7 +680,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       const participantTeammates = party.filter((candidate) => candidate.buildId !== participant.buildId)
       const participantAction: CombatActionMetadata = { ...action, characterId: participant.characterId }
       const participantDeltas = participant.buildId === build.buildId ? artifactStatDeltas : undefined
-      const participantContext = shared.resolveScenarioActionEffectContext({
+      const participantContext = shared.resolveScenarioParticipantContext({
         action: participantAction,
         activeEffectIds: resolvedActiveEffectIds,
         ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),

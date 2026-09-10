@@ -19,7 +19,7 @@ import {
   resolvePrimarySameElementTeammateCount,
   resolveTeamUniqueElementCount
 } from "../core/build-variant.js"
-import { evaluateScenario } from "../scenario/evaluate.js"
+import { evaluateScenario, type ScenarioEvaluation } from "../scenario/evaluate.js"
 import { resolveTeamState } from "../scenario/team-state.js"
 
 interface AnalyzableSubstat {
@@ -346,43 +346,62 @@ function analyzeWeapons(
   baselineExpectedDamage: number,
   refinementOverrides: Readonly<Record<string, number>>
 ): readonly WeaponComparisonResult[] {
-  const primaryCharacter = gameData.getCharacter(scenario.primary.characterId)
-  if (!primaryCharacter) throw new Error(`Missing primary character in game data: ${scenario.primary.characterId}`)
   return supportedWeapons
-    .filter(
-      (weapon) =>
-        (weapon.rarity === 4 || weapon.rarity === 5) &&
-        weapon.weaponType === primaryCharacter.weaponType &&
-        gameData.getWeaponStat(weapon.weaponId, "atk", 90, 6) !== undefined
-    )
     .flatMap((weapon) => {
       const refinement = refinementOverrides[weapon.weaponId] ?? getWeaponComparisonRefinement(weapon.rarity)
-      const candidateActiveEffects = getCandidateActiveEffects(scenario, weapon.weaponId)
-      if (!canEvaluateCandidateWeapon(scenario, weapon.weaponId, candidateActiveEffects.activeEffectIds, gameData)) return []
-      const candidateScenario: EvaluationScenario = {
-        ...scenario,
-        conditions: {
-          ...scenario.conditions,
-          ...candidateActiveEffects
-        },
-        primary: {
-          ...scenario.primary,
-          weapon: { ascension: 6, level: 90, refinement, weaponId: weapon.weaponId }
-        }
-      }
-      const expectedDamage = evaluateScenario(candidateScenario, gameData).actionExpectedDamage
-      return [
-        {
-          expectedDamage,
-          gainRatio: baselineExpectedDamage === 0 ? 0 : expectedDamage / baselineExpectedDamage - 1,
-          label: weapon.label,
-          rarity: weapon.rarity,
-          refinement,
-          weaponId: weapon.weaponId
-        }
-      ]
+      const candidate = prepareWeaponCandidate(scenario, gameData, weapon.weaponId, refinement)
+      return candidate ? [evaluateWeaponCandidate(candidate, gameData, baselineExpectedDamage)] : []
     })
     .sort((left, right) => right.expectedDamage - left.expectedDamage)
+}
+
+function prepareWeaponCandidate(
+  scenario: EvaluationScenario, gameData: GameDataRepository, weaponId: string, refinement: number
+) {
+  const primaryCharacter = gameData.getCharacter(scenario.primary.characterId)
+  if (!primaryCharacter) throw new Error(`Missing primary character in game data: ${scenario.primary.characterId}`)
+  const weapon = supportedWeapons.find((candidate) => candidate.weaponId === weaponId)
+  if (!weapon || (weapon.rarity !== 4 && weapon.rarity !== 5) || weapon.weaponType !== primaryCharacter.weaponType ||
+    gameData.getWeaponStat(weaponId, "atk", 90, 6) === undefined) return undefined
+  const candidateActiveEffects = getCandidateActiveEffects(scenario, weaponId)
+  if (!canEvaluateCandidateWeapon(scenario, weaponId, candidateActiveEffects.activeEffectIds, gameData)) return undefined
+  return {
+    weapon,
+    scenario: {
+      ...scenario,
+      conditions: { ...scenario.conditions, ...candidateActiveEffects },
+      primary: { ...scenario.primary, weapon: { ascension: 6, level: 90, refinement, weaponId } }
+    }
+  }
+}
+
+function evaluateWeaponCandidate(
+  candidate: NonNullable<ReturnType<typeof prepareWeaponCandidate>>,
+  gameData: GameDataRepository,
+  baselineExpectedDamage: number
+): WeaponComparisonResult {
+  const expectedDamage = evaluateScenario(candidate.scenario, gameData).actionExpectedDamage
+  return {
+    expectedDamage,
+    gainRatio: baselineExpectedDamage === 0 ? 0 : expectedDamage / baselineExpectedDamage - 1,
+    label: candidate.weapon.label,
+    rarity: candidate.weapon.rarity,
+    refinement: candidate.scenario.primary.weapon.refinement,
+    weaponId: candidate.weapon.weaponId
+  }
+}
+
+/** Evaluates only the baseline and one eligible candidate through the full scenario pipeline. */
+export function analyzeWeaponComparison(
+  scenario: EvaluationScenario, gameData: GameDataRepository, weaponId: string, refinement: number
+): { readonly baselineExpectedDamage: number; readonly weapon: WeaponComparisonResult } {
+  if (!Number.isInteger(refinement) || refinement < 1 || refinement > 5) {
+    throw Object.assign(new Error("武器精炼等级必须为 1 至 5 的整数"), { statusCode: 400 })
+  }
+  const candidate = prepareWeaponCandidate(scenario, gameData, weaponId, refinement)
+  if (!candidate) throw Object.assign(new Error(`当前场景无法比较武器：${weaponId}`), { statusCode: 400 })
+  const baselineExpectedDamage = evaluateScenario(scenario, gameData).actionExpectedDamage
+  return { baselineExpectedDamage, weapon: evaluateWeaponCandidate(candidate, gameData, baselineExpectedDamage) }
 }
 
 function analyzeProgressionGains(
@@ -449,6 +468,21 @@ export function analyzeScenario(
   options: AnalyzeScenarioOptions = {}
 ): ScenarioAnalysis {
   const baselineExpectedDamage = evaluateScenario(scenario, gameData).actionExpectedDamage
+  return analyzeWithBaseline(scenario, gameData, baselineExpectedDamage, options)
+}
+
+/** Produces the complete report while evaluating its authoritative baseline exactly once. */
+export function evaluateScenarioAnalysis(
+  scenario: EvaluationScenario, gameData: GameDataRepository, options: AnalyzeScenarioOptions = {}
+): { readonly evaluation: ScenarioEvaluation; readonly analysis: ScenarioAnalysis } {
+  const evaluation = evaluateScenario(scenario, gameData)
+  return { evaluation, analysis: analyzeWithBaseline(scenario, gameData, evaluation.actionExpectedDamage, options) }
+}
+
+function analyzeWithBaseline(
+  scenario: EvaluationScenario, gameData: GameDataRepository,
+  baselineExpectedDamage: number, options: AnalyzeScenarioOptions
+): ScenarioAnalysis {
   const averageRolls = getAverageRolls(gameData)
   const marginalSubstats = analyzeMarginalSubstats(scenario, gameData, baselineExpectedDamage, averageRolls)
   const effectiveArtifacts = analyzeEffectiveArtifacts(scenario, averageRolls, marginalSubstats)

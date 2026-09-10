@@ -486,6 +486,27 @@ export function getWeaponComparisonRefinement(rarity: number): number {
   return rarity === 5 ? 1 : 5
 }
 
+export const WeaponComparisonResultSchema = Type.Object({
+  expectedDamage: Type.Number(),
+  gainRatio: Type.Number(),
+  label: Type.String(),
+  rarity: Type.Integer(),
+  refinement: Type.Integer(),
+  weaponId: Type.String()
+})
+
+export const WeaponComparisonRequestSchema = Type.Object({
+  scenario: EvaluationScenarioSchema,
+  weaponId: Type.String({ minLength: 1, maxLength: 100 }),
+  refinement: Type.Integer({ minimum: 1, maximum: 5 })
+})
+export const WeaponComparisonResponseSchema = Type.Object({
+  baselineExpectedDamage: Type.Number(),
+  weapon: WeaponComparisonResultSchema
+})
+export type WeaponComparisonRequest = Type.Static<typeof WeaponComparisonRequestSchema>
+export type WeaponComparisonResponse = Type.Static<typeof WeaponComparisonResponseSchema>
+
 export const AnalysisResponseSchema = Type.Object({
   analysis: Type.Object({
     baselineExpectedDamage: Type.Number(),
@@ -512,16 +533,7 @@ export const AnalysisResponseSchema = Type.Object({
       })
     ),
     totalEffectiveRolls: Type.Number(),
-    weapons: Type.Array(
-      Type.Object({
-        expectedDamage: Type.Number(),
-        gainRatio: Type.Number(),
-        label: Type.String(),
-        rarity: Type.Integer(),
-        refinement: Type.Integer(),
-        weaponId: Type.String()
-      })
-    )
+    weapons: Type.Array(WeaponComparisonResultSchema)
   }),
   engineVersion: Type.String(),
   evaluation: Type.Object({

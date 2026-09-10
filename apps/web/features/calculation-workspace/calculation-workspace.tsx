@@ -36,6 +36,7 @@ import {
   type SupportMetricContextDraft
 } from "../calculation-setup/model"
 import { assembleEvaluationScenario } from "../calculation-setup/scenario-adapter"
+import { useIncrementalAnalysis } from "./use-incremental-analysis"
 
 interface TeamCalculationWorkspaceProps {
   readonly catalog: CatalogResponse
@@ -63,10 +64,17 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   const [scenarioEffectOptionsError, setScenarioEffectOptionsError] = useState("")
   const [scenarioEffectReloadVersion, setScenarioEffectReloadVersion] = useState(0)
   const [weaponComparisonRefinements, setWeaponComparisonRefinements] = useState<Record<string, number>>({})
-  const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null)
+  const incremental = useIncrementalAnalysis()
+  const { analysis, weaponStates } = incremental
   const [supportMetricResponse, setSupportMetricResponse] = useState<SupportMetricEvaluationResponse | null>(null)
   const [status, setStatus] = useState("请选择计算对象和指标")
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    incremental.invalidate()
+    setSupportMetricResponse(null)
+  }, [builds, partyBuildIds, targetBuildId, targetActionId, supportMetricId, conditions, enemy, buffs,
+    selectedCharacterEffectIds, supportMetricContext, scenarioEffectOptions, incremental.invalidate])
 
   useEffect(() => {
     let cancelled = false
@@ -205,7 +213,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   }, [hasCryoResonance, hasGeoResonance])
 
   const clearResults = () => {
-    setAnalysis(null)
+    incremental.invalidate()
     setSupportMetricResponse(null)
   }
 
@@ -250,12 +258,14 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
     setStatus(`已选择指标：${metric.label}`)
   }
 
-  const runAnalysis = async (refinementOverrides: Readonly<Record<string, number>> = weaponComparisonRefinements) => {
+  const runAnalysis = async () => {
     if (!targetBuild) {
       setError("请选择计算对象")
       return
     }
     setError("")
+    const version = incremental.invalidate()
+    setSupportMetricResponse(null)
     if (selectedSupportMetric) {
       const contextError = validateSupportMetricContext(selectedSupportMetric, targetBuild, supportMetricContext)
       if (contextError) {
@@ -274,10 +284,12 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
           method: "POST"
         })
         if (!response.ok) throw new Error(`辅助指标接口返回 HTTP ${response.status}`)
-        setAnalysis(null)
-        setSupportMetricResponse((await response.json()) as SupportMetricEvaluationResponse)
+        const result = (await response.json()) as SupportMetricEvaluationResponse
+        if (!incremental.isCurrent(version)) return
+        setSupportMetricResponse(result)
         setStatus("辅助指标计算完成")
       } catch (caught) {
+        if (!incremental.isCurrent(version)) return
         setStatus("计算失败")
         setError(caught instanceof Error ? caught.message : "辅助指标计算失败")
       }
@@ -315,7 +327,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         targetActionId: targetAction.id
       })
       const response = await fetch("/api/backend/v1/analysis", {
-        body: JSON.stringify({ ...scenario, weaponComparisonRefinements: refinementOverrides }),
+        body: JSON.stringify({ ...scenario, weaponComparisonRefinements }),
         headers: { "Content-Type": "application/json" },
         method: "POST"
       })
@@ -323,19 +335,16 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         const body = (await response.json().catch(() => ({}))) as { message?: string }
         throw new Error(body.message ?? `分析接口返回 HTTP ${response.status}`)
       }
+      const result = (await response.json()) as AnalysisResponse
+      if (!incremental.isCurrent(version)) return
       setSupportMetricResponse(null)
-      setAnalysis((await response.json()) as AnalysisResponse)
+      incremental.complete(version, scenario, result)
       setStatus("计算完成")
     } catch (caught) {
+      if (!incremental.isCurrent(version)) return
       setStatus("计算失败")
       setError(caught instanceof Error ? caught.message : "指标计算失败")
     }
-  }
-
-  const changeWeaponComparisonRefinement = (weaponId: string, refinement: number) => {
-    const nextRefinements = { ...weaponComparisonRefinements, [weaponId]: refinement }
-    setWeaponComparisonRefinements(nextRefinements)
-    void runAnalysis(nextRefinements)
   }
 
   const toggleBuffPreset = (presetId: string) => {
@@ -429,7 +438,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
             onScenarioEffectSelect={selectScenarioEffect}
             onReloadEffects={() => setScenarioEffectReloadVersion((current) => current + 1)}
             onRunAnalysis={() => runAnalysis()}
-            onSupportMetricContextChange={setSupportMetricContext}
+            onSupportMetricContextChange={(update) => { clearResults(); setSupportMetricContext(update) }}
           />
         ) : null}
       </section>
@@ -441,7 +450,12 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         supportMetricResponse={supportMetricResponse}
         targetAction={targetAction}
         targetBuild={targetBuild}
-        onWeaponRefinementChange={changeWeaponComparisonRefinement}
+        weaponStates={weaponStates}
+        onWeaponRefinementChange={(weaponId, refinement) => {
+          void incremental.changeRefinement(weaponId, refinement).then((applied) => {
+            if (applied) setWeaponComparisonRefinements((current) => ({ ...current, [weaponId]: refinement }))
+          })
+        }}
       />
     </main>
   )

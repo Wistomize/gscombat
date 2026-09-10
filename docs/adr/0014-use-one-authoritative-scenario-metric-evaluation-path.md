@@ -19,6 +19,8 @@ incompatible answers to exist in production code.
 GSCombat has one authoritative product evaluation model:
 
 - Damage metrics enter through `/v1/analysis` and `evaluateCombatMetric`.
+- Incremental weapon comparisons use the `/v1/analysis/weapon-comparison` subresource and the same candidate/scenario
+  evaluator, not an independent formula path; see [ADR-0021](0021-use-stateless-incremental-weapon-comparison.md).
 - Non-damage metrics enter through `/v1/support-metrics/evaluate` and the same typed metric registry.
 - Both paths resolve a maintained `EvaluationScenario` through Analyzer and Content declarations.
 - `evaluateExpectedDamage` remains a Calculator implementation detail used by the formal direct-damage evaluator; it

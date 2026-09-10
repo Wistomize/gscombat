@@ -1,8 +1,9 @@
 import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { DatabaseSync, StatementSync } from "node:sqlite"
 
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { GameDataRepository } from "./repository.js"
 import { createGameDataSnapshot } from "./snapshot.js"
@@ -102,6 +103,44 @@ const fixture: GiStatsDocument = {
 }
 
 describe("versioned game-data snapshot", () => {
+  it("reuses bounded private queries without leaking mutable results or database identity", () => {
+    const directory = mkdtempSync(join(tmpdir(), "gscombat-cache-"))
+    temporaryDirectories.push(directory)
+    const path = join(directory, "first.sqlite")
+    const otherPath = join(directory, "other.sqlite")
+    createGameDataSnapshot({ databasePath: path, document: fixture, manifest })
+    createGameDataSnapshot({ databasePath: otherPath, document: fixture, manifest: { ...manifest, gameVersion: "other" } })
+    using repository = new GameDataRepository(path)
+    using other = new GameDataRepository(otherPath)
+    const prepare = vi.spyOn(DatabaseSync.prototype, "prepare")
+    const get = vi.spyOn(StatementSync.prototype, "get")
+    try {
+      const weapon = repository.getWeapon("EngulfingLightning")!
+      const before = get.mock.calls.length
+      Object.assign(weapon, { rarity: -1 })
+      expect(repository.getWeapon("EngulfingLightning")?.rarity).toBe(5)
+      expect(get.mock.calls.length).toBe(before)
+      expect(prepare).toHaveBeenCalledTimes(1)
+      const data = repository.getManifest()
+      Object.assign(data, { gameVersion: "mutated" })
+      expect(repository.getManifest().gameVersion).toBe(manifest.gameVersion)
+      expect(other.getManifest().gameVersion).toBe("other")
+      const groupId = repository.listCharacterSkillParameterGroupIds("RaidenShogun")[0]!
+      const group = repository.getCharacterSkillParameterGroup("RaidenShogun", groupId)
+      const original = structuredClone(group)
+      if (Array.isArray(group)) group.splice(0)
+      expect(repository.getCharacterSkillParameterGroup("RaidenShogun", groupId)).toEqual(original)
+      const prepares = prepare.mock.calls.length
+      for (let i = 0; i < 4100; i++) repository.getWeapon(`missing.${i}`)
+      const gets = get.mock.calls.length
+      expect(repository.getWeapon("EngulfingLightning")?.rarity).toBe(5)
+      expect(get.mock.calls.length).toBe(gets + 1)
+      expect(prepare.mock.calls.length).toBe(prepares)
+      repository.close()
+      expect(() => repository.getWeapon("EngulfingLightning")).toThrow(/closed/)
+      expect(() => repository.getManifest()).toThrow(/closed/)
+    } finally { prepare.mockRestore(); get.mockRestore() }
+  })
   it("imports and queries characters, skills, weapons, and artifact sets", () => {
     const directory = mkdtempSync(join(tmpdir(), "project-b-game-data-"))
     temporaryDirectories.push(directory)

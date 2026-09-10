@@ -1,4 +1,5 @@
 import type { AnalysisResponse, CatalogResponse, CharacterBuild } from "@gscombat/contracts"
+import type { WeaponRequestState } from "../calculation-workspace/use-incremental-analysis"
 
 import { ArtifactIcon, WeaponIcon } from "../../components/ui/visual-icons"
 import { artifactSlotLabels as slotLabels, artifactStatLabels as statLabels } from "../../lib/formatting/artifacts"
@@ -111,12 +112,14 @@ function ArtifactRawValueReport({ build, catalog }: { readonly build: CharacterB
 
 export function OrderedDamageReport({
   analysis,
+  weaponStates = {},
   build,
   catalog,
   onWeaponRefinementChange,
   targetAction
 }: {
   readonly analysis: AnalysisResponse
+  readonly weaponStates?: Readonly<Record<string, WeaponRequestState>> | undefined
   readonly build: CharacterBuild
   readonly catalog: CatalogResponse
   readonly onWeaponRefinementChange: (weaponId: string, refinement: number) => void
@@ -245,7 +248,19 @@ export function OrderedDamageReport({
 
       <article className="wideReport weaponReport">
         <div className="cardTitle"><span>WEAPON SWAP</span><strong>更换武器收益</strong><small>每把武器可独立选择精炼等级，并重新解析装备效果</small></div>
-        <div className="weaponRows">{analysis.analysis.weapons.map((weapon, index) => <div className="weaponRow" key={weapon.weaponId}><span className="rankNumber">{String(index + 1).padStart(2, "0")}</span><WeaponIcon label={weapon.label} weaponId={weapon.weaponId} /><div><strong>{weapon.label}</strong><small>{weapon.rarity}★ · R{weapon.refinement}</small></div><label className="weaponRefinement"><span>精炼</span><select aria-label={`${weapon.label}精炼等级`} value={weapon.refinement} onChange={(event) => onWeaponRefinementChange(weapon.weaponId, numberValue(event.target.value, 1))}>{[1, 2, 3, 4, 5].map((refinement) => <option key={refinement} value={refinement}>R{refinement}</option>)}</select></label><span>{formatDamage(weapon.expectedDamage)}</span><b className={weapon.gainRatio >= 0 ? "positive" : "negative"}>{formatPercent(weapon.gainRatio)}</b></div>)}</div>
+        <div className="weaponRows">{analysis.analysis.weapons.map((weapon, index) => {
+          const state = weaponStates[weapon.weaponId]
+          return <div className="weaponRow" key={weapon.weaponId} aria-busy={state?.pending !== undefined}>
+            <span className="rankNumber">{String(index + 1).padStart(2, "0")}</span>
+            <WeaponIcon label={weapon.label} weaponId={weapon.weaponId} />
+            <div><strong>{weapon.label}</strong><small>{weapon.rarity}★ · R{weapon.refinement}</small>
+              {state?.pending !== undefined ? <small role="status">正在计算 R{state.pending}，当前数值为 R{weapon.refinement}</small> : null}
+              {state?.error ? <small role="alert">{state.error} <button type="button" onClick={() => onWeaponRefinementChange(weapon.weaponId, state.retryRefinement ?? weapon.refinement)}>重试</button></small> : null}
+            </div>
+            <label className="weaponRefinement"><span>精炼</span><select aria-label={`${weapon.label}精炼等级`} value={state?.pending ?? weapon.refinement} onChange={(event) => onWeaponRefinementChange(weapon.weaponId, numberValue(event.target.value, 1))}>{[1, 2, 3, 4, 5].map((refinement) => <option key={refinement} value={refinement}>R{refinement}</option>)}</select></label>
+            <span>{formatDamage(weapon.expectedDamage)}</span><b className={weapon.gainRatio >= 0 ? "positive" : "negative"}>{formatPercent(weapon.gainRatio)}</b>
+          </div>
+        })}</div>
       </article>
     </div>
   )

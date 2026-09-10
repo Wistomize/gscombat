@@ -1,0 +1,4587 @@
+{
+  "mode": "before",
+  "node": "v22.22.0",
+  "commit": "6cc223f5162a98d05fa8fb7ba49c4d6a8aa4df96",
+  "snapshot": "98c3268bcd39d5608899a318bd29d09c58006469125b4e889d842006c61a24b5",
+  "snapshots": {
+    "ordinary": {
+      "scenario": {
+        "conditions": {
+          "activeEffectIds": [
+            "raiden.skill.eye",
+            "bennett.burst.field"
+          ],
+          "actionParameters": {
+            "resolve-stack-count": 60
+          },
+          "equipmentEffectMode": "maximum_reachable",
+          "enemyCount": 1
+        },
+        "enemy": {
+          "defenseReduction": 0,
+          "level": 100,
+          "name": "100级 · 全抗10%木桩",
+          "resistance": 0.1
+        },
+        "externalBuffs": [],
+        "gameDataVersion": "7.0",
+        "primary": {
+          "artifacts": [
+            {
+              "id": "raiden-emblem-flower",
+              "level": 20,
+              "mainStat": {
+                "stat": "hp",
+                "value": 4780
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "flower",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.066
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.132
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.11
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-plume",
+              "level": 20,
+              "mainStat": {
+                "stat": "atk",
+                "value": 311
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "plume",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.07
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.14
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.104
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-sands",
+              "level": 20,
+              "mainStat": {
+                "stat": "energy_recharge",
+                "value": 0.518
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "sands",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.062
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.124
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.099
+                },
+                {
+                  "stat": "atk",
+                  "value": 19
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-goblet",
+              "level": 20,
+              "mainStat": {
+                "stat": "electro_damage_bonus",
+                "value": 0.466
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "goblet",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.066
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.132
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.104
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-circlet",
+              "level": 20,
+              "mainStat": {
+                "stat": "crit_rate",
+                "value": 0.311
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "circlet",
+              "substats": [
+                {
+                  "stat": "crit_damage",
+                  "value": 0.21
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.099
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.11
+                },
+                {
+                  "stat": "atk",
+                  "value": 19
+                }
+              ]
+            }
+          ],
+          "ascension": 6,
+          "buildId": "builtin.raiden-national.raiden",
+          "characterId": "RaidenShogun",
+          "constellation": 2,
+          "gameDataVersion": "7.0",
+          "label": "雷电将军 · 雷国首刀",
+          "level": 90,
+          "source": {
+            "kind": "builtin",
+            "presetId": "raiden-national.initial-slash"
+          },
+          "talents": {
+            "burst": 10,
+            "normal": 6,
+            "skill": 9
+          },
+          "weapon": {
+            "ascension": 6,
+            "level": 90,
+            "refinement": 1,
+            "weaponId": "EngulfingLightning"
+          }
+        },
+        "targetActionId": "raiden.burst.initial_slash",
+        "teammates": [
+          {
+            "artifacts": [
+              {
+                "id": "bennett-NoblesseOblige-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "NoblesseOblige",
+                "slot": "flower",
+                "substats": []
+              },
+              {
+                "id": "bennett-NoblesseOblige-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "NoblesseOblige",
+                "slot": "plume",
+                "substats": []
+              },
+              {
+                "id": "bennett-NoblesseOblige-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "NoblesseOblige",
+                "slot": "sands",
+                "substats": []
+              },
+              {
+                "id": "bennett-NoblesseOblige-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "pyro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "NoblesseOblige",
+                "slot": "goblet",
+                "substats": []
+              },
+              {
+                "id": "bennett-NoblesseOblige-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "NoblesseOblige",
+                "slot": "circlet",
+                "substats": []
+              }
+            ],
+            "ascension": 6,
+            "buildId": "builtin.raiden-national.bennett",
+            "characterId": "Bennett",
+            "constellation": 1,
+            "gameDataVersion": "7.0",
+            "label": "班尼特 · 宗室辅助",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "burst": 10,
+              "normal": 6,
+              "skill": 9
+            },
+            "weapon": {
+              "ascension": 6,
+              "level": 90,
+              "refinement": 1,
+              "weaponId": "AquilaFavonia"
+            }
+          },
+          {
+            "artifacts": [
+              {
+                "id": "xiangling-EmblemOfSeveredFate-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "flower",
+                "substats": []
+              },
+              {
+                "id": "xiangling-EmblemOfSeveredFate-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "plume",
+                "substats": []
+              },
+              {
+                "id": "xiangling-EmblemOfSeveredFate-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "sands",
+                "substats": []
+              },
+              {
+                "id": "xiangling-EmblemOfSeveredFate-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "pyro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "goblet",
+                "substats": []
+              },
+              {
+                "id": "xiangling-EmblemOfSeveredFate-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "circlet",
+                "substats": []
+              }
+            ],
+            "ascension": 6,
+            "buildId": "builtin.raiden-national.xiangling",
+            "characterId": "Xiangling",
+            "constellation": 4,
+            "gameDataVersion": "7.0",
+            "label": "香菱 · 渔获绝缘",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "burst": 10,
+              "normal": 6,
+              "skill": 9
+            },
+            "weapon": {
+              "ascension": 6,
+              "level": 90,
+              "refinement": 5,
+              "weaponId": "TheCatch"
+            }
+          },
+          {
+            "artifacts": [
+              {
+                "id": "xingqiu-EmblemOfSeveredFate-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "flower",
+                "substats": []
+              },
+              {
+                "id": "xingqiu-EmblemOfSeveredFate-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "plume",
+                "substats": []
+              },
+              {
+                "id": "xingqiu-EmblemOfSeveredFate-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "sands",
+                "substats": []
+              },
+              {
+                "id": "xingqiu-EmblemOfSeveredFate-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hydro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "goblet",
+                "substats": []
+              },
+              {
+                "id": "xingqiu-EmblemOfSeveredFate-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "circlet",
+                "substats": []
+              }
+            ],
+            "ascension": 6,
+            "buildId": "builtin.raiden-national.xingqiu",
+            "characterId": "Xingqiu",
+            "constellation": 6,
+            "gameDataVersion": "7.0",
+            "label": "行秋 · 祭礼绝缘",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "burst": 10,
+              "normal": 6,
+              "skill": 9
+            },
+            "weapon": {
+              "ascension": 6,
+              "level": 90,
+              "refinement": 5,
+              "weaponId": "SacrificialSword"
+            }
+          }
+        ]
+      },
+      "damage": 163231.10209373906,
+      "digest": "3c4068e1e1eb4634413d5bdccbb827ddec7cfac98af19fea1d6b1c632ffe693d",
+      "evaluation": {
+        "appliedEffects": [
+          {
+            "id": "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+            "label": "绝缘之旗印 · 二件套",
+            "sourceId": "builtin.raiden-national.raiden",
+            "target": "energyRecharge",
+            "value": 0.2
+          },
+          {
+            "id": "artifact.emblem-of-severed-fate.4pc.burst-damage-bonus",
+            "label": "绝缘之旗印 · 四件套",
+            "sourceId": "builtin.raiden-national.raiden",
+            "target": "damageBonus",
+            "targetFilter": {
+              "talentSlots": [
+                "burst"
+              ]
+            },
+            "value": 0.75
+          },
+          {
+            "id": "artifact.noblesse-oblige.4pc-attack",
+            "label": "昔日宗室之仪 · 四件套（当前动作前已触发）",
+            "sourceId": "builtin.raiden-national.bennett",
+            "target": "attackPercent",
+            "value": 0.2
+          },
+          {
+            "id": "weapon.engulfing-lightning.energy-recharge-to-attack",
+            "label": "薙草之稻光 · 元素充能效率转攻击力",
+            "sourceId": "builtin.raiden-national.raiden",
+            "target": "attackPercent",
+            "value": 0.6488384000000001
+          },
+          {
+            "id": "weapon.engulfing-lightning.post-burst-energy-recharge",
+            "label": "薙草之稻光 · 元素爆发后充能（当前动作前已生效）",
+            "sourceId": "builtin.raiden-national.raiden",
+            "target": "energyRecharge",
+            "value": 0.3
+          },
+          {
+            "id": "bennett.burst.field.attack_bonus",
+            "label": "美妙旅程 · 领域基础加攻",
+            "sourceId": "builtin.raiden-national.bennett",
+            "target": "flatAttack",
+            "value": 872.4159549504
+          },
+          {
+            "id": "bennett.constellation.1.grand_expectation.field_attack_bonus",
+            "label": "冒险憧憬 · C1 领域追加20%基础攻击力",
+            "sourceId": "builtin.raiden-national.bennett",
+            "target": "flatAttack",
+            "value": 173.09840376
+          },
+          {
+            "id": "raiden.passive.enlightened_one.energy_recharge_to_electro_damage_bonus",
+            "label": "殊胜之御体 · 超过100%的元素充能效率转雷元素伤害加成",
+            "sourceId": "builtin.raiden-national.raiden",
+            "target": "damageBonus",
+            "targetFilter": {
+              "elements": [
+                "electro"
+              ],
+              "recipientSourceRelation": "source"
+            },
+            "value": 0.9269120000000002
+          },
+          {
+            "id": "raiden.skill.eye.burst_damage_bonus",
+            "label": "雷罚恶曜之眼 · 雷神元素爆发伤害加成",
+            "sourceId": "builtin.raiden-national.raiden",
+            "target": "damageBonus",
+            "targetFilter": {
+              "actionIds": [
+                "raiden.burst.initial_slash"
+              ]
+            },
+            "value": 0.27
+          },
+          {
+            "id": "raiden.constellation.2.steelbreaker.burst_enemy_defense_ignore",
+            "label": "斩铁断金 · C2 元素爆发无视60%防御力",
+            "sourceId": "builtin.raiden-national.raiden",
+            "target": "enemyDefenseIgnore",
+            "targetFilter": {
+              "recipientSourceRelation": "source",
+              "talentSlots": [
+                "burst"
+              ]
+            },
+            "value": 0.6
+          }
+        ],
+        "parts": [
+          {
+            "id": "initial-slash",
+            "terms": [
+              {
+                "coefficient": 7.2144,
+                "stat": "attack"
+              },
+              {
+                "coefficient": 4.19904,
+                "stat": "attack"
+              }
+            ]
+          }
+        ],
+        "result": {
+          "critDamage": 205954.1685614027,
+          "expectedDamage": 163231.1020937391,
+          "nonCritDamage": 92025.9913142997,
+          "trace": [
+            {
+              "after": 42574.84424211703,
+              "before": 0,
+              "formula": {
+                "kind": "scaling_terms",
+                "terms": [
+                  {
+                    "coefficient": 7.2144,
+                    "contribution": 26911.426905501685,
+                    "stat": "attack",
+                    "value": 3730.2377059078626
+                  },
+                  {
+                    "coefficient": 4.19904,
+                    "contribution": 15663.417336615352,
+                    "stat": "attack",
+                    "value": 3730.2377059078626
+                  }
+                ]
+              },
+              "source": "resolved_terms",
+              "stage": "scaling"
+            },
+            {
+              "after": 145304.19681205213,
+              "before": 42574.84424211703,
+              "formula": {
+                "bonus": 2.4129120000000004,
+                "kind": "damage_bonus",
+                "multiplier": 3.4129120000000004
+              },
+              "source": "applicable_damage_bonus",
+              "stage": "damage_bonus"
+            },
+            {
+              "after": 257733.31909537746,
+              "before": 145304.19681205213,
+              "formula": {
+                "critDamage": 1.238,
+                "critRate": 0.625,
+                "kind": "expected_crit",
+                "multiplier": 1.77375
+              },
+              "source": "expected_crit",
+              "stage": "crit"
+            },
+            {
+              "after": 181367.8912152656,
+              "before": 257733.31909537746,
+              "formula": {
+                "attackerLevel": 90,
+                "defenseIgnore": 0.6,
+                "defenseReduction": 0,
+                "enemyLevel": 100,
+                "kind": "defense",
+                "multiplier": 0.7037037037037037
+              },
+              "source": "enemy_defense",
+              "stage": "defense"
+            },
+            {
+              "after": 163231.1020937391,
+              "before": 181367.8912152656,
+              "formula": {
+                "effectiveResistance": 0.1,
+                "kind": "resistance",
+                "multiplier": 0.9,
+                "resistance": 0.1,
+                "resistanceReduction": 0
+              },
+              "source": "enemy_resistance",
+              "stage": "resistance"
+            }
+          ]
+        },
+        "rotation": {
+          "dpr": 163231.10209373906,
+          "dps": 163231.10209373906,
+          "duration": 1,
+          "events": [
+            {
+              "appliedEffectIds": [],
+              "critDamage": 205954.16856140268,
+              "element": "electro",
+              "expectedDamage": 163231.10209373906,
+              "hitCount": 1,
+              "id": "raiden.burst.initial_slash.initial-slash",
+              "nonCritDamage": 92025.99131429968,
+              "ownerId": "builtin.raiden-national.raiden",
+              "statSnapshotTime": 0,
+              "time": 0,
+              "trace": [
+                {
+                  "after": 42574.84424211703,
+                  "before": 0,
+                  "kind": "scaling_terms",
+                  "terms": [
+                    {
+                      "coefficient": 7.2144,
+                      "contribution": 26911.426905501685,
+                      "stat": "attack",
+                      "value": 3730.2377059078626
+                    },
+                    {
+                      "coefficient": 4.19904,
+                      "contribution": 15663.417336615352,
+                      "stat": "attack",
+                      "value": 3730.2377059078626
+                    }
+                  ]
+                },
+                {
+                  "after": 145304.19681205213,
+                  "before": 42574.84424211703,
+                  "bonus": 2.4129120000000004,
+                  "kind": "damage_bonus",
+                  "multiplier": 3.4129120000000004
+                },
+                {
+                  "after": 257733.31909537746,
+                  "before": 145304.19681205213,
+                  "critDamage": 1.238,
+                  "critRate": 0.625,
+                  "kind": "expected_crit",
+                  "multiplier": 1.77375
+                },
+                {
+                  "after": 181367.8912152656,
+                  "attackerLevel": 90,
+                  "before": 257733.31909537746,
+                  "defenseIgnore": 0.6,
+                  "defenseReduction": 0,
+                  "enemyLevel": 100,
+                  "kind": "defense",
+                  "multiplier": 0.7037037037037037
+                },
+                {
+                  "after": 163231.10209373906,
+                  "baseResistance": 0.1,
+                  "before": 181367.8912152656,
+                  "element": "electro",
+                  "effectiveResistance": 0.1,
+                  "kind": "resistance",
+                  "multiplier": 0.9,
+                  "resistance": 0.1,
+                  "resistanceReduction": 0
+                }
+              ]
+            }
+          ]
+        },
+        "stats": {
+          "attackPercent": 1.4708384000000003,
+          "baseAttack": 945.316111,
+          "baseDefense": 789.30533799,
+          "baseElementalMastery": 0,
+          "baseHp": 12907.189733140001,
+          "critDamage": 1.238,
+          "critRate": 0.625,
+          "damageBonus": 2.4129120000000004,
+          "defensePercent": 0,
+          "effectiveAttack": 3730.2377059078626,
+          "effectiveDefense": 789.30533799,
+          "effectiveHp": 17687.189733140003,
+          "elementalMastery": 0,
+          "energyRecharge": 3.3172800000000002,
+          "flatAttack": 1394.5143587103998,
+          "flatElementalMastery": 0,
+          "flatDefense": 0,
+          "flatHp": 4780,
+          "hpPercent": 0,
+          "resistanceReduction": 0,
+          "statContributions": [
+            {
+              "label": "角色基础攻击 · 雷电将军",
+              "stage": "baseAttack",
+              "value": 337.2415138
+            },
+            {
+              "label": "武器基础攻击 · 薙草之稻光",
+              "stage": "baseAttack",
+              "value": 608.0745972
+            },
+            {
+              "label": "生之花副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "死之羽副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "时之沙副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.099
+            },
+            {
+              "label": "空之杯副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "理之冠副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.099
+            },
+            {
+              "label": "热诚之火",
+              "stage": "attackPercent",
+              "value": 0.25
+            },
+            {
+              "label": "昔日宗室之仪 · 四件套（当前动作前已触发）",
+              "stage": "attackPercent",
+              "value": 0.2
+            },
+            {
+              "label": "薙草之稻光 · 元素充能效率转攻击力",
+              "stage": "attackPercent",
+              "value": 0.6488384000000001
+            },
+            {
+              "label": "死之羽主词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 311
+            },
+            {
+              "label": "时之沙副词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 19
+            },
+            {
+              "label": "理之冠副词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 19
+            },
+            {
+              "label": "美妙旅程 · 领域基础加攻",
+              "stage": "flatAttack",
+              "value": 872.4159549504
+            },
+            {
+              "label": "冒险憧憬 · C1 领域追加20%基础攻击力",
+              "stage": "flatAttack",
+              "value": 173.09840376
+            },
+            {
+              "label": "角色基础生命值 · 雷电将军",
+              "stage": "baseHp",
+              "value": 12907.189733140001
+            },
+            {
+              "label": "生之花主词条 · 固定生命值",
+              "stage": "flatHp",
+              "value": 4780
+            },
+            {
+              "label": "角色基础防御力 · 雷电将军",
+              "stage": "baseDefense",
+              "value": 789.30533799
+            },
+            {
+              "label": "角色基础暴击率",
+              "stage": "critRate",
+              "value": 0.05
+            },
+            {
+              "label": "生之花副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.066
+            },
+            {
+              "label": "死之羽副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.07
+            },
+            {
+              "label": "时之沙副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.062
+            },
+            {
+              "label": "空之杯副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.066
+            },
+            {
+              "label": "理之冠主词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.311
+            },
+            {
+              "label": "角色基础暴击伤害",
+              "stage": "critDamage",
+              "value": 0.5
+            },
+            {
+              "label": "生之花副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.132
+            },
+            {
+              "label": "死之羽副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.14
+            },
+            {
+              "label": "时之沙副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.124
+            },
+            {
+              "label": "空之杯副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.132
+            },
+            {
+              "label": "理之冠副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.21
+            },
+            {
+              "label": "空之杯主词条 · 雷元素伤害加成",
+              "stage": "damageBonus",
+              "value": 0.466
+            },
+            {
+              "label": "绝缘之旗印 · 四件套",
+              "stage": "damageBonus",
+              "value": 0.75
+            },
+            {
+              "label": "殊胜之御体 · 超过100%的元素充能效率转雷元素伤害加成",
+              "stage": "damageBonus",
+              "value": 0.9269120000000002
+            },
+            {
+              "label": "雷罚恶曜之眼 · 雷神元素爆发伤害加成",
+              "stage": "damageBonus",
+              "value": 0.27
+            }
+          ],
+          "talentMultiplier": null,
+          "actionParameters": {
+            "resolve-stack-count": 60
+          },
+          "scalingTerms": [
+            {
+              "coefficient": 7.2144,
+              "stat": "attack"
+            },
+            {
+              "coefficient": 4.19904,
+              "stat": "attack"
+            }
+          ]
+        },
+        "actionExpectedDamage": 163231.10209373906,
+        "appliedBuffs": [
+          {
+            "label": "热诚之火",
+            "sourceId": "resonance.pyro",
+            "stat": "attack_percent",
+            "value": 0.25
+          }
+        ],
+        "teamState": {
+          "activeResonanceIds": [
+            "resonance.pyro"
+          ],
+          "hexereiSecretRite": false,
+          "moonsign": {
+            "characterBuildIds": [],
+            "characterCount": 0,
+            "level": "none"
+          },
+          "nightsoulBurst": {
+            "characterBuildIds": [],
+            "characterCount": 0,
+            "cooldownSeconds": null,
+            "hasXilonenIndependentTrigger": false
+          }
+        }
+      }
+    },
+    "wind": {
+      "scenario": {
+        "conditions": {
+          "activeEffectIds": [],
+          "enemyCount": 1,
+          "equipmentEffectMode": "maximum_reachable",
+          "actionParameters": {}
+        },
+        "enemy": {
+          "defenseReduction": 0,
+          "level": 100,
+          "name": "100级 · 全抗10%木桩",
+          "resistance": 0.1
+        },
+        "externalBuffs": [],
+        "gameDataVersion": "7.0",
+        "primary": {
+          "artifacts": [
+            {
+              "id": "raiden-emblem-flower",
+              "level": 20,
+              "mainStat": {
+                "stat": "hp",
+                "value": 4780
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "flower",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.066
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.132
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.11
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-plume",
+              "level": 20,
+              "mainStat": {
+                "stat": "atk",
+                "value": 311
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "plume",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.07
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.14
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.104
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-sands",
+              "level": 20,
+              "mainStat": {
+                "stat": "energy_recharge",
+                "value": 0.518
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "sands",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.062
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.124
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.099
+                },
+                {
+                  "stat": "atk",
+                  "value": 19
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-goblet",
+              "level": 20,
+              "mainStat": {
+                "stat": "electro_damage_bonus",
+                "value": 0.466
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "goblet",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.066
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.132
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.104
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-circlet",
+              "level": 20,
+              "mainStat": {
+                "stat": "crit_rate",
+                "value": 0.311
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "circlet",
+              "substats": [
+                {
+                  "stat": "crit_damage",
+                  "value": 0.21
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.099
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.11
+                },
+                {
+                  "stat": "atk",
+                  "value": 19
+                }
+              ]
+            }
+          ],
+          "ascension": 6,
+          "buildId": "benchmark.YumemizukiMizuki",
+          "characterId": "YumemizukiMizuki",
+          "constellation": 6,
+          "gameDataVersion": "7.0",
+          "label": "雷电将军 · 雷国首刀",
+          "level": 90,
+          "source": {
+            "kind": "builtin",
+            "presetId": "raiden-national.initial-slash"
+          },
+          "talents": {
+            "normal": 10,
+            "skill": 10,
+            "burst": 10
+          },
+          "weapon": {
+            "weaponId": "FavoniusCodex",
+            "refinement": 1,
+            "level": 90,
+            "ascension": 6
+          }
+        },
+        "targetActionId": "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl",
+        "teammates": [
+          {
+            "artifacts": [
+              {
+                "id": "raiden-emblem-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "flower",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "plume",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.07
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.14
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "sands",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.062
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.124
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "electro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "goblet",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "circlet",
+                "substats": [
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.21
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              }
+            ],
+            "ascension": 6,
+            "buildId": "benchmark.Odette",
+            "characterId": "Odette",
+            "constellation": 0,
+            "gameDataVersion": "7.0",
+            "label": "雷电将军 · 雷国首刀",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "normal": 10,
+              "skill": 10,
+              "burst": 10
+            },
+            "weapon": {
+              "weaponId": "FavoniusSword",
+              "refinement": 1,
+              "level": 90,
+              "ascension": 6
+            }
+          },
+          {
+            "artifacts": [
+              {
+                "id": "raiden-emblem-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "flower",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "plume",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.07
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.14
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "sands",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.062
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.124
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "electro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "goblet",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "circlet",
+                "substats": [
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.21
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              }
+            ],
+            "ascension": 6,
+            "buildId": "benchmark.Faruzan",
+            "characterId": "Faruzan",
+            "constellation": 6,
+            "gameDataVersion": "7.0",
+            "label": "雷电将军 · 雷国首刀",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "normal": 10,
+              "skill": 10,
+              "burst": 10
+            },
+            "weapon": {
+              "weaponId": "FavoniusWarbow",
+              "refinement": 1,
+              "level": 90,
+              "ascension": 6
+            }
+          },
+          {
+            "artifacts": [
+              {
+                "id": "raiden-emblem-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "flower",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "plume",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.07
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.14
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "sands",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.062
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.124
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "electro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "goblet",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "circlet",
+                "substats": [
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.21
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              }
+            ],
+            "ascension": 6,
+            "buildId": "benchmark.Diona",
+            "characterId": "Diona",
+            "constellation": 6,
+            "gameDataVersion": "7.0",
+            "label": "雷电将军 · 雷国首刀",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "normal": 10,
+              "skill": 10,
+              "burst": 10
+            },
+            "weapon": {
+              "weaponId": "FavoniusWarbow",
+              "refinement": 1,
+              "level": 90,
+              "ascension": 6
+            }
+          }
+        ]
+      },
+      "damage": 8296.803631777197,
+      "digest": "dcaa78a7e103e4d97cc72d074b1390f8a30d2955e56031d961a062419b5a07be",
+      "evaluation": {
+        "appliedEffects": [
+          {
+            "id": "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+            "label": "绝缘之旗印 · 二件套",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "energyRecharge",
+            "value": 0.2
+          },
+          {
+            "id": "faruzan.burst.prayerful_wind_benefit.anemo_damage_bonus",
+            "label": "祈风之赐 · 风元素伤害加成",
+            "sourceId": "benchmark.Faruzan",
+            "target": "damageBonus",
+            "targetFilter": {
+              "elements": [
+                "anemo"
+              ]
+            },
+            "value": 0.3825
+          },
+          {
+            "id": "faruzan.burst.perfidious_wind_bale.anemo_resistance_reduction",
+            "label": "诡风之祸 · 风元素抗性降低",
+            "sourceId": "benchmark.Faruzan",
+            "target": "enemyResistanceReduction",
+            "targetFilter": {
+              "elements": [
+                "anemo"
+              ]
+            },
+            "value": 0.3
+          },
+          {
+            "id": "yumemizuki_mizuki.passive.daydream_night_dream.phec_hit.elemental_mastery",
+            "label": "昼想夜梦 · 梦浮期间火水雷冰队友攻击命中后元素精通提升100点",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "elementalMastery",
+            "targetFilter": {
+              "recipientSourceRelation": "source"
+            },
+            "value": 100
+          },
+          {
+            "id": "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+            "label": "廓然梦生 · 梦浮期间队伍元素精通提升（瑞希最终精通的10%）",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "elementalMastery",
+            "value": 21.52
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+            "label": "缠忆君影梦相见 · C2梦浮期间敌人火水雷冰风元素抗性降低20%",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "enemyResistanceReduction",
+            "targetFilter": {
+              "elements": [
+                "pyro",
+                "hydro",
+                "electro",
+                "cryo",
+                "anemo"
+              ]
+            },
+            "value": 0.2
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_rate",
+            "label": "慕念萦心间 · C6最终元素精通超过500的部分提升暴击率（最高20%）",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "critRate",
+            "targetFilter": {
+              "recipientSourceRelation": "source"
+            },
+            "value": 0
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_damage",
+            "label": "慕念萦心间 · C6最终元素精通超过500的部分提升暴击伤害（最高80%）",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "critDamage",
+            "targetFilter": {
+              "recipientSourceRelation": "source"
+            },
+            "value": 0
+          },
+          {
+            "id": "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+            "label": "星耀祝礼·银晓之舞 · 基于奥黛塔攻击力提升星超导/星扩散基础伤害（最高14%）",
+            "sourceId": "benchmark.Odette",
+            "target": "specialReactionBaseDamageBonus",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_superconduct",
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.10022600542738
+          },
+          {
+            "id": "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+            "label": "获选者的春祭 · 4层华彩使星烁反应伤害提升60%",
+            "sourceId": "benchmark.Odette",
+            "target": "specialReactionDamageBonus",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_superconduct",
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.6
+          },
+          {
+            "id": "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+            "label": "秋沙歌枕巡礼 · 梦浮期间全队星扩散反应伤害加成",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "specialReactionDamageBonus",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.1278288
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition",
+            "label": "宿雾若水遥 · C1二十三夜待被星扩散触发（550%最终元素精通）",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "specialReactionFlatDamageAddition",
+            "targetFilter": {
+              "actionIds": [
+                "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl"
+              ],
+              "eventIds": [
+                "radiance-stellar-swirl-trigger"
+              ],
+              "recipientSourceRelation": "source",
+              "specialReactionKinds": [
+                "stellar_swirl"
+              ]
+            },
+            "value": 1301.96
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+            "label": "慕念萦心间 · C6梦浮期间全队星扩散暴击率提升10%",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "critRate",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.1
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage",
+            "label": "慕念萦心间 · C6梦浮期间全队星扩散暴击伤害提升20%",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "critDamage",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.2
+          },
+          {
+            "id": "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+            "label": "绝缘之旗印 · 二件套",
+            "sourceId": "benchmark.Odette",
+            "target": "energyRecharge",
+            "value": 0.2
+          },
+          {
+            "id": "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+            "label": "绝缘之旗印 · 二件套",
+            "sourceId": "benchmark.Diona",
+            "target": "energyRecharge",
+            "value": 0.2
+          },
+          {
+            "id": "diona.constellation.6.cat_tail_closing_time.self_hp_percent",
+            "label": "猫尾酒馆打烊之时 · C6 迪奥娜生命值上限提高25%",
+            "sourceId": "benchmark.Diona",
+            "target": "hpPercent",
+            "targetFilter": {
+              "recipientSourceRelation": "source"
+            },
+            "value": 0.25
+          }
+        ],
+        "parts": [],
+        "result": {
+          "critDamage": 9723.321536748255,
+          "expectedDamage": 8296.803631777197,
+          "nonCritDamage": 3866.9445377950515,
+          "trace": []
+        },
+        "rotation": {
+          "dpr": 8296.803631777197,
+          "dps": 8296.803631777197,
+          "duration": 1,
+          "events": [
+            {
+              "appliedEffectIds": [
+                "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                "faruzan.burst.perfidious_wind_bale.anemo_resistance_reduction",
+                "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                "yumemizuki_mizuki.passive.daydream_night_dream.phec_hit.elemental_mastery",
+                "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition",
+                "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_rate",
+                "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_damage",
+                "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage",
+                "diona.constellation.6.cat_tail_closing_time.self_hp_percent"
+              ],
+              "critDamage": 9723.321536748255,
+              "element": "anemo",
+              "expectedDamage": 8296.803631777197,
+              "hitCount": 1,
+              "id": "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl.radiance-stellar-swirl-trigger",
+              "nonCritDamage": 3866.9445377950515,
+              "ownerId": "benchmark.YumemizukiMizuki",
+              "statSnapshotTime": 0,
+              "time": 0,
+              "trace": [
+                {
+                  "after": 8296.803631777197,
+                  "before": 0,
+                  "event": "trigger",
+                  "kind": "stellar_swirl_participant_aggregation",
+                  "participants": [
+                    {
+                      "appliedEffectIds": [
+                        "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                        "faruzan.burst.perfidious_wind_bale.anemo_resistance_reduction",
+                        "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                        "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                        "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                        "yumemizuki_mizuki.passive.daydream_night_dream.phec_hit.elemental_mastery",
+                        "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                        "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition",
+                        "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                        "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_damage",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
+                      ],
+                      "critDamage": 12062.077201504664,
+                      "critRate": 0.725,
+                      "expectedContribution": 6063.345969138642,
+                      "expectedDamage": 10105.57661523107,
+                      "label": "雷电将军 · 雷国首刀",
+                      "nonCritDamage": 4947.529615055236,
+                      "participantId": "benchmark.YumemizukiMizuki",
+                      "trace": [
+                        {
+                          "after": 1446.8535,
+                          "before": 0,
+                          "formula": {
+                            "kind": "special_reaction_base_damage",
+                            "value": 1446.8535
+                          },
+                          "stage": "base_damage"
+                        },
+                        {
+                          "after": 1085.140125,
+                          "before": 1446.8535,
+                          "formula": {
+                            "kind": "special_reaction_coefficient",
+                            "multiplier": 0.75,
+                            "reactionKind": "stellar_swirl"
+                          },
+                          "stage": "reaction_coefficient"
+                        },
+                        {
+                          "after": 1085.140125,
+                          "before": 1085.140125,
+                          "formula": {
+                            "bonus": 0,
+                            "kind": "special_reaction_base_damage_multiplier",
+                            "multiplier": 1
+                          },
+                          "stage": "base_damage_multiplier"
+                        },
+                        {
+                          "after": 1193.8993850577178,
+                          "before": 1085.140125,
+                          "formula": {
+                            "bonus": 0.10022600542738,
+                            "kind": "special_reaction_base_damage_bonus",
+                            "multiplier": 1.10022600542738
+                          },
+                          "stage": "base_damage_bonus"
+                        },
+                        {
+                          "after": 2820.9813458793633,
+                          "before": 1193.8993850577178,
+                          "formula": {
+                            "bonus": 0.7278287999999999,
+                            "elementalMastery": 236.72,
+                            "kind": "special_reaction_damage_bonus",
+                            "masteryBonus": 0.6350012518330412,
+                            "multiplier": 2.362830051833041
+                          },
+                          "stage": "reaction_damage_bonus"
+                        },
+                        {
+                          "after": 4122.941345879363,
+                          "before": 2820.9813458793633,
+                          "formula": {
+                            "flatDamageAddition": 1301.96,
+                            "kind": "special_reaction_flat_damage_addition"
+                          },
+                          "stage": "flat_damage_addition"
+                        },
+                        {
+                          "after": 8421.313846025892,
+                          "before": 4122.941345879363,
+                          "formula": {
+                            "critDamage": 1.438,
+                            "critRate": 0.725,
+                            "kind": "expected_crit",
+                            "multiplier": 2.04255
+                          },
+                          "stage": "crit"
+                        },
+                        {
+                          "after": 10105.57661523107,
+                          "before": 8421.313846025892,
+                          "formula": {
+                            "effectiveResistance": -0.4,
+                            "kind": "resistance",
+                            "multiplier": 1.2,
+                            "resistance": 0.1,
+                            "resistanceReduction": 0.5
+                          },
+                          "stage": "resistance"
+                        },
+                        {
+                          "after": 10105.57661523107,
+                          "before": 10105.57661523107,
+                          "formula": {
+                            "ascensionBonus": 0,
+                            "kind": "special_reaction_ascension",
+                            "multiplier": 1
+                          },
+                          "stage": "ascension"
+                        }
+                      ]
+                    },
+                    {
+                      "appliedEffectIds": [
+                        "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                        "faruzan.burst.perfidious_wind_bale.anemo_resistance_reduction",
+                        "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                        "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                        "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                        "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                        "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
+                      ],
+                      "critDamage": 7243.88668984603,
+                      "critRate": 0.725,
+                      "expectedContribution": 1610.8406923857292,
+                      "expectedDamage": 5957.7245970227295,
+                      "label": "雷电将军 · 雷国首刀",
+                      "nonCritDamage": 2566.9336250340293,
+                      "participantId": "benchmark.Odette",
+                      "trace": [
+                        {
+                          "after": 1446.8535,
+                          "before": 0,
+                          "formula": {
+                            "kind": "special_reaction_base_damage",
+                            "value": 1446.8535
+                          },
+                          "stage": "base_damage"
+                        },
+                        {
+                          "after": 1085.140125,
+                          "before": 1446.8535,
+                          "formula": {
+                            "kind": "special_reaction_coefficient",
+                            "multiplier": 0.75,
+                            "reactionKind": "stellar_swirl"
+                          },
+                          "stage": "reaction_coefficient"
+                        },
+                        {
+                          "after": 1085.140125,
+                          "before": 1085.140125,
+                          "formula": {
+                            "bonus": 0,
+                            "kind": "special_reaction_base_damage_multiplier",
+                            "multiplier": 1
+                          },
+                          "stage": "base_damage_multiplier"
+                        },
+                        {
+                          "after": 1193.8993850577178,
+                          "before": 1085.140125,
+                          "formula": {
+                            "bonus": 0.10022600542738,
+                            "kind": "special_reaction_base_damage_bonus",
+                            "multiplier": 1.10022600542738
+                          },
+                          "stage": "base_damage_bonus"
+                        },
+                        {
+                          "after": 2139.1113541950244,
+                          "before": 1193.8993850577178,
+                          "formula": {
+                            "bonus": 0.7278287999999999,
+                            "elementalMastery": 21.52,
+                            "kind": "special_reaction_damage_bonus",
+                            "masteryBonus": 0.06387272943131901,
+                            "multiplier": 1.791701529431319
+                          },
+                          "stage": "reaction_damage_bonus"
+                        },
+                        {
+                          "after": 2139.1113541950244,
+                          "before": 2139.1113541950244,
+                          "formula": {
+                            "flatDamageAddition": 0,
+                            "kind": "special_reaction_flat_damage_addition"
+                          },
+                          "stage": "flat_damage_addition"
+                        },
+                        {
+                          "after": 4964.770497518942,
+                          "before": 2139.1113541950244,
+                          "formula": {
+                            "critDamage": 1.8219999999999998,
+                            "critRate": 0.725,
+                            "kind": "expected_crit",
+                            "multiplier": 2.32095
+                          },
+                          "stage": "crit"
+                        },
+                        {
+                          "after": 5957.7245970227295,
+                          "before": 4964.770497518942,
+                          "formula": {
+                            "effectiveResistance": -0.4,
+                            "kind": "resistance",
+                            "multiplier": 1.2,
+                            "resistance": 0.1,
+                            "resistanceReduction": 0.5
+                          },
+                          "stage": "resistance"
+                        },
+                        {
+                          "after": 5957.7245970227295,
+                          "before": 5957.7245970227295,
+                          "formula": {
+                            "ascensionBonus": 0,
+                            "kind": "special_reaction_ascension",
+                            "multiplier": 1
+                          },
+                          "stage": "ascension"
+                        }
+                      ]
+                    },
+                    {
+                      "appliedEffectIds": [
+                        "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                        "diona.constellation.6.cat_tail_closing_time.self_hp_percent",
+                        "faruzan.burst.perfidious_wind_bale.anemo_resistance_reduction",
+                        "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                        "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                        "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                        "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                        "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
+                      ],
+                      "critDamage": 6258.184177832963,
+                      "critRate": 0.725,
+                      "expectedContribution": 622.6169702528241,
+                      "expectedDamage": 5243.090275813255,
+                      "label": "雷电将军 · 雷国首刀",
+                      "nonCritDamage": 2566.9336250340293,
+                      "participantId": "benchmark.Diona",
+                      "trace": [
+                        {
+                          "after": 1446.8535,
+                          "before": 0,
+                          "formula": {
+                            "kind": "special_reaction_base_damage",
+                            "value": 1446.8535
+                          },
+                          "stage": "base_damage"
+                        },
+                        {
+                          "after": 1085.140125,
+                          "before": 1446.8535,
+                          "formula": {
+                            "kind": "special_reaction_coefficient",
+                            "multiplier": 0.75,
+                            "reactionKind": "stellar_swirl"
+                          },
+                          "stage": "reaction_coefficient"
+                        },
+                        {
+                          "after": 1085.140125,
+                          "before": 1085.140125,
+                          "formula": {
+                            "bonus": 0,
+                            "kind": "special_reaction_base_damage_multiplier",
+                            "multiplier": 1
+                          },
+                          "stage": "base_damage_multiplier"
+                        },
+                        {
+                          "after": 1193.8993850577178,
+                          "before": 1085.140125,
+                          "formula": {
+                            "bonus": 0.10022600542738,
+                            "kind": "special_reaction_base_damage_bonus",
+                            "multiplier": 1.10022600542738
+                          },
+                          "stage": "base_damage_bonus"
+                        },
+                        {
+                          "after": 2139.1113541950244,
+                          "before": 1193.8993850577178,
+                          "formula": {
+                            "bonus": 0.7278287999999999,
+                            "elementalMastery": 21.52,
+                            "kind": "special_reaction_damage_bonus",
+                            "masteryBonus": 0.06387272943131901,
+                            "multiplier": 1.791701529431319
+                          },
+                          "stage": "reaction_damage_bonus"
+                        },
+                        {
+                          "after": 2139.1113541950244,
+                          "before": 2139.1113541950244,
+                          "formula": {
+                            "flatDamageAddition": 0,
+                            "kind": "special_reaction_flat_damage_addition"
+                          },
+                          "stage": "flat_damage_addition"
+                        },
+                        {
+                          "after": 4369.241896511046,
+                          "before": 2139.1113541950244,
+                          "formula": {
+                            "critDamage": 1.438,
+                            "critRate": 0.725,
+                            "kind": "expected_crit",
+                            "multiplier": 2.04255
+                          },
+                          "stage": "crit"
+                        },
+                        {
+                          "after": 5243.090275813255,
+                          "before": 4369.241896511046,
+                          "formula": {
+                            "effectiveResistance": -0.4,
+                            "kind": "resistance",
+                            "multiplier": 1.2,
+                            "resistance": 0.1,
+                            "resistanceReduction": 0.5
+                          },
+                          "stage": "resistance"
+                        },
+                        {
+                          "after": 5243.090275813255,
+                          "before": 5243.090275813255,
+                          "formula": {
+                            "ascensionBonus": 0,
+                            "kind": "special_reaction_ascension",
+                            "multiplier": 1
+                          },
+                          "stage": "ascension"
+                        }
+                      ]
+                    }
+                  ],
+                  "reactionCoefficient": 0.75
+                }
+              ]
+            }
+          ]
+        },
+        "stats": {
+          "attackPercent": 0.372,
+          "baseAttack": 724.866491,
+          "baseDefense": 757.0260544500001,
+          "baseElementalMastery": 0,
+          "baseHp": 12735.747219200002,
+          "critDamage": 1.438,
+          "critRate": 0.725,
+          "damageBonus": 0.3825,
+          "defensePercent": 0,
+          "effectiveAttack": 1343.516825652,
+          "effectiveDefense": 757.0260544500001,
+          "effectiveHp": 17515.747219200002,
+          "elementalMastery": 236.72,
+          "energyRecharge": 2.6054000000000004,
+          "flatAttack": 349,
+          "flatElementalMastery": 236.72,
+          "flatDefense": 0,
+          "flatHp": 4780,
+          "hpPercent": 0,
+          "resistanceReduction": 0.5,
+          "statContributions": [
+            {
+              "label": "角色基础攻击 · 梦见月瑞希",
+              "stage": "baseAttack",
+              "value": 215.260542
+            },
+            {
+              "label": "武器基础攻击 · 西风秘典",
+              "stage": "baseAttack",
+              "value": 509.605949
+            },
+            {
+              "label": "生之花副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "死之羽副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "时之沙副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.099
+            },
+            {
+              "label": "空之杯副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "理之冠副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.099
+            },
+            {
+              "label": "死之羽主词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 311
+            },
+            {
+              "label": "时之沙副词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 19
+            },
+            {
+              "label": "理之冠副词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 19
+            },
+            {
+              "label": "角色基础生命值 · 梦见月瑞希",
+              "stage": "baseHp",
+              "value": 12735.747219200002
+            },
+            {
+              "label": "生之花主词条 · 固定生命值",
+              "stage": "flatHp",
+              "value": 4780
+            },
+            {
+              "label": "角色基础防御力 · 梦见月瑞希",
+              "stage": "baseDefense",
+              "value": 757.0260544500001
+            },
+            {
+              "label": "角色基础暴击率",
+              "stage": "critRate",
+              "value": 0.05
+            },
+            {
+              "label": "生之花副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.066
+            },
+            {
+              "label": "死之羽副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.07
+            },
+            {
+              "label": "时之沙副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.062
+            },
+            {
+              "label": "空之杯副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.066
+            },
+            {
+              "label": "理之冠主词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.311
+            },
+            {
+              "label": "慕念萦心间 · C6梦浮期间全队星扩散暴击率提升10%",
+              "stage": "critRate",
+              "value": 0.1
+            },
+            {
+              "label": "角色基础暴击伤害",
+              "stage": "critDamage",
+              "value": 0.5
+            },
+            {
+              "label": "生之花副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.132
+            },
+            {
+              "label": "死之羽副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.14
+            },
+            {
+              "label": "时之沙副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.124
+            },
+            {
+              "label": "空之杯副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.132
+            },
+            {
+              "label": "理之冠副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.21
+            },
+            {
+              "label": "慕念萦心间 · C6梦浮期间全队星扩散暴击伤害提升20%",
+              "stage": "critDamage",
+              "value": 0.2
+            },
+            {
+              "label": "角色突破属性 · 元素精通",
+              "stage": "elementalMastery",
+              "value": 115.2
+            },
+            {
+              "label": "昼想夜梦 · 梦浮期间火水雷冰队友攻击命中后元素精通提升100点",
+              "stage": "elementalMastery",
+              "value": 100
+            },
+            {
+              "label": "廓然梦生 · 梦浮期间队伍元素精通提升（瑞希最终精通的10%）",
+              "stage": "elementalMastery",
+              "value": 21.52
+            },
+            {
+              "label": "祈风之赐 · 风元素伤害加成",
+              "stage": "damageBonus",
+              "value": 0.3825
+            }
+          ],
+          "talentMultiplier": null
+        },
+        "actionExpectedDamage": 8296.803631777197,
+        "appliedBuffs": [],
+        "teamState": {
+          "activeResonanceIds": [
+            "resonance.anemo",
+            "resonance.cryo"
+          ],
+          "hexereiSecretRite": false,
+          "moonsign": {
+            "characterBuildIds": [],
+            "characterCount": 0,
+            "level": "none"
+          },
+          "nightsoulBurst": {
+            "characterBuildIds": [],
+            "characterCount": 0,
+            "cooldownSeconds": null,
+            "hasXilonenIndependentTrigger": false
+          }
+        }
+      }
+    },
+    "ice": {
+      "scenario": {
+        "conditions": {
+          "activeEffectIds": [],
+          "enemyCount": 1,
+          "equipmentEffectMode": "maximum_reachable",
+          "actionParameters": {
+            "vortex_level": 6
+          }
+        },
+        "enemy": {
+          "defenseReduction": 0,
+          "level": 100,
+          "name": "100级 · 全抗10%木桩",
+          "resistance": 0.1
+        },
+        "externalBuffs": [],
+        "gameDataVersion": "7.0",
+        "primary": {
+          "artifacts": [
+            {
+              "id": "raiden-emblem-flower",
+              "level": 20,
+              "mainStat": {
+                "stat": "hp",
+                "value": 4780
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "flower",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.066
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.132
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.11
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-plume",
+              "level": 20,
+              "mainStat": {
+                "stat": "atk",
+                "value": 311
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "plume",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.07
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.14
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.104
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-sands",
+              "level": 20,
+              "mainStat": {
+                "stat": "energy_recharge",
+                "value": 0.518
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "sands",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.062
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.124
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.099
+                },
+                {
+                  "stat": "atk",
+                  "value": 19
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-goblet",
+              "level": 20,
+              "mainStat": {
+                "stat": "electro_damage_bonus",
+                "value": 0.466
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "goblet",
+              "substats": [
+                {
+                  "stat": "crit_rate",
+                  "value": 0.066
+                },
+                {
+                  "stat": "crit_damage",
+                  "value": 0.132
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.058
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.104
+                }
+              ]
+            },
+            {
+              "id": "raiden-emblem-circlet",
+              "level": 20,
+              "mainStat": {
+                "stat": "crit_rate",
+                "value": 0.311
+              },
+              "rarity": 5,
+              "setId": "EmblemOfSeveredFate",
+              "slot": "circlet",
+              "substats": [
+                {
+                  "stat": "crit_damage",
+                  "value": 0.21
+                },
+                {
+                  "stat": "atk_percent",
+                  "value": 0.099
+                },
+                {
+                  "stat": "energy_recharge",
+                  "value": 0.11
+                },
+                {
+                  "stat": "atk",
+                  "value": 19
+                }
+              ]
+            }
+          ],
+          "ascension": 6,
+          "buildId": "benchmark.YumemizukiMizuki",
+          "characterId": "YumemizukiMizuki",
+          "constellation": 6,
+          "gameDataVersion": "7.0",
+          "label": "雷电将军 · 雷国首刀",
+          "level": 90,
+          "source": {
+            "kind": "builtin",
+            "presetId": "raiden-national.initial-slash"
+          },
+          "talents": {
+            "normal": 10,
+            "skill": 10,
+            "burst": 10
+          },
+          "weapon": {
+            "weaponId": "FavoniusCodex",
+            "refinement": 1,
+            "level": 90,
+            "ascension": 6
+          }
+        },
+        "targetActionId": "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex",
+        "teammates": [
+          {
+            "artifacts": [
+              {
+                "id": "raiden-emblem-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "flower",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "plume",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.07
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.14
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "sands",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.062
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.124
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "electro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "goblet",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "circlet",
+                "substats": [
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.21
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              }
+            ],
+            "ascension": 6,
+            "buildId": "benchmark.Odette",
+            "characterId": "Odette",
+            "constellation": 0,
+            "gameDataVersion": "7.0",
+            "label": "雷电将军 · 雷国首刀",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "normal": 10,
+              "skill": 10,
+              "burst": 10
+            },
+            "weapon": {
+              "weaponId": "FavoniusSword",
+              "refinement": 1,
+              "level": 90,
+              "ascension": 6
+            }
+          },
+          {
+            "artifacts": [
+              {
+                "id": "raiden-emblem-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "flower",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "plume",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.07
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.14
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "sands",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.062
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.124
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "electro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "goblet",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "circlet",
+                "substats": [
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.21
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              }
+            ],
+            "ascension": 6,
+            "buildId": "benchmark.Faruzan",
+            "characterId": "Faruzan",
+            "constellation": 6,
+            "gameDataVersion": "7.0",
+            "label": "雷电将军 · 雷国首刀",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "normal": 10,
+              "skill": 10,
+              "burst": 10
+            },
+            "weapon": {
+              "weaponId": "FavoniusWarbow",
+              "refinement": 1,
+              "level": 90,
+              "ascension": 6
+            }
+          },
+          {
+            "artifacts": [
+              {
+                "id": "raiden-emblem-flower",
+                "level": 20,
+                "mainStat": {
+                  "stat": "hp",
+                  "value": 4780
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "flower",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-plume",
+                "level": 20,
+                "mainStat": {
+                  "stat": "atk",
+                  "value": 311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "plume",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.07
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.14
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-sands",
+                "level": 20,
+                "mainStat": {
+                  "stat": "energy_recharge",
+                  "value": 0.518
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "sands",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.062
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.124
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-goblet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "electro_damage_bonus",
+                  "value": 0.466
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "goblet",
+                "substats": [
+                  {
+                    "stat": "crit_rate",
+                    "value": 0.066
+                  },
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.132
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.058
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.104
+                  }
+                ]
+              },
+              {
+                "id": "raiden-emblem-circlet",
+                "level": 20,
+                "mainStat": {
+                  "stat": "crit_rate",
+                  "value": 0.311
+                },
+                "rarity": 5,
+                "setId": "EmblemOfSeveredFate",
+                "slot": "circlet",
+                "substats": [
+                  {
+                    "stat": "crit_damage",
+                    "value": 0.21
+                  },
+                  {
+                    "stat": "atk_percent",
+                    "value": 0.099
+                  },
+                  {
+                    "stat": "energy_recharge",
+                    "value": 0.11
+                  },
+                  {
+                    "stat": "atk",
+                    "value": 19
+                  }
+                ]
+              }
+            ],
+            "ascension": 6,
+            "buildId": "benchmark.Diona",
+            "characterId": "Diona",
+            "constellation": 6,
+            "gameDataVersion": "7.0",
+            "label": "雷电将军 · 雷国首刀",
+            "level": 90,
+            "source": {
+              "kind": "builtin",
+              "presetId": "raiden-national.initial-slash"
+            },
+            "talents": {
+              "normal": 10,
+              "skill": 10,
+              "burst": 10
+            },
+            "weapon": {
+              "weaponId": "FavoniusWarbow",
+              "refinement": 1,
+              "level": 90,
+              "ascension": 6
+            }
+          }
+        ]
+      },
+      "damage": 23524.312914823335,
+      "digest": "663362898c3f1801ca2223df7b43fd430e47127f216abd2a294bd056375ba97c",
+      "evaluation": {
+        "appliedEffects": [
+          {
+            "id": "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+            "label": "绝缘之旗印 · 二件套",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "energyRecharge",
+            "value": 0.2
+          },
+          {
+            "id": "yumemizuki_mizuki.passive.daydream_night_dream.phec_hit.elemental_mastery",
+            "label": "昼想夜梦 · 梦浮期间火水雷冰队友攻击命中后元素精通提升100点",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "elementalMastery",
+            "targetFilter": {
+              "recipientSourceRelation": "source"
+            },
+            "value": 100
+          },
+          {
+            "id": "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+            "label": "廓然梦生 · 梦浮期间队伍元素精通提升（瑞希最终精通的10%）",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "elementalMastery",
+            "value": 21.52
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+            "label": "缠忆君影梦相见 · C2梦浮期间敌人火水雷冰风元素抗性降低20%",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "enemyResistanceReduction",
+            "targetFilter": {
+              "elements": [
+                "pyro",
+                "hydro",
+                "electro",
+                "cryo",
+                "anemo"
+              ]
+            },
+            "value": 0.2
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_rate",
+            "label": "慕念萦心间 · C6最终元素精通超过500的部分提升暴击率（最高20%）",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "critRate",
+            "targetFilter": {
+              "recipientSourceRelation": "source"
+            },
+            "value": 0
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_damage",
+            "label": "慕念萦心间 · C6最终元素精通超过500的部分提升暴击伤害（最高80%）",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "critDamage",
+            "targetFilter": {
+              "recipientSourceRelation": "source"
+            },
+            "value": 0
+          },
+          {
+            "id": "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+            "label": "星耀祝礼·银晓之舞 · 基于奥黛塔攻击力提升星超导/星扩散基础伤害（最高14%）",
+            "sourceId": "benchmark.Odette",
+            "target": "specialReactionBaseDamageBonus",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_superconduct",
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.10022600542738
+          },
+          {
+            "id": "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+            "label": "获选者的春祭 · 4层华彩使星烁反应伤害提升60%",
+            "sourceId": "benchmark.Odette",
+            "target": "specialReactionDamageBonus",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_superconduct",
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.6
+          },
+          {
+            "id": "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+            "label": "秋沙歌枕巡礼 · 梦浮期间全队星扩散反应伤害加成",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "specialReactionDamageBonus",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.1278288
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+            "label": "慕念萦心间 · C6梦浮期间全队星扩散暴击率提升10%",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "critRate",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.1
+          },
+          {
+            "id": "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage",
+            "label": "慕念萦心间 · C6梦浮期间全队星扩散暴击伤害提升20%",
+            "sourceId": "benchmark.YumemizukiMizuki",
+            "target": "critDamage",
+            "targetFilter": {
+              "specialReactionKinds": [
+                "stellar_swirl"
+              ]
+            },
+            "value": 0.2
+          },
+          {
+            "id": "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+            "label": "绝缘之旗印 · 二件套",
+            "sourceId": "benchmark.Odette",
+            "target": "energyRecharge",
+            "value": 0.2
+          },
+          {
+            "id": "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+            "label": "绝缘之旗印 · 二件套",
+            "sourceId": "benchmark.Faruzan",
+            "target": "energyRecharge",
+            "value": 0.2
+          },
+          {
+            "id": "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+            "label": "绝缘之旗印 · 二件套",
+            "sourceId": "benchmark.Diona",
+            "target": "energyRecharge",
+            "value": 0.2
+          },
+          {
+            "id": "diona.constellation.6.cat_tail_closing_time.self_hp_percent",
+            "label": "猫尾酒馆打烊之时 · C6 迪奥娜生命值上限提高25%",
+            "sourceId": "benchmark.Diona",
+            "target": "hpPercent",
+            "targetFilter": {
+              "recipientSourceRelation": "source"
+            },
+            "value": 0.25
+          }
+        ],
+        "parts": [],
+        "result": {
+          "critDamage": 26068.242687698097,
+          "expectedDamage": 23524.312914823335,
+          "nonCritDamage": 9843.42387714137,
+          "trace": []
+        },
+        "rotation": {
+          "dpr": 23524.312914823335,
+          "dps": 23524.312914823335,
+          "duration": 1,
+          "events": [
+            {
+              "appliedEffectIds": [
+                "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                "yumemizuki_mizuki.passive.daydream_night_dream.phec_hit.elemental_mastery",
+                "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_rate",
+                "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_damage",
+                "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage",
+                "diona.constellation.6.cat_tail_closing_time.self_hp_percent"
+              ],
+              "critDamage": 26068.242687698097,
+              "element": "cryo",
+              "expectedDamage": 23524.312914823335,
+              "hitCount": 1,
+              "id": "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex.stellar-swirl-vortex",
+              "nonCritDamage": 9843.42387714137,
+              "ownerId": "benchmark.YumemizukiMizuki",
+              "statSnapshotTime": 0,
+              "time": 0,
+              "trace": [
+                {
+                  "after": 23524.312914823335,
+                  "before": 0,
+                  "event": "vortex",
+                  "kind": "stellar_swirl_participant_aggregation",
+                  "vortexLevel": 6,
+                  "participants": [
+                    {
+                      "appliedEffectIds": [
+                        "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                        "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                        "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                        "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                        "yumemizuki_mizuki.passive.daydream_night_dream.phec_hit.elemental_mastery",
+                        "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                        "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                        "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.elemental_mastery_over_500.crit_damage",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
+                      ],
+                      "critDamage": 28885.720589266326,
+                      "critRate": 0.725,
+                      "expectedContribution": 6669.559450886192,
+                      "expectedDamage": 24200.380881708752,
+                      "label": "雷电将军 · 雷国首刀",
+                      "nonCritDamage": 11848.121652693326,
+                      "participantId": "benchmark.YumemizukiMizuki",
+                      "trace": [
+                        {
+                          "after": 1446.8535,
+                          "before": 0,
+                          "formula": {
+                            "kind": "special_reaction_base_damage",
+                            "value": 1446.8535
+                          },
+                          "stage": "base_damage"
+                        },
+                        {
+                          "after": 4340.5605,
+                          "before": 1446.8535,
+                          "formula": {
+                            "kind": "special_reaction_coefficient",
+                            "multiplier": 3,
+                            "reactionKind": "stellar_swirl"
+                          },
+                          "stage": "reaction_coefficient"
+                        },
+                        {
+                          "after": 4340.5605,
+                          "before": 4340.5605,
+                          "formula": {
+                            "bonus": 0,
+                            "kind": "special_reaction_base_damage_multiplier",
+                            "multiplier": 1
+                          },
+                          "stage": "base_damage_multiplier"
+                        },
+                        {
+                          "after": 4775.597540230871,
+                          "before": 4340.5605,
+                          "formula": {
+                            "bonus": 0.10022600542738,
+                            "kind": "special_reaction_base_damage_bonus",
+                            "multiplier": 1.10022600542738
+                          },
+                          "stage": "base_damage_bonus"
+                        },
+                        {
+                          "after": 11283.925383517453,
+                          "before": 4775.597540230871,
+                          "formula": {
+                            "bonus": 0.7278287999999999,
+                            "elementalMastery": 236.72,
+                            "kind": "special_reaction_damage_bonus",
+                            "masteryBonus": 0.6350012518330412,
+                            "multiplier": 2.362830051833041
+                          },
+                          "stage": "reaction_damage_bonus"
+                        },
+                        {
+                          "after": 11283.925383517453,
+                          "before": 11283.925383517453,
+                          "formula": {
+                            "flatDamageAddition": 0,
+                            "kind": "special_reaction_flat_damage_addition"
+                          },
+                          "stage": "flat_damage_addition"
+                        },
+                        {
+                          "after": 23047.981792103572,
+                          "before": 11283.925383517453,
+                          "formula": {
+                            "critDamage": 1.438,
+                            "critRate": 0.725,
+                            "kind": "expected_crit",
+                            "multiplier": 2.04255
+                          },
+                          "stage": "crit"
+                        },
+                        {
+                          "after": 24200.380881708752,
+                          "before": 23047.981792103572,
+                          "formula": {
+                            "effectiveResistance": -0.1,
+                            "kind": "resistance",
+                            "multiplier": 1.05,
+                            "resistance": 0.1,
+                            "resistanceReduction": 0.2
+                          },
+                          "stage": "resistance"
+                        },
+                        {
+                          "after": 24200.380881708752,
+                          "before": 24200.380881708752,
+                          "formula": {
+                            "ascensionBonus": 0,
+                            "kind": "special_reaction_ascension",
+                            "multiplier": 1
+                          },
+                          "stage": "ascension"
+                        }
+                      ]
+                    },
+                    {
+                      "appliedEffectIds": [
+                        "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                        "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                        "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                        "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                        "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                        "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
+                      ],
+                      "critDamage": 25353.603414461108,
+                      "critRate": 0.725,
+                      "expectedContribution": 11152.351165995344,
+                      "expectedDamage": 20852.036089579557,
+                      "label": "雷电将军 · 雷国首刀",
+                      "nonCritDamage": 8984.267687619104,
+                      "participantId": "benchmark.Odette",
+                      "trace": [
+                        {
+                          "after": 1446.8535,
+                          "before": 0,
+                          "formula": {
+                            "kind": "special_reaction_base_damage",
+                            "value": 1446.8535
+                          },
+                          "stage": "base_damage"
+                        },
+                        {
+                          "after": 4340.5605,
+                          "before": 1446.8535,
+                          "formula": {
+                            "kind": "special_reaction_coefficient",
+                            "multiplier": 3,
+                            "reactionKind": "stellar_swirl"
+                          },
+                          "stage": "reaction_coefficient"
+                        },
+                        {
+                          "after": 4340.5605,
+                          "before": 4340.5605,
+                          "formula": {
+                            "bonus": 0,
+                            "kind": "special_reaction_base_damage_multiplier",
+                            "multiplier": 1
+                          },
+                          "stage": "base_damage_multiplier"
+                        },
+                        {
+                          "after": 4775.597540230871,
+                          "before": 4340.5605,
+                          "formula": {
+                            "bonus": 0.10022600542738,
+                            "kind": "special_reaction_base_damage_bonus",
+                            "multiplier": 1.10022600542738
+                          },
+                          "stage": "base_damage_bonus"
+                        },
+                        {
+                          "after": 8556.445416780098,
+                          "before": 4775.597540230871,
+                          "formula": {
+                            "bonus": 0.7278287999999999,
+                            "elementalMastery": 21.52,
+                            "kind": "special_reaction_damage_bonus",
+                            "masteryBonus": 0.06387272943131901,
+                            "multiplier": 1.791701529431319
+                          },
+                          "stage": "reaction_damage_bonus"
+                        },
+                        {
+                          "after": 8556.445416780098,
+                          "before": 8556.445416780098,
+                          "formula": {
+                            "flatDamageAddition": 0,
+                            "kind": "special_reaction_flat_damage_addition"
+                          },
+                          "stage": "flat_damage_addition"
+                        },
+                        {
+                          "after": 19859.081990075767,
+                          "before": 8556.445416780098,
+                          "formula": {
+                            "critDamage": 1.8219999999999998,
+                            "critRate": 0.725,
+                            "kind": "expected_crit",
+                            "multiplier": 2.32095
+                          },
+                          "stage": "crit"
+                        },
+                        {
+                          "after": 20852.036089579557,
+                          "before": 19859.081990075767,
+                          "formula": {
+                            "effectiveResistance": -0.1,
+                            "kind": "resistance",
+                            "multiplier": 1.05,
+                            "resistance": 0.1,
+                            "resistanceReduction": 0.2
+                          },
+                          "stage": "resistance"
+                        },
+                        {
+                          "after": 20852.036089579557,
+                          "before": 20852.036089579557,
+                          "formula": {
+                            "ascensionBonus": 0,
+                            "kind": "special_reaction_ascension",
+                            "multiplier": 1
+                          },
+                          "stage": "ascension"
+                        }
+                      ]
+                    },
+                    {
+                      "appliedEffectIds": [
+                        "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                        "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                        "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                        "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                        "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                        "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
+                      ],
+                      "critDamage": 21903.64462241537,
+                      "critRate": 0.725,
+                      "expectedContribution": 2009.3005849158358,
+                      "expectedDamage": 18350.815965346395,
+                      "label": "雷电将军 · 雷国首刀",
+                      "nonCritDamage": 8984.267687619104,
+                      "participantId": "benchmark.Faruzan",
+                      "trace": [
+                        {
+                          "after": 1446.8535,
+                          "before": 0,
+                          "formula": {
+                            "kind": "special_reaction_base_damage",
+                            "value": 1446.8535
+                          },
+                          "stage": "base_damage"
+                        },
+                        {
+                          "after": 4340.5605,
+                          "before": 1446.8535,
+                          "formula": {
+                            "kind": "special_reaction_coefficient",
+                            "multiplier": 3,
+                            "reactionKind": "stellar_swirl"
+                          },
+                          "stage": "reaction_coefficient"
+                        },
+                        {
+                          "after": 4340.5605,
+                          "before": 4340.5605,
+                          "formula": {
+                            "bonus": 0,
+                            "kind": "special_reaction_base_damage_multiplier",
+                            "multiplier": 1
+                          },
+                          "stage": "base_damage_multiplier"
+                        },
+                        {
+                          "after": 4775.597540230871,
+                          "before": 4340.5605,
+                          "formula": {
+                            "bonus": 0.10022600542738,
+                            "kind": "special_reaction_base_damage_bonus",
+                            "multiplier": 1.10022600542738
+                          },
+                          "stage": "base_damage_bonus"
+                        },
+                        {
+                          "after": 8556.445416780098,
+                          "before": 4775.597540230871,
+                          "formula": {
+                            "bonus": 0.7278287999999999,
+                            "elementalMastery": 21.52,
+                            "kind": "special_reaction_damage_bonus",
+                            "masteryBonus": 0.06387272943131901,
+                            "multiplier": 1.791701529431319
+                          },
+                          "stage": "reaction_damage_bonus"
+                        },
+                        {
+                          "after": 8556.445416780098,
+                          "before": 8556.445416780098,
+                          "formula": {
+                            "flatDamageAddition": 0,
+                            "kind": "special_reaction_flat_damage_addition"
+                          },
+                          "stage": "flat_damage_addition"
+                        },
+                        {
+                          "after": 17476.967586044186,
+                          "before": 8556.445416780098,
+                          "formula": {
+                            "critDamage": 1.438,
+                            "critRate": 0.725,
+                            "kind": "expected_crit",
+                            "multiplier": 2.04255
+                          },
+                          "stage": "crit"
+                        },
+                        {
+                          "after": 18350.815965346395,
+                          "before": 17476.967586044186,
+                          "formula": {
+                            "effectiveResistance": -0.1,
+                            "kind": "resistance",
+                            "multiplier": 1.05,
+                            "resistance": 0.1,
+                            "resistanceReduction": 0.2
+                          },
+                          "stage": "resistance"
+                        },
+                        {
+                          "after": 18350.815965346395,
+                          "before": 18350.815965346395,
+                          "formula": {
+                            "ascensionBonus": 0,
+                            "kind": "special_reaction_ascension",
+                            "multiplier": 1
+                          },
+                          "stage": "ascension"
+                        }
+                      ]
+                    },
+                    {
+                      "appliedEffectIds": [
+                        "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+                        "diona.constellation.6.cat_tail_closing_time.self_hp_percent",
+                        "odette.passive.stellar_benediction.silver_dawn_dance.base_damage_bonus",
+                        "odette.passive.spring_rite.marvelous_splendor.stellar_damage_bonus",
+                        "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+                        "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
+                        "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+                        "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage"
+                      ],
+                      "critDamage": 21903.64462241537,
+                      "critRate": 0.725,
+                      "expectedContribution": 3693.101713025962,
+                      "expectedDamage": 18350.815965346395,
+                      "label": "雷电将军 · 雷国首刀",
+                      "nonCritDamage": 8984.267687619104,
+                      "participantId": "benchmark.Diona",
+                      "trace": [
+                        {
+                          "after": 1446.8535,
+                          "before": 0,
+                          "formula": {
+                            "kind": "special_reaction_base_damage",
+                            "value": 1446.8535
+                          },
+                          "stage": "base_damage"
+                        },
+                        {
+                          "after": 4340.5605,
+                          "before": 1446.8535,
+                          "formula": {
+                            "kind": "special_reaction_coefficient",
+                            "multiplier": 3,
+                            "reactionKind": "stellar_swirl"
+                          },
+                          "stage": "reaction_coefficient"
+                        },
+                        {
+                          "after": 4340.5605,
+                          "before": 4340.5605,
+                          "formula": {
+                            "bonus": 0,
+                            "kind": "special_reaction_base_damage_multiplier",
+                            "multiplier": 1
+                          },
+                          "stage": "base_damage_multiplier"
+                        },
+                        {
+                          "after": 4775.597540230871,
+                          "before": 4340.5605,
+                          "formula": {
+                            "bonus": 0.10022600542738,
+                            "kind": "special_reaction_base_damage_bonus",
+                            "multiplier": 1.10022600542738
+                          },
+                          "stage": "base_damage_bonus"
+                        },
+                        {
+                          "after": 8556.445416780098,
+                          "before": 4775.597540230871,
+                          "formula": {
+                            "bonus": 0.7278287999999999,
+                            "elementalMastery": 21.52,
+                            "kind": "special_reaction_damage_bonus",
+                            "masteryBonus": 0.06387272943131901,
+                            "multiplier": 1.791701529431319
+                          },
+                          "stage": "reaction_damage_bonus"
+                        },
+                        {
+                          "after": 8556.445416780098,
+                          "before": 8556.445416780098,
+                          "formula": {
+                            "flatDamageAddition": 0,
+                            "kind": "special_reaction_flat_damage_addition"
+                          },
+                          "stage": "flat_damage_addition"
+                        },
+                        {
+                          "after": 17476.967586044186,
+                          "before": 8556.445416780098,
+                          "formula": {
+                            "critDamage": 1.438,
+                            "critRate": 0.725,
+                            "kind": "expected_crit",
+                            "multiplier": 2.04255
+                          },
+                          "stage": "crit"
+                        },
+                        {
+                          "after": 18350.815965346395,
+                          "before": 17476.967586044186,
+                          "formula": {
+                            "effectiveResistance": -0.1,
+                            "kind": "resistance",
+                            "multiplier": 1.05,
+                            "resistance": 0.1,
+                            "resistanceReduction": 0.2
+                          },
+                          "stage": "resistance"
+                        },
+                        {
+                          "after": 18350.815965346395,
+                          "before": 18350.815965346395,
+                          "formula": {
+                            "ascensionBonus": 0,
+                            "kind": "special_reaction_ascension",
+                            "multiplier": 1
+                          },
+                          "stage": "ascension"
+                        }
+                      ]
+                    }
+                  ],
+                  "reactionCoefficient": 3
+                }
+              ]
+            }
+          ]
+        },
+        "stats": {
+          "attackPercent": 0.372,
+          "baseAttack": 724.866491,
+          "baseDefense": 757.0260544500001,
+          "baseElementalMastery": 0,
+          "baseHp": 12735.747219200002,
+          "critDamage": 1.438,
+          "critRate": 0.725,
+          "damageBonus": 0,
+          "defensePercent": 0,
+          "effectiveAttack": 1343.516825652,
+          "effectiveDefense": 757.0260544500001,
+          "effectiveHp": 17515.747219200002,
+          "elementalMastery": 236.72,
+          "energyRecharge": 2.6054000000000004,
+          "flatAttack": 349,
+          "flatElementalMastery": 236.72,
+          "flatDefense": 0,
+          "flatHp": 4780,
+          "hpPercent": 0,
+          "resistanceReduction": 0.2,
+          "statContributions": [
+            {
+              "label": "角色基础攻击 · 梦见月瑞希",
+              "stage": "baseAttack",
+              "value": 215.260542
+            },
+            {
+              "label": "武器基础攻击 · 西风秘典",
+              "stage": "baseAttack",
+              "value": 509.605949
+            },
+            {
+              "label": "生之花副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "死之羽副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "时之沙副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.099
+            },
+            {
+              "label": "空之杯副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.058
+            },
+            {
+              "label": "理之冠副词条 · 攻击力%",
+              "stage": "attackPercent",
+              "value": 0.099
+            },
+            {
+              "label": "死之羽主词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 311
+            },
+            {
+              "label": "时之沙副词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 19
+            },
+            {
+              "label": "理之冠副词条 · 固定攻击力",
+              "stage": "flatAttack",
+              "value": 19
+            },
+            {
+              "label": "角色基础生命值 · 梦见月瑞希",
+              "stage": "baseHp",
+              "value": 12735.747219200002
+            },
+            {
+              "label": "生之花主词条 · 固定生命值",
+              "stage": "flatHp",
+              "value": 4780
+            },
+            {
+              "label": "角色基础防御力 · 梦见月瑞希",
+              "stage": "baseDefense",
+              "value": 757.0260544500001
+            },
+            {
+              "label": "角色基础暴击率",
+              "stage": "critRate",
+              "value": 0.05
+            },
+            {
+              "label": "生之花副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.066
+            },
+            {
+              "label": "死之羽副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.07
+            },
+            {
+              "label": "时之沙副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.062
+            },
+            {
+              "label": "空之杯副词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.066
+            },
+            {
+              "label": "理之冠主词条 · 暴击率",
+              "stage": "critRate",
+              "value": 0.311
+            },
+            {
+              "label": "慕念萦心间 · C6梦浮期间全队星扩散暴击率提升10%",
+              "stage": "critRate",
+              "value": 0.1
+            },
+            {
+              "label": "角色基础暴击伤害",
+              "stage": "critDamage",
+              "value": 0.5
+            },
+            {
+              "label": "生之花副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.132
+            },
+            {
+              "label": "死之羽副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.14
+            },
+            {
+              "label": "时之沙副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.124
+            },
+            {
+              "label": "空之杯副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.132
+            },
+            {
+              "label": "理之冠副词条 · 暴击伤害",
+              "stage": "critDamage",
+              "value": 0.21
+            },
+            {
+              "label": "慕念萦心间 · C6梦浮期间全队星扩散暴击伤害提升20%",
+              "stage": "critDamage",
+              "value": 0.2
+            },
+            {
+              "label": "角色突破属性 · 元素精通",
+              "stage": "elementalMastery",
+              "value": 115.2
+            },
+            {
+              "label": "昼想夜梦 · 梦浮期间火水雷冰队友攻击命中后元素精通提升100点",
+              "stage": "elementalMastery",
+              "value": 100
+            },
+            {
+              "label": "廓然梦生 · 梦浮期间队伍元素精通提升（瑞希最终精通的10%）",
+              "stage": "elementalMastery",
+              "value": 21.52
+            }
+          ],
+          "talentMultiplier": null
+        },
+        "actionExpectedDamage": 23524.312914823335,
+        "appliedBuffs": [],
+        "teamState": {
+          "activeResonanceIds": [
+            "resonance.anemo",
+            "resonance.cryo"
+          ],
+          "hexereiSecretRite": false,
+          "moonsign": {
+            "characterBuildIds": [],
+            "characterCount": 0,
+            "level": "none"
+          },
+          "nightsoulBurst": {
+            "characterBuildIds": [],
+            "characterCount": 0,
+            "cooldownSeconds": null,
+            "hasXilonenIndependentTrigger": false
+          }
+        }
+      }
+    }
+  },
+  "timings": {
+    "single": {
+      "samples": [
+        302.57008300000007,
+        313.6864999999998,
+        317.2694580000002
+      ],
+      "medianMs": 313.6864999999998,
+      "digest": "663362898c3f1801ca2223df7b43fd430e47127f216abd2a294bd056375ba97c"
+    },
+    "full": {
+      "samples": [
+        18545.504,
+        22663.973292000002,
+        41053.76241699999
+      ],
+      "medianMs": 22663.973292000002,
+      "digest": "c88a0ecbb83fbc7685d36d4f9dbbaf47506381e36aef8773b08978106a0bec85"
+    },
+    "refinement": {
+      "samples": [
+        39770.638874999975,
+        38746.97270799999,
+        56193.15075
+      ],
+      "medianMs": 39770.638874999975,
+      "digest": "cf466e34a3db54bb9e9d6cd0aeab130ba0d4247f029ecae5f82e4ad861b47dde"
+    }
+  },
+  "full": {
+    "baselineExpectedDamage": 23524.312914823335,
+    "effectiveArtifacts": [
+      {
+        "artifactId": "raiden-emblem-flower",
+        "effectiveRolls": 1.6161518953904688,
+        "slot": "flower"
+      },
+      {
+        "artifactId": "raiden-emblem-plume",
+        "effectiveRolls": 1.7141004951111032,
+        "slot": "plume"
+      },
+      {
+        "artifactId": "raiden-emblem-sands",
+        "effectiveRolls": 1.5182032956698341,
+        "slot": "sands"
+      },
+      {
+        "artifactId": "raiden-emblem-goblet",
+        "effectiveRolls": 1.6161518953904688,
+        "slot": "goblet"
+      },
+      {
+        "artifactId": "raiden-emblem-circlet",
+        "effectiveRolls": 1.5695948458124342,
+        "slot": "circlet"
+      }
+    ],
+    "marginalSubstats": [
+      {
+        "averageRoll": 19.815,
+        "deltaDamage": 344.77875480450894,
+        "gainRatio": 0.014656273109989711,
+        "label": "元素精通",
+        "stat": "elemental_mastery",
+        "weight": 1
+      },
+      {
+        "averageRoll": 0.06605,
+        "deltaDamage": 170.2086346473916,
+        "gainRatio": 0.007235434899360581,
+        "label": "暴击伤害",
+        "stat": "crit_damage",
+        "weight": 0.49367495031386327
+      },
+      {
+        "averageRoll": 0.033049999999999996,
+        "deltaDamage": 108.69206851655326,
+        "gainRatio": 0.004620414160877078,
+        "label": "暴击率",
+        "stat": "crit_rate",
+        "weight": 0.3152516418193521
+      },
+      {
+        "averageRoll": 253.94,
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "label": "生命值",
+        "stat": "hp",
+        "weight": 0
+      },
+      {
+        "averageRoll": 0.04955,
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "label": "生命值%",
+        "stat": "hp_percent",
+        "weight": 0
+      },
+      {
+        "averageRoll": 16.535,
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "label": "攻击力",
+        "stat": "atk",
+        "weight": 0
+      },
+      {
+        "averageRoll": 0.04955,
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "label": "攻击力%",
+        "stat": "atk_percent",
+        "weight": 0
+      },
+      {
+        "averageRoll": 19.674999999999997,
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "label": "防御力",
+        "stat": "def",
+        "weight": 0
+      },
+      {
+        "averageRoll": 0.061950000000000005,
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "label": "防御力%",
+        "stat": "def_percent",
+        "weight": 0
+      },
+      {
+        "averageRoll": 0.055049999999999995,
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "label": "元素充能效率",
+        "stat": "energy_recharge",
+        "weight": 0
+      },
+      {
+        "averageRoll": 0.05,
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "label": "冰元素伤害加成",
+        "stat": "cryo_damage_bonus",
+        "weight": 0
+      }
+    ],
+    "progressionGains": [
+      {
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "id": "character-level.95",
+        "label": "角色等级提升至 95 级",
+        "weight": 0
+      },
+      {
+        "deltaDamage": 0,
+        "gainRatio": 0,
+        "id": "character-level.100",
+        "label": "角色等级提升至 100 级",
+        "weight": 0
+      }
+    ],
+    "totalEffectiveRolls": 8.034202427374309,
+    "weapons": [
+      {
+        "expectedDamage": 34756.69147346447,
+        "gainRatio": 0.47747955909748563,
+        "label": "寝正月初晴",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "SunnyMorningSleepIn"
+      },
+      {
+        "expectedDamage": 31189.57296172265,
+        "gainRatio": 0.32584416278824535,
+        "label": "纺夜天镜",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "NightweaversLookingGlass"
+      },
+      {
+        "expectedDamage": 30660.239018356908,
+        "gainRatio": 0.30334259408006026,
+        "label": "祭星者之望",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "StarcallersWatch"
+      },
+      {
+        "expectedDamage": 30015.525368096234,
+        "gainRatio": 0.2759363249747713,
+        "label": "真语秘匣",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "ReliquaryOfTruth"
+      },
+      {
+        "expectedDamage": 29962.116509212712,
+        "gainRatio": 0.27366595648082614,
+        "label": "千夜浮梦",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "AThousandFloatingDreams"
+      },
+      {
+        "expectedDamage": 29374.61696426731,
+        "gainRatio": 0.24869181389597705,
+        "label": "霜辰",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "DawningFrost"
+      },
+      {
+        "expectedDamage": 28183.22383556311,
+        "gainRatio": 0.19804663105820453,
+        "label": "群王局戏",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "ClashOfKings"
+      },
+      {
+        "expectedDamage": 27210.39538648766,
+        "gainRatio": 0.15669246047741625,
+        "label": "乌髓孑灯",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "BlackmarrowLantern"
+      },
+      {
+        "expectedDamage": 27210.39538648766,
+        "gainRatio": 0.15669246047741625,
+        "label": "祭礼残章",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "SacrificialFragments"
+      },
+      {
+        "expectedDamage": 26880.40726242195,
+        "gainRatio": 0.142664925422066,
+        "label": "天光的纺琴",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "EtherlightSpindlelute"
+      },
+      {
+        "expectedDamage": 26556.309168811556,
+        "gainRatio": 0.12888777091881298,
+        "label": "盈满之实",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "FruitOfFulfillment"
+      },
+      {
+        "expectedDamage": 26472.753543739742,
+        "gainRatio": 0.12533588715607125,
+        "label": "寸心余响",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "EchoesOfTheHeart"
+      },
+      {
+        "expectedDamage": 26317.957600609418,
+        "gainRatio": 0.11875563362472219,
+        "label": "流浪的晚星",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "WanderingEvenstar"
+      },
+      {
+        "expectedDamage": 25797.321026457816,
+        "gainRatio": 0.09662378322651,
+        "label": "帷间夜曲",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "NocturnesCurtainCall"
+      },
+      {
+        "expectedDamage": 25797.321026457816,
+        "gainRatio": 0.09662378322651,
+        "label": "冲浪时光",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "SurfsUp"
+      },
+      {
+        "expectedDamage": 25797.321026457816,
+        "gainRatio": 0.09662378322651,
+        "label": "万世流涌大典",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "TomeOfTheEternalFlow"
+      },
+      {
+        "expectedDamage": 25407.09099694419,
+        "gainRatio": 0.08003541225361199,
+        "label": "万国诸海图谱",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "MappaMare"
+      },
+      {
+        "expectedDamage": 25229.0689985492,
+        "gainRatio": 0.07246783741988261,
+        "label": "神乐之真意",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "KagurasVerity"
+      },
+      {
+        "expectedDamage": 24944.942984594883,
+        "gainRatio": 0.0603898645165688,
+        "label": "黑岩绯玉",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "BlackcliffAgate"
+      },
+      {
+        "expectedDamage": 24944.942984594883,
+        "gainRatio": 0.0603898645165688,
+        "label": "流浪乐章",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "TheWidsith"
+      },
+      {
+        "expectedDamage": 24660.81697064058,
+        "gainRatio": 0.04831189161325522,
+        "label": "图莱杜拉的回忆",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "TulaytullahsRemembrance"
+      },
+      {
+        "expectedDamage": 24660.81697064058,
+        "gainRatio": 0.04831189161325522,
+        "label": "溢彩心念",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "VividNotions"
+      },
+      {
+        "expectedDamage": 24428.709854068522,
+        "gainRatio": 0.038445201036043875,
+        "label": "四风原典",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "LostPrayerToTheSacredWinds"
+      },
+      {
+        "expectedDamage": 24428.709854068522,
+        "gainRatio": 0.038445201036043875,
+        "label": "宗室秘法录",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "RoyalGrimoire"
+      },
+      {
+        "expectedDamage": 24428.709854068522,
+        "gainRatio": 0.038445201036043875,
+        "label": "遗祀玉珑",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "SacrificialJade"
+      },
+      {
+        "expectedDamage": 24428.709854068522,
+        "gainRatio": 0.038445201036043875,
+        "label": "匣里日月",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "SolarPearl"
+      },
+      {
+        "expectedDamage": 24249.51428888455,
+        "gainRatio": 0.030827738803127724,
+        "label": "金流监督",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "CashflowSupervision"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "尘光七谕",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "AngelosHeptades"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "苍纹角杯",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "AshGravenDrinkingHorn"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "无垠蔚蓝之歌",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "BalladOfTheBoundlessBlue"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "鹤鸣余音",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "CranesEchoingCall"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "嘟嘟可故事集",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "DodocoTales"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "不灭月华",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "EverlastingMoonglow"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "昭心",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "EyeOfPerception"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "西风秘典",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "FavoniusCodex"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "纯水流华",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "FlowingPurity"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "忍冬之果",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "Frostbearer"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "白辰之环",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "HakushinRing"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "碧落之珑",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "JadefallsSplendor"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "尘世之锁",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "MemoryOfDust"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "证誓之明瞳",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "OathswornEye"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "试作金珀",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "PrototypeAmber"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "木棉之环",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "RingOfYaxche"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "天空之卷",
+        "rarity": 5,
+        "refinement": 1,
+        "weaponId": "SkywardAtlas"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "乘浪的回旋",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "WaveridingWhirl"
+      },
+      {
+        "expectedDamage": 23524.312914823335,
+        "gainRatio": 0,
+        "label": "暗巷的酒与诗",
+        "rarity": 4,
+        "refinement": 5,
+        "weaponId": "WineAndSong"
+      }
+    ]
+  },
+  "refinement": {
+    "baselineExpectedDamage": 23524.312914823335,
+    "weapon": {
+      "expectedDamage": 30212.49108472739,
+      "gainRatio": 0.2843091823391639,
+      "label": "千夜浮梦",
+      "rarity": 5,
+      "refinement": 2,
+      "weaponId": "AThousandFloatingDreams"
+    }
+  }
+}

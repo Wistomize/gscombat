@@ -3,9 +3,11 @@ import type { AnalysisResponse, CatalogResponse, CharacterBuild, SupportMetricEv
 import type { CatalogPrimaryAction, CatalogSupportMetric } from "../calculation-setup/model"
 import { OrderedDamageReport } from "./damage-report"
 import { SupportMetricReport } from "./support-metric-report"
+import type { WeaponRequestState } from "../calculation-workspace/use-incremental-analysis"
 
 interface CalculationResultsProps {
   readonly analysis: AnalysisResponse | null
+  readonly weaponStates?: Readonly<Record<string, WeaponRequestState>>
   readonly catalog: CatalogResponse
   readonly selectedSupportMetric: CatalogSupportMetric | undefined
   readonly supportMetricResponse: SupportMetricEvaluationResponse | null
@@ -17,6 +19,7 @@ interface CalculationResultsProps {
 /** Selects the authoritative support or damage report for the latest completed calculation. */
 export function CalculationResults({
   analysis,
+  weaponStates,
   catalog,
   selectedSupportMetric,
   supportMetricResponse,
@@ -35,6 +38,7 @@ export function CalculationResults({
       ) : analysis && targetBuild ? (
         <OrderedDamageReport
           analysis={analysis}
+          weaponStates={weaponStates}
           build={targetBuild}
           catalog={catalog}
           onWeaponRefinementChange={onWeaponRefinementChange}

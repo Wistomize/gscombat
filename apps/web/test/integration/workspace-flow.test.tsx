@@ -171,7 +171,11 @@ function createCalculationFetchMock(
 ) {
   return vi.fn(async (input: string | URL | Request, _init?: RequestInit) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
-    const body = url.includes("/v1/action-effect-options") ? { options: effectOptions } : response
+    const candidate = url.endsWith("/weapon-comparison") ? JSON.parse(String(_init?.body)) : null
+    const body = url.includes("/v1/action-effect-options") ? { options: effectOptions }
+      : candidate ? { baselineExpectedDamage: response.analysis.baselineExpectedDamage,
+        weapon: { ...response.analysis.weapons.find((weapon) => weapon.weaponId === candidate.weaponId), refinement: candidate.refinement } }
+      : response
     return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" }, status: 200 })
   })
 }
@@ -844,10 +848,15 @@ describe("team-first workspace integration", () => {
     await changeSelect(refinementSelect, "5")
     await flushAsyncWork()
     const refinedRequest = fetchMock.mock.calls[2]?.[1] as RequestInit | undefined
-    const refinedPayload = JSON.parse(String(refinedRequest?.body)) as {
-      weaponComparisonRefinements: Record<string, number>
-    }
-    expect(refinedPayload.weaponComparisonRefinements).toEqual({ EngulfingLightning: 5 })
+    const refinedPayload = JSON.parse(String(refinedRequest?.body))
+    expect(fetchMock.mock.calls[2]?.[0]).toBe("/api/backend/v1/analysis/weapon-comparison")
+    const { weaponComparisonRefinements: _overrides, ...frozenScenario } = JSON.parse(String(request?.body))
+    expect(refinedPayload).toMatchObject({ weaponId: "EngulfingLightning", refinement: 5, scenario: frozenScenario })
+    expect(refinementSelect?.value).toBe("5")
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/analysis"))).toHaveLength(1)
+    await click(findButton("开始计算"))
+    const recalculation = fetchMock.mock.calls.at(-1)?.[1] as RequestInit
+    expect(JSON.parse(String(recalculation.body)).weaponComparisonRefinements).toEqual({ EngulfingLightning: 5 })
   })
 
   it("uses action-owned trace presentation to show Nefer's final phantom hit while preserving the five-hit total", async () => {

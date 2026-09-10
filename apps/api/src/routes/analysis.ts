@@ -1,12 +1,16 @@
 import {
-  analyzeScenario,
+  analyzeWeaponComparison,
   evaluateCombatMetric,
-  evaluateScenario
+  evaluateScenarioAnalysis
 } from "@gscombat/analyzer"
 import { getCombatMetricDefinition } from "@gscombat/content"
 import {
   AnalysisRequestSchema,
   AnalysisResponseSchema,
+  WeaponComparisonRequestSchema,
+  WeaponComparisonResponseSchema,
+  type WeaponComparisonRequest,
+  type WeaponComparisonResponse,
   SupportMetricEvaluationRequestSchema,
   SupportMetricEvaluationResponseSchema,
   type AnalysisRequest,
@@ -34,13 +38,21 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
     },
     async (request) => {
       assertMetricConstellation(request.body.targetActionId, request.body.primary.constellation)
-      const evaluation = evaluateScenario(request.body, gameData)
-      const analysis = analyzeScenario(request.body, gameData, {
+      const { evaluation, analysis } = evaluateScenarioAnalysis(request.body, gameData, {
         ...(request.body.weaponComparisonRefinements === undefined
           ? {}
           : { weaponComparisonRefinements: request.body.weaponComparisonRefinements })
       })
       return serializeAnalysisResponse(evaluation, analysis)
+    }
+  )
+
+  app.post<{ Body: WeaponComparisonRequest; Reply: WeaponComparisonResponse }>(
+    "/v1/analysis/weapon-comparison",
+    { schema: { body: WeaponComparisonRequestSchema, response: { 200: WeaponComparisonResponseSchema } } },
+    async ({ body }) => {
+      assertMetricConstellation(body.scenario.targetActionId, body.scenario.primary.constellation)
+      return analyzeWeaponComparison(body.scenario, gameData, body.weaponId, body.refinement)
     }
   )
 

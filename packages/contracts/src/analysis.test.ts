@@ -1,7 +1,7 @@
 import { Value } from "typebox/value"
 import { describe, expect, it } from "vitest"
 
-import { AnalysisResponseSchema, getWeaponComparisonRefinement, type AnalysisResponse } from "./analysis.js"
+import { AnalysisResponseSchema, getWeaponComparisonRefinement, WeaponComparisonRequestSchema, WeaponComparisonResponseSchema, type AnalysisResponse } from "./analysis.js"
 
 const emptyTeamState = {
   activeResonanceIds: [],
@@ -16,6 +16,11 @@ const emptyTeamState = {
 } as const
 
 describe("weapon comparison refinement", () => {
+  it("shares the weapon row shape and restricts incremental refinements", () => {
+    expect(WeaponComparisonResponseSchema.properties.weapon).toEqual(AnalysisResponseSchema.properties.analysis.properties.weapons.items)
+    for (const refinement of [1, 2, 5]) expect(Value.Check(WeaponComparisonRequestSchema.properties.refinement, refinement)).toBe(true)
+    for (const refinement of [0, 6, 1.5, "2"]) expect(Value.Check(WeaponComparisonRequestSchema.properties.refinement, refinement)).toBe(false)
+  })
   it("uses R1 for five-star weapons and R5 for lower rarities", () => {
     expect(getWeaponComparisonRefinement(5)).toBe(1)
     expect(getWeaponComparisonRefinement(4)).toBe(5)
