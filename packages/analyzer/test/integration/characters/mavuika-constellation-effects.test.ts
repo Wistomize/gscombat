@@ -1,4 +1,4 @@
-import { xianglingNationalBuiltinBuild } from "@gscombat/content"
+import { listCombatMetrics, xianglingNationalBuiltinBuild } from "@gscombat/content"
 import type { CharacterBuild, EvaluationScenario } from "@gscombat/contracts"
 import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 import { afterAll, describe, expect, it } from "vitest"
@@ -44,6 +44,18 @@ function createScenario(constellation: number): EvaluationScenario {
 }
 
 describe("Mavuika constellation effects", () => {
+  it.each(["flamestrider_crash", "scorching_ring"])("keeps %s legacy no-reaction aliases equal to the canonical metric", (kind) => {
+    const prefix = `mavuika.constellation.6.humanitys_name_unfettered.${kind}`
+    const canonical = evaluateScenario({ ...createScenario(6), targetActionId: `${prefix}.none` }, gameData)
+    expect(canonical.actionExpectedDamage).toBeGreaterThan(0)
+    for (const reaction of ["vaporize", "melt"]) {
+      const legacy = evaluateScenario({ ...createScenario(6), targetActionId: `${prefix}.${reaction}.no_reaction` }, gameData)
+      expect(legacy.actionExpectedDamage).toBeCloseTo(canonical.actionExpectedDamage, 8)
+    }
+    expect(listCombatMetrics().filter((metric) => metric.id.startsWith(prefix)).map((metric) => metric.id).sort())
+      .toEqual([`${prefix}.melt`, `${prefix}.none`, `${prefix}.vaporize`])
+  })
+
   it("applies C2 as true base Attack plus the Sunfell Slice Attack term, and inherits both at C6", () => {
     const c0 = evaluateScenario(createScenario(0), gameData)
     const c2 = evaluateScenario(createScenario(2), gameData)

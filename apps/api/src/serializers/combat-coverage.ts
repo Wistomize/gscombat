@@ -159,9 +159,13 @@ function serializeCombatTimelineEvent(
 }
 
 /** Narrows an audited Stellar-Vortex level for the public discriminated response schema. */
-function requireStellarVortexLevel(level: 1 | 2 | undefined, eventId: string): 1 | 2 {
-  if (level === 1 || level === 2) return level
-  throw new Error(`Stellar-Swirl vortex event ${eventId} must declare level 1 or 2`)
+function requireStellarVortexLevel(
+  level: number | { readonly parameterId: string } | undefined,
+  eventId: string
+): number | { parameterId: string } {
+  if (typeof level === "number" && Number.isInteger(level) && level >= 1 && level <= 6) return level
+  if (typeof level === "object" && level.parameterId.length > 0) return { parameterId: level.parameterId }
+  throw new Error(`Stellar-Swirl vortex event ${eventId} must declare level 1 through 6 or a parameter reference`)
 }
 
 /** Copies one action-owned intrinsic effect into the mutable JSON coverage response. */

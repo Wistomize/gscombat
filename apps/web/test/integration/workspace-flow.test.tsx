@@ -680,6 +680,43 @@ describe("showcase import feedback", () => {
 })
 
 describe("team-first workspace integration", () => {
+  it("selects a Vortex level from the real catalog and displays elemental-slot reaction formulas", async () => {
+    const primary = { ...raidenNationalBuiltinScenario.primary, characterId: "YumemizukiMizuki", buildId: "test.web.mizuki",
+      weapon: { weaponId: "ApprenticesNotes", level: 90, ascension: 6, refinement: 1 } }
+    const actionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex"
+    const response: AnalysisResponse = {
+      ...analysisResponse,
+      evaluation: { ...analysisResponse.evaluation,
+        rotation: { ...analysisResponse.evaluation.rotation, events: [{
+          ...analysisResponse.evaluation.rotation.events[0]!, element: "cryo", id: `${actionId}.stellar-swirl-vortex`,
+          trace: [{ kind: "stellar_swirl_participant_aggregation", event: "vortex", vortexLevel: 2,
+            before: 0, after: 1000, reactionCoefficient: 2, participants: [] }]
+        }] }
+      }
+    }
+    const fetchMock = createCalculationFetchMock(response)
+    vi.stubGlobal("fetch", fetchMock)
+    saveBuildLibrary(window.localStorage, [primary])
+    saveParty(window.localStorage, { memberBuildIds: [primary.buildId] })
+    await render(createElement(TeamCalculationWorkspace, {
+      catalog: webCatalog as CatalogResponse,
+      initialScenario: { ...raidenNationalBuiltinScenario, primary, teammates: [], targetActionId: actionId }
+    }))
+    await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
+    await click(findButton("反应星扩散·冰"))
+    await flushAsyncWork()
+    const select = document.querySelector<HTMLSelectElement>('select[aria-label="风旋等级（1–2级倍率2，3–6级倍率3）数值"]')
+    expect(select?.value).toBe("6")
+    expect([...select!.options].map((option) => option.value)).toEqual(["1", "2", "3", "4", "5", "6"])
+    await changeSelect(select, "2")
+    await click(findButton("开始计算"))
+    await flushAsyncWork()
+    const request = fetchMock.mock.calls.find(([input]) => String(input).endsWith("/analysis"))?.[1] as RequestInit
+    expect(JSON.parse(String(request.body))).toMatchObject({ targetActionId: actionId, conditions: { actionParameters: { vortex_level: 2 } } })
+    expect(document.body.textContent).toContain("60% 冰元素贡献 + 30% 风元素贡献")
+    expect(document.body.textContent).toContain("风旋等级 = 2")
+    expect(document.body.textContent).not.toContain("四名角色分别结算后")
+  })
   it("groups multiple configurations under one character avatar and chooses the configuration in the party picker", async () => {
     const raidenBuild = raidenNationalBuiltinScenario.primary
     const localRaidenBuild = {
@@ -792,6 +829,14 @@ describe("team-first workspace integration", () => {
     expect(document.querySelector(".traceReport")?.textContent).toContain("空之杯主词条 · 雷元素伤害加成")
     expect(document.querySelector('.traceStep[data-stage="neutral_reaction"]')?.textContent).toContain("无反应倍率")
     expect(document.querySelector('.traceStep[data-stage="neutral_reaction"]')?.textContent).toContain("测试精通来源")
+    expect([...document.querySelectorAll<HTMLElement>(".traceStep")].map((step) => step.dataset.stage)).toEqual([
+      "scaling", "damage_bonus", "neutral_reaction", "crit"
+    ])
+    expect([...document.querySelectorAll(".traceStage > span")].map((step) => step.textContent)).toEqual([
+      "01", "02", "03", "04"
+    ])
+    expect(document.querySelector(".traceLegendItem")?.className).toContain("traceLegendItem--scaling")
+    expect(disclosures.filter((label) => label === "展开元素精通来源")).toHaveLength(1)
     expect(document.querySelector('.traceStep[data-stage="crit"]')?.textContent).toContain("测试暴击率来源")
     expect(document.querySelector('.traceStep[data-stage="crit"]')?.textContent).toContain("测试暴击伤害来源")
     const refinementSelect = document.querySelector<HTMLSelectElement>('select[aria-label="薙草之稻光精炼等级"]')
@@ -853,7 +898,7 @@ describe("team-first workspace integration", () => {
     expect(traceEvents).toHaveLength(1)
     expect(traceEvents[0]?.textContent).toContain("phantom-performance-shade-third-hit")
     expect(traceEvents[0]?.textContent).not.toContain("phantom-performance-self-first-hit")
-    expect(document.querySelector(".traceReport")?.textContent).toContain("自身两段伤害 + 幻影三次月绽放伤害")
+    expect(document.querySelector(".traceReport")?.textContent).toContain("自身与幻影月绽放完整合计（C6替换第二段并追加终结段）")
     expect(document.querySelector(".damageHero")?.textContent).toContain("自身两段 + 幻影三次命中期望伤害")
   })
 

@@ -1,0 +1,201 @@
+{
+  "baselineCommit": "d2b10b7f6253dec7336915c81c8aa80b19bc5451",
+  "note": "Local dirty Sandrone fixes present; entrance scan does not verify formula correctness.",
+  "metrics": 302,
+  "characters": 119,
+  "attempts": 2114,
+  "ok": 1734,
+  "expectedGateErrors": 380,
+  "unexpectedErrors": [],
+  "nonfinite": [],
+  "zeros": [
+    {
+      "metricId": "bennett.burst.field.attack_buff",
+      "characterId": "Bennett",
+      "kind": "stat_buff",
+      "c": 0,
+      "minimum": 0,
+      "value": 0,
+      "finite": true
+    },
+    {
+      "metricId": "nilou.passive.dreamy_dance_of_aeons.bountiful_core_damage_bonus",
+      "characterId": "Nilou",
+      "kind": "scalar",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true
+    },
+    {
+      "metricId": "prune.passive.resonant_ringing.all_damage_bonus",
+      "characterId": "Prune",
+      "kind": "scalar",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true
+    },
+    {
+      "metricId": "sucrose.passive.mollis_favonius.elemental_mastery_share",
+      "characterId": "Sucrose",
+      "kind": "scalar",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true
+    },
+    {
+      "metricId": "varka.skill.four_winds_ascension.anemo_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.four_winds_ascension.corresponding_cryo_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.four_winds_ascension.corresponding_electro_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.four_winds_ascension.corresponding_hydro_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.four_winds_ascension.corresponding_pyro_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.azure_devour.anemo_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.azure_devour.corresponding_cryo_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.azure_devour.corresponding_electro_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.azure_devour.corresponding_hydro_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "varka.skill.azure_devour.corresponding_pyro_damage",
+      "characterId": "Varka",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "wriothesley.normal.rebuke_vaulting_fist.c6_maximum_reachable",
+      "characterId": "Wriothesley",
+      "kind": "damage",
+      "c": 5,
+      "minimum": 0,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "mavuika.constellation.6.humanitys_name_unfettered.flamestrider_crash.vaporize.no_reaction",
+      "characterId": "Mavuika",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 6,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "mavuika.constellation.6.humanitys_name_unfettered.flamestrider_crash.melt.no_reaction",
+      "characterId": "Mavuika",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 6,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "mavuika.constellation.6.humanitys_name_unfettered.scorching_ring.vaporize.no_reaction",
+      "characterId": "Mavuika",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 6,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    },
+    {
+      "metricId": "mavuika.constellation.6.humanitys_name_unfettered.scorching_ring.melt.no_reaction",
+      "characterId": "Mavuika",
+      "kind": "damage",
+      "c": 6,
+      "minimum": 6,
+      "value": 0,
+      "finite": true,
+      "eventCount": 1
+    }
+  ],
+  "gateLeaks": [],
+  "decreases": []
+}

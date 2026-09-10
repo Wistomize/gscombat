@@ -60,13 +60,19 @@ export function RotationTraceFormula({
   if (entry.kind === "stellar_swirl_participant_aggregation") {
     return (
       <div className="formulaLines">
-        <FormulaEquation label={entry.event === "trigger" ? "星扩散触发伤害" : "星涡伤害"}>
-          四名角色分别结算后，按 60% / 30% / 5% / 5% 排名加权 ={" "}
+        <FormulaEquation label={entry.event === "trigger" ? "反应星扩散·风" : "反应星扩散·冰（风旋）"}>
+          {entry.event === "trigger"
+            ? "60% 风元素贡献 + 30% / 5% / 5% 其余贡献"
+            : "60% 冰元素贡献 + 30% 风元素贡献 + 5% / 5% 其余贡献"} ={" "}
           <FormulaValue stage="reaction_coefficient">{formatFormulaNumber(entry.after)}</FormulaValue>
         </FormulaEquation>
         <p className="formulaAuxiliary">
+          {entry.vortexLevel === undefined ? null : <>风旋等级 = {entry.vortexLevel}；</>}
           本次反应系数 ={" "}
           <FormulaValue stage="reaction_coefficient">{formatFormulaNumber(entry.reactionCoefficient)}</FormulaValue>
+        </p>
+        <p className="formulaAuxiliary">
+          {entry.participants.length} 名有效参与者；逐暴击组合在各位置的合格候选中按伤害选择，同一角色不重复占位，缺失元素位置计零。
         </p>
         {entry.participants.map((participant) => {
           const participantEffectIds = new Set(participant.appliedEffectIds)
@@ -281,6 +287,13 @@ export function RotationTraceFormula({
         </FormulaEquation>
       </div>
     )
+  }
+  if (entry.kind === "trigger_probability") {
+    return <FormulaEquation label="触发期望伤害">
+      <FormulaValue stage={previousStage}>{formatFormulaNumber(entry.before)}</FormulaValue> ×{" "}
+      <FormulaValue stage="trigger_probability">{formatFormulaPercent(entry.probability)}</FormulaValue> ={" "}
+      <FormulaValue stage="trigger_probability">{formatFormulaNumber(entry.after)}</FormulaValue>
+    </FormulaEquation>
   }
   if (entry.kind === "transformative_reaction") {
     return (

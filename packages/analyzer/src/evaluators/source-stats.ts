@@ -14,6 +14,7 @@ import {
   resolveCombatActionCharacterElementalMasteryEffects,
   resolveCombatActionDefenseEffects,
   resolveCombatActionFinalElementalMasteryShareEffects,
+  resolveCombatActionPartyEquipmentElementalMasteryEffects,
   resolveFinalHpToElementalMastery,
   resolveSelfAutomaticEquipmentEffects,
   resolveSelfMaximumReachableCharacterHpEffects,
@@ -289,8 +290,9 @@ export function resolveSourceElementalMasterySnapshotsByBuildId(
         ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
         teammates: sourceTeammates
       })
-      const characterEffects = resolveCombatActionCharacterElementalMasteryEffects({
+      const sourceEffectInput = {
         action,
+        actionOwnerBuildId: primary.buildId,
         activeEffectIds,
         ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
         baseEnergyRecharge: base.energyRecharge,
@@ -308,7 +310,9 @@ export function resolveSourceElementalMasterySnapshotsByBuildId(
         ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
         teamElements: resolvePartyElements(source, sourceTeammates, gameData),
         teammates: sourceTeammates
-      })
+      }
+      const characterEffects = resolveCombatActionCharacterElementalMasteryEffects(sourceEffectInput)
+      const partyEquipmentEffects = resolveCombatActionPartyEquipmentElementalMasteryEffects(sourceEffectInput)
       const maximumReachableEffects = getSourceSelfMaximumReachableEquipmentEffects(
         sourceSelfMaximumEquipmentEffectsByBuildId,
         source.buildId
@@ -320,9 +324,11 @@ export function resolveSourceElementalMasterySnapshotsByBuildId(
         base.elementalMastery +
         automaticEquipmentEffects.elementalMastery +
         characterEffects.elementalMastery +
+        partyEquipmentEffects.elementalMastery +
         maximumReachableEffects.elementalMastery +
         resolveFinalHpToElementalMastery(sourceFinalHp, automaticEquipmentEffects) +
         resolveFinalHpToElementalMastery(sourceFinalHp, characterEffects) +
+        resolveFinalHpToElementalMastery(sourceFinalHp, partyEquipmentEffects) +
         resolveFinalHpToElementalMastery(sourceFinalHp, maximumReachableEffects) +
         (isPrimary ? getDelta(deltas, "elemental_mastery") + getBuffTotal(buffs, "elemental_mastery") : 0)
       return [source.buildId, elementalMastery] as const
@@ -345,6 +351,7 @@ export function resolveSourceElementalMasterySnapshotsByBuildId(
       )
       const shareEffects = resolveCombatActionFinalElementalMasteryShareEffects({
         action,
+        actionOwnerBuildId: primary.buildId,
         activeEffectIds,
         ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
         baseEnergyRecharge: base.energyRecharge,

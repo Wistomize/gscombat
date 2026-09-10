@@ -1,6 +1,7 @@
 import { calculateResistanceMultiplier } from "./evaluate.js"
 import { getReactionBaseDamage } from "./reaction.js"
 import type {
+  Element,
   ExpectedDamageResult,
   ScalingStat,
   SpecialReactionKind,
@@ -77,7 +78,10 @@ export interface LunarReactionParticipantInput {
 }
 
 /** Per-character inputs for one manually declared Stellar-Swirl reaction contributor. */
-export type StellarSwirlReactionParticipantInput = LunarReactionParticipantInput
+export interface StellarSwirlReactionParticipantInput extends LunarReactionParticipantInput {
+  /** The contributor's character element, not the reaction's damage element. */
+  readonly element: Element
+}
 
 /** Manually declared current contributors to one reaction Lunar-Charged or Lunar-Crystallize hit. */
 export interface LunarReactionExpectedDamageInput {
@@ -93,7 +97,7 @@ export interface LunarReactionExpectedDamageInput {
 export interface StellarSwirlReactionExpectedDamageInput {
   readonly event: StellarSwirlReactionEvent
   readonly participants: readonly StellarSwirlReactionParticipantInput[]
-  /** One or two; only used by a Vortex event. */
+  /** Actual Vortex level from one through six; absent for a trigger. */
   readonly vortexLevel?: number
 }
 
@@ -122,6 +126,7 @@ export interface SpecialReactionBaseDamageTerm {
 
 /** One participant's independent reaction Moon damage before party aggregation. */
 export interface LunarReactionParticipantDamageResult {
+  readonly element?: Element
   readonly critRate: number
   readonly damage: SpecialReactionDamageResult
   readonly participantId: string
@@ -129,6 +134,8 @@ export interface LunarReactionParticipantDamageResult {
 
 /** One concrete set of independently rolled participant crit outcomes. */
 export interface LunarReactionCriticalOutcome {
+  /** Actual occupied slot weights; absent elemental slots are not compressed. */
+  readonly participantWeights: readonly { readonly participantId: string; readonly weight: number }[]
   readonly criticalParticipantIds: readonly string[]
   readonly participantDamages: readonly { readonly damage: number; readonly participantId: string }[]
   readonly probability: number
@@ -151,6 +158,7 @@ export interface StellarSwirlReactionExpectedDamageResult
   readonly event: StellarSwirlReactionEvent
   readonly kind: "stellar_swirl"
   readonly reactionCoefficient: number
+  readonly vortexLevel?: number
 }
 
 interface DirectSpecialReactionDamageInputBase {
@@ -226,10 +234,10 @@ export function getStellarSwirlReactionCoefficient(event: StellarSwirlReactionEv
     if (vortexLevel !== undefined) throw new Error("A Stellar-Swirl trigger hit must not declare a Vortex level")
     return 0.75
   }
-  if (vortexLevel !== 1 && vortexLevel !== 2) {
-    throw new Error("A Stellar Vortex level must be either 1 or 2")
+  if (vortexLevel === undefined || !Number.isInteger(vortexLevel) || vortexLevel < 1 || vortexLevel > 6) {
+    throw new Error("A Stellar Vortex level must be an integer from 1 through 6")
   }
-  return vortexLevel === 1 ? 2 : 3
+  return vortexLevel <= 2 ? 2 : 3
 }
 
 /**
@@ -354,18 +362,23 @@ export function calculateStellarSwirlReactionExpectedDamage(
 ): StellarSwirlReactionExpectedDamageResult {
   const reactionCoefficient = getStellarSwirlReactionCoefficient(input.event, input.vortexLevel)
   const participants = input.participants.map((participant) => ({
+    element: participant.element,
     critRate: clamp(participant.critRate, 0, 1),
     damage: calculateStellarSwirlReactionParticipantDamage(input.event, participant, input.vortexLevel),
     participantId: participant.participantId
   }))
-  const aggregate = calculateParticipantExpectedDamage(participants, "Stellar-Swirl")
+  const aggregate = calculateParticipantExpectedDamage(
+    participants, "Stellar-Swirl", input.event === "trigger" ? ["anemo"] : ["cryo", "anemo"]
+  )
 
-  return { ...aggregate, event: input.event, kind: "stellar_swirl", participants, reactionCoefficient }
+  return { ...aggregate, event: input.event, kind: "stellar_swirl", participants, reactionCoefficient,
+    ...(input.vortexLevel === undefined ? {} : { vortexLevel: input.vortexLevel }) }
 }
 
 function calculateParticipantExpectedDamage(
   participants: readonly LunarReactionParticipantDamageResult[],
-  label: string
+  label: string,
+  slotElements: readonly Element[] = []
 ): Omit<LunarReactionExpectedDamageResult, "kind" | "participants"> {
   if (participants.length === 0 || participants.length > lunarParticipantContributionWeights.length) {
     throw new Error(`A ${label} damage instance requires between one and four manual participants`)
@@ -380,12 +393,12 @@ function calculateParticipantExpectedDamage(
   const outcomeCount = 2 ** participants.length
 
   for (let outcomeMask = 0; outcomeMask < outcomeCount; outcomeMask += 1) {
-    const outcome = calculateSpecialReactionCriticalOutcome(participants, outcomeMask)
+    const outcome = calculateSpecialReactionCriticalOutcome(participants, outcomeMask, slotElements)
     outcomes.push(outcome)
     expectedDamage += outcome.probability * outcome.weightedDamage
-    for (const [rank, participantId] of outcome.rankedParticipantIds.entries()) {
+    for (const { participantId, weight } of outcome.participantWeights) {
       const damage = outcome.participantDamages.find((participant) => participant.participantId === participantId)?.damage ?? 0
-      const weightedContribution = outcome.probability * (lunarParticipantContributionWeights[rank] ?? 0) * damage
+      const weightedContribution = outcome.probability * weight * damage
       expectedContributionByParticipantId.set(
         participantId,
         (expectedContributionByParticipantId.get(participantId) ?? 0) + weightedContribution
@@ -546,7 +559,8 @@ function resolveSpecialReactionBaseDamageTerms(
 
 function calculateSpecialReactionCriticalOutcome(
   participants: readonly LunarReactionParticipantDamageResult[],
-  outcomeMask: number
+  outcomeMask: number,
+  slotElements: readonly Element[]
 ): LunarReactionCriticalOutcome {
   let probability = 1
   const criticalParticipantIds: string[] = []
@@ -562,16 +576,25 @@ function calculateSpecialReactionCriticalOutcome(
   const rankedParticipantDamages = [...participantDamages].sort(
     (left, right) => right.damage - left.damage || left.participantId.localeCompare(right.participantId)
   )
-  const weightedDamage = rankedParticipantDamages.reduce(
-    (total, participant, rank) => total + participant.damage * (lunarParticipantContributionWeights[rank] ?? 0),
-    0
-  )
+  const remaining = [...rankedParticipantDamages]
+  const participantWeights: { participantId: string; weight: number }[] = []
+  let weightedDamage = 0
+  for (const [slot, weight] of lunarParticipantContributionWeights.entries()) {
+    const element = slotElements[slot]
+    const index = remaining.findIndex((candidate) => element === undefined ||
+      participants.find((participant) => participant.participantId === candidate.participantId)?.element === element)
+    if (index < 0) continue
+    const participant = remaining.splice(index, 1)[0]!
+    participantWeights.push({ participantId: participant.participantId, weight })
+    weightedDamage += participant.damage * weight
+  }
 
   return {
     criticalParticipantIds,
     participantDamages,
+    participantWeights,
     probability,
-    rankedParticipantIds: rankedParticipantDamages.map((participant) => participant.participantId),
+    rankedParticipantIds: participantWeights.map((participant) => participant.participantId),
     weightedDamage
   }
 }

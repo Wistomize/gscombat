@@ -93,6 +93,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
       damageKind: "transformative",
       element: "pyro",
       evaluator: "declared_transformative",
+      fieldPresence: "on_field",
       id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_pyro_swirl",
       kind: "damage",
       status: "verified",
@@ -122,6 +123,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
       element: yumemizukiMizukiDefinition.element,
       evaluator: "declared_direct",
       id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.radiance_stellar_swirl_combo",
+      fieldPresence: "on_field",
       kind: "damage",
       parameterReferences: [
         {
@@ -139,19 +141,13 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
         damageEvents: [
           {
             at: 0,
-            id: "radiance-stellar-swirl-trigger",
-            snapshot: "hit",
-            stellarSwirlReaction: { event: "trigger" }
-          },
-          {
-            at: 0.1,
             damagePartId: "revelation-radiance-stellar-swirl-damage",
             id: "revelation-radiance-stellar-swirl-damage",
             snapshot: "hit",
             specialReaction: { kind: "stellar_swirl" }
           },
           {
-            at: 0.2,
+            at: 0.1,
             damagePartId: "c1-awaiting-stellar-swirl-damage",
             id: "c1-awaiting-stellar-swirl-damage",
             minimumSourceConstellation: 1,
@@ -159,6 +155,56 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
             specialReaction: { kind: "stellar_swirl" }
           }
         ],
+        duration: 1
+      }
+    },
+    {
+      characterId: "YumemizukiMizuki",
+      damageKind: "direct",
+      damageParts: [],
+      element: "anemo",
+      evaluator: "declared_direct",
+      fieldPresence: "on_field",
+      id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl",
+      kind: "damage",
+      status: "verified",
+      talentSlot: "skill",
+      timeline: {
+        damageEvents: [{
+          at: 0,
+          id: "radiance-stellar-swirl-trigger",
+          snapshot: "hit",
+          stellarSwirlReaction: { event: "trigger" }
+        }],
+        duration: 1
+      }
+    },
+    {
+      characterId: "YumemizukiMizuki",
+      damageKind: "direct",
+      damageParts: [],
+      element: "cryo",
+      evaluator: "declared_direct",
+      fieldPresence: "on_field",
+      id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex",
+      kind: "damage",
+      scenarioParameters: [{
+        id: "vortex_level",
+        label: "风旋等级（1–2级倍率2，3–6级倍率3）",
+        defaultValue: 6,
+        minimumValue: 1,
+        maximumValue: 6,
+        allowedValues: [1, 2, 3, 4, 5, 6]
+      }],
+      status: "verified",
+      talentSlot: "skill",
+      timeline: {
+        damageEvents: [{
+          at: 0,
+          id: "stellar-swirl-vortex",
+          snapshot: "hit",
+          stellarSwirlReaction: { event: "vortex", vortexLevel: { parameterId: "vortex_level" } }
+        }],
         duration: 1
       }
     },
@@ -197,6 +243,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_swirl.damage_bonus",
+      requiresSourceOnField: true,
       label: "秋沙歌枕巡礼 · 梦浮期间全队扩散反应伤害加成",
       source: { characterId: "YumemizukiMizuki", kind: "character" },
       target: "reactionDamageBonus",
@@ -219,6 +266,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.dreamdrifter.party_stellar_swirl.damage_bonus",
+      requiresSourceOnField: true,
       label: "秋沙歌枕巡礼 · 梦浮期间全队星扩散反应伤害加成",
       source: { characterId: "YumemizukiMizuki", kind: "character" },
       target: "specialReactionDamageBonus",
@@ -246,6 +294,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
         minimum: 1
       },
       id: "yumemizuki_mizuki.passive.daydream_night_dream.phec_hit.elemental_mastery",
+      requiresSourceOnField: true,
       label: "昼想夜梦 · 梦浮期间火水雷冰队友攻击命中后元素精通提升100点",
       source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceAscension: 4 },
       target: "elementalMastery",
@@ -264,10 +313,10 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery",
-      label: "廓然梦生 · 梦浮期间瑞希自身元素精通提升（最终精通的10%）",
+      requiresSourceOnField: true,
+      label: "廓然梦生 · 梦浮期间队伍元素精通提升（瑞希最终精通的10%）",
       source: { characterId: "YumemizukiMizuki", kind: "character" },
       target: "elementalMastery",
-      targetFilter: { recipientSourceRelation: "source" },
       value: {
         kind: "final_elemental_mastery",
         multiplier: {
@@ -285,11 +334,12 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "automatic",
       id: "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition",
-      label: "雾霞流生 · C1待宵之茧被星扩散触发（550%最终元素精通）",
+      label: "宿雾若水遥 · C1二十三夜待被星扩散触发（550%最终元素精通）",
+      requiresSourceOnField: true,
       source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceConstellation: 1 },
       target: "specialReactionFlatDamageAddition",
       targetFilter: {
-        actionIds: ["yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.radiance_stellar_swirl_combo"],
+        actionIds: ["yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl"],
         eventIds: ["radiance-stellar-swirl-trigger"],
         recipientSourceRelation: "source",
         specialReactionKinds: ["stellar_swirl"]
@@ -300,8 +350,22 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
       }
     },
     {
+      activation: "automatic",
+      id: "yumemizuki_mizuki.constellation.1.awaiting_swirl.flat_damage_addition",
+      label: "宿雾若水遥 · C1二十三夜待被普通扩散触发（1100%最终元素精通）",
+      requiresSourceOnField: true,
+      source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceConstellation: 1 },
+      target: "transformativeReactionFlatDamageAddition",
+      targetFilter: {
+        actionIds: ["yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_pyro_swirl"],
+        recipientSourceRelation: "source", reactionKinds: ["swirl"]
+      },
+      value: { kind: "final_elemental_mastery", multiplier: { kind: "fixed", value: 11 } }
+    },
+    {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.constellation.2.dreamdrifter.party_phec_damage_bonus",
+      requiresSourceOnField: true,
       label: "缠忆君影梦相见 · C2梦浮期间其他角色火水雷冰元素伤害加成",
       source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceConstellation: 2 },
       target: "damageBonus",
@@ -314,6 +378,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.constellation.2.dreamdrifter.enemy_phec_anemo_resistance_reduction",
+      requiresSourceOnField: true,
       label: "缠忆君影梦相见 · C2梦浮期间敌人火水雷冰风元素抗性降低20%",
       source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceConstellation: 2 },
       target: "enemyResistanceReduction",
@@ -351,6 +416,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_rate",
+      requiresSourceOnField: true,
       label: "慕念萦心间 · C6梦浮期间全队星扩散暴击率提升10%",
       source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceConstellation: 6 },
       target: "critRate",
@@ -360,6 +426,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.constellation.6.dreamdrifter.party_stellar_swirl.crit_damage",
+      requiresSourceOnField: true,
       label: "慕念萦心间 · C6梦浮期间全队星扩散暴击伤害提升20%",
       source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceConstellation: 6 },
       target: "critDamage",
@@ -369,6 +436,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.constellation.6.dreamdrifter.party_swirl.crit_rate",
+      requiresSourceOnField: true,
       label: "慕念萦心间 · C6梦浮期间全队普通扩散固定暴击率30%",
       source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceConstellation: 6 },
       target: "transformativeReactionCritRate",
@@ -378,6 +446,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yumemizuki_mizuki.constellation.6.dreamdrifter.party_swirl.crit_damage",
+      requiresSourceOnField: true,
       label: "慕念萦心间 · C6梦浮期间全队普通扩散固定暴击伤害100%",
       source: { characterId: "YumemizukiMizuki", kind: "character", minimumSourceConstellation: 6 },
       target: "transformativeReactionCritDamage",
@@ -392,8 +461,28 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
       characterId: "YumemizukiMizuki",
       id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.radiance_stellar_swirl_combo",
       kind: "damage",
-      label: "秋沙歌枕巡礼 / 辉映·星扩散联动伤害",
+      label: "廓然梦生 / 梦浮·辉映星扩散直伤（C1含标记追加）",
       sourceActionId: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.radiance_stellar_swirl_combo",
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl",
+      characterId: "YumemizukiMizuki",
+      id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl",
+      kind: "damage",
+      label: "秋沙歌枕巡礼 / 梦浮·反应星扩散·风（冰底、标记可用）",
+      sourceActionId: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl",
+      status: "verified",
+      target: "enemy"
+    },
+    {
+      actionId: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex",
+      characterId: "YumemizukiMizuki",
+      id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex",
+      kind: "damage",
+      label: "秋沙歌枕巡礼 / 梦浮·反应星扩散·冰（风旋单次爆炸）",
+      sourceActionId: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex",
       status: "verified",
       target: "enemy"
     },
@@ -424,6 +513,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
       },
       id: "yumemizuki_mizuki.burst.anraku_secret_spring_therapy.mini_baku.snack_heal",
       includeHealingBonus: true,
+      selfRecipientMultiplier: { label: "瑞希本人拾取点心 · 治疗量提高100%", value: 2 },
       kind: "healing",
       label: "安乐秘方疗法 / 貉灵小食单次治疗",
       percentageParameter: {
@@ -469,7 +559,7 @@ export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected Dreamdrifter damage metrics calculate one Pyro Swirl and one fixed Radiance Stellar-Swirl linkage snapshot. Dreamdrifter's talent-level-aware Swirl and Stellar-Swirl bonuses, the A4 100 Elemental-Mastery trigger, and Revelation's 10% Elemental-Mastery increase use the same maintained effect pipeline. Revelation is scoped to Mizuki's own Dreamdrifter metrics because switching characters ends Dreamdrifter, so it does not propagate into another character's foreground metric. The linkage contains one actual participant-aggregated Stellar-Swirl trigger plus Revelation's independent 1000% Elemental-Mastery Stellar-Swirl damage; at C1 and above, consuming Awaiting Cocoon adds 550% of Mizuki's final Elemental Mastery only to the trigger event's post-reaction flat-damage stage and creates a separate 400% Elemental-Mastery Stellar-Swirl event. C2 grants other party members a PHEC damage bonus equal to 0.04% per point of Mizuki's final Elemental Mastery and reduces enemy PHEC and Anemo resistance by 20%. The selected snack-heal metric uses Mizuki's Elemental Mastery × burst[2] plus burst[6], then applies source Healing Bonus and recipient Incoming Healing Bonus; its 70% HP condition is waived at C4, which also exposes the independent 266% Elemental-Mastery heal for another nearby low-HP party member. C5 adds three Burst levels. At C6, ordinary Swirl uses a fixed 30% Crit Rate and 100% Crit DMG during Dreamdrifter; the part of Mizuki's final Elemental Mastery above 500 converts to ordinary character Crit Rate and Crit DMG at 0.04% and 0.16% per point, capped at 20% and 80%; all party members' Stellar-Swirl damage also gains 10% Crit Rate and 20% Crit DMG. The ordinary reaction-specific CRIT does not read character panel CRIT. Energy restoration, pull, exact multi-target routing, external timing, and full rotation behavior do not alter these selected single-event outputs and remain outside the fixed snapshot.",
+    "Dreamdrifter exposes separate direct Stellar-Swirl, single Anemo reaction and Cryo Vortex metrics, alongside the existing ordinary Pyro Swirl and snack healing metrics. All three stellar metrics assume Dreamdrifter and Radiance are active and the relevant trigger cooldowns are available. The legacy combo ID now represents direct damage only: Revelation contributes one 1000% Elemental-Mastery Stellar-Swirl hit, with a separate 400% hit at C1 and above when Twenty-Three Nights Awaiting is consumed. It excludes the actual reaction and the ordinary periodic Anemo hit, including its separate 1000% Elemental-Mastery base addition. The new reaction metric contains only one Anemo Stellar-Swirl trigger, with the 550% Elemental-Mastery C1 addition in its post-reaction flat stage. For this fixed Cryo-aura snapshot the current trigger owner and Cryo teammates with assumed surviving application contribute; other teammates still supply eligible buffs. The Cryo Vortex metric takes a manual level from 1 through 6 (default 6), uses coefficient 2 at levels 1-2 and 3 at levels 3-6, and excludes the C1 trigger addition. Its assumed contributors are the party Anemo and Cryo characters. Under the user-approved calculation convention, each critical outcome assigns 60% to an eligible Anemo contributor for the Anemo reaction, or 60% to Cryo and 30% to Anemo for the Vortex; other slots use the highest remaining damage, without reusing a contributor or promoting another element into an empty required slot. Conflicting research is recorded in the change design; this convention is not asserted as independently proven. Dreamdrifter talent bonuses, A4 mastery, Revelation mastery sharing, C2 and C6 use the maintained source-on-field effect pipeline; another foreground action cannot overlap Dreamdrifter. C6 ordinary Swirl retains fixed 30% Crit Rate and 100% Crit DMG; Stellar-Swirl instead uses character CRIT with the applicable C6 party and mastery-conversion bonuses. Existing snack healing, self-recipient doubling, C4 extra healing and cumulative talent levels are unchanged. This is a fixed single-action snapshot, not an aura-history, cooldown or full-rotation simulator.",
   label: yumemizukiMizukiDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

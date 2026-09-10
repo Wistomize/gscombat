@@ -13,6 +13,7 @@ import {
   resolveAdditionalDamageEventEffects, resolveCombatActionEffects, type AppliedCombatActionEffect, type ResolvedCombatActionEffects
 } from "../effects/action-effects.js"
 import { getBuffTotal, resolvePartyElements } from "./context.js"
+import { resolveBuildElement } from "../core/build-variant.js"
 import {
   resolveDeclaredActionTalentLevelConstellationBonuses
 } from "./declared-action.js"
@@ -335,7 +336,9 @@ export function evaluateDeclaredDirectScenarioAction(
       additionalDamageEventTime,
       additionalDamageEventSnapshotTime,
       additionalDamageEventEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
-      additionalDamageEventEffects.enemyDefenseIgnore
+      additionalDamageEventEffects.enemyDefenseIgnore,
+      additionalDamageEventEffects.baseDamageFlat,
+      shared.resolveMatchedActionDamageScalingTerms(additionalDamageEventEffects, resolvedActionParameters)
     )
   })
   const rotation = evaluateRotation({
@@ -581,7 +584,9 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       additionalDamageEventTime,
       additionalDamageEventSnapshotTime,
       additionalDamageEventEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
-      additionalDamageEventEffects.enemyDefenseIgnore
+      additionalDamageEventEffects.enemyDefenseIgnore,
+      additionalDamageEventEffects.baseDamageFlat,
+      shared.resolveMatchedActionDamageScalingTerms(additionalDamageEventEffects, resolvedActionParameters)
     )
   })
   const ordinaryRotation = evaluateRotation({
@@ -666,7 +671,12 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
   })
   const party = [build, ...teammates]
   const stellarSwirlReactionEventResults = stellarSwirlReactionEvents.map((event) => {
-    const participantEvaluations = party.map((participant) => {
+    // Fixed Cryo-aura assumption: the current trigger owner and Cryo appliers contribute,
+    // not every support in the party. Vortex assumes the listed Cryo/Anemo appliers participated.
+    const participants = event.stellarSwirlReaction.event === "trigger"
+      ? party.filter((participant) => participant.buildId === build.buildId || resolveBuildElement(participant, gameData) === "cryo")
+      : party.filter((participant) => ["cryo", "anemo"].includes(resolveBuildElement(participant, gameData) ?? ""))
+    const participantEvaluations = participants.map((participant) => {
       const participantTeammates = party.filter((candidate) => candidate.buildId !== participant.buildId)
       const participantAction: CombatActionMetadata = { ...action, characterId: participant.characterId }
       const participantDeltas = participant.buildId === build.buildId ? artifactStatDeltas : undefined
@@ -685,6 +695,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       })
       const effects = resolveCombatActionEffects({
         action: participantAction,
+        actionOwnerBuildId: build.buildId,
         activeEffectIds: participantContext.resolvedActiveEffectIds,
         ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
         baseEnergyRecharge: participantContext.baseStats.scenario.energyRecharge,
@@ -696,12 +707,11 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
         moonsignLevel,
         primary: participant,
         ...(participantContext.primaryElement === null ? {} : { primaryElement: participantContext.primaryElement }),
-        sourceFinalAttackByBuildId: participantContext.sourceFinalAttackByBuildId,
-        sourceFinalDefenseByBuildId: participantContext.sourceFinalDefenseByBuildId,
-        sourceFinalElementalMasteryByBuildId: participantContext.sourceFinalElementalMasteryByBuildId,
-        sourceElementalMasteryBeforeShareByBuildId:
-          participantContext.sourceElementalMasteryBeforeShareByBuildId,
-        sourceFinalHpByBuildId: participantContext.sourceFinalHpByBuildId,
+        sourceFinalAttackByBuildId,
+        sourceFinalDefenseByBuildId,
+        sourceFinalElementalMasteryByBuildId,
+        sourceElementalMasteryBeforeShareByBuildId,
+        sourceFinalHpByBuildId,
         ...(participantContext.primaryDifferentElementTeammateCount === null
           ? {}
           : { primaryDifferentElementTeammateCount: participantContext.primaryDifferentElementTeammateCount }),
@@ -731,6 +741,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       return {
         appliedEffects,
         input: {
+          element: resolveBuildElement(participant, gameData) ?? action.element,
           ascensionBonus: effects.specialReactionElevation,
           baseDamageBonus: effects.specialReactionBaseDamageBonus,
           baseDamageFlat: effects.specialReactionBaseDamageFlat,
@@ -748,7 +759,8 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
             effects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction")
         },
         label: participant.label,
-        participantId: participant.buildId
+        participantId: participant.buildId,
+        scenarioStats: stats.scenario
       }
     })
     const result = calculateStellarSwirlReactionExpectedDamage({
@@ -765,7 +777,11 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       result,
       participantEvaluations
     )
-    return { appliedEffects: participantEvaluations.flatMap((participant) => participant.appliedEffects), rotationEvent }
+    return {
+      appliedEffects: participantEvaluations.flatMap((participant) => participant.appliedEffects),
+      rotationEvent,
+      scenarioStats: participantEvaluations.find((participant) => participant.participantId === build.buildId)?.scenarioStats
+    }
   })
   const specialRotationEvents = specialEventResults.map(({ appliedEffects, event, result }) =>
     shared.createDeclaredSpecialReactionRotationEvent(action, build.buildId, event, result, appliedEffects)
@@ -791,7 +807,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       value: bonus.value
     }))
   ])
-  const firstSpecialScenarioStats = specialEventResults[0]?.scenarioStats
+  const firstSpecialScenarioStats = specialEventResults[0]?.scenarioStats ?? stellarSwirlReactionEventResults[0]?.scenarioStats
   const stats = ordinaryEvents.length > 0 || !firstSpecialScenarioStats ? ordinaryScenarioStats : firstSpecialScenarioStats
   const result: ExpectedDamageResult = {
     critDamage: rotationEvents.reduce((total, event) => total + event.critDamage, 0),

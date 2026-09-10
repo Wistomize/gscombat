@@ -161,7 +161,7 @@ export const laylaCombatCoverage: CharacterCombatCoverage = {
           talentSlot: "burst"
         }
       ],
-      scalingStat: "attack",
+      scalingStat: "hp",
       status: "verified",
       talentSlot: "burst"
     }
@@ -211,6 +211,9 @@ export const laylaCombatCoverage: CharacterCombatCoverage = {
       },
       id: "layla.skill.nights_of_formal_focus.curtain_of_slumber.initial_absorption",
       kind: "scalar",
+      shieldAbsorptionMultipliers: [
+        { label: "寐领围垣 · C1 安眠帷幕整体伤害吸收量提高20%", minimumSourceConstellation: 1, value: 1.2 }
+      ],
       label: "垂裳端凝之夜 / 安眠帷幕基础护盾吸收量（非冰元素伤害）",
       ratioParameter: {
         reference: {
@@ -255,7 +258,7 @@ export const laylaCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "Nights of Formal Focus's baseline attack-scaling Cryo hit and one uninfused Physical normal first hit remain verified lower-level actions. The selected support metric calculates one Curtain of Slumber's non-Cryo base absorption delivered to one friendly recipient as max HP × skill[2] plus skill[3], before that recipient's Shield Strength; C3 adds three Skill levels. The damage metrics add one Shooting Star as Attack × skill[1] plus A4's 1.5% max-HP additive term, and one Starlight Slug as Attack × burst[0]. At C6, automatic action-scoped effects add exactly 40% Damage Bonus to each; they are inactive through C5. C6's 20% faster Night Star generation changes frequency and is not folded into either single-hit result. It excludes the 250% Cryo-damage absorption branch, C1's whole-shield absorption increase, shield duration, Night Star and projectile counts, generated Night Stars, elemental infusions, timing, external effects, and other character states.",
+    "Nights of Formal Focus's baseline attack-scaling Cryo hit and one Physical normal hit remain lower-level actions. Curtain of Slumber's non-Cryo base absorption is max HP × skill[2] plus skill[3]; C1 multiplies the whole base shield by 1.2 before recipient Shield Strength, and C3 adds three Skill levels. Shooting Star uses Attack × skill[1] plus A4's 1.5% max-HP additive term. Starlight Slug instead uses max HP × burst[0], with C5's three Burst levels. At C6, each selected projectile gains 40% Damage Bonus. Faster Night Star generation changes frequency, not either single-hit result. The Cryo absorption branch, shield duration, repeated projectile counts, infusions, and rotation timing are not inferred.",
   label: laylaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

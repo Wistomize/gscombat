@@ -6,7 +6,7 @@ export const ineffaCombatCoverage: CharacterCombatCoverage = {
   actions: [
     {
       characterId: "Ineffa",
-      damageKind: "special_reaction",
+      damageKind: "direct",
       damageParts: [
         {
           coefficientParameterId: "normal-attack-first-hit-damage",

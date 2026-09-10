@@ -53,6 +53,7 @@ function createCodaDamageAction(input: {
 
   return {
     characterId: "Odette",
+    fieldPresence: "on_field",
     damageKind: "direct",
     damageParts: [
       {
@@ -126,6 +127,7 @@ function createC4CoordinatedDamageAction(input: {
 }): CombatActionMetadata {
   return {
     characterId: "Odette",
+    fieldPresence: "off_field",
     damageKind: "special_reaction",
     damageParts: [
       {

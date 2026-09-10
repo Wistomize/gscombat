@@ -399,6 +399,13 @@ describe("API", () => {
     }
 
     expect(coverage.characters).toHaveLength(coverage.totalCharacters)
+    expect(coverage.characters.find((character) => character.characterId === "YumemizukiMizuki")?.actions)
+      .toContainEqual(expect.objectContaining({
+        id: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex",
+        timeline: expect.objectContaining({ damageEvents: expect.arrayContaining([
+          expect.objectContaining({ stellarSwirlReaction: { event: "vortex", vortexLevel: { parameterId: "vortex_level" } } })
+        ]) })
+      }))
     expect(new Set(coverage.characters.map((character) => character.characterId)).size).toBe(coverage.totalCharacters)
     expect(Object.values(coverage.characterStatusCounts).reduce((total, count) => total + count, 0)).toBe(
       coverage.totalCharacters
@@ -2144,7 +2151,8 @@ describe("API", () => {
     )
     expect(vacuumBlade).toMatchObject({ element: "physical", hitCount: 1 })
     expect(vacuumBlade.elementalApplication).toBeUndefined()
-    expect(vacuumBlade.trace[0]).toMatchObject({ coefficient: 0.2, kind: "scaling", stat: "attack" })
+    expect(vacuumBlade.trace[0]).toMatchObject({ coefficient: 0.4, kind: "scaling", stat: "attack" })
+    expect(vacuumBlade.trace.at(-1)).toMatchObject({ kind: "trigger_probability", probability: 0.5 })
     expect(vacuumBlade.trace.some((entry: { kind: string }) => entry.kind === "amplifying_reaction")).toBe(false)
   })
 

@@ -199,6 +199,11 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     ])
 
     for (const evaluation of [charged, burst]) {
+      const stages = evaluation.rotation.events[0]?.trace.map((entry) => entry.stage)
+      expect(stages?.[0]).toBe("base_damage")
+      expect(stages).toContain("reaction_damage_bonus")
+      expect(stages).not.toContain("defense")
+      expect(stages).not.toContain("damage_bonus")
       expect(findEffect(evaluation, "sandrone.passive.stellar_superconduct_base_damage_bonus")?.value).toBeCloseTo(0.14)
       expect(findEffect(evaluation, "qiqi.locked_passive.stellar_superconduct_damage_bonus")?.value).toBeCloseTo(0.5)
       expect(findEffect(evaluation, "qiqi.constellation.6.profound_mystery.stellar_superconduct_base_damage")?.value)
@@ -675,14 +680,15 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(constellationSix.result.expectedDamage).toBeGreaterThan(constellationFive.result.expectedDamage)
   }, 20_000)
 
-  it("evaluates Mizuki's Radiance Stellar-Swirl linkage as one constellation-aware event sum", async () => {
+  it("separates Mizuki's direct Stellar-Swirl sum from her single reaction through full HTTP analysis", async () => {
     const actionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.radiance_stellar_swirl_combo"
+    const reactionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl"
     const teammates = [
       createBuild("Sucrose", "FavoniusCodex", "test.mizuki.stellar.sucrose"),
       createBuild("Fischl", "FavoniusWarbow", "test.mizuki.stellar.fischl"),
-      createBuild("Bennett", "FavoniusSword", "test.mizuki.stellar.bennett")
+      createBuild("Diona", "FavoniusWarbow", "test.mizuki.stellar.diona")
     ]
-    const [constellationZero, constellationOne, constellationSix, catalogResponse] = await Promise.all([
+    const [constellationZero, constellationOne, constellationSix, reaction, catalogResponse] = await Promise.all([
       evaluate(
         withTripleElementalMasteryMainStats(
           createBuild("YumemizukiMizuki", "FavoniusCodex", "test.mizuki.stellar.c0", 0)
@@ -704,6 +710,13 @@ describe("Moon and Stellar reaction team effects API integration", () => {
         teammates,
         actionId
       ),
+      evaluate(
+        withTripleElementalMasteryMainStats(
+          createBuild("YumemizukiMizuki", "FavoniusCodex", "test.mizuki.stellar.c1", 1)
+        ),
+        teammates,
+        reactionId
+      ),
       app.inject({ method: "GET", url: "/v1/catalog" })
     ])
 
@@ -713,17 +726,17 @@ describe("Moon and Stellar reaction team effects API integration", () => {
       readonly primaryActions: readonly { readonly id: string }[]
     }[]).find((character) => character.characterId === "YumemizukiMizuki")
     expect(catalogMizuki?.primaryActions.filter((action) => action.id.includes("stellar_swirl"))).toEqual([
-      expect.objectContaining({ id: actionId })
+      expect.objectContaining({ id: actionId }),
+      expect.objectContaining({ id: reactionId }),
+      expect.objectContaining({ id: `${reactionId}_vortex` })
     ])
 
     const eventIds = (evaluation: SpecialReactionEvaluation) =>
       evaluation.rotation.events.map((event) => event.id.replace(`${actionId}.`, ""))
     expect(eventIds(constellationZero)).toEqual([
-      "radiance-stellar-swirl-trigger",
       "revelation-radiance-stellar-swirl-damage"
     ])
     expect(eventIds(constellationOne)).toEqual([
-      "radiance-stellar-swirl-trigger",
       "revelation-radiance-stellar-swirl-damage",
       "c1-awaiting-stellar-swirl-damage"
     ])
@@ -744,10 +757,11 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(findEffect(constellationOne, c2ResistanceReductionId)).toBeUndefined()
     expect(findEffect(constellationSix, c2ResistanceReductionId)?.value).toBe(0.2)
 
-    const trigger = constellationOne.rotation.events[0]
-    const revelation = constellationOne.rotation.events[1]
-    const awaiting = constellationOne.rotation.events[2]
-    if (!trigger || !revelation || !awaiting) throw new Error("Expected Mizuki's three C1 Stellar-Swirl events")
+    expect(reaction.rotation.events).toHaveLength(1)
+    const trigger = reaction.rotation.events[0]
+    const revelation = constellationOne.rotation.events[0]
+    const awaiting = constellationOne.rotation.events[1]
+    if (!trigger || !revelation || !awaiting) throw new Error("Expected one reaction and two direct Stellar-Swirl events")
     const aggregation = trigger.trace.find(
       (entry) => (entry as { readonly kind?: string }).kind === "stellar_swirl_participant_aggregation"
     ) as unknown as
@@ -767,8 +781,15 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     )
     const c1FlatDamage = mizukiParticipant?.trace.find((entry) => entry.stage === "flat_damage_addition")
     expect(aggregation?.reactionCoefficient).toBeCloseTo(0.75)
-    expect(aggregation?.participants).toHaveLength(4)
-    expect(c1FlatDamage?.formula.flatDamageAddition).toBeCloseTo(constellationOne.stats.elementalMastery * 5.5)
+    expect(aggregation?.participants.map((participant) => participant.participantId)).toEqual([
+      "test.mizuki.stellar.c1", "test.mizuki.stellar.diona"
+    ])
+    expect(c1FlatDamage?.formula.flatDamageAddition).toBeCloseTo(reaction.stats.elementalMastery * 5.5)
+    expect(aggregation?.participants.find((participant) => participant.participantId === "test.mizuki.stellar.diona")
+      ?.trace.find((entry) => entry.stage === "flat_damage_addition")?.formula.flatDamageAddition).toBe(0)
+    for (const event of constellationOne.rotation.events) {
+      expect(event.trace.some((entry) => "kind" in entry && entry.kind === "stellar_swirl_participant_aggregation")).toBe(false)
+    }
     expect(revelation.trace.find((entry) => entry.stage === "base_damage")?.formula.terms?.[0]?.coefficient).toBe(10)
     expect(awaiting.trace.find((entry) => entry.stage === "base_damage")?.formula.terms?.[0]?.coefficient).toBe(4)
     expect(revelation.trace.find((entry) => entry.stage === "flat_damage_addition")?.formula.flatDamageAddition).toBe(0)
@@ -782,9 +803,38 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(findEffect(constellationZero, "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition"))
       .toBeUndefined()
     expect(findEffect(constellationOne, "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition")?.value)
-      .toBeCloseTo(constellationOne.stats.elementalMastery * 5.5)
+      .toBeUndefined()
+    expect(findEffect(reaction, "yumemizuki_mizuki.constellation.1.awaiting_stellar_swirl.flat_damage_addition")?.value)
+      .toBeCloseTo(reaction.stats.elementalMastery * 5.5)
     expect(constellationOne.result.expectedDamage).toBeGreaterThan(constellationZero.result.expectedDamage)
-    // Three full HTTP analyses each include all weapon, artifact and progression counterfactuals.
+    // Both metric families use full HTTP analyses, including weapon, artifact and progression counterfactuals.
+  }, 120_000)
+
+  it("analyzes Mizuki's Cryo Vortex with the selected level and no C1 trigger flat addition", async () => {
+    const primary = withTripleElementalMasteryMainStats(createBuild("YumemizukiMizuki", "FavoniusCodex", "test.mizuki.vortex", 1))
+    const teammates = [createBuild("Diona", "FavoniusWarbow", "test.vortex.ice", 0)]
+    const actionId = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex"
+    const [low, high] = await Promise.all([
+      evaluate(primary, teammates, actionId, { vortex_level: 2 }),
+      evaluate(primary, teammates, actionId, { vortex_level: 3 })
+    ])
+    for (const [evaluation, level, coefficient] of [[low, 2, 2], [high, 3, 3]] as const) {
+      expect(evaluation.rotation.events).toHaveLength(1)
+      expect(evaluation.rotation.events[0]).toMatchObject({ element: "cryo" })
+      expect(evaluation.rotation.events[0]?.trace[0]).toMatchObject({
+        kind: "stellar_swirl_participant_aggregation", event: "vortex", vortexLevel: level, reactionCoefficient: coefficient
+      })
+      expect(evaluation.appliedEffects.some((effect) => effect.id.includes("awaiting_stellar_swirl"))).toBe(false)
+    }
+    expect(high.result.expectedDamage / low.result.expectedDamage).toBeCloseTo(1.5)
+    const invalid = await app.inject({ method: "POST", url: "/v1/analysis", payload: {
+      ...raidenNationalBuiltinScenario, primary, teammates, targetActionId: actionId,
+      conditions: { activeEffectIds: [], actionParameters: { vortex_level: 7 }, enemyCount: 1 }
+    } })
+    // The existing route does not classify action-parameter errors as HTTP 400 yet.
+    expect(invalid.statusCode).toBeGreaterThanOrEqual(400)
+    expect(invalid.json().message).toContain("Scenario parameter vortex_level")
+    expect(invalid.json().message).toContain("allowed integer from 1 to 6")
   }, 120_000)
 
   it("evaluates both Coda at Dawn endings with their cumulative C1 extra hit", async () => {
@@ -829,6 +879,8 @@ describe("Moon and Stellar reaction team effects API integration", () => {
       selfC6,
       partyC5,
       partyC6,
+      backgroundC5,
+      backgroundC6,
       ownSwirlC5,
       ownSwirlC6Analysis,
       ownSwirlC6WithPanelCritBuffs,
@@ -841,6 +893,10 @@ describe("Moon and Stellar reaction team effects API integration", () => {
       evaluate(mizukiC6, [], mizukiActionId),
       evaluate(createBuild("Odette", "FavoniusSword", "test.odette.mizuki-c5"), [mizukiC5], odetteActionId),
       evaluate(createBuild("Odette", "FavoniusSword", "test.odette.mizuki-c6"), [mizukiC6], odetteActionId),
+      evaluate(createBuild("Odette", "FavoniusSword", "test.odette.background-mizuki-c5", 4), [mizukiC5],
+        "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl"),
+      evaluate(createBuild("Odette", "FavoniusSword", "test.odette.background-mizuki-c6", 4), [mizukiC6],
+        "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl"),
       evaluate(mizukiC5, [], mizukiSwirlActionId),
       analyze(mizukiC6, [], mizukiSwirlActionId),
       evaluate(mizukiC6, [], mizukiSwirlActionId, {}, [
@@ -873,11 +929,19 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(selfC6.stats.critDamage).toBeCloseTo(selfC5.stats.critDamage + expectedCritDamage)
     expect(findEffect(partyC5, partyCritRateId)).toBeUndefined()
     expect(findEffect(partyC5, partyCritDamageId)).toBeUndefined()
-    expect(findEffect(partyC6, partyCritRateId)?.value).toBeCloseTo(0.1)
-    expect(findEffect(partyC6, partyCritDamageId)?.value).toBeCloseTo(0.2)
-    expect(partyC6.stats.critRate).toBeCloseTo(partyC5.stats.critRate + 0.1)
-    expect(partyC6.stats.critDamage).toBeCloseTo(partyC5.stats.critDamage + 0.2)
-    expect(partyC6.result.expectedDamage).toBeGreaterThan(partyC5.result.expectedDamage)
+    expect(findEffect(partyC6, partyCritRateId)).toBeUndefined()
+    expect(findEffect(partyC6, partyCritDamageId)).toBeUndefined()
+    expect(partyC6.stats.critRate).toBeCloseTo(partyC5.stats.critRate)
+    expect(partyC6.stats.critDamage).toBeCloseTo(partyC5.stats.critDamage)
+    expect(partyC6.result.expectedDamage).toBeCloseTo(partyC5.result.expectedDamage)
+    expect(findEffect(backgroundC5, partyCritRateId)).toBeUndefined()
+    expect(findEffect(backgroundC5, partyCritDamageId)).toBeUndefined()
+    expect(findEffect(backgroundC6, partyCritRateId)?.value).toBeCloseTo(0.1)
+    expect(findEffect(backgroundC6, partyCritDamageId)?.value).toBeCloseTo(0.2)
+    expect(backgroundC6.stats.critRate).toBeCloseTo(backgroundC5.stats.critRate + 0.1)
+    expect(backgroundC6.stats.critDamage).toBeCloseTo(backgroundC5.stats.critDamage + 0.2)
+    expect(backgroundC6.result.expectedDamage).toBeGreaterThan(backgroundC5.result.expectedDamage)
+    expect(findEffect(backgroundC6, dreamdrifterElementalMasteryId)).toBeDefined()
     expect(findEffect(partyC5, dreamdrifterElementalMasteryId)).toBeUndefined()
     expect(findEffect(partyC6, dreamdrifterElementalMasteryId)).toBeUndefined()
     expect(findEffect(ownSwirlC5, swirlCritRateId)).toBeUndefined()
@@ -888,9 +952,9 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     expect(ownSwirlC6WithPanelCritBuffs.result.expectedDamage).toBeCloseTo(ownSwirlC6.result.expectedDamage)
     expect(findEffect(teammateSwirlC5, swirlCritRateId)).toBeUndefined()
     expect(findEffect(teammateSwirlC5, swirlCritDamageId)).toBeUndefined()
-    expect(findEffect(teammateSwirlC6, swirlCritRateId)?.value).toBe(0.3)
-    expect(findEffect(teammateSwirlC6, swirlCritDamageId)?.value).toBe(1)
-    expect(teammateSwirlC6.result.expectedDamage / teammateSwirlC5.result.expectedDamage).toBeCloseTo(1.3)
+    expect(findEffect(teammateSwirlC6, swirlCritRateId)).toBeUndefined()
+    expect(findEffect(teammateSwirlC6, swirlCritDamageId)).toBeUndefined()
+    expect(teammateSwirlC6.result.expectedDamage).toBeCloseTo(teammateSwirlC5.result.expectedDamage)
     expect(findEffect(hyperbloomC6, swirlCritRateId)).toBeUndefined()
     expect(findEffect(hyperbloomC6, swirlCritDamageId)).toBeUndefined()
     expect(hyperbloomC6.result.expectedDamage).toBeCloseTo(hyperbloomC5.result.expectedDamage)

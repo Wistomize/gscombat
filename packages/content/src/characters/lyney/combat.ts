@@ -137,8 +137,8 @@ export const lyneyCombatCoverage: CharacterCombatCoverage = {
           coefficientParameterId: "pyrotechnic-strike-damage",
           id: "c6-pyrotechnic-strike-reprised",
           snapshotChecks: [
-            { expectedCoefficient: 0.64, talentLevel: 1 },
-            { expectedCoefficient: 1.152, talentLevel: 10 }
+            { expectedCoefficient: 2.12, talentLevel: 1 },
+            { expectedCoefficient: 3.816, talentLevel: 10 }
           ]
         }
       ],
@@ -150,7 +150,8 @@ export const lyneyCombatCoverage: CharacterCombatCoverage = {
         {
           groupId: "auto",
           id: "pyrotechnic-strike-damage",
-          parameterIndex: 12,
+          // GO 98aafa1f: Characters/Lyney/index.tsx dm.charged.pyrotechnicDmg = auto[14]; auto[12] is hat HP.
+          parameterIndex: 14,
           source: "talent",
           talentSlot: "normal"
         }
@@ -316,7 +317,7 @@ export const lyneyCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal hit and Bewildering Lights base hit remain verified raw actions. The selected core hit is the Pyro Prop Arrow from one second-stage charged attack: Attack × auto[10]. Hydro-aura Vaporize and Cryo-aura Melt are mutually exclusive alternatives for that projectile. C2 exposes the full three-stack Crit-DMG snapshot and C4 exposes the already-applied Pyro resistance reduction. C6 now has an owner-scoped independent charged-hit metric for Pyrotechnic Strike: Reprised: Attack × auto[12] × 80%, which therefore uses Lyney's own normal-talent level, Pyro bonus, and Crit; its constellation range makes the metric zero from C0 through C5. Its maximum-reachable snapshot assumes the preceding Prop Arrow has left the target under Pyro and applies Conclusive Ovation's 60% base bonus plus 20% for each of up to two other Pyro party members, capped at 100% with three or more Pyro members total. Hat creation, A1, timing, and rotation remain outside this metric.",
+    "The core Prop Arrow uses Attack × auto[10], with mutually exclusive Vaporize/Melt variants. C6 Pyrotechnic Strike: Reprised uses Attack × auto[14] × 80% at the cumulative normal-talent level (450.5% × 80% at effective level 13), not the hat-HP row auto[12]. Its maximum-reachable snapshot assumes a Pyro-affected target and applies Conclusive Ovation's 60% plus 20% per other Pyro member, capped at 100%. C2 Crit DMG and C4 resistance reduction retain their explicit snapshots. The C6 metric is unavailable below C6. Hat creation, A1, timing and rotation remain outside it.",
   label: lyneyDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

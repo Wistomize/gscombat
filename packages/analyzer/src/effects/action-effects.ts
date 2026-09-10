@@ -312,6 +312,18 @@ export function resolveCombatActionCharacterElementalMasteryEffects(
   return resolveCombatActionEffectsForCandidates(input, candidates)
 }
 
+/** Resolves non-recursive party equipment EM separately from source-owned equipment stacks. */
+export function resolveCombatActionPartyEquipmentElementalMasteryEffects(
+  input: ResolveCombatActionEffectsInput
+): ResolvedCombatActionEffects {
+  const candidates = listCombatActionEffects().filter(
+    (effect) => effect.source.kind !== "character" && effect.source.holder === "party_member" &&
+      ((effect.target === "elementalMastery" && effect.value.kind !== "final_elemental_mastery" &&
+        effect.value.kind !== "source_final_defense") || effect.target === "sourceFinalHpToElementalMastery")
+  )
+  return resolveCombatActionEffectsForCandidates(input, candidates)
+}
+
 /** Resolves Elemental Mastery shares from a pre-share source snapshot, preventing recursive self-amplification. */
 export function resolveCombatActionFinalElementalMasteryShareEffects(
   input: ResolveCombatActionEffectsInput
@@ -347,7 +359,23 @@ export function resolveCombatActionEffectsForCandidates(
   assertActiveEffectSourceSelections(input)
   assertSelectedActiveEffectExclusivity(input.activeEffectIds)
   const recipientWeaponType = weaponInventory.find((weapon) => weapon.id === input.primary.weapon.weaponId)?.weaponType
+  const definitions = new Map([...listCombatActionEffects(), ...candidates].map((effect) => [effect.id, effect]))
+  const qualifiedParents: CombatActionEffect[] = []
+  const hasQualifiedDependencies = (effect: CombatActionEffect, visiting = new Set<string>()): boolean => {
+    if (visiting.has(effect.id)) return false
+    const next = new Set(visiting).add(effect.id)
+    return effect.requiredActiveEffectIds?.every((id) => {
+      if (!input.activeEffectIds.includes(id)) return false
+      const parent = definitions.get(id)
+      // Legacy field-state IDs have no stat declaration; source eligibility is checked by their dependent effects.
+      if (!parent) return true
+      if (!hasQualifiedDependencies(parent, next) || resolveEligibleActionEffect(parent, input).length === 0) return false
+      qualifiedParents.push(parent)
+      return true
+    }) ?? true
+  }
   const eligibleEffects = candidates
+    .filter((effect) => hasQualifiedDependencies(effect))
     .filter((effect) =>
       isCombatActionEffectApplicable(
         effect,
@@ -361,7 +389,7 @@ export function resolveCombatActionEffectsForCandidates(
       )
     )
     .flatMap((effect) => resolveEligibleActionEffect(effect, input))
-  assertExclusiveActionEffectsAreCompatible(eligibleEffects.map(({ effect }) => effect))
+  assertExclusiveActionEffectsAreCompatible([...qualifiedParents, ...eligibleEffects.map(({ effect }) => effect)])
   const additionalDamageEvents = eligibleEffects.flatMap(({ effect, source }) =>
     effect.target === "additionalDamageEvent" ? [resolveAdditionalDamageEvent(effect, source, input)] : []
   )
@@ -545,7 +573,7 @@ function selectSelfMaximumReachableCharacterEffectIds(
 function isSelfMaximumReachableCharacterStatEffect(effect: CombatActionEffect, source: CharacterBuild): boolean {
   if (!isCombatActionStatEffect(effect)) return false
   if (
-    effect.activation !== "maximum_reachable" ||
+    (effect.activation !== "maximum_reachable" && effect.activation !== "automatic") ||
     effect.source.kind !== "character" ||
     effect.source.characterId !== source.characterId ||
     (effect.source.travelerElement !== undefined &&
@@ -641,7 +669,7 @@ function isCombatActionEffectCompatibleWithAdditionalDamageEvent(
   event: ResolvedAdditionalDamageEvent
 ): boolean {
   if (
-    !isCombatActionStatEffect(effect) ||
+    effect.target === "additionalDamageEvent" ||
     effect.target === "amplifyingReactionBonus" ||
     effect.target === "reactionDamageBonus" ||
     effect.target === "transformativeReactionFlatDamageAddition" ||
@@ -659,7 +687,7 @@ function isCombatActionEffectCompatibleWithAdditionalDamageEvent(
   const filter = effect.targetFilter
   return (
     !filter ||
-    (!filter.actionIds &&
+    ((!filter.actionIds || event.inheritedActionEffectIds?.includes(effect.id) === true) &&
       !filter.amplifyingReactionKinds &&
       !filter.reactionKinds &&
       (!filter.attackKinds || event.attackKind !== undefined) &&
@@ -717,6 +745,9 @@ function resolveEligibleActionEffect(
     return []
   }
   return sources.flatMap((source) => {
+    // A teammate cannot occupy the field with the target. Unknown actions are
+    // conservative: only explicitly reviewed background actions may overlap.
+    if (effect.requiresSourceOnField && source.buildId !== (input.actionOwnerBuildId ?? input.primary.buildId) && input.action.fieldPresence !== "off_field") return []
     if (effect.source.kind === "character") {
       const requiredAscension = effect.source.minimumSourceAscension
       if (requiredAscension !== undefined && source.ascension < requiredAscension) return []

@@ -304,6 +304,8 @@ interface CombatDamageEventTemplateBase {
 
 /** Connects one scheduled event to a character-owned damage part. */
 interface CombatDamagePartEventTemplate extends CombatDamageEventTemplateBase {
+  /** Weights the complete triggered hit, never just its talent coefficient. */
+  readonly expectedTriggerProbability?: number
   /** Optional bounded multiplier applied before the damage formula is evaluated. */
   readonly coefficientMultiplier?: CombatEventScenarioParameterCoefficientMultiplier
   readonly damagePartId: string
@@ -328,8 +330,8 @@ export interface CombatStellarSwirlReactionEventTemplate extends CombatDamageEve
   readonly specialReaction?: never
   readonly stellarSwirlReaction: {
     readonly event: StellarSwirlReactionEvent
-    /** One or two for a Stellar Vortex event; absent for a trigger event. */
-    readonly vortexLevel?: 1 | 2
+    /** Actual level 1–6, or a reference to a bounded action parameter; absent for a trigger. */
+    readonly vortexLevel?: 1 | 2 | 3 | 4 | 5 | 6 | { readonly parameterId: string }
   }
 }
 
@@ -507,6 +509,8 @@ export interface CombatDamageMetricDefinition extends CombatMetricDefinitionBase
 
 /** Shared declaration fields for one selected recipient's healing and recipient-side context. */
 interface CombatHealingMetricDefinitionBase extends CombatFriendlyRecipientMetricDefinitionBase {
+  /** Multiplies final healing only when the recipient is the source; distinct from the healing-bonus pool. */
+  readonly selfRecipientMultiplier?: { readonly label: string; readonly value: number }
   readonly includeHealingBonus: boolean
   readonly kind: "healing"
   /** Source-kit modifiers that belong in the selected recipient's incoming-healing multiplier. */
@@ -588,6 +592,12 @@ export interface CombatFlatStatBuffMetricDefinition extends CombatFriendlyRecipi
 
 /** Shared fields for a source-stat-scaled value with an optional flat contribution and cap. */
 interface CombatScalarMetricDefinitionBase extends CombatMetricDefinitionBase {
+  /** Multiplies the whole base shield (stat term plus flat term), before recipient shield strength. */
+  readonly shieldAbsorptionMultipliers?: readonly {
+    readonly label: string
+    readonly minimumSourceConstellation: number
+    readonly value: number
+  }[]
   /** Required for elemental flat-damage outputs; names the element the recipient must deal. */
   readonly affectedElement?: Exclude<Element, "physical">
   /** Required for scoped damage outputs; names the recipient hit classes that may consume the effect. */
@@ -994,6 +1004,8 @@ export type CombatActionEffectValue =
 
 /** A standalone equipment or character trigger that is evaluated as an additional direct damage event. */
 export interface CombatActionAdditionalDamageEvent {
+  /** Explicit permission to inherit particular parent-action-bound effects; independent procs default to none. */
+  readonly inheritedActionEffectIds?: readonly string[]
   /** Declares the hit class when a character-owned event must match normal, charged, or plunge effects. */
   readonly attackKind?: CombatAttackKind
   readonly canCrit: boolean
@@ -1030,6 +1042,8 @@ export interface CombatActionMatchedAdditiveDamageTerm {
 
 /** Shared activation metadata for a typed current-action effect. */
 interface CombatActionEffectActivation {
+  /** This state expires when its source leaves the field; incompatible with another required on-field action. */
+  readonly requiresSourceOnField?: boolean
   readonly activation: "active" | "automatic" | "maximum_reachable"
   /** Keeps a reachable active effect out of automatic maximum selection and exposes it as an explicit UI choice. */
   readonly selectionMode?: "optional" | "required"
@@ -1153,6 +1167,12 @@ export interface CombatCharacterScenarioEffectOption {
 
 /** Metadata for one prospective rotation action, independent from its numeric calculation. */
 export interface CombatActionMetadata {
+  /** Static eligibility, not a simulated cast order. Only explicit off_field actions can overlap a teammate's required on-field state. */
+  readonly fieldPresence?: "on_field" | "off_field"
+  /** Canonical explicitly maintained no-reaction counterpart; legacy generated IDs resolve to it. */
+  readonly noReactionActionId?: string
+  /** Original effect-binding identity retained by automatically derived reaction variants. */
+  readonly effectActionIds?: readonly string[]
   readonly additiveReaction?: AdditiveReactionConfig
   readonly amplifyingReaction?: AmplifyingReactionConfig
   /** Distinguishes a normal/charged/plunge hit when the action's talent slot alone is insufficient. */

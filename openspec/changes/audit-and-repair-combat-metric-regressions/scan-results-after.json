@@ -1,0 +1,23 @@
+{
+  "baselineCommit": "d2b10b7f6253dec7336915c81c8aa80b19bc5451",
+  "verifiedAt": "2026-09-10",
+  "note": "Post-repair local working tree including R25; scan is entry/finite/gate validation, not proof of all formulas. No deployment performed.",
+  "metrics": 298,
+  "characters": 119,
+  "attempts": 2086,
+  "ok": 1724,
+  "expectedGateErrors": 362,
+  "unexpectedErrors": [],
+  "nonfinite": [],
+  "gateLeaks": [],
+  "decreases": [],
+  "delta": {
+    "metrics": -4,
+    "attempts": -28,
+    "ok": -10,
+    "expectedGateErrors": -18,
+    "explanation": "Removed four redundant Mavuika C6 public aliases: -4 valid C6 entries and -24 expected C0-C5 rejections. Wriothesley charged C6 metric now rejects six formerly admitted zero-damage C0-C5 entries: -6 ok, +6 expected gate errors. All legacy Mavuika aliases remain resolvable."
+  },
+  "remainingZeroMetricCount": 14,
+  "remainingZeroExplanation": "Unchanged baseline zero cases: Bennett eligibility, Nilou/Prune thresholds, Sucrose zero source EM, and ten Varka actions with an ineligible solo party."
+}

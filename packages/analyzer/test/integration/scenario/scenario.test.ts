@@ -617,10 +617,11 @@ describe("team scenario", () => {
     )
     expect(vacuumBlade).toMatchObject({ element: "physical", hitCount: 1 })
     expect(vacuumBlade?.elementalApplication).toBeUndefined()
-    expect(vacuumBlade?.trace[0]).toMatchObject({ coefficient: 0.2, kind: "scaling", stat: "attack" })
+    expect(vacuumBlade?.trace[0]).toMatchObject({ coefficient: 0.4, kind: "scaling", stat: "attack" })
+    expect(vacuumBlade?.trace.at(-1)).toMatchObject({ kind: "trigger_probability", probability: 0.5 })
   })
 
-  it("uses Skyward Spine's R5 Vacuum Blade expected coefficient on an explicitly charged attack", () => {
+  it("weights Skyward Spine's full R5 Vacuum Blade hit on an explicitly charged attack", () => {
     const chargedAction = getCombatActionDefinition(
       "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize"
     )
@@ -658,7 +659,8 @@ describe("team scenario", () => {
     const vacuumBlade = evaluation.rotation.events.find(
       (event) => event.id.endsWith("weapon.skyward-spine.vacuum-blade")
     )
-    expect(vacuumBlade?.trace[0]).toMatchObject({ coefficient: 0.5, kind: "scaling", stat: "attack" })
+    expect(vacuumBlade?.trace[0]).toMatchObject({ coefficient: 1, kind: "scaling", stat: "attack" })
+    expect(vacuumBlade?.trace.at(-1)).toMatchObject({ kind: "trigger_probability", probability: 0.5 })
     expect(vacuumBlade?.trace.some((entry) => entry.kind === "amplifying_reaction")).toBe(false)
     expect(vacuumBlade?.trace.find((entry) => entry.kind === "damage_bonus")).toMatchObject({ bonus: 0 })
   })
@@ -1127,9 +1129,11 @@ describe("team scenario", () => {
     const baselineProc = baseline.rotation.events.find((event) => event.id.includes(procId))
     const debuffedProc = debuffed.rotation.events.find((event) => event.id.includes(procId))
 
-    expect(debuffed.appliedEffects).not.toEqual(
+    expect(debuffed.appliedEffects).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: "venti.skyward_sonnet.c2.physical_resistance_shred" })])
     )
+    expect(debuffedPrimary?.appliedEffectIds).not.toContain("venti.skyward_sonnet.c2.physical_resistance_shred")
+    expect(debuffedProc?.appliedEffectIds).toContain("venti.skyward_sonnet.c2.physical_resistance_shred")
     expect(baselinePrimary?.expectedDamage).toBeCloseTo(debuffedPrimary?.expectedDamage ?? 0)
     expect(baselineProc).toMatchObject({ element: "physical" })
     expect(debuffedProc?.expectedDamage).toBeGreaterThan(baselineProc?.expectedDamage ?? 0)

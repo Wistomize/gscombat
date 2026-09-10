@@ -145,7 +145,14 @@ export function evaluateHealingMetric(
     ),
     ...recipientIncomingHealingBonuses.map((bonus) => bonus.formula)
   ])
-  const potentialFormula = multiplyFormula("受益角色单跳治疗量", [sourceFormula, recipientHealingMultiplier])
+  const recipientFormula = multiplyFormula("受益角色单跳治疗量", [sourceFormula, recipientHealingMultiplier])
+  const selfRecipientMultiplier = recipient.recipient.buildId === build.buildId ? metric.selfRecipientMultiplier : undefined
+  const potentialFormula = selfRecipientMultiplier
+    ? multiplyFormula("来源本人专属治疗倍率", [
+        recipientFormula,
+        modifierTerm("recipient_modifier", selfRecipientMultiplier.label, selfRecipientMultiplier.value)
+      ])
+    : recipientFormula
   const formula = applyConditions(potentialFormula, recipient.conditions)
   const actualRestoredFormula =
     recipient.missingHp === undefined

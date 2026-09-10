@@ -73,8 +73,8 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
           coefficientParameterId: "charged-attack-damage",
           id: "rebuke-vaulting-fist",
           snapshotChecks: [
-            { expectedCoefficient: 0.90742, talentLevel: 1 },
-            { expectedCoefficient: 1.793738, talentLevel: 10 }
+            { expectedCoefficient: 1.5296, talentLevel: 1 },
+            { expectedCoefficient: 2.75328, talentLevel: 10 }
           ]
         }
       ],
@@ -86,7 +86,8 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
         {
           groupId: "auto",
           id: "charged-attack-damage",
-          parameterIndex: 5,
+          // GO 98aafa1f: Characters/Wriothesley/index.tsx dm.charged.dmg = auto[6], not normal hit 5.
+          parameterIndex: 6,
           source: "talent",
           talentSlot: "normal"
         }
@@ -116,7 +117,7 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
               parameterId: "c6-rebuke-vaulting-fist-ready",
               values: [
                 { multiplier: 0, parameterValue: 0 },
-                { multiplier: 3, parameterValue: 1 }
+                { multiplier: 1, parameterValue: 1 }
               ]
             },
             damagePartId: "rebuke-vaulting-fist",
@@ -136,8 +137,8 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
           coefficientParameterId: "charged-attack-damage",
           id: "c6-rebuke-vaulting-fist-icicle",
           snapshotChecks: [
-            { expectedCoefficient: 0.90742, talentLevel: 1 },
-            { expectedCoefficient: 1.793738, talentLevel: 10 }
+            { expectedCoefficient: 1.5296, talentLevel: 1 },
+            { expectedCoefficient: 2.75328, talentLevel: 10 }
           ]
         }
       ],
@@ -149,7 +150,7 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
         {
           groupId: "auto",
           id: "charged-attack-damage",
-          parameterIndex: 5,
+          parameterIndex: 6,
           source: "talent",
           talentSlot: "normal"
         }
@@ -192,6 +193,21 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "wriothesley.constellation.1.terror_for_the_evildoers.rebuke_vaulting_fist.damage_bonus",
+      label: "恶行终须受惩之时 · C1 斥逐拳·凌跃拳伤害加成提高至200%（冰柱同样适用）",
+      source: { characterId: "Wriothesley", kind: "character", minimumSourceConstellation: 1 },
+      target: "damageBonus",
+      targetFilter: {
+        actionIds: [
+          "wriothesley.normal.rebuke_vaulting_fist.c6_maximum_reachable",
+          "wriothesley.constellation.6.esteem_for_the_innocent.rebuke_vaulting_fist.icicle"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 2 }
+    },
     {
       activation: "maximum_reachable",
       id: "wriothesley.passive.there_shall_be_a_plea_for_justice.full_stacks.attack_percent",
@@ -265,6 +281,7 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
       characterId: "Wriothesley",
       id: "wriothesley.normal.rebuke_vaulting_fist.c6_maximum_reachable",
       kind: "damage",
+      minimumSourceConstellation: 6,
       label: "斥逐拳·凌跃拳 / C6 满命强化重击（无反应）",
       sourceActionId: "wriothesley.normal.rebuke_vaulting_fist.c6_maximum_reachable",
       status: "verified",
@@ -283,7 +300,7 @@ export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One first normal-attack hit and one Darkgold Wolfbite main hit are locked to the pinned game-data snapshot. The selected baseline metric is one Darkgold Wolfbite main hit against one target: Burst parameter burst[0]. The C6 metrics automatically appear only at C6: the maximum-reachable Rebuke: Vaulting Fist applies its C1 200% bonus to the charged-attack base multiplier and C6's +10% Crit Rate/+80% Crit Damage, while its separately evaluated icicle is exactly 100% of that unmodified charged-attack base as Cryo charged-attack damage. Both C6 outputs use the maximum-reachable five-stack Rebuke Ordeal snapshot, adding five 6% Attack increments for 30% Attack. These declare no target aura, Melt, Freeze, or other fixed reaction. The other four main hits, Flowing Blade burst[1], Icefang Rush's Cryo infusion and HP cost, HP-state timing, external infusions, and rotation behavior remain unmodeled.",
+    "One first normal-attack hit and one Darkgold Wolfbite main hit are locked to the pinned game-data snapshot. The C6 fist and its separate icicle both read charged auto[6] at the cumulative normal talent level, and both receive C1's 200% in the ordinary damage-bonus stage, C6's +10% Crit Rate/+80% Crit Damage and the five-stack 30% Attack passive. The icicle retains the same enhanced charged-hit formula, not an unenhanced third of the fist. Neither metric is selectable below C6. No reaction, full burst sequence, HP timing or rotation is inferred.",
   label: wriothesleyDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

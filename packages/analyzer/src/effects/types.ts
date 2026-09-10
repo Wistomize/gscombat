@@ -28,6 +28,7 @@ export interface AppliedCombatActionEffect {
 
 /** An independently evaluated, equipment-owned hit added to one selected core action. */
 export interface ResolvedAdditionalDamageEvent {
+  readonly inheritedActionEffectIds?: readonly string[]
   readonly attackKind?: CombatActionAdditionalDamageEvent["attackKind"]
   readonly canCrit: CombatActionAdditionalDamageEvent["canCrit"]
   readonly critPolicy?: CombatActionAdditionalDamageEvent["critPolicy"]
@@ -191,6 +192,8 @@ export interface ResolveCombatActionEffectCandidatesInput {
   /** Primary build's native element when known; needed by effects restricted to that element rather than all damage. */
   readonly primaryElement?: CombatActionMetadata["element"]
   readonly primary: CharacterBuild
+  /** Actual selected action owner, retained when primary is temporarily replaced for a source-stat snapshot. */
+  readonly actionOwnerBuildId?: string
   /** Final maximum HP keyed by eligible effect source build, resolved before source-owned conversion effects. */
   readonly sourceFinalHpByBuildId?: ReadonlyMap<string, number>
   /** Final elemental mastery keyed by eligible effect source build, resolved before source-owned conversion effects. */

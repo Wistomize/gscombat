@@ -226,11 +226,13 @@ export const yoimiyaCombatCoverage: CharacterCombatCoverage = {
               parameterId: "c6-naganohara-meteor-swarm-ready",
               values: [
                 { multiplier: 0, parameterValue: 0 },
-                { multiplier: 0.3, parameterValue: 1 }
+                { multiplier: 0.6, parameterValue: 1 }
               ]
             },
             damagePartId: "c6-niwabi-fire-dance-fifth-hit-blazing-arrow",
             id: "c6-niwabi-fire-dance-fifth-hit-blazing-arrow",
+            expectedTriggerProbability: 0.5,
+            minimumSourceConstellation: 6,
             snapshot: "hit"
           }
         ],

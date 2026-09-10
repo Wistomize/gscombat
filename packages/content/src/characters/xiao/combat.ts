@@ -74,8 +74,8 @@ export const xiaoCombatCoverage: CharacterCombatCoverage = {
           coefficientParameterId: "high-plunge-damage",
           id: "bane-of-all-evil-high-plunge",
           snapshotChecks: [
-            { expectedCoefficient: 1.21088, talentLevel: 1 },
-            { expectedCoefficient: 2.16032, talentLevel: 10 }
+            { expectedCoefficient: 2.043855, talentLevel: 1 },
+            { expectedCoefficient: 4.040179, talentLevel: 10 }
           ]
         }
       ],
@@ -117,7 +117,8 @@ export const xiaoCombatCoverage: CharacterCombatCoverage = {
         {
           groupId: "auto",
           id: "high-plunge-damage",
-          parameterIndex: 8,
+          // GO 98aafa1f: Characters/Xiao/index.tsx dm.plunging.high = auto[12]; auto[8] is charged.
+          parameterIndex: 12,
           source: "talent",
           talentSlot: "normal"
         },
@@ -214,6 +215,38 @@ export const xiaoCombatCoverage: CharacterCombatCoverage = {
       }
     }
   ],
+  actionEffects: [
+    {
+      activation: "maximum_reachable",
+      id: "xiao.passive.conqueror_of_evil.tamer_of_demons.c6_skill.maximum_damage_bonus",
+      label: "降魔·平妖大圣 · C6 免费风轮两立处于靖妖傩舞满5层（伤害提高25%）",
+      source: { characterId: "Xiao", kind: "character", minimumSourceAscension: 1 },
+      target: "damageBonus",
+      targetFilter: {
+        actionIds: ["xiao.constellation.6.conqueror_of_evil.guardian_yaksha.free_lemniscatic_wind_cycling"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        kind: "talent_parameter", multiplier: 5,
+        parameter: { groupId: "passive1", id: "a1-damage-bonus-per-stage", parameterIndex: 0, source: "talent", talentSlot: "passive" }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "xiao.passive.dissolution.eon_fall.c6_skill.maximum_damage_bonus",
+      label: "坏劫·国土碾尘 · C6 免费风轮两立已有3层（元素战技伤害提高45%）",
+      source: { characterId: "Xiao", kind: "character", minimumSourceAscension: 4 },
+      target: "damageBonus",
+      targetFilter: {
+        actionIds: ["xiao.constellation.6.conqueror_of_evil.guardian_yaksha.free_lemniscatic_wind_cycling"],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        kind: "talent_parameter", multiplier: 3,
+        parameter: { groupId: "passive2", id: "a4-skill-damage-bonus-per-stack", parameterIndex: 1, source: "talent", talentSlot: "passive" }
+      }
+    }
+  ],
   characterId: "Xiao",
   metrics: [
     {
@@ -239,7 +272,7 @@ export const xiaoCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One Lemniscatic Wind Cycling hit and one uninfused first normal hit remain verified baseline C0 attack-scaling damage. The selected core metric is one High Plunge during Bane of All Evil: Attack × auto[8], with burst[0] added in the damage-bonus multiplier rather than the base coefficient. The pinned snapshot gives auto[8] as 121.088% at Normal Talent Level 1 and 216.032% at Level 10, and burst[0] as 58.45% at Burst Talent Level 1 and 95.2% at Level 10. At ascension 1+, the action-owned hand-selected A1 extra-stage count adds 5–25% all damage from 0–4 additional three-second stages; A4 remains excluded. C6 adds an action whose range is zero through C5 and one at C6, representing exactly one free Wind Cycling after a Bane-of-All-Evil plunge has already hit at least two enemies. It intentionally calculates only that single Skill hit, not charge generation, the one-second cooldown override, target count, or a sequence. It does not preset a target aura or reaction. The action excludes low plunge and collision damage, burst HP drain, timing, external effects, and rotation behavior.",
+    "High Plunge during Bane of All Evil reads Attack × auto[12] (204.3855% at level 1, 404.0179% at level 10), not charged auto[8]. Burst[0] and its selected A1 5–25% state enter the ordinary damage-bonus stage. The separate C6-only free Wind Cycling represents one Skill hit after a burst-state plunge hit two enemies. Its explicitly maximum-reachable state includes A1 five-stage 25% and A4 three-stack 45% Skill damage, but never the Burst's normal/charged/plunge-only damage bonus. It does not count charge generation, additional free Skills, low plunge, collision, target count, or a rotation.",
   label: xiaoDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

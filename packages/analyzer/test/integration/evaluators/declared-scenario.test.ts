@@ -128,6 +128,8 @@ describe("declared direct scenario actions", () => {
       artifacts: xianglingNationalBuiltinBuild.artifacts.map((artifact) => ({ ...artifact, setId: "TestNoArtifactSet" })),
       buildId: `test.nahida.a-thousand-floating-dreams.r${refinement}`,
       characterId: "Nahida",
+      // Isolate the weapon composition bonus from Nahida C4's marked-target Elemental Mastery.
+      constellation: 0,
       label: `纳西妲千夜浮梦 R${refinement} 测试配置`,
       weapon: { ascension: 6, level: 90, refinement, weaponId: "AThousandFloatingDreams" }
     })
@@ -1675,32 +1677,37 @@ describe("declared direct scenario actions", () => {
         id: "sweeping-time-normal-hit-one",
         terms: [
           { coefficient: 1.564, stat: "attack" },
-          { coefficient: 1.12608, stat: "defense" }
+          { coefficient: 1.12608, stat: "defense" },
+          { coefficient: 0, stat: "defense" }
         ]
       },
       {
         id: "sweeping-time-normal-hit-two",
         terms: [
           { coefficient: 1.4501, stat: "attack" },
-          { coefficient: 1.044072, stat: "defense" }
+          { coefficient: 1.044072, stat: "defense" },
+          { coefficient: 0, stat: "defense" }
         ]
       },
       {
         id: "sweeping-time-normal-hit-three",
         terms: [
           { coefficient: 1.7051, stat: "attack" },
-          { coefficient: 1.227672, stat: "defense" }
+          { coefficient: 1.227672, stat: "defense" },
+          { coefficient: 0, stat: "defense" }
         ]
       },
       {
         id: "sweeping-time-normal-hit-four",
         terms: [
           { coefficient: 2.2423, stat: "attack" },
-          { coefficient: expect.any(Number), stat: "defense" }
+          { coefficient: expect.any(Number), stat: "defense" },
+          { coefficient: 0, stat: "defense" }
         ]
       }
     ])
     const finalHit = evaluation.parts[3]
+    // The third term is C6's additional DEF conversion: retained in the typed declaration, inactive at C0.
     if (!finalHit || finalHit.terms === undefined) throw new Error("Expected Noelle's fourth Sweeping Time hit")
     expect(finalHit.terms[1]?.coefficient).toBeCloseTo(1.614456)
     expect(evaluation.rotation.events.map((event) => event.hitCount)).toEqual([1, 1, 1, 1])

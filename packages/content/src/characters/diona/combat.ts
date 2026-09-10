@@ -96,7 +96,7 @@ export const dionaCombatCoverage: CharacterCombatCoverage = {
       parameterReferences: [
         {
           groupId: "burst",
-          id: "signature-mix-healing-attack-ratio",
+          id: "signature-mix-healing-hp-ratio",
           parameterIndex: 2,
           source: "talent",
           talentSlot: "burst"
@@ -187,6 +187,9 @@ export const dionaCombatCoverage: CharacterCombatCoverage = {
       },
       id: "diona.skill.icy_paws.press.base_absorption",
       kind: "scalar",
+      shieldAbsorptionMultipliers: [
+        { label: "猫爪冰摇 · C2 猫爪冻冻整体伤害吸收量提高15%", minimumSourceConstellation: 2, value: 1.15 }
+      ],
       label: "猫爪冻冻 / 点按基础护盾吸收量（非冰元素伤害）",
       ratioParameter: {
         reference: {
@@ -231,7 +234,7 @@ export const dionaCombatCoverage: CharacterCombatCoverage = {
       percentageParameter: {
         reference: {
           groupId: "burst",
-          id: "signature-mix-healing-attack-ratio",
+          id: "signature-mix-healing-hp-ratio",
           parameterIndex: 2,
           source: "talent",
           talentSlot: "burst"
@@ -255,14 +258,14 @@ export const dionaCombatCoverage: CharacterCombatCoverage = {
           value: 0.3
         }
       ],
-      scalingStat: "attack",
+      scalingStat: "hp",
       sourceActionId: "diona.burst.signature_mix.heal_tick",
       status: "verified",
       target: "friendly_recipient"
     }
   ],
   detail:
-    "One Icy Paws hit and Signature Mix's initial Cryo AoE remain verified lower-level attack-scaling direct actions, but neither is a selected Diona metric because they do not represent her support output. The selected metrics calculate the point-press Icy Paws shield applied to the current active party member and one Signature Mix field healing tick. Non-Cryo base shield absorption is Diona's max HP × skill[1] plus skill[2], before Shield Strength; C3 adds three Skill levels. One field healing tick for a recipient in the field is Diona's Attack × burst[2] plus burst[3], then Diona's Healing Bonus and that recipient's Incoming Healing Bonus; C5 adds three Burst levels. At C6, a recipient at or below 50% HP gains the declared 30% Incoming Healing Bonus, while the above-50%-HP branch exposes 200 Elemental Mastery. C6 also automatically grants Diona 25% maximum HP. Its Radiance: Stellar-Conduct state exposes 40% Superconduct and Stellar-Superconduct reaction bonuses, while Radiance: Stellar-Swirl exposes 40% Cryo-Swirl and Stellar-Swirl reaction bonuses; the Cryo-Swirl branch is restricted by both the declared Swirl kind and its Cryo damage element. The shield metric excludes the hold-only 75% whole-shield multiplier, C2's 15% whole-shield multiplier and its separate 50% co-op shield, and the 250% Cryo-damage absorption branch. The healing metric excludes tick count and timing. Diona's A1 movement and stamina effect and A4 burst enemy-attack reduction do not change these selected values. Remaining passives, external effects, and state changes remain unmodeled.",
+    "The selected support metrics calculate one point-press Icy Paws shield and one Signature Mix field healing tick. The non-Cryo shield starts from max HP × skill[1] plus skill[2]; C2 multiplies that entire base absorption by 1.15 before recipient Shield Strength, and C5 adds three Skill levels. Healing uses max HP × burst[2] plus burst[3], followed by source Healing Bonus and recipient Incoming Healing Bonus; C3 adds three Burst levels. At C6, a field recipient at or below 50% HP gains 30% Incoming Healing Bonus, while the above-50% branch exposes 200 Elemental Mastery. C6's automatic 25% Max-HP increase participates in both support source panels. Its Radiance states expose 40% Superconduct/Stellar-Superconduct or Cryo-Swirl/Stellar-Swirl reaction bonuses. The selected shield excludes hold-only 75% absorption, the separate co-op shield, and the 250% Cryo-absorption branch. Lower-level attack-scaling Icy Paws and Burst damage remain separate from these support metrics. Tick counts, duration, movement, enemy attack reduction, and full rotations are not inferred.",
   label: dionaDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

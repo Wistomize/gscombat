@@ -393,6 +393,12 @@ const RotationTraceEntrySchema = Type.Union([
   }),
   Type.Object({
     after: Type.Number(),
+    before: Type.Number(),
+    kind: Type.Literal("trigger_probability"),
+    probability: Type.Number({ minimum: 0, maximum: 1 })
+  }),
+  Type.Object({
+    after: Type.Number(),
     baseDamage: Type.Number({ description: "Level-scaled transformative reaction base damage." }),
     before: Type.Number(),
     bonus: Type.Number(),
@@ -422,6 +428,7 @@ const RotationTraceEntrySchema = Type.Union([
     before: Type.Number(),
     event: Type.Union([Type.Literal("trigger"), Type.Literal("vortex")]),
     kind: Type.Literal("stellar_swirl_participant_aggregation"),
+    vortexLevel: Type.Optional(Type.Integer({ minimum: 1, maximum: 6 })),
     participants: Type.Array(
       Type.Object({
         appliedEffectIds: Type.Array(Type.String()),

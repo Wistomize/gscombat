@@ -116,7 +116,7 @@ export function listCombatActions(): readonly CombatActionMetadata[] {
     const noReactionActionId = getNoReactionActionId(action, declaredActionIds)
     if (!noReactionActionId || declaredActionIds.has(noReactionActionId) || derivedActions.has(noReactionActionId)) continue
     const { amplifyingReaction: _amplifyingReaction, ...withoutReaction } = action
-    derivedActions.set(noReactionActionId, { ...withoutReaction, id: noReactionActionId })
+    derivedActions.set(noReactionActionId, { ...withoutReaction, effectActionIds: [...(action.effectActionIds ?? []), action.id], id: noReactionActionId })
   }
   return [...declaredActions, ...derivedActions.values()]
 }
@@ -124,6 +124,7 @@ export function listCombatActions(): readonly CombatActionMetadata[] {
 /** Returns every maintainer-selected, self-owned metric across the combat coverage registry. */
 export function listCombatMetrics(): readonly CombatMetricDefinition[] {
   const declaredMetrics = characterCombatCoverageRegistry.flatMap((coverage) => coverage.metrics ?? [])
+  const declaredMetricActionIds = new Set(declaredMetrics.flatMap((metric) => metric.kind === "damage" ? [metric.actionId] : []))
   const declaredActions = characterCombatCoverageRegistry.flatMap((coverage) => coverage.actions)
   const declaredActionIds = new Set(declaredActions.map((action) => action.id))
   const actionById = new Map(declaredActions.map((action) => [action.id, action]))
@@ -133,7 +134,7 @@ export function listCombatMetrics(): readonly CombatMetricDefinition[] {
     const action = actionById.get(metric.actionId)
     if (!action) continue
     const noReactionActionId = getNoReactionActionId(action, declaredActionIds)
-    if (!noReactionActionId || derivedMetrics.has(noReactionActionId)) continue
+    if (!noReactionActionId || declaredMetricActionIds.has(noReactionActionId) || derivedMetrics.has(noReactionActionId)) continue
     derivedMetrics.set(noReactionActionId, {
       ...metric,
       actionId: noReactionActionId,
@@ -149,6 +150,7 @@ function getNoReactionActionId(
   action: CombatActionMetadata,
   declaredActionIds: ReadonlySet<string>
 ): string | undefined {
+  if (action.noReactionActionId !== undefined) return action.noReactionActionId
   if (action.element !== "pyro" || !action.amplifyingReaction) return undefined
   const baseId = action.id.replace(/\.(hydro_aura_vaporize|cryo_aura_melt|reverse_vaporize)$/, "")
   if (baseId === action.id) return `${action.id}.no_reaction`
@@ -167,12 +169,21 @@ export function listCharacterCombatMetrics(characterId: string): readonly Combat
 
 /** Finds one declared combat action by its stable action ID. */
 export function getCombatActionDefinition(actionId: string): CombatActionMetadata | undefined {
-  return listCombatActions().find((action) => action.id === actionId)
+  const actions = listCombatActions()
+  const direct = actions.find((action) => action.id === actionId)
+  if (direct) return direct
+  const legacyParent = actions.find((action) => action.noReactionActionId !== undefined && `${action.id}.no_reaction` === actionId)
+  return legacyParent ? actions.find((action) => action.id === legacyParent.noReactionActionId) : undefined
 }
 
 /** Finds one self-owned combat metric by its stable metric ID. */
 export function getCombatMetricDefinition(metricId: string): CombatMetricDefinition | undefined {
-  return listCombatMetrics().find((metric) => metric.id === metricId)
+  const metrics = listCombatMetrics()
+  const direct = metrics.find((metric) => metric.id === metricId)
+  if (direct) return direct
+  const canonicalActionId = getCombatActionDefinition(metricId)?.id
+  return canonicalActionId === undefined ? undefined : metrics.find((metric) =>
+    metric.kind === "damage" && metric.actionId === canonicalActionId)
 }
 
 /** Finds a character coverage declaration by canonical game-data character ID. */

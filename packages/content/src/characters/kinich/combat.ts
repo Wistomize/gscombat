@@ -196,64 +196,11 @@ export const kinichCombatCoverage: CharacterCombatCoverage = {
       value: {
         canCrit: true,
         coefficient: { kind: "fixed", value: 7 },
-        element: "dendro",
-        expectedTriggerProbability: 1,
-        kind: "additional_damage_event",
-        reactionPolicy: "none",
-        scalingStat: "attack",
-        talentSlot: "skill"
-      }
-    },
-    {
-      activation: "active",
-      id: "kinich.constellation.6.auspicious_beast_shape.one_hunters_experience.bounce_additive_damage",
-      label: "瑞兽之形 · C6 弹跳继承1层猎人心得（攻击力倍率加算320%）",
-      requiredActiveEffectIds: [
-        "kinich.passive.flame_spirit_pact.hunters_experience.one_stack.attack_additive_damage"
-      ],
-      source: {
-        characterId: "Kinich",
-        kind: "character",
-        minimumSourceAscension: 4,
-        minimumSourceConstellation: 6
-      },
-      target: "additionalDamageEvent",
-      targetFilter: {
-        actionIds: ["kinich.skill.scalespiker_cannon.single_hit"],
-        recipientSourceRelation: "source"
-      },
-      value: {
-        canCrit: true,
-        coefficient: { kind: "fixed", value: 3.2 },
-        element: "dendro",
-        expectedTriggerProbability: 1,
-        kind: "additional_damage_event",
-        reactionPolicy: "none",
-        scalingStat: "attack",
-        talentSlot: "skill"
-      }
-    },
-    {
-      activation: "active",
-      id: "kinich.constellation.6.auspicious_beast_shape.two_hunters_experience.bounce_additive_damage",
-      label: "瑞兽之形 · C6 弹跳继承2层猎人心得（攻击力倍率加算640%）",
-      requiredActiveEffectIds: [
-        "kinich.passive.flame_spirit_pact.hunters_experience.two_stacks.attack_additive_damage"
-      ],
-      source: {
-        characterId: "Kinich",
-        kind: "character",
-        minimumSourceAscension: 4,
-        minimumSourceConstellation: 6
-      },
-      target: "additionalDamageEvent",
-      targetFilter: {
-        actionIds: ["kinich.skill.scalespiker_cannon.single_hit"],
-        recipientSourceRelation: "source"
-      },
-      value: {
-        canCrit: true,
-        coefficient: { kind: "fixed", value: 6.4 },
+        inheritedActionEffectIds: [
+          "kinich.constellation.1.parrots_beak.scalespiker_cannon.crit_damage",
+          "kinich.passive.flame_spirit_pact.hunters_experience.one_stack.attack_additive_damage",
+          "kinich.passive.flame_spirit_pact.hunters_experience.two_stacks.attack_additive_damage"
+        ],
         element: "dendro",
         expectedTriggerProbability: 1,
         kind: "additional_damage_event",
@@ -287,7 +234,7 @@ export const kinichCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "One full-Nightsoul Scalespiker Cannon hit and one Dragonlord Breath tick are selected metrics. Flame Spirit Pact adds 320% Attack per reachable Hunter's Experience stack, up to two stacks. C1 adds 100% Crit DMG to the Cannon and C2 resistance reduction remains an explicit post-hit snapshot. At C6, the Cannon automatically appends its 700% Attack Dendro bounce; dependent additions carry the selected one- or two-stack Hunter's Experience coefficient into that same expected total, while C1 Crit DMG is inherited through the action snapshot. The trace keeps those inherited coefficients auditable as separate additions. Neither metric presets Burning, Spread, or another reaction; Nightsoul generation, firing sequences, timing, and rotation remain unmodeled.",
+    "One full-Nightsoul Scalespiker Cannon hit and one Dragonlord Breath tick are selected metrics. Flame Spirit Pact adds 320% Attack per reachable Hunter's Experience stack, up to two stacks. C1 adds 100% Crit DMG to the Cannon and C2 resistance reduction remains an explicit post-hit snapshot. At C6, the Cannon automatically appends its 700% Attack Dendro bounce. Both real hits receive the qualified one- or two-stack Hunter's Experience coefficient as same-hit scaling terms, and the bounce explicitly inherits C1 Crit DMG. The trace lists these terms inside each hit, not as extra hits. Neither metric presets Burning, Spread, or another reaction; Nightsoul generation, firing sequences, timing, and rotation remain unmodeled.",
   label: kinichDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

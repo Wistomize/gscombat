@@ -18,6 +18,7 @@ import { reviewedMultiScalingEvidence as characterMavuikaEvidence } from "../cha
 import { reviewedMultiScalingEvidence as characterNahidaEvidence } from "../characters/nahida/evidence.js"
 import { reviewedMultiScalingEvidence as characterNeferEvidence } from "../characters/nefer/evidence.js"
 import { reviewedMultiScalingEvidence as characterNoelleEvidence } from "../characters/noelle/evidence.js"
+import { reviewedMultiScalingEvidence as characterOdetteEvidence } from "../characters/odette/evidence.js"
 import { reviewedMultiScalingEvidence as characterRaidenEvidence } from "../characters/raiden/evidence.js"
 import { reviewedMultiScalingEvidence as characterRazorEvidence } from "../characters/razor/evidence.js"
 import { reviewedMultiScalingEvidence as characterSethosEvidence } from "../characters/sethos/evidence.js"
@@ -48,6 +49,7 @@ export const reviewedMultiScalingEvidenceRecords: readonly ReviewedMultiScalingE
   ...characterNahidaEvidence,
   ...characterNeferEvidence,
   ...characterNoelleEvidence,
+  ...characterOdetteEvidence,
   ...characterRaidenEvidence,
   ...characterRazorEvidence,
   ...characterSethosEvidence,

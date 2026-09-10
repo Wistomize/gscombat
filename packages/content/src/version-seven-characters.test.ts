@@ -41,6 +41,7 @@ describe("7.0 character registry", () => {
     expect(alyosha?.metrics?.map((metric) => metric.label)).toEqual([
       "猎者之准 / 攻击力提升",
       "图加林 / 单次当前场上角色治疗量",
+      "C4 / 图加林为附近生命值比例最低队员的追加治疗量",
       "星赴险域 / 场上角色星超导反应伤害提升",
       "复夺旌幡 / C6满2层元素精通提升"
     ])

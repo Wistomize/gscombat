@@ -180,6 +180,7 @@ export const kachinaCombatCoverage: CharacterCombatCoverage = {
               ]
             },
             damagePartId: "c6-shield-destroyed-geo-damage-proxy",
+            hitCount: 0,
             id: "c6-shield-destroyed-geo-damage-proxy",
             snapshot: "hit"
           }
@@ -226,6 +227,9 @@ export const kachinaCombatCoverage: CharacterCombatCoverage = {
         coefficient: { kind: "fixed", value: 2 },
         element: "geo",
         expectedTriggerProbability: 1,
+        inheritedActionEffectIds: [
+          "kachina.constellation.4.more_foes_more_caution.four_enemies.defense_percent"
+        ],
         kind: "additional_damage_event",
         reactionPolicy: "none",
         scalingStat: "defense",

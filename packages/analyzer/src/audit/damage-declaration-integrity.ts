@@ -29,6 +29,18 @@ export function validateReactionDeclarations(
   action: CombatActionMetadata,
   issues: CombatRegistryIntegrityIssue[]
 ): void {
+  const expectedKind = action.evaluator === "declared_direct" ? "direct"
+    : action.evaluator === "declared_special_reaction" ? "special_reaction"
+    : action.evaluator === "declared_transformative" ? "transformative" : undefined
+  if (expectedKind !== undefined && (action.damageKind !== expectedKind ||
+      (expectedKind === "special_reaction" && !action.specialReaction))) {
+    issues.push({
+      actionId: action.id,
+      characterId,
+      code: "conflicting-damage-formula-routing",
+      message: `Action ${action.id}: ${action.evaluator} requires ${expectedKind} damage${expectedKind === "special_reaction" ? " and an explicit specialReaction formula" : ""}`
+    })
+  }
   const additiveReaction = action.additiveReaction
   const transformativeReaction = action.transformativeReaction
   if ([additiveReaction, action.amplifyingReaction, transformativeReaction].filter(Boolean).length > 1) {
@@ -102,6 +114,8 @@ export function validateDeclaredDirectDamageParts(
 
   const damageParts = action.damageParts ?? []
   if (damageParts.length === 0) {
+    if (action.damageParts && action.timeline?.damageEvents.length &&
+      action.timeline.damageEvents.every((event) => event.stellarSwirlReaction !== undefined)) return
     issues.push({
       actionId: action.id,
       characterId,

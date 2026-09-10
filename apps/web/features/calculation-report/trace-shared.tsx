@@ -12,7 +12,7 @@ export type DamageTraceEntry = AnalysisResponse["evaluation"]["result"]["trace"]
 export type DamageTraceStage = DamageTraceEntry["stage"]
 export type RotationEvent = AnalysisResponse["evaluation"]["rotation"]["events"][number]
 export type RotationTraceEntry = RotationEvent["trace"][number]
-export type PipelineStage = DamageTraceStage | "hit_count" | "neutral_reaction" | "transformative_reaction"
+export type PipelineStage = DamageTraceStage | "hit_count" | "trigger_probability" | "neutral_reaction" | "transformative_reaction"
 export type AmplifyingReaction = Extract<RotationTraceEntry, { readonly kind: "amplifying_reaction" }>["reaction"]
 export type AdditiveReaction = Extract<RotationTraceEntry, { readonly kind: "additive_reaction" }>["reaction"]
 export type TransformativeReaction = Extract<RotationTraceEntry, { readonly kind: "transformative_reaction" }>["reaction"]
@@ -47,6 +47,7 @@ export const traceStageMeta: Readonly<Record<PipelineStage, { readonly hint: str
   defense: { hint: "等级、防御降低与无视防御", label: "防御区" },
   resistance: { hint: "敌人抗性与抗性降低", label: "抗性区" },
   hit_count: { hint: "同一事件的多段命中合计", label: "命中段数" },
+  trigger_probability: { hint: "完整单次伤害按触发概率折算期望", label: "触发概率" },
   transformative_reaction: { hint: "剧变反应的等级、元素精通与反应加成", label: "剧变反应区" },
   ascension: { hint: "特殊反应抗性结算后的独立伤害擢升", label: "伤害擢升区" }
 }

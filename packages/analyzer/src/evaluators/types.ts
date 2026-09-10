@@ -39,6 +39,7 @@ interface DeclaredDamageTimelineEventBase {
 
 /** A resolved content event that connects one damage part to its relative timing and snapshot policy. */
 export interface DeclaredDamagePartTimelineEvent extends DeclaredDamageTimelineEventBase {
+  readonly expectedTriggerProbability?: number
   readonly coefficientMultiplier: number
   readonly elementalApplication?: RotationElementalApplication
   readonly elementOverrideTarget?: RotationElementOverrideTarget
@@ -56,7 +57,7 @@ export interface DeclaredStellarSwirlReactionTimelineEvent extends DeclaredDamag
   readonly specialReaction?: never
   readonly stellarSwirlReaction: {
     readonly event: StellarSwirlReactionEvent
-    readonly vortexLevel?: 1 | 2
+    readonly vortexLevel?: number
   }
 }
 

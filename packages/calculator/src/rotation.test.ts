@@ -5,6 +5,29 @@ import { evaluateRotation, type AuraElement } from "./rotation.js"
 const enemy = { defenseReduction: 0, level: 100, resistance: 0.1 }
 
 describe("evaluateRotation", () => {
+  it.each([0, 0.5, 1])("weights the complete hit by probability %s, including fixed damage and capped crit", (probability) => {
+    const event = {
+      canCrit: true, element: "physical" as const, id: "probability", ownerId: "source", time: 0,
+      scaling: { coefficient: 0, stat: "attack" as const, flatDamage: 100 },
+      stats: { attack: 1000, critDamage: 1, critRate: 1.5, damageBonus: 0.5, defense: 700,
+        elementalMastery: 0, hp: 20000, level: 100 }
+    }
+    const full = evaluateRotation({ duration: 1, enemy, events: [{ ...event, stats: { ...event.stats, critRate: 1 } }] })
+    const result = evaluateRotation({ duration: 1, enemy, events: [{ ...event, expectedTriggerProbability: probability }] })
+    expect(result.dpr).toBeCloseTo(full.dpr * probability)
+    expect(result.events[0]!.trace[0]!.after).toBe(100)
+    if (probability !== 1) expect(result.events[0]!.trace.at(-1)).toMatchObject({ kind: "trigger_probability", probability })
+  })
+
+  it("rejects probabilistic hits that would mutate deterministic elemental application", () => {
+    expect(() => evaluateRotation({ duration: 1, enemy, events: [{
+      canCrit: true, element: "pyro", id: "random-application", ownerId: "source", time: 0,
+      expectedTriggerProbability: 0.5, elementalApplication: { icd: { kind: "none" } },
+      scaling: { coefficient: 1, stat: "attack" },
+      stats: { attack: 1000, critDamage: 1, critRate: 0.5, damageBonus: 0, defense: 700, elementalMastery: 0, hp: 20000, level: 90 }
+    }] })).toThrow("cannot advance deterministic elemental-application state")
+  })
+
   it("uses expected rotation DPS as DPR divided by the declared duration", () => {
     const result = evaluateRotation({
       duration: 10,

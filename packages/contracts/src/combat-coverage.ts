@@ -150,7 +150,10 @@ const CombatDamagePartEventPayloadSchema = Type.Object({
 const CombatStellarSwirlReactionEventPayloadSchema = Type.Object({
   stellarSwirlReaction: Type.Union([
     Type.Object({ event: Type.Literal("trigger") }),
-    Type.Object({ event: Type.Literal("vortex"), vortexLevel: Type.Union([Type.Literal(1), Type.Literal(2)]) })
+    Type.Object({ event: Type.Literal("vortex"), vortexLevel: Type.Union([
+      Type.Integer({ minimum: 1, maximum: 6 }),
+      Type.Object({ parameterId: Type.String({ minLength: 1 }) })
+    ]) })
   ])
 })
 

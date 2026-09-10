@@ -103,6 +103,7 @@ export function validateMetricDeclaration(
   if (metric.kind === "scalar") {
     validateScalarMetricExpression(metric, issues)
     validateScalarMetricDamageScope(metric, issues)
+    validateScalarShieldAbsorptionMultipliers(metric, issues)
     if (metric.scalingStat) {
       validateMetricScalingStat(
         metric.id,
@@ -290,6 +291,10 @@ function validateHealingMetricExtensions(
     hasPercentageParameter !== hasFixedRatio &&
     (metric.ratio === undefined || (Number.isFinite(metric.ratio) && metric.ratio >= 0))
   const validFlat = metric.flat === undefined || (Number.isFinite(metric.flat) && metric.flat >= 0)
+  const selfMultiplier = metric.selfRecipientMultiplier
+  const validSelfMultiplier = selfMultiplier === undefined || (
+    selfMultiplier.label.trim().length > 0 && Number.isFinite(selfMultiplier.value) && selfMultiplier.value > 0
+  )
   const validAdditionalScalingTerms = additionalScalingTerms.every(
     (term) =>
       term.label.trim().length > 0 &&
@@ -353,6 +358,7 @@ function validateHealingMetricExtensions(
     metric.includeHealingBonus &&
     validBaseRatio &&
     validFlat &&
+    validSelfMultiplier &&
     validAdditionalScalingTerms &&
     validSourceHealingBonuses &&
     validConditionalScalingBonuses &&
@@ -365,6 +371,7 @@ function validateHealingMetricExtensions(
     sourceHealingBonuses.length === 0 &&
     validBaseRatio &&
     validFlat &&
+    validSelfMultiplier &&
     validAdditionalScalingTerms &&
     validConditionalScalingBonuses &&
     validRecipientIncomingHealingBonuses
@@ -376,7 +383,27 @@ function validateHealingMetricExtensions(
     code: "invalid-healing-metric-extension",
     message:
       `Healing metric ${metric.id} must declare exactly one valid fixed or talent-derived base ratio, valid source-stat ` +
-      "additions and finite non-negative kit modifiers in their correct source or recipient healing stage",
+      "additions, finite non-negative kit modifiers, and a labeled finite positive self-recipient multiplier",
+    metricId: metric.id
+  })
+}
+
+function validateScalarShieldAbsorptionMultipliers(
+  metric: Extract<CombatMetricDefinition, { readonly kind: "scalar" }>,
+  issues: CombatRegistryIntegrityIssue[]
+): void {
+  const multipliers = metric.shieldAbsorptionMultipliers
+  if (multipliers === undefined) return
+  if (metric.semantic === "shield" && multipliers.every((entry) =>
+    entry.label.trim().length > 0 &&
+    Number.isFinite(entry.value) && entry.value > 0 &&
+    isValidMetricConstellation(entry.minimumSourceConstellation)
+  )) return
+  issues.push({
+    characterId: metric.characterId,
+    code: "invalid-scalar-metric-scope",
+    message: `Scalar metric ${metric.id} allows whole-shield multipliers only for shields, with non-empty labels, ` +
+      "finite positive values and integer constellation thresholds from one through six",
     metricId: metric.id
   })
 }

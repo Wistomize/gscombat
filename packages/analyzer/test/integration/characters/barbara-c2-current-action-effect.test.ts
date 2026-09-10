@@ -101,7 +101,7 @@ describe("Barbara C2 current-action effect", () => {
     expect(c2Snapshot.result.expectedDamage).toBeCloseTo(
       baseline.result.expectedDamage * (1 + c2Snapshot.stats.damageBonus) / (1 + baseline.stats.damageBonus)
     )
-    expect(c2Snapshot.appliedEffects).toEqual([
+    expect(c2Snapshot.appliedEffects.filter((effect) => effect.id === effectId)).toEqual([
       expect.objectContaining({
         id: effectId,
         sourceId: barbaraC2.buildId,

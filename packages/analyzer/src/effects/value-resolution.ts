@@ -195,6 +195,7 @@ export function resolveAdditionalDamageEvent(
     coefficient: resolveEffectScalar(event.coefficient, source),
     element,
     expectedTriggerProbability,
+    ...(event.inheritedActionEffectIds === undefined ? {} : { inheritedActionEffectIds: event.inheritedActionEffectIds }),
     ...(flatDamage === 0 ? {} : { flatDamage }),
     id: effect.id,
     label: effect.label,

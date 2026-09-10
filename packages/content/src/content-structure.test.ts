@@ -66,7 +66,19 @@ describe("Content entity-directory architecture", () => {
   })
 
   it("publishes generated aggregates without returning to entity wildcard exports", () => {
-    expect(reviewedMultiScalingEvidenceRecords).toHaveLength(37)
+    expect(reviewedMultiScalingEvidenceRecords).toHaveLength(61)
+    expect(reviewedMultiScalingEvidenceRecords).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        actionId: "odette.skill.adagio_coda_at_dawn.final_hit.stellar_superconduct",
+        damagePartId: "c1-additional-hit",
+        terms: [expect.objectContaining({ fixedCoefficient: 3, minimumSourceConstellation: 1, stat: "attack" })]
+      }),
+      expect.objectContaining({
+        actionId: "odette.skill.adagio_coda_at_dawn.final_hit.stellar_swirl",
+        damagePartId: "c1-additional-hit",
+        terms: [expect.objectContaining({ fixedCoefficient: 4.5, minimumSourceConstellation: 1, stat: "attack" })]
+      })
+    ]))
     const rootIndex = readFileSync(join(sourceRoot, "index.ts"), "utf8")
     expect(rootIndex).not.toMatch(/export \* from "\.\/(?:artifacts|weapons)\//)
     expect(rootIndex).not.toMatch(/export \* from "\.\/characters\/[^\"]+\//)

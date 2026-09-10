@@ -132,9 +132,12 @@ export function assertDeclaredDirectAction(action: CombatActionMetadata): assert
   if (action.amplifyingReaction && action.additiveReaction) {
     throw new Error(`Declared action ${action.id} cannot declare both amplifying and additive reactions`)
   }
-  if (!action.damageParts || action.damageParts.length === 0) {
+  const reactionOnly = action.timeline?.damageEvents.every((event) => event.stellarSwirlReaction !== undefined)
+    && action.timeline.damageEvents.length > 0
+  if (!action.damageParts || (action.damageParts.length === 0 && !reactionOnly)) {
     throw new Error(`Declared action ${action.id} must contain at least one damage part`)
   }
+  if (action.damageParts.length === 0 && reactionOnly) return
   const hasMultipleScalingPart = action.damageParts.some(hasMultipleScalingTerms)
   if (hasMultipleScalingPart) {
     const hasLegacyScalingPart = action.damageParts.some((part) => !hasMultipleScalingTerms(part))
@@ -232,9 +235,14 @@ export function assertDeclaredMixedSpecialReactionEvent(
 ): void {
   if (event.stellarSwirlReaction) {
     const { event: reactionEvent, vortexLevel } = event.stellarSwirlReaction
+    const parameter = typeof vortexLevel === "object"
+      ? action.scenarioParameters?.find((entry) => entry.id === vortexLevel.parameterId) : undefined
+    const validLevel = typeof vortexLevel === "number"
+      ? Number.isInteger(vortexLevel) && vortexLevel >= 1 && vortexLevel <= 6
+      : parameter !== undefined && parameter.minimumValue >= 1 && parameter.maximumValue <= 6
     if (
       (reactionEvent === "trigger" && vortexLevel !== undefined) ||
-      (reactionEvent === "vortex" && vortexLevel !== 1 && vortexLevel !== 2)
+      (reactionEvent === "vortex" && !validLevel)
     ) {
       throw new Error(`Actual Stellar-Swirl event ${event.id} for action ${action.id} has an invalid event snapshot`)
     }
@@ -880,14 +888,15 @@ export function createDeclaredSpecialReactionRotationEvent(
   appliedEffects: readonly AppliedCombatActionEffect[]
 ): RotationEventResult {
   const expectedDamage = result.expectedDamage * event.hitCount
+  const probability = event.expectedTriggerProbability ?? 1
   return {
     appliedEffectIds: appliedEffects.map((effect) => effect.id),
-    critDamage: result.critDamage * event.hitCount,
+    critDamage: result.critDamage * event.hitCount * probability,
     element: action.element,
-    expectedDamage,
+    expectedDamage: expectedDamage * probability,
     hitCount: event.hitCount,
     id: `${action.id}.${event.id}`,
-    nonCritDamage: result.nonCritDamage * event.hitCount,
+    nonCritDamage: result.nonCritDamage * event.hitCount * probability,
     ownerId,
     statSnapshotTime: event.statSnapshotTime,
     time: event.time,
@@ -901,7 +910,8 @@ export function createDeclaredSpecialReactionRotationEvent(
       })),
       ...(event.hitCount === 1
         ? []
-        : [{ after: expectedDamage, before: result.expectedDamage, hitCount: event.hitCount, kind: "hit_count" as const }])
+        : [{ after: expectedDamage, before: result.expectedDamage, hitCount: event.hitCount, kind: "hit_count" as const }]),
+      ...(probability === 1 ? [] : [{ after: expectedDamage * probability, before: expectedDamage, kind: "trigger_probability" as const, probability }])
     ]
   }
 }
@@ -970,6 +980,7 @@ export function createDeclaredStellarSwirlReactionRotationEvent(
         before: 0,
         event: result.event,
         kind: "stellar_swirl_participant_aggregation",
+        ...(result.vortexLevel === undefined ? {} : { vortexLevel: result.vortexLevel }),
         participants: participantDetails,
         reactionCoefficient: result.reactionCoefficient
       },
@@ -1241,11 +1252,18 @@ export function resolveDeclaredTimeline(
     const hitCount = resolveDeclaredEventHitCount(event, actionParameters, action.id)
     if (hitCount === 0) continue
     if (event.stellarSwirlReaction) {
+      const level = event.stellarSwirlReaction.vortexLevel
+      const vortexLevel = typeof level === "object" ? actionParameters.get(level.parameterId) : level
+      if (event.stellarSwirlReaction.event === "vortex" &&
+          (vortexLevel === undefined || !Number.isInteger(vortexLevel) || vortexLevel < 1 || vortexLevel > 6)) {
+        throw new Error(`Stellar Vortex event ${event.id} requires a level from 1 through 6`)
+      }
       events.push({
         hitCount,
         id: event.id,
         statSnapshotTime: resolveDeclaredEventSnapshotTime(event, actionTimeline.duration, action.id),
-        stellarSwirlReaction: event.stellarSwirlReaction,
+        stellarSwirlReaction: { event: event.stellarSwirlReaction.event,
+          ...(vortexLevel === undefined ? {} : { vortexLevel }) },
         time: event.at
       })
       continue
@@ -1254,10 +1272,15 @@ export function resolveDeclaredTimeline(
     if (!part) {
       throw new Error(`Damage event ${event.id} for action ${action.id} references missing part ${event.damagePartId}`)
     }
+    if (event.expectedTriggerProbability !== undefined &&
+        (!Number.isFinite(event.expectedTriggerProbability) || event.expectedTriggerProbability < 0 || event.expectedTriggerProbability > 1)) {
+      throw new Error(`Event ${event.id} must use a probability from zero to one`)
+    }
     events.push({
       ...(event.elementalApplication ? { elementalApplication: event.elementalApplication } : {}),
       ...(event.elementOverrideTarget ? { elementOverrideTarget: event.elementOverrideTarget } : {}),
       ...(event.specialReaction ? { specialReaction: event.specialReaction } : {}),
+      ...(event.expectedTriggerProbability === undefined ? {} : { expectedTriggerProbability: event.expectedTriggerProbability }),
       coefficientMultiplier: resolveDeclaredEventCoefficientMultiplier(
         event,
         action,
@@ -1355,6 +1378,7 @@ export function createDeclaredRotationEvent(
   }
   const base = {
     canCrit: true,
+    ...(event.expectedTriggerProbability === undefined ? {} : { expectedTriggerProbability: event.expectedTriggerProbability }),
     element: action.element,
     id: `${action.id}.${event.id}`,
     ownerId,
@@ -1463,13 +1487,16 @@ export function createAdditionalDamageRotationEvent(
   time: number,
   statSnapshotTime: number,
   resistanceReduction: number,
-  defenseIgnore: number
+  defenseIgnore: number,
+  baseDamageFlat: number,
+  matchedActionDamageScalingTerms: readonly DamageScalingTerm[]
 ): RotationDamageEvent {
   if (event.reactionPolicy !== "none") {
     throw new Error(`Additional damage event ${event.id} must explicitly disable reactions`)
   }
   return {
     appliedEffectIds: appliedEffects.map((effect) => effect.id),
+    expectedTriggerProbability: event.expectedTriggerProbability,
     canCrit: event.canCrit,
     ...(event.critPolicy === undefined ? {} : { critPolicy: event.critPolicy }),
     element: event.element,
@@ -1479,11 +1506,13 @@ export function createAdditionalDamageRotationEvent(
     ...(defenseIgnore > 0 ? { defenseIgnore } : {}),
     ...(resistanceReduction > 0 ? { resistanceReduction } : {}),
     scaling: {
-      coefficient: event.coefficient * event.expectedTriggerProbability,
-      ...(event.flatDamage === undefined
-        ? {}
-        : { flatDamage: event.flatDamage * event.expectedTriggerProbability }),
-      stat: event.scalingStat
+      flatDamage: (event.flatDamage ?? 0) + baseDamageFlat,
+      ...(matchedActionDamageScalingTerms.length === 0
+        ? { coefficient: event.coefficient, stat: event.scalingStat }
+        : { terms: [
+            { coefficient: event.coefficient, stat: event.scalingStat },
+            ...matchedActionDamageScalingTerms
+          ] as [DamageScalingTerm, ...DamageScalingTerm[]] })
     },
     statSnapshotTime,
     stats,

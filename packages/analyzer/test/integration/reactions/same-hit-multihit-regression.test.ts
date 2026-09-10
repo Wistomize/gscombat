@@ -57,6 +57,7 @@ describe("same-hit multi-event regressions", () => {
       ...baseAction,
       id: "test.noelle.same-hit.sweeping-time.normal-attack-combo",
       scenarioParameters: [
+        ...(baseAction.scenarioParameters ?? []),
         {
           defaultValue: 0,
           id: multiplierParameterId,

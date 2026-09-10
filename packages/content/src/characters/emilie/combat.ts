@@ -293,6 +293,44 @@ export const emilieCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "active",
+      id: "emilie.passive.rectification.burning_target.damage_bonus",
+      label: "固有天赋 · 精馏：本次攻击的目标处于燃烧状态（每1000攻击力增伤15%，最高36%）",
+      source: { characterId: "Emilie", kind: "character", minimumSourceAscension: 4 },
+      target: "damageBonus",
+      targetFilter: {
+        actionIds: [
+          "emilie.constellation.6.marcotte_sillage.lingering_fragrance.normal_attack.first_hit",
+          "emilie.constellation.6.marcotte_sillage.lingering_fragrance.charged_attack"
+        ],
+        recipientSourceRelation: "source"
+      },
+      value: {
+        kind: "source_final_attack",
+        maximumValue: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive2",
+            id: "a4-maximum-burning-damage-bonus",
+            parameterIndex: 1,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        },
+        multiplier: {
+          kind: "talent_parameter",
+          multiplier: 0.001,
+          parameter: {
+            groupId: "passive2",
+            id: "a4-burning-damage-bonus-per-1000-attack",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        }
+      }
+    },
+    {
+      activation: "active",
       id: "emilie.fragrance.c2.dendro_resistance_shred",
       label: "香韵命中后 · C2 草元素抗性降低（10秒）",
       source: { characterId: "Emilie", kind: "character", minimumSourceConstellation: 2 },

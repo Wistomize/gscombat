@@ -84,6 +84,70 @@ function createAnemoTravelerAction(
 }
 
 describe("combat registry integrity", () => {
+  it("allows pure participant reactions without dummy damage parts but rejects an empty direct action", () => {
+    const coverage = requireCoverage("YumemizukiMizuki")
+    const reaction = coverage.actions.find((action) => action.id.endsWith("single_stellar_swirl"))!
+    expect(validateCombatRegistryIntegrity({ gameData, registry: [createCoverage(coverage.characterId, [reaction])] }).issues).toEqual([])
+    const { timeline: _, ...emptyAction } = reaction
+    expect(validateCombatRegistryIntegrity({ gameData, registry: [createCoverage(coverage.characterId, [emptyAction])] }).issues)
+      .toContainEqual(expect.objectContaining({ code: "missing-declared-direct-damage-parts" }))
+    const vortex = coverage.actions.find((action) => action.id.endsWith("single_stellar_swirl_vortex"))!
+    for (const scenarioParameters of [[], [{ ...vortex.scenarioParameters![0]!, maximumValue: 7 }]]) {
+      const invalid = { ...vortex, scenarioParameters }
+      expect(validateCombatRegistryIntegrity({ gameData, registry: [createCoverage(coverage.characterId, [invalid])] }).issues)
+        .toContainEqual(expect.objectContaining({ code: "invalid-stellar-swirl-reaction-event" }))
+    }
+  })
+  it.each([
+    ["negative", "倍率", -1],
+    ["zero", "倍率", 0],
+    ["NaN", "倍率", Number.NaN],
+    ["infinite", "倍率", Number.POSITIVE_INFINITY],
+    ["empty label", " ", 2]
+  ])("rejects invalid support whole-result multipliers: %s", (_name, label, value) => {
+    for (const characterId of ["Diona", "YumemizukiMizuki"]) {
+      const coverage = requireCoverage(characterId)
+      const metric = coverage.metrics?.find((entry) => characterId === "Diona"
+        ? entry.kind === "scalar" && entry.semantic === "shield"
+        : entry.kind === "healing")
+      if (!metric || (metric.kind !== "scalar" && metric.kind !== "healing")) throw new Error("Missing support fixture")
+      const invalid: CombatMetricDefinition = metric.kind === "healing"
+        ? { ...metric, selfRecipientMultiplier: { label, value } }
+        : { ...metric, shieldAbsorptionMultipliers: [{ label, value, minimumSourceConstellation: 2 }] }
+      const report = validateCombatRegistryIntegrity({ gameData, registry: [{ ...coverage, metrics: [invalid] }] })
+      expect(report.issues).toContainEqual(expect.objectContaining({
+        metricId: metric.id,
+        code: metric.kind === "healing" ? "invalid-healing-metric-extension" : "invalid-scalar-metric-scope"
+      }))
+    }
+  })
+
+  it("rejects shield multiplier gates outside integer C1-C6 and non-shield scope", () => {
+    const coverage = requireCoverage("Diona")
+    const metric = coverage.metrics?.find((entry) => entry.kind === "scalar" && entry.semantic === "shield")
+    if (!metric || metric.kind !== "scalar") throw new Error("Missing shield fixture")
+    const invalidMetrics: CombatMetricDefinition[] = [
+      ...[0, 7, 2.5, Number.NaN].map((minimumSourceConstellation) => ({
+        ...metric, shieldAbsorptionMultipliers: [{ label: "整盾倍率", value: 1.15, minimumSourceConstellation }]
+      })),
+      { ...metric, semantic: "damage_bonus", shieldAbsorptionMultipliers: [{ label: "错乘区", value: 1.15, minimumSourceConstellation: 2 }] }
+    ]
+    for (const invalid of invalidMetrics) {
+      const report = validateCombatRegistryIntegrity({ gameData, registry: [{ ...coverage, metrics: [invalid] }] })
+      expect(report.issues).toContainEqual(expect.objectContaining({ metricId: metric.id, code: "invalid-scalar-metric-scope" }))
+    }
+  })
+
+  it("rejects conflicting formula routing but accepts direct timelines with special-reaction events", () => {
+    const coverage = requireCoverage("Ineffa")
+    const normal = coverage.actions.find((action) => action.id === "ineffa.normal.auto.first_hit")!
+    const invalid = { ...normal, damageKind: "special_reaction" as const }
+    const report = validateCombatRegistryIntegrity({ gameData, registry: [createCoverage("Ineffa", [invalid])] })
+    expect(report.issues.map((issue) => issue.code)).toContain("conflicting-damage-formula-routing")
+    const mixed = coverage.actions.find((action) => action.id.includes("a_dawning_morn_for_you"))!
+    expect(validateCombatRegistryIntegrity({ gameData, registry: [createCoverage("Ineffa", [mixed])] }).issues).toEqual([])
+  })
+
   it("rejects invalid or duplicate character-owned talent-level constellation mappings", () => {
     const huTao = requireCoverage("HuTao")
     const report = validateCombatRegistryIntegrity({

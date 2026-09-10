@@ -30,6 +30,8 @@ function createMavuikaC6NightsoulHitAction(
   const damagePartId = id.split(".").slice(-2).join("-")
   return {
     ...(reaction ? { amplifyingReaction: reaction } : {}),
+    ...(reaction ? { noReactionActionId: mavuikaC6FlamestriderCrashActionIds.some((candidate) => candidate === id)
+      ? mavuikaC6NightsoulHitActionIds.flamestriderCrash.none : mavuikaC6NightsoulHitActionIds.scorchingRing.none } : {}),
     characterId: "Mavuika",
     damageKind: "direct",
     damageParts: [

@@ -76,7 +76,8 @@ export function isCombatActionEffectApplicable(
 ): boolean {
   const filter = effect.targetFilter
   if (!filter) return true
-  if (filter.actionIds && !filter.actionIds.includes(action.id)) return false
+  if (filter.actionIds && !filter.actionIds.includes(action.id) &&
+      !action.effectActionIds?.some((id) => filter.actionIds!.includes(id))) return false
   if (filter.eventIds) {
     const matchesEvent = candidateEventId === undefined
       ? action.timeline?.damageEvents.some((event) => filter.eventIds!.includes(event.id)) === true
@@ -85,7 +86,8 @@ export function isCombatActionEffectApplicable(
   }
   if (filter.recipientCharacterIds && !filter.recipientCharacterIds.includes(action.characterId)) return false
   if (filter.recipientHexereiRequired && !isHexereiCharacter(action.characterId)) return false
-  if (filter.excludedActionIds?.includes(action.id)) return false
+  if (filter.excludedActionIds?.includes(action.id) ||
+      action.effectActionIds?.some((id) => filter.excludedActionIds?.includes(id))) return false
   if (filter.recipientWeaponTypes && (!recipientWeaponType || !filter.recipientWeaponTypes.includes(recipientWeaponType))) {
     return false
   }

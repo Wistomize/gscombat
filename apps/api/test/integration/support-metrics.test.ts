@@ -34,7 +34,7 @@ function createSupportMetricBuild(metric: Exclude<CombatMetricDefinition, { read
     ...raidenNationalBuiltinBuild,
     buildId: `test.api.support-metric.${metric.characterId}`,
     characterId: metric.characterId,
-    constellation: 0,
+    constellation: metric.minimumSourceConstellation ?? 0,
     label: `${metric.characterId} support metric API fixture`,
     talents: { burst: 10, normal: 10, skill: 10 },
     ...(metric.characterId === "Traveler"
@@ -73,6 +73,61 @@ function createFurinaFanfareContext(build: CharacterBuild, fanfarePoints?: numbe
 }
 
 describe("support metric API system", () => {
+  it("rejects a constellation-exclusive support metric below its declared minimum", async () => {
+    const metric = listCombatMetrics().find(
+      (candidate): candidate is Exclude<CombatMetricDefinition, { readonly kind: "damage" }> =>
+        candidate.kind !== "damage" && candidate.status === "verified" &&
+        (candidate.minimumSourceConstellation ?? 0) > 0
+    )
+    if (!metric) throw new Error("Expected a maintained constellation-exclusive support metric")
+    const build = createSupportMetricBuild(metric)
+    const response = await app.inject({
+      method: "POST", url: "/v1/support-metrics/evaluate",
+      payload: { build: { ...build, constellation: build.constellation - 1 }, metricId: metric.id }
+    })
+    expect(response.statusCode, response.body).toBe(400)
+    expect(response.json().message).toContain(metric.id)
+    expect(response.json().message).toContain(`requires source constellation ${metric.minimumSourceConstellation}`)
+  })
+
+  it("serializes repaired support formulas without new request fields", async () => {
+    const cases = [
+      ["Diona", "HuntersBow", "diona.burst.signature_mix.heal_tick"],
+      ["Diona", "HuntersBow", "diona.skill.icy_paws.press.base_absorption"],
+      ["Layla", "DullBlade", "layla.skill.nights_of_formal_focus.curtain_of_slumber.initial_absorption"],
+      ["Sayu", "WasterGreatsword", "sayu.burst.yoohoo_art_mujina_flurry.muji_muji_daruma.heal_tick"],
+      ["YumemizukiMizuki", "ApprenticesNotes", "yumemizuki_mizuki.burst.anraku_secret_spring_therapy.mini_baku.snack_heal"]
+    ] as const
+    for (const [characterId, weaponId, metricId] of cases) {
+      const source: CharacterBuild = {
+        ...raidenNationalBuiltinBuild, artifacts: [], ascension: 6,
+        buildId: `api.repaired-support.${characterId}`, characterId, constellation: 6, level: 90,
+        talents: { burst: 10, normal: 10, skill: 10 },
+        weapon: { ascension: 6, level: 90, refinement: 1, weaponId }
+      }
+      const response = await app.inject({
+        method: "POST", url: "/v1/support-metrics/evaluate",
+        payload: {
+          build: source, metricId,
+          context: {
+            recipient: { buildId: source.buildId, currentHpFraction: 0.5, isWithinSourceArea: true },
+            teammates: []
+          }
+        }
+      })
+      expect(response.statusCode, response.body).toBe(200)
+      const metric = response.json().metric
+      expect(metric.value).toBeGreaterThan(0)
+      expect(metric.formula.value).toBeCloseTo(metric.value)
+      if (characterId === "Diona" && metric.kind === "healing") {
+        expect(metric.scalingStat).toBe("hp")
+        expect(metric.value).toBeCloseTo(3598.15921579834)
+      }
+      if (characterId === "Sayu") expect(metric.value).toBeCloseTo(2368.5083798090236)
+      if (characterId === "YumemizukiMizuki") expect(metric.value).toBeCloseTo(2369.50976)
+    }
+  })
+
   it("serializes every verified non-damage metric through real Fastify injection", async () => {
     const metrics = listCombatMetrics().filter(
       (metric): metric is Exclude<CombatMetricDefinition, { readonly kind: "damage" }> =>

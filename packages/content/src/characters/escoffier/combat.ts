@@ -173,6 +173,7 @@ export const escoffierCombatCoverage: CharacterCombatCoverage = {
             },
             damagePartId: "c6-special-grade-frosty-parfait-proxy",
             id: "c6-special-grade-frosty-parfait-proxy",
+            hitCount: 0,
             snapshot: "hit"
           }
         ],
@@ -232,6 +233,7 @@ export const escoffierCombatCoverage: CharacterCombatCoverage = {
             },
             damagePartId: "c6-special-grade-frosty-parfait-proxy",
             id: "c6-special-grade-frosty-parfait-proxy",
+            hitCount: 0,
             snapshot: "hit"
           }
         ],

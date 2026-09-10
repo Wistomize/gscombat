@@ -874,6 +874,11 @@ describe("character metrics with explicit target context", () => {
 
     expect(listCharacterCombatMetrics("Neuvillette")).toEqual([
       expect.objectContaining({
+        actionId: "neuvillette.constellation.6.wrathful_recompense.three_droplets.six_waterfalls",
+        kind: "damage",
+        minimumSourceConstellation: 6
+      }),
+      expect.objectContaining({
         actionId: "neuvillette.normal.charged_attack.equitable_judgment.single_tick",
         kind: "damage",
         label: "如水从平 / 衡平推裁单次命中"
@@ -918,7 +923,7 @@ describe("character metrics with explicit target context", () => {
       expect.objectContaining({
         actionId: "ganyu.normal.frostflake_arrow.level_two.hit_and_bloom",
         kind: "damage",
-        label: "流天射术 / C0 二段蓄力霜华矢 + 霜华绽发（无反应）"
+        label: "流天射术 / 二段蓄力霜华矢 + 霜华绽发（无反应）"
       })
     ])
 
@@ -1051,7 +1056,14 @@ describe("character metrics with explicit target context", () => {
         id: "kaedehara_kazuha.passive.poetics_of_fuubutsu.elemental_damage_bonus",
         kind: "scalar",
         semantic: "damage_bonus"
-      })
+      }),
+      ...["anemo_normal_attack.first_hit", "anemo_charged_attack", "anemo_high_plunge"].map((suffix) =>
+        expect.objectContaining({
+          actionId: `kaedehara_kazuha.constellation.6.crimson_momiji.${suffix}`,
+          kind: "damage",
+          minimumSourceConstellation: 6
+        })
+      )
     ])
 
     const metric = evaluateFriendlyMetric("kaedehara_kazuha.passive.poetics_of_fuubutsu.elemental_damage_bonus", kazuha)

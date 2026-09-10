@@ -72,7 +72,7 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
     },
     {
       characterId: "Sandrone",
-      damageKind: "direct",
+      damageKind: "special_reaction",
       damageParts: [
         {
           coefficientParameterId: "prism-bullet-stellar-superconduct-damage",
@@ -84,7 +84,7 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
         }
       ],
       element: sandroneDefinition.element,
-      evaluator: "declared_direct",
+      evaluator: "declared_special_reaction",
       id: "sandrone.skill.phenomenon_calculus.prism_bullet.stellar_superconduct",
       kind: "damage",
       parameterReferences: [
@@ -106,13 +106,17 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
           minimumValue: 0
         }
       ],
+      specialReaction: {
+        kind: "stellar_superconduct",
+        stellarStoredElementalApplicationsParameterId: "stored-elemental-applications"
+      },
       status: "verified",
       talentSlot: "skill"
     },
     {
       attackKind: "charged",
       characterId: "Sandrone",
-      damageKind: "direct",
+      damageKind: "special_reaction",
       damageParts: [
         {
           coefficientParameterId: "condensation-ray-stellar-superconduct-damage",
@@ -124,7 +128,7 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
         }
       ],
       element: sandroneDefinition.element,
-      evaluator: "declared_direct",
+      evaluator: "declared_special_reaction",
       id: "sandrone.normal.charged_attack.condensation_ray.stellar_superconduct",
       kind: "damage",
       parameterReferences: [
@@ -359,7 +363,10 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
             hitCount: 4,
             id: "condensed-cluster-beam-stellar-superconduct-four-hits",
             snapshot: "hit",
-            specialReaction: { kind: "stellar_superconduct" }
+            specialReaction: {
+              kind: "stellar_superconduct",
+              stellarStoredElementalApplicationsParameterId: "stored-elemental-applications"
+            }
           }
         ],
         duration: 1
@@ -434,6 +441,70 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "maximum_reachable",
+      id: "sandrone.passive.a_ladys_guide_to_conduct.elemental_mastery",
+      label: "淑女的行事准则 · 攻击力的8%转为自身元素精通（至多160点）",
+      source: { characterId: "Sandrone", kind: "character", minimumSourceAscension: 4 },
+      target: "elementalMastery",
+      targetFilter: { recipientSourceRelation: "source" },
+      value: {
+        kind: "source_final_attack",
+        maximumValue: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive2",
+            id: "attack-to-elemental-mastery-maximum",
+            parameterIndex: 1,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        },
+        multiplier: {
+          kind: "talent_parameter",
+          parameter: {
+            groupId: "passive2",
+            id: "attack-to-elemental-mastery-ratio",
+            parameterIndex: 0,
+            source: "talent",
+            talentSlot: "passive"
+          }
+        }
+      }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "sandrone.constellation.1.decoding.stellar_reaction_damage_bonus",
+      label: "鎏金未凋，夕暮已远 · C1 解算模式下队伍星烁反应伤害提升30%",
+      source: { characterId: "Sandrone", kind: "character", minimumSourceConstellation: 1 },
+      target: "specialReactionDamageBonus",
+      targetFilter: { specialReactionKinds: ["stellar_superconduct", "stellar_swirl"] },
+      value: { kind: "fixed", value: 0.3 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "sandrone.constellation.2.condensation_ray.crit_damage",
+      label: "回望镜中，时岁翩然 · C2 辉映冷凝射线暴击伤害提升40%",
+      source: { characterId: "Sandrone", kind: "character", minimumSourceConstellation: 2 },
+      target: "critDamage",
+      targetFilter: {
+        actionIds: ["sandrone.normal.charged_attack.condensation_ray.stellar_superconduct"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.4 }
+    },
+    {
+      activation: "maximum_reachable",
+      id: "sandrone.constellation.2.condensation_ray.maximum_stacks.crit_damage",
+      label: "回望镜中，时岁翩然 · C2 冷凝射线满3层额外暴击伤害（20%×3）",
+      source: { characterId: "Sandrone", kind: "character", minimumSourceConstellation: 2 },
+      target: "critDamage",
+      targetFilter: {
+        actionIds: ["sandrone.normal.charged_attack.condensation_ray.stellar_superconduct"],
+        recipientSourceRelation: "source"
+      },
+      value: { kind: "fixed", value: 0.2 * 3 }
+    },
+    {
+      activation: "maximum_reachable",
       id: "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.ordinary_damage",
       label: "水仙梦醒，且望晨光 · C6 凝聚集束炮普通分支（每段100%攻击力）",
       source: { characterId: "Sandrone", kind: "character", minimumSourceConstellation: 6 },
@@ -474,10 +545,10 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "sandrone.passive.stellar_superconduct_base_damage_bonus",
-      label: "星耀祝礼·唯理为光 · 星超导基础伤害加成",
+      label: "星耀祝礼·唯理为光 · 星超导／星扩散基础伤害加成",
       source: { characterId: "Sandrone", kind: "character" },
       target: "specialReactionBaseDamageBonus",
-      targetFilter: { specialReactionKinds: ["stellar_superconduct"] },
+      targetFilter: { specialReactionKinds: ["stellar_superconduct", "stellar_swirl"] },
       value: {
         kind: "source_final_attack",
         maximumValue: {
@@ -573,7 +644,7 @@ export const sandroneCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The maintained metrics are one charged Condensation Ray Stellar-Superconduct hit, one Burst Negative-Temperature Beam Stellar-Superconduct hit, and all three C6 Condensed Cluster Beam branches. Stellar-Superconduct metrics read the manual 0–12 stored-application snapshot. The Burst defaults to ten Improved Tactics stacks and applies the pinned 10% multiplier per stack. Sandrone's final-Attack-derived, capped 14% Stellar-Superconduct base-damage bonus applies to eligible party actions. At C6, the third Condensation Ray adds four 100%-Attack ordinary Cryo hits, four 80%-Attack Stellar-Superconduct hits, or four 120%-Attack Stellar-Swirl hits according to the beam's damage branch; the Stellar branches also receive Sandrone's automatic 20% elevation. Prism bullets and one normal hit remain registered as lower-level actions; bombardment, timing, and rotations remain unmodeled.",
+    "The maintained metrics are one charged Condensation Ray Stellar-Superconduct hit, one Burst Negative-Temperature Beam Stellar-Superconduct hit, and all three C6 Condensed Cluster Beam branches. Stellar-Superconduct metrics read the manual 0–12 stored-application snapshot. The Burst defaults to ten Improved Tactics stacks and applies the pinned 10% multiplier per stack. A4 converts 8% of Sandrone's resolved Attack into self-owned Elemental Mastery, capped at 160. C1 adds 30% party Stellar reaction damage; C2 adds 40% plus three 20% Crit DMG stacks only to the Condensation Ray, not to Burst or the separate C6 additional hits. Sandrone's final-Attack-derived, capped 14% Stellar-Superconduct base-damage bonus applies to eligible party actions. At C6, the third Condensation Ray adds four 100%-Attack ordinary Cryo hits, four 80%-Attack Stellar-Superconduct hits, or four 120%-Attack Stellar-Swirl hits according to the beam's damage branch; the Stellar branches also receive Sandrone's automatic 20% elevation. Per the single-hit metric scope, C4's independently timed coordinated attack is not merged into the ray. Prism bullets and one normal hit remain registered as lower-level actions; bombardment, timing, and rotations remain unmodeled.",
   label: sandroneDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

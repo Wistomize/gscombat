@@ -148,6 +148,12 @@ export function validateActionTimeline(
       continue
     }
 
+    if (event.expectedTriggerProbability !== undefined &&
+        (!Number.isFinite(event.expectedTriggerProbability) || event.expectedTriggerProbability < 0 || event.expectedTriggerProbability > 1 ||
+          (event.expectedTriggerProbability !== 1 && event.elementalApplication !== undefined))) {
+      issues.push({ actionId: action.id, characterId, code: "invalid-damage-event-probability",
+        damageEventId: event.id, message: `Event ${event.id} must use a probability from zero to one` })
+    }
     if (!declaredDamagePartIds.has(event.damagePartId)) {
       issues.push({
         actionId: action.id,
@@ -181,9 +187,14 @@ function validateStellarSwirlReactionEvent(
   issues: CombatRegistryIntegrityIssue[]
 ): void {
   const reaction = event.stellarSwirlReaction
+  const level = reaction.vortexLevel
+  const parameter = typeof level === "object"
+    ? action.scenarioParameters?.find((entry) => entry.id === level.parameterId) : undefined
+  const validLevel = typeof level === "number" ? Number.isInteger(level) && level >= 1 && level <= 6
+    : parameter !== undefined && parameter.minimumValue >= 1 && parameter.maximumValue <= 6
   const isValid =
     (reaction.event === "trigger" && reaction.vortexLevel === undefined) ||
-    (reaction.event === "vortex" && (reaction.vortexLevel === 1 || reaction.vortexLevel === 2))
+    (reaction.event === "vortex" && validLevel)
   if (isValid) return
   issues.push({
     actionId: action.id,
@@ -192,7 +203,7 @@ function validateStellarSwirlReactionEvent(
     damageEventId: event.id,
     message:
       `Actual Stellar-Swirl event ${event.id} for action ${action.id} must be a trigger without a Vortex level ` +
-      "or a level-one/level-two Vortex"
+      "or a Vortex with a level from 1 through 6 (literal or declared bounded parameter)"
   })
 }
 

@@ -127,6 +127,19 @@ export function evaluateScalarMetric(
   const basePotentialFormula = maximumValueFormula
     ? minimumFormula("上限修正", [uncappedFormula, maximumValueFormula])
     : uncappedFormula
+  const shieldAbsorptionMultipliers = metric.semantic === "shield"
+    ? (metric.shieldAbsorptionMultipliers ?? []).filter((entry) =>
+        input.build.constellation >= entry.minimumSourceConstellation
+      )
+    : []
+  const shieldAbsorptionFormula = shieldAbsorptionMultipliers.length > 0
+    ? multiplyFormula("角色命座整盾吸收倍率", [
+        basePotentialFormula,
+        ...shieldAbsorptionMultipliers.map((entry): CombatMetricFormulaNode => ({
+          kind: "term", label: entry.label, role: "source_constellation", value: entry.value
+        }))
+      ])
+    : basePotentialFormula
   const recipient = metric.target === "friendly_recipient" ? runtime.resolveFriendlyRecipient(metric, input) : undefined
   const target = resolveScalarMetricTarget(metric, input, recipient)
   const shieldStrengthEffects = resolveShieldStrengthEffects(metric, target, recipient)
@@ -138,8 +151,8 @@ export function evaluateScalarMetric(
           ...shieldStrengthEffects.map((effect) => modifierTerm("recipient_modifier", effect.label, effect.value))
         ])
   const potentialFormula = shieldStrengthMultiplier
-    ? multiplyFormula("护盾强效后的吸收量", [basePotentialFormula, shieldStrengthMultiplier])
-    : basePotentialFormula
+    ? multiplyFormula("护盾强效后的吸收量", [shieldAbsorptionFormula, shieldStrengthMultiplier])
+    : shieldAbsorptionFormula
   const sourceContribution = runtime.applySourceAscensionRequirement(
     label,
     metric.minimumSourceAscension,

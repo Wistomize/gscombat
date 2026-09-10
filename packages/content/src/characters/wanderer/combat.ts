@@ -142,6 +142,7 @@ export const wandererCombatCoverage: CharacterCombatCoverage = {
             },
             damagePartId: "windfavored-normal-attack-first-hit",
             id: "c6-kuugo-fushoudan-additional-instance",
+            minimumSourceConstellation: 6,
             snapshot: "hit"
           }
         ],

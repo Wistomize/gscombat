@@ -43,8 +43,8 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
           coefficientParameterId: "normal-attack-first-hit-damage",
           id: "evernight-blessing-normal-attack-first-hit",
           snapshotChecks: [
-            { expectedCoefficient: 0.517918, talentLevel: 1 },
-            { expectedCoefficient: 1.023791, talentLevel: 10 }
+            { expectedCoefficient: 0.560221, talentLevel: 1 },
+            { expectedCoefficient: 1.107414, talentLevel: 10 }
           ]
         }
       ],
@@ -56,12 +56,13 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
         {
           groupId: "auto",
           id: "normal-attack-first-hit-damage",
-          parameterIndex: 0,
+          // GO 98aafa1f: Characters/Xilonen/index.tsx Nightsoul normal uses auto[9] and DEF.
+          parameterIndex: 9,
           source: "talent",
           talentSlot: "normal"
         }
       ],
-      scalingStat: "attack",
+      scalingStat: "defense",
       scenarioParameters: [
         {
           allowedValues: [0, 1],
@@ -312,13 +313,11 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "active",
       id: "xilonen.constellation.4.such_a_transfiguration.source_samples.normal_attack.base_damage",
-      label: "午日的转轮 · C4 原音采样已激活（普通攻击基础伤害增加希诺宁防御力的65%）",
+      label: "午日的转轮 · C4 战技后荣花之赐（队伍普攻、重击与下落攻击基础伤害增加希诺宁防御力的65%）",
       source: { characterId: "Xilonen", kind: "character", minimumSourceConstellation: 4 },
       target: "baseDamageFlat",
       targetFilter: {
-        actionIds: ["xilonen.constellation.6.evernight_blessing.normal_attack.first_hit"],
-        attackKinds: ["normal"],
-        recipientSourceRelation: "source"
+        attackKinds: ["normal", "charged", "plunge"]
       },
       value: { kind: "source_final_defense", multiplier: { kind: "fixed", value: 0.65 } }
     },
@@ -433,7 +432,7 @@ export const xilonenCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected support profile verifies active Source Sample resistance reduction, every damage-relevant C2 branch (Geo damage and always-active Geo resistance reduction, Pyro Attack, Hydro Max HP, and Cryo Crit DMG), and one healing-rhythm tick, including C3/C5 talent levels and recipient context. The Electro C2 branch changes Burst Energy and cooldown only, so it is not converted into a single-hit damage stat. Portable Armored Sheath automatically adds 20% Defense after a party-reachable Nightsoul Burst, and Xilonen's independent 14-second trigger contributes to other characters' maximum reachable Nightsoul Burst stacks. One first normal hit, skill dash, and burst initial Geo hit remain verified baseline damage actions. C6's dedicated current-state action is a Geo first normal hit during Evernight Blessing: its action parameter is zero through C5 and one at C6, and the C6-only matched-action term adds exactly 300% of final Defense before that hit's shared damage multipliers. When the explicit C4 Source Sample snapshot is selected, that same hit also receives a separate base-damage addition equal to 65% of Xilonen's final Defense. A separate C6-only support metric exposes one hit-triggered nearby-party heal equal to 120% of Xilonen's final Defense before source and recipient healing modifiers. Trigger cadence, additional beats, timing, and rotation behavior remain unmodeled.",
+    "The support profile retains Source Sample resistance reduction, damage-relevant C2 branches, healing and cumulative talent levels. Portable Armored Sheath adds 20% Defense after a reachable Nightsoul Burst. The C6 Evernight normal reads the Nightsoul auto[9] DEF ratio, then adds 300% final DEF to that same hit; the ordinary physical normal still uses Attack × auto[0]. Explicitly selecting C4 Blooming Blessing applies 65% of source Xilonen's final DEF to eligible party normal, charged and plunge hits, including her own, but never Skills/Bursts. Its existing two-trigger-per-recipient state is an explicit single-hit assumption, not a simulated rotation. The separate C6 heal remains 120% final DEF before healing modifiers. Trigger cadence, additional beats and rotation timing remain unmodeled.",
   label: xilonenDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [

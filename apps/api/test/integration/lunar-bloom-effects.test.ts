@@ -94,7 +94,7 @@ describe("Lunar-Bloom effects API integration", () => {
       tracePresentation: {
         focusEventId: "phantom-performance-shade-third-hit",
         focusLabel: "幻影第三次月绽放伤害",
-        totalLabel: "自身两段伤害 + 幻影三次月绽放伤害"
+        totalLabel: "自身与幻影月绽放完整合计（C6替换第二段并追加终结段）"
       }
     }))
     const response = await app.inject({

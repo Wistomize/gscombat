@@ -238,7 +238,16 @@ export function CalculationScenario({
             {targetAction?.scenarioParameters?.map((parameter) => (
               <label key={parameter.id}>
                 <span>{parameter.label}</span>
-                <input
+                {parameter.allowedValues ? <select
+                  aria-label={`${parameter.label}数值`}
+                  value={conditions.actionParameters?.[parameter.id] ?? parameter.defaultValue}
+                  onChange={(event) => onConditionsChange((current) => ({
+                    ...current,
+                    actionParameters: { ...current.actionParameters, [parameter.id]: Number(event.target.value) }
+                  }))}
+                >
+                  {parameter.allowedValues.map((value) => <option key={value} value={value}>{value}</option>)}
+                </select> : <input
                   aria-label={`${parameter.label}数值`}
                   max={parameter.maximumValue}
                   min={parameter.minimumValue}
@@ -251,7 +260,7 @@ export function CalculationScenario({
                       [parameter.id]: numberValue(event.target.value, parameter.defaultValue)
                     }
                   }))}
-                />
+                />}
               </label>
             ))}
           </div>

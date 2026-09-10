@@ -166,6 +166,8 @@ export interface ReactionConfig {
 }
 
 export interface RotationDamageEvent {
+  /** Probability of this complete event occurring, applied after all per-hit additions and multipliers. */
+  readonly expectedTriggerProbability?: number
   /** Action effects already resolved directly for this event before rotation-window effects are applied. */
   readonly appliedEffectIds?: readonly string[]
   /** Added only when an event-level aura resolves to Vaporize or Melt. */
@@ -201,7 +203,14 @@ export type RotationTraceEntry =
   | {
       readonly after: number
       readonly before: number
+      readonly kind: "trigger_probability"
+      readonly probability: number
+    }
+  | {
+      readonly after: number
+      readonly before: number
       readonly coefficient: number
+      readonly flatDamage?: number
       readonly kind: "scaling"
       readonly stat: ScalingStat
       readonly value: number
@@ -210,6 +219,7 @@ export type RotationTraceEntry =
       readonly after: number
       readonly before: number
       readonly kind: "scaling_terms"
+      readonly flatDamage?: number
       readonly terms: readonly (DamageScalingTerm & { readonly contribution: number; readonly value: number })[]
     }
   | {
@@ -311,6 +321,7 @@ export type RotationTraceEntry =
       readonly before: number
       readonly event: StellarSwirlReactionEvent
       readonly kind: "stellar_swirl_participant_aggregation"
+      readonly vortexLevel?: number
       readonly participants: readonly {
         readonly appliedEffectIds: readonly string[]
         readonly critDamage: number
@@ -425,6 +436,9 @@ export function evaluateRotation(input: RotationInput): RotationResult {
 
   let previousTime = -1
   const events = input.events.map((event) => {
+    if ((event.expectedTriggerProbability ?? 1) !== 1 && event.elementalApplication !== undefined) {
+      throw new Error(`Probabilistic event ${event.id} cannot advance deterministic elemental-application state`)
+    }
     if (!Number.isFinite(event.time) || event.time < 0 || event.time > input.duration) {
       throw new Error(`Event ${event.id} must occur within the declared rotation duration`)
     }
@@ -653,6 +667,27 @@ function isMaintainedNonReactivePair(triggeringElement: Element, auraElement: Au
 }
 
 function evaluateRotationEvent(event: RotationDamageEvent, enemy: RotationEnemyStats): RotationEventResult {
+  const probability = event.expectedTriggerProbability ?? 1
+  if (!Number.isFinite(probability) || probability < 0 || probability > 1) {
+    throw new Error(`Event ${event.id} must use a probability from zero to one`)
+  }
+  const result = evaluateTriggeredRotationEvent(event, enemy)
+  if (probability === 1) return result
+  return {
+    ...result,
+    critDamage: result.critDamage * probability,
+    expectedDamage: result.expectedDamage * probability,
+    nonCritDamage: result.nonCritDamage * probability,
+    trace: [...result.trace, {
+      after: result.expectedDamage * probability,
+      before: result.expectedDamage,
+      kind: "trigger_probability",
+      probability
+    }]
+  }
+}
+
+function evaluateTriggeredRotationEvent(event: RotationDamageEvent, enemy: RotationEnemyStats): RotationEventResult {
   const hitCount = event.hitCount ?? 1
   if (!Number.isInteger(hitCount) || hitCount < 1) throw new Error(`Event ${event.id} must have at least one hit`)
 

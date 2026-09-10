@@ -122,6 +122,7 @@ describe("special reaction damage", () => {
     const participants = [
       {
         baseDamageBonus: 0.2,
+        element: "cryo",
         critDamage: 0,
         critRate: 0,
         elementalMastery: 0,
@@ -130,6 +131,7 @@ describe("special reaction damage", () => {
         participantId: "first"
       },
       {
+        element: "anemo",
         critDamage: 0,
         critRate: 0,
         elementalMastery: 0,
@@ -144,20 +146,50 @@ describe("special reaction damage", () => {
       participants,
       vortexLevel: 1
     })
-    const levelTwo = calculateStellarSwirlReactionExpectedDamage({
+    const levelThree = calculateStellarSwirlReactionExpectedDamage({
       event: "vortex",
       participants,
-      vortexLevel: 2
+      vortexLevel: 3
     })
 
     expect(getStellarSwirlReactionCoefficient("trigger")).toBe(0.75)
     expect(getStellarSwirlReactionCoefficient("vortex", 1)).toBe(2)
-    expect(getStellarSwirlReactionCoefficient("vortex", 2)).toBe(3)
-    expect(levelOne.expectedDamage / trigger.expectedDamage).toBeCloseTo(2 / 0.75)
-    expect(levelTwo.expectedDamage / trigger.expectedDamage).toBeCloseTo(3 / 0.75)
-    expect(levelTwo.expectedContributions).toHaveLength(2)
+    expect([1, 2, 3, 4, 5, 6].map((level) => getStellarSwirlReactionCoefficient("vortex", level))).toEqual([2, 2, 3, 3, 3, 3])
+    expect(trigger.expectedDamage).toBeCloseTo(
+      trigger.participants[0]!.damage.expectedDamage * 0.3 + trigger.participants[1]!.damage.expectedDamage * 0.6
+    )
+    expect(levelOne.expectedDamage).toBeCloseTo(
+      levelOne.participants[0]!.damage.expectedDamage * 0.6 + levelOne.participants[1]!.damage.expectedDamage * 0.3
+    )
+    expect(levelThree.expectedDamage / levelOne.expectedDamage).toBeCloseTo(1.5)
+    expect(levelThree.expectedContributions).toHaveLength(2)
     expect(() => getStellarSwirlReactionCoefficient("trigger", 1)).toThrow("must not declare")
-    expect(() => getStellarSwirlReactionCoefficient("vortex", 3)).toThrow("either 1 or 2")
+    for (const level of [0, 7, 1.5, Number.NaN]) {
+      expect(() => getStellarSwirlReactionCoefficient("vortex", level)).toThrow("1 through 6")
+    }
+  })
+
+  it("keeps elemental slots through CRIT reordering and does not promote contributors into missing slots", () => {
+    const base = { critDamage: 0, critRate: 0, elementalMastery: 0, enemyResistance: 0, level: 90 }
+    const participants = [
+      { ...base, element: "anemo" as const, participantId: "wind" },
+      { ...base, element: "cryo" as const, participantId: "ice-a", flatDamageAddition: 1000 },
+      { ...base, element: "cryo" as const, participantId: "ice-b", critRate: 0.5, critDamage: 2 }
+    ]
+    const result = calculateStellarSwirlReactionExpectedDamage({ event: "trigger", participants })
+    const nonCrit = result.outcomes.find((outcome) => outcome.probability > 0 && outcome.criticalParticipantIds.length === 0)!
+    const crit = result.outcomes.find((outcome) => outcome.probability > 0 && outcome.criticalParticipantIds.includes("ice-b"))!
+    expect(nonCrit.participantWeights).toEqual([
+      { participantId: "wind", weight: 0.6 }, { participantId: "ice-a", weight: 0.3 }, { participantId: "ice-b", weight: 0.05 }
+    ])
+    expect(crit.participantWeights).toEqual([
+      { participantId: "wind", weight: 0.6 }, { participantId: "ice-b", weight: 0.3 }, { participantId: "ice-a", weight: 0.05 }
+    ])
+    expect(result.expectedDamage).toBeCloseTo(0.5 * nonCrit.weightedDamage + 0.5 * crit.weightedDamage)
+    expect(result.expectedContributions.reduce((sum, contribution) => sum + contribution.expectedDamage, 0)).toBeCloseTo(result.expectedDamage)
+    const missingIce = calculateStellarSwirlReactionExpectedDamage({ event: "vortex", vortexLevel: 6, participants: [participants[0]!] })
+    expect(missingIce.expectedDamage).toBeCloseTo(missingIce.participants[0]!.damage.expectedDamage * 0.3)
+    expect(missingIce.expectedContributions[0]!.expectedDamage).toBeCloseTo(missingIce.expectedDamage)
   })
 
   it("applies fixed 60/30/5/5 participant weights to a manual reaction Lunar-Crystallize snapshot", () => {

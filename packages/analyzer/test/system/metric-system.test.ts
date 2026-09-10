@@ -40,7 +40,7 @@ function createSystemMetricBuild(metric: CombatMetricDefinition): CharacterBuild
     ...raidenNationalBuiltinBuild,
     buildId: `test.system.metric.${characterId}`,
     characterId,
-    constellation: 0,
+    constellation: metric.minimumSourceConstellation ?? 0,
     label: `${characterId} system metric fixture`,
     talents: { burst: 10, normal: 10, skill: 10 },
     ...(characterId === "Traveler"

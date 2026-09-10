@@ -308,10 +308,10 @@ describe("cross-cutting C6 behavior", () => {
 
   it("gates Ineffa's C6 Lunar-Charged finite event and retains her C1 reaction bonus", () => {
     const actionId = "ineffa.constellation.6.a_dawning_morn_for_you.additional_lunar_charged"
-    const c5 = evaluateScenario(createScenario(createBuild("Ineffa", 5, 0), actionId), gameData)
+    expect(() => evaluateScenario(createScenario(createBuild("Ineffa", 5, 0), actionId), gameData))
+      .toThrow("requires source constellation 6")
     const c6 = evaluateScenario(createScenario(createBuild("Ineffa", 6, 0), actionId), gameData)
 
-    expect(c5.actionExpectedDamage).toBe(0)
     expect(c6.actionExpectedDamage).toBeGreaterThan(0)
     expect(c6.appliedEffects).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: ineffaC1EffectId, target: "specialReactionDamageBonus" })])

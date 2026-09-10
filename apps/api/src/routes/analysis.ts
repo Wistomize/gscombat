@@ -33,6 +33,7 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
       }
     },
     async (request) => {
+      assertMetricConstellation(request.body.targetActionId, request.body.primary.constellation)
       const evaluation = evaluateScenario(request.body, gameData)
       const analysis = analyzeScenario(request.body, gameData, {
         ...(request.body.weaponComparisonRefinements === undefined
@@ -57,6 +58,7 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
       if (definition.kind === "damage") {
         throw new Error(`Support metric endpoint does not accept damage metric ${request.body.metricId}`)
       }
+      assertMetricConstellation(request.body.metricId, request.body.build.constellation)
       const evaluated = evaluateCombatMetric({
         build: request.body.build,
         ...(request.body.context ? { context: request.body.context } : {}),
@@ -69,4 +71,14 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
       return { engineVersion: "support-metric-1", metric: serializeSupportMetricResult(evaluated) }
     }
   )
+}
+
+/** Rejects an unowned public metric before analysis; engine failures remain server errors. */
+function assertMetricConstellation(metricId: string | undefined, constellation: number): void {
+  if (!metricId) return
+  const metric = getCombatMetricDefinition(metricId)
+  if (metric?.minimumSourceConstellation === undefined || constellation >= metric.minimumSourceConstellation) return
+  throw Object.assign(new Error(
+    `Combat metric ${metric.id} requires source constellation ${metric.minimumSourceConstellation}, but build has constellation ${constellation}`
+  ), { statusCode: 400 })
 }
