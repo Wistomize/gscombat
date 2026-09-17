@@ -14,7 +14,13 @@ export const shimenawasReminiscenceCombatActionEffects: readonly CombatActionEff
     value: { kind: "fixed", value: SHIMENAWAS_REMINISCENCE_TWO_PIECE_ATTACK_PERCENT }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "clear_on_exit",
+      trigger: { event: "skill_cast", sourceFieldPresence: "on_field" },
+      applicability: { energyResource: "elemental" },
+      explanation: "普通元素能量角色默认已施放战技并支付15能量；退场不计，特殊资源不替代元素能量"
+    },
     id: "artifact.shimenawas-reminiscence.4pc.after-skill.normal-charged-plunge-damage-bonus",
     label: "追忆之注连 · 四件套（施放元素战技并已消耗15点元素能量后）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "ShimenawasReminiscence" },

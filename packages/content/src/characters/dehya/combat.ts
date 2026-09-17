@@ -1,8 +1,18 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { dehyaDefinition } from "./definition.js"
 
 export const dehyaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("dehya", 7, {"castsPerUse":2}),
+    ...declareWeaponHitCapabilities(dehyaDefinition),
+    declareHitCapability("dehya.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+    { ...declareHitCapability("dehya.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["pyro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  {
+    id: "dehya.skill.redmanes_blood.damage_taken", label: "赤鬃之血 · 持续承担伤害",
+    kind: "damage_taken", recipient: "self", sourceFieldPresence: "any", sustained: true
+  }],
   actions: [
     {
       characterId: "Dehya",

@@ -13,6 +13,7 @@ export const equipmentCoverage = {
     {
       effectIds: [
         "artifact.vourukashas-glow.4pc.skill-burst-damage-bonus",
+        "artifact.vourukashas-glow.4pc.taking-damage.0-stack.skill-burst-damage-bonus",
         "artifact.vourukashas-glow.4pc.taking-damage.1-stack.skill-burst-damage-bonus",
         "artifact.vourukashas-glow.4pc.taking-damage.2-stack.skill-burst-damage-bonus",
         "artifact.vourukashas-glow.4pc.taking-damage.3-stack.skill-burst-damage-bonus",
@@ -20,7 +21,7 @@ export const equipmentCoverage = {
         "artifact.vourukashas-glow.4pc.taking-damage.5-stack.skill-burst-damage-bonus"
       ],
       id: "artifact.vourukashas-glow.4pc.skill-burst-damage-bonus",
-      label: "花海甘露之光 · 四件套（受伤层数对应的元素战技与元素爆发伤害）",
+      label: "花海甘露之光 · 四件套（自身持续承伤默认五层，其他零层；可手选，后台保留）",
       source: artifactSource("VourukashasGlow", 4),
       status: "implemented"
     }

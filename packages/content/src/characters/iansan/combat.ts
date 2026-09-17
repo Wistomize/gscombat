@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { iansanDefinition } from "./definition.js"
 
 export const iansanCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("iansan", 2),
+    ...declareWeaponHitCapabilities(iansanDefinition),
+    declareHitCapability("iansan.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Iansan",
@@ -183,6 +189,7 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "iansan.burst.the_three_principles_of_power.kinetic_scale.high_nightsoul_attack_bonus",
+      requiresRecipientOnField: true,
       label: "动能标度 · 高夜魂值攻击力提升",
       source: { characterId: "Iansan", kind: "character" },
       target: "flatAttack",
@@ -213,6 +220,7 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "active",
       id: "iansan.constellation.2.no_laziness_in_fitness.standard_action.off_field.attack_percent",
+      requiresRecipientOnField: true,
       label: "偷懒是健身大忌！ · C2 标准动作期间伊安珊处于后台（场上角色攻击力提高30%）",
       source: { characterId: "Iansan", kind: "character", minimumSourceConstellation: 2 },
       target: "attackPercent",
@@ -222,6 +230,7 @@ export const iansanCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "active",
       id: "iansan.constellation.6.teachings_of_the_collective_of_plenty.extreme_force.damage_bonus",
+      requiresRecipientOnField: true,
       label: "丰饶邦土的训诲 · C6 夜魂值恢复溢出后的3秒内（当前场上角色伤害提高25%）",
       source: { characterId: "Iansan", kind: "character", minimumSourceConstellation: 6 },
       target: "damageBonus",

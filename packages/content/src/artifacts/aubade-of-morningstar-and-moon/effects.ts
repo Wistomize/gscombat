@@ -17,16 +17,26 @@ export const aubadeOfMorningstarAndMoonCombatActionEffects: readonly CombatActio
     value: { kind: "fixed", value: AUBADE_OF_MORNINGSTAR_AND_MOON_TWO_PIECE_ELEMENTAL_MASTERY }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "while_applicable",
+      trigger: { event: "none", sourceFieldPresence: "any" },
+      applicability: { sourceFieldPresence: "off_field" }, explanation: "当前后台；前台不计短暂保留"
+    },
     id: "artifact.aubade-of-morningstar-and-moon.4pc.off-field.lunar-reaction-damage-bonus",
-    label: "晨星与月的晓歌 · 四件套（后台或登场未满3秒的月曜反应伤害）",
+    label: "晨星与月的晓歌 · 四件套（后台月曜反应伤害）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "AubadeOfMorningstarAndMoon" },
     target: "specialReactionDamageBonus",
     targetFilter: { specialReactionKinds: lunarReactionKinds },
     value: { kind: "fixed", value: AUBADE_OF_MORNINGSTAR_AND_MOON_OFF_FIELD_LUNAR_REACTION_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "while_applicable",
+      trigger: { event: "none", sourceFieldPresence: "any" },
+      applicability: { sourceFieldPresence: "off_field" }, explanation: "当前后台；前台不计短暂保留"
+    },
     condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
     id: "artifact.aubade-of-morningstar-and-moon.4pc.full-moonsign.lunar-reaction-damage-bonus",
     label: "晨星与月的晓歌 · 四件套（满辉进一步提升月曜反应伤害）",

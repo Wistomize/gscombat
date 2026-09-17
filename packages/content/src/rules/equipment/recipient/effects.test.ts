@@ -12,7 +12,9 @@ import {
 
 describe("recipient-owned equipment effects", () => {
   it("exposes artifact and weapon bonuses for the build receiving the metric", () => {
-    expect(listRecipientEquipmentEffects()).toEqual([
+    const effects = listRecipientEquipmentEffects()
+    expect(effects).toHaveLength(8)
+    expect(effects).toEqual(expect.arrayContaining([
       {
         id: "artifact.retracing-bolide.2pc.shield-strength",
         label: "逆飞的流星 · 二件套",
@@ -28,9 +30,9 @@ describe("recipient-owned equipment effects", () => {
         value: { kind: "fixed", value: TRAVELING_DOCTOR_TWO_PIECE_INCOMING_HEALING_BONUS }
       },
       {
-        activation: "active",
+        activation: "automatic",
         id: "artifact.maiden-beloved.4pc.after-skill-or-burst.party-incoming-healing-bonus",
-        label: "被怜爱的少女 · 四件套（已手填元素战技或元素爆发后10秒的队伍受治疗效果）",
+        label: "被怜爱的少女 · 四件套（默认施放战技或爆发后，全队受治疗加成）",
         source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "MaidenBeloved" },
         target: "incomingHealingBonus",
         value: { kind: "fixed", value: MAIDEN_BELOVED_FOUR_PIECE_PARTY_INCOMING_HEALING_BONUS }
@@ -38,7 +40,7 @@ describe("recipient-owned equipment effects", () => {
       {
         activation: "active",
         id: "artifact.tenacity-of-the-millelith.4pc.after-skill-hit.party-shield-strength",
-        label: "千岩牢固 · 四件套（已手填元素战技命中后3秒的队伍护盾强效）",
+        label: "千岩牢固 · 四件套（持续战技命中默认准备；单次命中可手选）",
         source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "TenacityOfTheMillelith" },
         target: "shieldStrength",
         value: { kind: "fixed", value: TENACITY_OF_THE_MILLELITH_FOUR_PIECE_PARTY_SHIELD_STRENGTH }
@@ -71,7 +73,11 @@ describe("recipient-owned equipment effects", () => {
         target: "shieldStrength",
         value: { kind: "refinement_table", values: GOLDEN_MAJESTY_SHIELD_STRENGTH_BY_REFINEMENT }
       }
-    ])
+    ].map((effect) => expect.objectContaining(effect))))
+    expect(effects.find((effect) => effect.source.kind === "artifact_set" && effect.source.setId === "MaidenBeloved")?.lifecycle)
+      .toMatchObject({ preparation: "qualified", retention: "retain_on_exit" })
+    expect(effects.find((effect) => effect.source.kind === "artifact_set" && effect.source.setId === "TenacityOfTheMillelith")?.lifecycle)
+      .toMatchObject({ preparation: "qualified_or_selected", defaultCapability: { sustained: true, hitKinds: ["skill"] } })
   })
 
   it("resolves fixed and refinement-indexed recipient bonuses", () => {

@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { amberDefinition } from "./definition.js"
 
 export const amberCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("amber", 3),
+    { ...declareSkillCastCapability("amber", 3, {"initialUses":2}), id: "amber.kit.extra-skill-charge", minimumSourceConstellation: 4 },
+    ...declareWeaponHitCapabilities(amberDefinition),
+    declareHitCapability("amber.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+  ],
   actions: [
     {
       characterId: "Amber",

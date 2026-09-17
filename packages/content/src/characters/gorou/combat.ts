@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { gorouDefinition } from "./definition.js"
 
 export const gorouCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("gorou", 4),
+    ...declareWeaponHitCapabilities(gorouDefinition),
+    declareHitCapability("gorou.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+  ],
   actions: [
     {
       characterId: "Gorou",
@@ -101,6 +107,7 @@ export const gorouCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "gorou.skill.field.defense_buff",
+      requiresRecipientOnField: true,
       label: "大将旗指物 · 防御力提升",
       source: { characterId: "Gorou", kind: "character" },
       target: "defenseFlat",
@@ -119,6 +126,7 @@ export const gorouCombatCoverage: CharacterCombatCoverage = {
       activation: "maximum_reachable",
       condition: { elements: ["geo"], kind: "team_element_count", minimum: 3 },
       id: "gorou.skill.field.geo_damage_bonus",
+      requiresRecipientOnField: true,
       label: "大将旗指物 · 摧碎（岩元素伤害加成）",
       source: { characterId: "Gorou", kind: "character" },
       target: "damageBonus",

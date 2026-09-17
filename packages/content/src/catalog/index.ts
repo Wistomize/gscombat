@@ -32,6 +32,7 @@ export type WeaponType = CatalogWeaponType
 
 /** A selectable, already-verified target action with its player-facing label. */
 export interface CharacterPrimaryAction {
+  readonly fieldPresence?: NonNullable<CombatActionMetadata["fieldPresence"]>
   readonly id: string
   readonly label: string
   readonly minimumSourceConstellation?: number
@@ -173,6 +174,7 @@ function createPrimaryAction(
   return {
     id: action.id,
     label: getPrimaryActionLabel(action, presentation, metric.label),
+    ...(action.fieldPresence === undefined ? {} : { fieldPresence: action.fieldPresence }),
     ...(metric.minimumSourceConstellation === undefined
       ? {}
       : { minimumSourceConstellation: metric.minimumSourceConstellation }),

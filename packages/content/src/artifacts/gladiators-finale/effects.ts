@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { whileSourceOnField } from "../../combat/capabilities.js"
 
 export const GLADIATORS_FINALE_ATTACK_PERCENT = 0.18
 export const GLADIATORS_FINALE_NORMAL_ATTACK_DAMAGE_BONUS = 0.35
@@ -16,6 +17,7 @@ export const gladiatorsFinaleCombatActionEffects: readonly CombatActionEffect[] 
   {
     activation: "automatic",
     id: "artifact.gladiators-finale.4pc.weapon-restricted-normal-damage-bonus",
+    lifecycle: whileSourceOnField("四件套仅当前前台及实际近战武器普攻生效"),
     label: "角斗士的终幕礼 · 四件套",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "GladiatorsFinale" },
     target: "damageBonus",

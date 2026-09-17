@@ -1,8 +1,16 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { yumemizukiMizukiDefinition } from "./definition.js"
 
 export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("yumemizuki-mizuki", 2),
+    { id: "yumemizuki-mizuki.kit.stellar-damage", label: "辉映状态下自身造成星烁反应伤害", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "on_field", sustained: true, specialReactions: ["stellar_swirl"], requiredTeamReaction: "stellar_swirl" },
+    ...declareWeaponHitCapabilities(yumemizukiMizukiDefinition),
+    declareHitCapability("yumemizuki-mizuki.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+    { ...declareHitCapability("yumemizuki-mizuki.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["anemo"], true, "on_field"), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "YumemizukiMizuki",

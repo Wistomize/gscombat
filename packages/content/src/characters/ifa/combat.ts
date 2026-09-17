@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { ifaDefinition } from "./definition.js"
 
 export const ifaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("ifa", 4),
+    ...declareWeaponHitCapabilities(ifaDefinition),
+    declareHitCapability("ifa.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["anemo"]),
+  ],
   actions: [
     {
       attackKind: "normal",

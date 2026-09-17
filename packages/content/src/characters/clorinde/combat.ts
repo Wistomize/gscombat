@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { clorindeDefinition } from "./definition.js"
 
 export const clorindeCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("clorinde", 12),
+    { id: "clorinde.kit.bond-of-life-change", label: "夜巡期间反复获得与消耗自身生命之契", kind: "bond_of_life_change", recipient: "self", sustained: true, sourceFieldPresence: "on_field" },
+    ...declareWeaponHitCapabilities(clorindeDefinition),
+    declareHitCapability("clorinde.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Clorinde",

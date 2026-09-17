@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage, CombatActionMetadata } from "../../combat/types.js"
 
 import { nahidaDefinition } from "./definition.js"
@@ -129,6 +130,12 @@ function createKarmicOblivionAction(withSpread: boolean): CombatActionMetadata {
 }
 
 export const nahidaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("nahida", 6),
+    ...declareWeaponHitCapabilities(nahidaDefinition),
+    declareHitCapability("nahida.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["dendro"]),
+    { ...declareHitCapability("nahida.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["dendro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 }, requiredReactionFamily: "any" },
+  ],
   actions: [
     {
       characterId: "Nahida",

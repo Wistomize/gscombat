@@ -6,15 +6,14 @@ export const equipmentCoverage = {
     {
       id: "artifact.lavawalker.2pc.pyro-resistance",
       label: "渡过烈火的贤人 · 二件套",
-      reason: "需要承伤元素抗性指标。",
-      requiredCapability: "incoming_elemental_resistance_metric",
+      reason: "本轮不计算装备者承伤元素抗性，不转为敌人减抗或其他增益。",
       source: artifactSource("Lavawalker", 2),
-      status: "unsupported"
+      status: "not_applicable"
     },
     {
       effectIds: ["artifact.lavawalker.4pc.pyro-aura.damage-bonus"],
       id: "artifact.lavawalker.4pc.pyro-aura.damage-bonus",
-      label: "渡过烈火的贤人 · 四件套（当前目标受火元素影响）",
+      label: "渡过烈火的贤人 · 四件套（前台且队伍含火默认 35%，不改写敌人附着）",
       source: artifactSource("Lavawalker", 4),
       status: "implemented"
     }

@@ -116,17 +116,31 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   const partyElementCounts = partyBuilds.reduce(
     (counts, build) => {
       const element = getCharacterElement(build.characterId)
-      if (element !== "traveler") counts.set(element, (counts.get(element) ?? 0) + 1)
+      const configuredElement = element === "traveler" && build.variant?.kind === "traveler" ? build.variant.element : element
+      if (configuredElement !== "traveler") counts.set(configuredElement, (counts.get(configuredElement) ?? 0) + 1)
       return counts
     },
     new Map<string, number>()
   )
   const hasCryoResonance = (partyElementCounts.get("cryo") ?? 0) >= 2
+  const hasFrozenCondition = hasCryoResonance || partyBuilds.some((build) => catalog.artifactSets.some((set) =>
+    set.conditionRequirements?.some((requirement) => requirement.condition === "targetFrozen" &&
+      build.artifacts.filter((piece) => piece.setId === set.setId).length >= requirement.minimumPieces)))
   const hasGeoResonance = (partyElementCounts.get("geo") ?? 0) >= 2
   const targetBuild = partyBuilds.find((build) => build.buildId === targetBuildId)
   const targetCharacter = catalog.characters.find((character) => character.characterId === targetBuild?.characterId)
   const targetAction = targetCharacter?.primaryActions.find((action) => action.id === targetActionId)
   const selectedSupportMetric = targetCharacter?.supportMetrics.find((metric) => metric.id === supportMetricId)
+  useEffect(() => {
+    setConditions((current) => {
+      if (current.onFieldBuildId === undefined) return current
+      if (selectedSupportMetric && partyBuildIds.includes(current.onFieldBuildId)) return current
+      if (targetAction?.fieldPresence === "off_field" && current.onFieldBuildId !== targetBuildId &&
+        partyBuildIds.includes(current.onFieldBuildId)) return current
+      const { onFieldBuildId: _previous, ...rest } = current
+      return rest
+    })
+  }, [targetAction?.fieldPresence, selectedSupportMetric?.id, targetBuildId, partyBuildIds])
   const teammates = targetBuild ? partyBuilds.filter((build) => build.buildId !== targetBuild.buildId) : []
   const actionEffectRequest = useMemo<ActionEffectOptionsRequest | null>(() => {
     if (!targetActionId || !targetBuildId) return null
@@ -202,7 +216,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   useEffect(() => {
     setConditions((current) => {
       const shouldClearShield = !hasGeoResonance && current.primaryShielded !== undefined
-      const shouldClearFrozen = !hasCryoResonance && current.targetFrozen !== undefined
+      const shouldClearFrozen = !hasFrozenCondition && current.targetFrozen !== undefined
       if (!shouldClearShield && !shouldClearFrozen) return current
 
       const next = { ...current }
@@ -210,7 +224,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
       if (shouldClearFrozen) delete next.targetFrozen
       return next
     })
-  }, [hasCryoResonance, hasGeoResonance])
+  }, [hasFrozenCondition, hasGeoResonance])
 
   const clearResults = () => {
     incremental.invalidate()
@@ -277,7 +291,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         const response = await fetch("/api/backend/v1/support-metrics/evaluate", {
           body: JSON.stringify({
             build: targetBuild,
-            context: createSupportMetricEvaluationContext(supportMetricContext, teammates),
+            context: createSupportMetricEvaluationContext(supportMetricContext, teammates, conditions.onFieldBuildId),
             metricId: selectedSupportMetric.id
           }),
           headers: { "Content-Type": "application/json" },
@@ -311,7 +325,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
     setStatus("正在计算指标与边际收益…")
     try {
       const effectiveConditions = getMaximumReachableConditions(
-        removeUnavailableResonanceConditions(conditions, hasCryoResonance, hasGeoResonance),
+        removeUnavailableResonanceConditions(conditions, hasFrozenCondition, hasGeoResonance),
         scenarioEffectOptions,
         targetBuild,
         teammates,
@@ -413,7 +427,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
             characterEffectOptions={characterEffectOptions}
             conditions={conditions}
             enemy={enemy}
-            hasCryoResonance={hasCryoResonance}
+            hasFrozenCondition={hasFrozenCondition}
             hasGeoResonance={hasGeoResonance}
             hasUnselectedRequiredEffect={hasUnselectedRequiredEffect}
             partyBuilds={partyBuilds}

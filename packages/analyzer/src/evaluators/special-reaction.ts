@@ -30,6 +30,7 @@ export type {
   ResolvedStatContributionStage
 } from "./types.js"
 
+import { resolveFieldContext } from "../core/field-presence.js"
 import * as shared from "./shared.js"
 
 export function evaluateDeclaredSpecialReactionScenarioAction(
@@ -49,6 +50,7 @@ export function evaluateDeclaredSpecialReactionScenarioAction(
     teammates = [],
     moonsignLevel = "none"
   } = input
+  const fieldContext = input.fieldContext ?? resolveFieldContext(action, build, teammates)
   shared.assertDeclaredSpecialReactionAction(action)
   const resolvedActionParameters = resolveActionScenarioParameters(action, actionParameters, build.constellation)
   const parts = action.damageParts.map((part) =>
@@ -68,6 +70,7 @@ export function evaluateDeclaredSpecialReactionScenarioAction(
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
     action,
+    fieldContext,
     activeEffectIds,
     ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
     ...(artifactStatDeltas === undefined ? {} : { artifactStatDeltas }),
@@ -80,7 +83,9 @@ export function evaluateDeclaredSpecialReactionScenarioAction(
     teammates
   })
   const actionEffects = resolveCombatActionEffects({
+    targetFrozen: input.targetFrozen ?? false,
     action,
+    fieldContext,
     activeEffectIds: resolvedActiveEffectIds,
     ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
     baseEnergyRecharge: baseStats.scenario.energyRecharge,

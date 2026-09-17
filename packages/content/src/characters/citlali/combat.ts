@@ -1,8 +1,16 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { citlaliDefinition } from "./definition.js"
 
 export const citlaliCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("citlali", 7),
+    { id: "citlali.kit.retained-shield", label: "白曜护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(citlaliDefinition),
+    declareHitCapability("citlali.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),
+    { ...declareHitCapability("citlali.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["cryo"], true, "any"), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 }, requiredReactionFamily: "any", requiredReactionCounterpartElements: ["hydro", "pyro"] },
+  ],
   actions: [
     {
       characterId: "Citlali",

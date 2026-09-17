@@ -15,7 +15,13 @@ export const desertPavilionChronicleCombatActionEffects: readonly CombatActionEf
     value: { kind: "fixed", value: DESERT_PAVILION_CHRONICLE_ANEMO_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "clear_on_exit",
+      trigger: { event: "capability", sourceFieldPresence: "on_field", capability: {
+        kind: "damage_hit", provider: "source", recipient: "source", hitKinds: ["charged"]
+      } }, explanation: "前台装备者具备合法重击命中能力，默认已准备四件套；退场清除"
+    },
     id: "artifact.desert-pavilion-chronicle.4pc.after-charged-hit.weapon-damage-bonus",
     label: "沙上楼阁史话 · 四件套（重击命中后15秒内）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "DesertPavilionChronicle" },

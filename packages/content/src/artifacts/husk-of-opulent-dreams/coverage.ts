@@ -12,17 +12,11 @@ export const equipmentCoverage = {
     },
     {
       effectIds: [
-        "artifact.husk-of-opulent-dreams.4pc.curiosity.1-stack.defense-percent",
-        "artifact.husk-of-opulent-dreams.4pc.curiosity.1-stack.geo-damage-bonus",
-        "artifact.husk-of-opulent-dreams.4pc.curiosity.2-stack.defense-percent",
-        "artifact.husk-of-opulent-dreams.4pc.curiosity.2-stack.geo-damage-bonus",
-        "artifact.husk-of-opulent-dreams.4pc.curiosity.3-stack.defense-percent",
-        "artifact.husk-of-opulent-dreams.4pc.curiosity.3-stack.geo-damage-bonus",
         "artifact.husk-of-opulent-dreams.4pc.curiosity.4-stack.defense-percent",
         "artifact.husk-of-opulent-dreams.4pc.curiosity.4-stack.geo-damage-bonus"
       ],
       id: "artifact.husk-of-opulent-dreams.4pc.curiosity-stacks",
-      label: "华馆梦醒形骸记 · 四件套（问答层数）",
+      label: "华馆梦醒形骸记 · 四件套（后台默认四层；前台需自身岩元素攻击能力，旧中间层不计）",
       source: artifactSource("HuskOfOpulentDreams", 4),
       status: "implemented"
     }

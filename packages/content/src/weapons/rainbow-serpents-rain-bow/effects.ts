@@ -7,6 +7,7 @@ export const rainbowSerpentsRainBowCombatActionEffects: readonly CombatActionEff
   {
     activation: "active",
     selectionMode: "optional",
+    weaponComparisonDefault: { recipientCharacterIds: "all", requiresOffFieldAction: true },
     id: "weapon.rainbow-serpents-rain-bow.after-off-field-hit.attack-percent",
     label: "虹蛇的雨弦 · 后台攻击命中后的攻击力",
     source: { kind: "weapon", weaponId: "RainbowSerpentsRainBow" },

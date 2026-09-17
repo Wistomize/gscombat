@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { tartagliaDefinition } from "./definition.js"
 
 export const tartagliaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("tartaglia", 13),
+    ...declareWeaponHitCapabilities(tartagliaDefinition),
+    declareHitCapability("tartaglia.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),
+  ],
   actions: [
     {
       characterId: "Tartaglia",

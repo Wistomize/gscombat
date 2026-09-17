@@ -1,8 +1,19 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { flinsDefinition } from "./definition.js"
 
 export const flinsCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("flins", 9),
+    { ...declareSkillCastCapability("flins.spearstorm", 7, { initialUses: 2, nonDamagingInitialUses: 1 }), sourceFieldPresence: "on_field" },
+    { ...declareSkillCastCapability("flins.c1.spearstorm", 7, { initialUses: 2, nonDamagingInitialUses: 1, cooldownMultiplier: 2 / 3 }),
+      sourceFieldPresence: "on_field", minimumSourceConstellation: 1 },
+    { id: "flins.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_charged"] },
+    ...declareWeaponHitCapabilities(flinsDefinition),
+    declareHitCapability("flins.kit.spearstorm-hit", "幽焰显迹期间北国枪阵战技命中", ["skill"], ["electro"], false, "on_field"),
+    declareHitCapability("flins.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Flins",

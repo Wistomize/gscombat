@@ -1,7 +1,8 @@
 import {
   analyzeWeaponComparison,
   evaluateCombatMetric,
-  evaluateScenarioAnalysis
+  evaluateScenarioAnalysis,
+  explainArtifactPreparations
 } from "@gscombat/analyzer"
 import { getCombatMetricDefinition } from "@gscombat/content"
 import {
@@ -43,7 +44,10 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
           ? {}
           : { weaponComparisonRefinements: request.body.weaponComparisonRefinements })
       })
-      return serializeAnalysisResponse(evaluation, analysis)
+      return {
+        ...serializeAnalysisResponse(evaluation, analysis),
+        artifactPreparations: explainArtifactPreparations(request.body, gameData, evaluation.appliedEffects)
+      }
     }
   )
 
@@ -80,7 +84,7 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
       if (evaluated.kind === "damage") {
         throw new Error(`Support metric endpoint received damage metric ${request.body.metricId}`)
       }
-      return { engineVersion: "support-metric-1", metric: serializeSupportMetricResult(evaluated) }
+      return { engineVersion: "support-metric-2-artifact-lifecycle", metric: serializeSupportMetricResult(evaluated) }
     }
   )
 }

@@ -12,14 +12,10 @@ export const equipmentCoverage = {
     },
     {
       effectIds: [
-        "artifact.unfinished-reverie.4pc.post-burning.grace-expired.1-second.damage-bonus",
-        "artifact.unfinished-reverie.4pc.post-burning.grace-expired.2-second.damage-bonus",
-        "artifact.unfinished-reverie.4pc.post-burning.grace-expired.3-second.damage-bonus",
-        "artifact.unfinished-reverie.4pc.post-burning.grace-expired.4-second.damage-bonus",
         "artifact.unfinished-reverie.4pc.out-of-combat-nearby-burning-or-post-burning-grace.damage-bonus"
       ],
       id: "artifact.unfinished-reverie.4pc.combat-and-burning-state-damage-bonus",
-      label: "未竟的遐思 · 四件套（脱战、附近燃烧与6秒宽限期后的逐秒全伤档位）",
+      label: "未竟的遐思 · 四件套（队伍同时有火草默认 50%，前后台均可；旧衰减档位不计）",
       source: artifactSource("UnfinishedReverie", 4),
       status: "implemented"
     }

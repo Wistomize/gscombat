@@ -15,10 +15,16 @@ export const deepwoodMemoriesCombatActionEffects: readonly CombatActionEffect[] 
     value: { kind: "fixed", value: DEEPWOOD_DENDRO_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
+      trigger: { event: "capability", sourceFieldPresence: "any", capability: {
+        kind: "damage_hit", recipient: "source", provider: "source", hitKinds: ["skill", "burst"]
+      } }, explanation: "装备者具备战技或爆发命中能力，默认已触发；退场保留，不要求持续命中"
+    },
     id: "artifact.deepwood-memories.4pc.dendro-resistance-shred",
     label: "深林的记忆 · 四件套（元素战技或元素爆发命中后）",
-    source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "DeepwoodMemories" },
+    source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "DeepwoodMemories", resolveOneMatchingPartySource: true },
     target: "enemyResistanceReduction",
     targetFilter: { elements: ["dendro"] },
     value: { kind: "fixed", value: DEEPWOOD_DENDRO_RESISTANCE_REDUCTION }

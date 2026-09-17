@@ -23,6 +23,8 @@ import {
 } from "./formula.js"
 
 import { countArtifactSet } from "../core/artifact-stats.js"
+import { resolveSupportFieldContext, type FieldContext } from "../core/field-presence.js"
+import { resolveCombatEffectLifecycle } from "../scenario/effect-lifecycle.js"
 import { resolveCoreCombatStats, type ResolvedCoreCombatStats } from "../core/base-stats.js"
 import {
   resolvePrimaryDifferentElementTeammateCount,
@@ -169,7 +171,9 @@ export function resolveFriendlyRecipient(
     ...resolveActiveRecipientEquipmentEffects(
       party,
       context?.activeEffectIds ?? [],
-      context?.activeEffectSourceBuildIds
+      context?.activeEffectSourceBuildIds,
+      { recipient: recipientBuild, gameData: input.gameData,
+        fieldContext: resolveSupportFieldContext(input.build.buildId, context?.onFieldBuildId) }
     )
   ]
   const incomingHealingBonus =
@@ -203,7 +207,7 @@ export function resolveFriendlyRecipient(
 export function resolveRecipientEquipmentEffects(build: CharacterBuild): readonly ResolvedRecipientEquipmentEffect[] {
   const resolvedEffects: ResolvedRecipientEquipmentEffect[] = []
   for (const effect of listRecipientEquipmentEffects()) {
-    if (effect.activation === "active") continue
+    if (effect.activation !== undefined) continue
     if (!isRecipientEquipmentEffectEquipped(effect, build)) continue
     resolvedEffects.push({
       id: effect.id,
@@ -216,11 +220,12 @@ export function resolveRecipientEquipmentEffects(build: CharacterBuild): readonl
   return resolvedEffects
 }
 
-/** Resolves only manually selected party-owned equipment snapshots for the current support-metric recipient. */
+/** Resolves party recipient equipment with the same source/preparation/retention gates as damage effects. */
 export function resolveActiveRecipientEquipmentEffects(
   party: readonly CharacterBuild[],
   activeEffectIds: readonly string[],
-  activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined
+  activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined,
+  context?: { readonly recipient: CharacterBuild; readonly gameData: GameDataRepository; readonly fieldContext: FieldContext }
 ): readonly ResolvedRecipientEquipmentEffect[] {
   const activeEffectIdSet = new Set(activeEffectIds)
   const duplicateEffectId = activeEffectIds.find((effectId, index) => activeEffectIds.indexOf(effectId) !== index)
@@ -236,32 +241,47 @@ export function resolveActiveRecipientEquipmentEffects(
     )
   }
   const allEffects = listRecipientEquipmentEffects()
-  const activeEffectsById = new Map(
-    allEffects.filter((effect) => effect.activation === "active").map((effect) => [effect.id, effect])
-  )
   const allEffectsById = new Map(allEffects.map((effect) => [effect.id, effect]))
-
-  return activeEffectIds.map((effectId) => {
-    const effect = activeEffectsById.get(effectId)
-    if (!effect) {
-      if (allEffectsById.has(effectId)) {
-        throw new Error(`Metric equipment effect ${effectId} is automatic and cannot be selected`)
-      }
-      throw new Error(`Metric equipment effect ${effectId} is not registered`)
+  if (context?.fieldContext.onFieldBuildId && !party.some((build) => build.buildId === context.fieldContext.onFieldBuildId)) {
+    throw new Error("Metric foreground must belong to the configured party")
+  }
+  for (const effectId of activeEffectIds) {
+    const effect = allEffectsById.get(effectId)
+    if (!effect) throw new Error(`Metric equipment effect ${effectId} is not registered`)
+    if (effect.activation === undefined) throw new Error(`Metric equipment effect ${effectId} is automatic and cannot be selected`)
+  }
+  return allEffects.flatMap((effect) => {
+    if (effect.activation === undefined) return []
+    const selected = activeEffectIdSet.has(effect.id)
+    const defaultAllowed = effect.activation === "automatic" ||
+      (effect.lifecycle?.kind === "conditional" && effect.lifecycle.preparation === "qualified_or_selected")
+    if (!selected && !defaultAllowed) return []
+    const holders = party.filter((build) => isRecipientEquipmentEffectEquipped(effect, build))
+    if (holders.length === 0) {
+      if (selected) throw new Error(`Metric equipment effect ${effect.id} has no eligible party source`)
+      return []
     }
-    const sources = party.filter((build) => isRecipientEquipmentEffectEquipped(effect, build))
+    const sources = holders.filter((source) => resolveCombatEffectLifecycle({
+      ...(effect.lifecycle === undefined ? {} : { lifecycle: effect.lifecycle }), source,
+      recipient: context?.recipient ?? source, builds: party,
+      fieldContext: context?.fieldContext ?? resolveSupportFieldContext(source.buildId),
+      ...(context === undefined ? {} : { gameData: context.gameData }), activeEffectIds,
+      ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
+      selected: selected && (activeEffectSourceBuildIds?.[effect.id] === undefined || activeEffectSourceBuildIds[effect.id] === source.buildId)
+    }).eligible)
+    if (sources.length === 0) return []
     const source = resolveActiveRecipientEquipmentEffectSource(
       effect,
       sources,
       activeEffectSourceBuildIds?.[effect.id]
     )
-    return {
+    return [{
       id: effect.id,
       label: effect.label,
       sourceBuildId: source.buildId,
       target: effect.target,
       value: resolveRecipientEquipmentEffectValue(effect, source.weapon.refinement)
-    }
+    }]
   })
 }
 
@@ -282,6 +302,7 @@ export function resolveActiveRecipientEquipmentEffectSource(
     return selected
   }
   if (candidates.length > 1) {
+    if (effect.lifecycle) return [...candidates].sort((a, b) => a.buildId.localeCompare(b.buildId))[0]!
     throw new Error(`Metric equipment effect ${effect.id} has multiple eligible party sources; select one explicitly`)
   }
   return candidates[0]!
@@ -359,7 +380,8 @@ export function resolveMetricSourceCombatStats(
   build: CharacterBuild,
   sourceContext: CombatMetricSourceContext | undefined,
   teammates: readonly CharacterBuild[] | undefined,
-  gameData: GameDataRepository
+  gameData: GameDataRepository,
+  fieldContext?: FieldContext
 ): ResolvedCoreCombatStats {
   const coreStats = resolveCoreCombatStats(build, gameData)
   const action = getCombatActionDefinition(metric.sourceActionId)
@@ -380,6 +402,7 @@ export function resolveMetricSourceCombatStats(
     includeMaximumReachableCharacterStatEffects: true,
     ...(sourceContext?.enemyCount === undefined ? {} : { enemyCount: sourceContext.enemyCount }),
     primary: build,
+    fieldContext: fieldContext ?? resolveSupportFieldContext(build.buildId),
     ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
     ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
     ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),

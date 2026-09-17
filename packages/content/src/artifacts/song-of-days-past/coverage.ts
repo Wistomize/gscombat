@@ -13,10 +13,9 @@ export const equipmentCoverage = {
     {
       id: "artifact.song-of-days-past.4pc.yearning.healing-recorded-damage",
       label: "昔时之歌 · 四件套（昔时之歌之咏的治疗记录伤害加成）",
-      reason: "需要全队治疗记录、溢出治疗、上限、命中次数消耗与受益角色状态。",
-      requiredCapability: "team_healing_accumulation_and_consumable_damage_bonus",
+      reason: "用户确认本轮不计入此条款。需要全队治疗记录、溢出治疗、上限、命中次数消耗与受益角色状态。原机制允许后台来源记录，伤害加算只作用于前台受益者；本工具暂不计算。",
       source: artifactSource("SongOfDaysPast", 4, "party_member"),
-      status: "unsupported"
+      status: "not_applicable"
     }
   ],
   equipmentId: "SongOfDaysPast",

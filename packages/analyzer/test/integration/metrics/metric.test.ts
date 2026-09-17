@@ -17,6 +17,7 @@ import {
   type CombatMetricFormulaTerm
 } from "../../../src/metrics/evaluate.js"
 import { resolveCoreCombatStats } from "../../../src/core/base-stats.js"
+import { resolveMetricSourceCombatStats } from "../../../src/metrics/runtime.js"
 import { evaluateScenario, raidenNationalBuiltinScenario } from "../../../src/scenario/evaluate.js"
 
 const gameData = new GameDataRepository(DEFAULT_GAME_DATA_PATH)
@@ -199,6 +200,45 @@ function collectFormulaNodeTerms(node: CombatMetricFormulaNode): readonly Combat
 }
 
 describe("character metrics with explicit target context", () => {
+  it("keeps unspecified support presence unknown instead of granting Husk's off-field defense", () => {
+    const noelle = createGeoMetricBuild("Noelle", "FavoniusGreatsword")
+    const cases = [
+      { build: { ...noelle, characterId: "Xinyan" }, metricId: "xinyan.skill.sweeping_fervor.level_three_shield.base_absorption", frontBonus: 0 },
+      { build: noelle, metricId: "noelle.skill.breastplate.heal", frontBonus: 0.24 }
+    ]
+    for (const entry of cases) {
+      const build = withArtifactSetPieces(entry.build, "HuskOfOpulentDreams", 4, `test.metric.${entry.build.characterId}.husk`)
+      const baseline = resolveCoreCombatStats(build, gameData)
+      const metric = getCombatMetricDefinition(entry.metricId)
+      if (!metric || metric.kind === "damage") throw new Error("Expected support metric definition")
+      const defenseWithoutStacks = baseline.defense + baseline.baseDefense * 0.3
+      expect(resolveMetricSourceCombatStats(metric, build, undefined, undefined, gameData).defense)
+        .toBeCloseTo(defenseWithoutStacks)
+      const evaluate = (onFieldBuildId?: string) => evaluateCombatMetric({
+        build,
+        context: {
+          ...(onFieldBuildId === undefined ? {} : { onFieldBuildId }),
+          recipient: { buildId: build.buildId },
+          teammates: [raidenNationalBuiltinBuild]
+        },
+        gameData,
+        metricId: entry.metricId
+      })
+      const unknown = evaluate()
+      const front = evaluate(build.buildId)
+      const back = evaluate(raidenNationalBuiltinBuild.buildId)
+      if ((unknown.kind !== "scalar" && unknown.kind !== "healing") || front.kind !== unknown.kind || back.kind !== unknown.kind) {
+        throw new Error("Expected matching shield or healing support results")
+      }
+      expect(unknown.scalingValue).toBeCloseTo(defenseWithoutStacks)
+      expect(front.scalingValue).toBeCloseTo(defenseWithoutStacks + baseline.baseDefense * entry.frontBonus)
+      expect(back.scalingValue).toBeCloseTo(defenseWithoutStacks + baseline.baseDefense * 0.24)
+      expect(back.value).toBeGreaterThan(unknown.value)
+      if (entry.frontBonus === 0) expect(front.value).toBeCloseTo(unknown.value)
+      else expect(front.value).toBeCloseTo(back.value)
+    }
+  })
+
   it("applies Aqua Simulacra's automatic HP to Diona's shield metric formula without an active snapshot", () => {
     const diona = createDionaMetricBuild()
     const baseline = resolveCoreCombatStats(diona, gameData)
@@ -1857,7 +1897,7 @@ describe("character metrics with explicit target context", () => {
       "test.metric.xingqiu.tenacity-of-the-millelith.4pc"
     )
     const recipient = raidenNationalBuiltinBuild
-    const evaluateBennettHealing = (activeEffectIds: string[]) =>
+    const evaluateBennettHealing = (activeEffectIds: string[], includeHolder = true) =>
       evaluateCombatMetric({
         build: bennettNationalBuiltinBuild,
         context: {
@@ -1873,13 +1913,14 @@ describe("character metrics with explicit target context", () => {
             incomingHealingBonus: 0,
             isWithinSourceArea: true
           },
-          teammates: [recipient, maidenHolder]
+          teammates: includeHolder ? [recipient, maidenHolder] : [recipient]
         },
         gameData,
         metricId: "bennett.burst.field.heal_tick"
       })
-    const baselineHealing = evaluateBennettHealing([])
+    const baselineHealing = evaluateBennettHealing([], false)
     const maidenHealing = evaluateBennettHealing([maidenEffectId])
+    expect(evaluateBennettHealing([]).value).toBe(maidenHealing.value)
 
     expect(baselineHealing.kind).toBe("healing")
     expect(maidenHealing.kind).toBe("healing")
@@ -1893,7 +1934,7 @@ describe("character metrics with explicit target context", () => {
     })
     expect(collectFormulaTerms(maidenHealing.formula)).toContainEqual(
       expect.objectContaining({
-        label: "被怜爱的少女 · 四件套（已手填元素战技或元素爆发后10秒的队伍受治疗效果）",
+        label: "被怜爱的少女 · 四件套（默认施放战技或爆发后，全队受治疗加成）",
         role: "recipient_modifier",
         value: 0.2
       })
@@ -1930,7 +1971,7 @@ describe("character metrics with explicit target context", () => {
     })
     expect(collectFormulaTerms(tenacityShield.formula)).toContainEqual(
       expect.objectContaining({
-        label: "千岩牢固 · 四件套（已手填元素战技命中后3秒的队伍护盾强效）",
+        label: "千岩牢固 · 四件套（持续战技命中默认准备；单次命中可手选）",
         role: "recipient_modifier",
         value: 0.3
       })
@@ -1985,9 +2026,7 @@ describe("character metrics with explicit target context", () => {
     expect(() => evaluateHealingWithSnapshot([automaticEffectId])).toThrow(
       `Metric equipment effect ${automaticEffectId} is automatic and cannot be selected`
     )
-    expect(() => evaluateHealingWithSnapshot([maidenEffectId])).toThrow(
-      `Metric equipment effect ${maidenEffectId} has multiple eligible party sources; select one explicitly`
-    )
+    expect(evaluateHealingWithSnapshot([maidenEffectId]).value).toBe(evaluateHealingWithSnapshot([]).value)
     expect(() =>
       evaluateHealingWithSnapshot([maidenEffectId], { [maidenEffectId]: raidenNationalBuiltinBuild.buildId })
     ).toThrow(`Metric equipment effect ${maidenEffectId} cannot use source ${raidenNationalBuiltinBuild.buildId}`)

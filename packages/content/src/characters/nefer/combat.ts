@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { neferDefinition } from "./definition.js"
@@ -16,6 +17,12 @@ const phantomPerformanceVeilMultiplier = {
 } as const
 
 export const neferCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("nefer", 11),
+    { id: "nefer.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_bloom"] },
+    ...declareWeaponHitCapabilities(neferDefinition),
+    declareHitCapability("nefer.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill"], ["dendro"]),
+  ],
   actions: [
     {
       characterId: "Nefer",

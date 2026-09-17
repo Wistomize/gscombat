@@ -31,7 +31,7 @@ interface CalculationScenarioProps {
   readonly characterEffectOptions: readonly ScenarioEffectOption[]
   readonly conditions: ScenarioConditions
   readonly enemy: ScenarioEnemy
-  readonly hasCryoResonance: boolean
+  readonly hasFrozenCondition: boolean
   readonly hasGeoResonance: boolean
   readonly hasUnselectedRequiredEffect: boolean
   readonly partyBuilds: readonly CharacterBuild[]
@@ -62,7 +62,7 @@ export function CalculationScenario({
   characterEffectOptions,
   conditions,
   enemy,
-  hasCryoResonance,
+  hasFrozenCondition,
   hasGeoResonance,
   hasUnselectedRequiredEffect,
   partyBuilds,
@@ -86,6 +86,27 @@ export function CalculationScenario({
   return (
     <div className="calculationBlock">
       <div className="workspaceSectionHeading"><div><span>03</span><h2>敌人与 Buff</h2></div></div>
+      {selectedSupportMetric || targetAction?.fieldPresence === "off_field" ? (
+        <div className="scenarioControls">
+          <label>
+            <span>本次计算的前台角色</span>
+            <select
+              aria-label="本次计算的前台角色"
+              value={conditions.onFieldBuildId ?? ""}
+              onChange={(event) => onConditionsChange((current) => {
+                const { onFieldBuildId: _previous, ...rest } = current
+                return event.target.value ? { ...rest, onFieldBuildId: event.target.value } : rest
+              })}
+            >
+              <option value="">未指定（不启用需要确认前台身份的效果）</option>
+              {partyBuilds.filter((build) => selectedSupportMetric || build.buildId !== targetBuild.buildId).map((build) => (
+                <option key={build.buildId} value={build.buildId}>{getCharacterLabel(catalog, build.characterId)}</option>
+              ))}
+            </select>
+          </label>
+          <p>{selectedSupportMetric ? "辅助指标与伤害指标共享队伍前台身份；选择前台不会切换计算对象。" : "当前指标由后台角色造成伤害；选择前台角色不会切换计算对象。"}</p>
+        </div>
+      ) : null}
       {selectedSupportMetric ? (
         <div className="scenarioControls">
           {selectedSupportMetric.target === "friendly_recipient" ? (
@@ -278,9 +299,9 @@ export function CalculationScenario({
                 />
               </label>
             ) : null}
-            {hasCryoResonance ? (
+            {hasFrozenCondition ? (
               <label className="toggleRow">
-                <span>目标处于冻结状态（双冰共鸣）</span>
+                <span>目标处于冻结状态（共鸣与装备共享）</span>
                 <input
                   checked={conditions.targetFrozen ?? false}
                   type="checkbox"
@@ -309,6 +330,8 @@ export function CalculationScenario({
               }, new Map<string, ScenarioEffectOption>()).values()]
               const label = effects[0] ? splitEffectOptionLabel(effects[0].label)[0] : "可选效果"
               const required = effects[0]?.selectionMode === "required"
+              const automaticPreparation = effects.some((effect) => effect.automaticPreparation)
+              const preparationDescription = effects.find((effect) => effect.preparationDescription)?.preparationDescription
               const selectedVariant = variants.find((variant) => effects.some((effect) =>
                 (effect.exclusiveVariant ?? effect.id) === (variant.exclusiveVariant ?? variant.id) &&
                 selectedCharacterEffectIds.includes(effect.id)
@@ -321,11 +344,12 @@ export function CalculationScenario({
                     value={selectedVariant?.id ?? ""}
                     onChange={(event) => onScenarioEffectSelect(effects, event.target.value)}
                   >
-                    <option disabled={required} value="">{required ? "请选择" : "不触发"}</option>
+                    <option disabled={required} value="">{required ? "请选择" : automaticPreparation ? "自动（按能力与站位判断）" : "未选择 / 不触发"}</option>
                     {variants.map((effect) => (
                       <option key={effect.id} value={effect.id}>{splitEffectOptionLabel(effect.label)[1]}</option>
                     ))}
                   </select>
+                  {preparationDescription ? <small>{preparationDescription}</small> : null}
                 </label>
               )
             })}
@@ -350,7 +374,8 @@ export function CalculationScenario({
             </div>
           ) : null}
           <p className="automaticEffectsNote">
-            武器与圣遗物效果由系统按照当前角色、队伍和目标动作自动取可达到的最大值。
+            效果按装备者、队伍能力与真实前后台自动判定；退场清除的效果不会给后台角色。
+            自动层数与手动指定分开，选择零层会覆盖自动准备；未支持的累计效果不默认吃满。
           </p>
         </>
       )}

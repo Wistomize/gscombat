@@ -14,10 +14,18 @@ function getHpLossAttackPercent(hpLossCount: (typeof hpLossCounts)[number]): num
 
 function createHpLossAttackEffect(hpLossCount: (typeof hpLossCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: hpLossCount === 4 ? {
+      kind: "conditional", preparation: "qualified", retention: "clear_on_exit",
+      trigger: {
+        event: "burst_cast", sourceFieldPresence: "on_field",
+        capability: { kind: "hp_loss", recipient: "source" }
+      },
+      explanation: "默认已施放爆发；有效主动扣血来源按已确认策略准备满层"
+    } : { kind: "excluded", reason: "旧手选层数兼容保留；由实际扣血资格自动决定零层或满层" },
     exclusivity: { group: "vermillion-hereafter-after-burst-hp-loss", variant: `${hpLossCount}-stack` },
     id: `artifact.vermillion-hereafter.4pc.after-burst.${hpLossCount}-stack.attack-percent`,
-    label: `辰砂往生录 · 四件套（施放元素爆发后，已触发${hpLossCount}次生命值降低）`,
+    label: `辰砂往生录 · 四件套（默认爆发后，有效扣血能力准备${hpLossCount}层）`,
     source: { kind: "artifact_set", minimumPieces: 4, setId: "VermillionHereafter" },
     target: "attackPercent",
     value: { kind: "fixed", value: getHpLossAttackPercent(hpLossCount) }
@@ -35,7 +43,15 @@ export const vermillionHereafterCombatActionEffects: readonly CombatActionEffect
     value: { kind: "fixed", value: VERMILLION_HEREAFTER_ATTACK_PERCENT }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "clear_on_exit",
+      trigger: {
+        event: "burst_cast", sourceFieldPresence: "on_field",
+        capability: { kind: "hp_loss", recipient: "source", present: false }
+      },
+      explanation: "默认已施放爆发；无有效主动扣血来源，仅计基础8%攻击"
+    },
     exclusivity: { group: "vermillion-hereafter-after-burst-hp-loss", variant: "0-stack" },
     id: "artifact.vermillion-hereafter.4pc.after-burst.attack-percent",
     label: "辰砂往生录 · 四件套（施放元素爆发后，0次生命值降低）",

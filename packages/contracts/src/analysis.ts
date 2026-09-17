@@ -508,6 +508,12 @@ export type WeaponComparisonRequest = Type.Static<typeof WeaponComparisonRequest
 export type WeaponComparisonResponse = Type.Static<typeof WeaponComparisonResponseSchema>
 
 export const AnalysisResponseSchema = Type.Object({
+  artifactPreparations: Type.Optional(Type.Array(Type.Object({
+    effectId: Type.String(), label: Type.String(), sourceBuildId: Type.String(), sourceCharacterId: Type.String(),
+    sourcePresence: Type.Union([Type.Literal("on_field"), Type.Literal("off_field"), Type.Literal("unknown")]),
+    qualified: Type.Boolean(), applied: Type.Boolean(), reason: Type.String(),
+    capabilitySourceIds: Type.Array(Type.String())
+  }))),
   analysis: Type.Object({
     baselineExpectedDamage: Type.Number(),
     effectiveArtifacts: Type.Array(

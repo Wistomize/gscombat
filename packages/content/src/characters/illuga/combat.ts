@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { illugaDefinition } from "./definition.js"
 
 export const illugaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("illuga", 4),
+    ...declareWeaponHitCapabilities(illugaDefinition),
+    declareHitCapability("illuga.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill","burst"], ["geo"]),
+  ],
   actions: [
     {
       characterId: "Illuga",
@@ -189,6 +195,7 @@ export const illugaCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "illuga.constellation.4.active_character.defense",
+      requiresRecipientOnField: true,
       label: "逐日之狼 · C4 魇夜的莺歌期间当前场上角色防御力提高200点",
       source: { characterId: "Illuga", kind: "character", minimumSourceConstellation: 4 },
       target: "defenseFlat",

@@ -13,7 +13,7 @@ export const equipmentCoverage = {
     {
       effectIds: ["artifact.resolution-of-sojourner.4pc.charged-crit-rate"],
       id: "artifact.resolution-of-sojourner.4pc.charged-crit-rate",
-      label: "行者之心 · 四件套",
+      label: "行者之心 · 四件套（仅前台重击事件暴击率，不改变通用面板）",
       source: artifactSource("ResolutionOfSojourner", 4),
       status: "implemented"
     }

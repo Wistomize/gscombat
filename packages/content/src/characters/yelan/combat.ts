@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { yelanDefinition } from "./definition.js"
 
 export const yelanCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("yelan", 3),
+    { ...declareSkillCastCapability("yelan", 3, {"initialUses":2}), id: "yelan.kit.extra-skill-charge", minimumSourceConstellation: 1 },
+    ...declareWeaponHitCapabilities(yelanDefinition),
+    declareHitCapability("yelan.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),
+  ],
   actions: [
     {
       characterId: "Yelan",
@@ -81,6 +88,7 @@ export const yelanCombatCoverage: CharacterCombatCoverage = {
       evaluator: "declared_direct",
       id: "yelan.burst.exquisite_throw.single_wave",
       kind: "damage",
+      fieldPresence: "off_field",
       parameterReferences: [
         {
           groupId: "burst",

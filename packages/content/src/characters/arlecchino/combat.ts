@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { arlecchinoDefinition } from "./definition.js"
 
 export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("arlecchino", 4),
+    { id: "arlecchino.kit.bond-of-life-change", label: "红死之宴普攻持续消耗自身生命之契", kind: "bond_of_life_change", recipient: "self", sustained: true, sourceFieldPresence: "on_field" },
+    ...declareWeaponHitCapabilities(arlecchinoDefinition),
+    declareHitCapability("arlecchino.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+  ],
   actions: [
     {
       characterId: "Arlecchino",

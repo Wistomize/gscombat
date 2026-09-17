@@ -13,7 +13,7 @@ export const equipmentCoverage = {
     {
       effectIds: ["artifact.obsidian-codex.4pc.after-nightsoul-consumption.crit-rate"],
       id: "artifact.obsidian-codex.4pc.after-nightsoul-consumption.crit-rate",
-      label: "黑曜秘典 · 四件套（消耗夜魂值后）",
+      label: "黑曜秘典 · 四件套（自身夜魂消耗准备且当前前台，后台不计）",
       source: artifactSource("ObsidianCodex", 4),
       status: "implemented"
     }

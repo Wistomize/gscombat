@@ -3,6 +3,7 @@ import type { AnalysisResponse, CatalogResponse, CharacterBuild, SupportMetricEv
 import type { CatalogPrimaryAction, CatalogSupportMetric } from "../calculation-setup/model"
 import { OrderedDamageReport } from "./damage-report"
 import { SupportMetricReport } from "./support-metric-report"
+import { ArtifactPreparationReport } from "./artifact-preparation-report"
 import type { WeaponRequestState } from "../calculation-workspace/use-incremental-analysis"
 
 interface CalculationResultsProps {
@@ -47,6 +48,7 @@ export function CalculationResults({
       ) : (
         <div className="emptyResult"><span>Σ</span><strong>等待计算</strong><p>选择队伍成员和指标后开始计算。</p></div>
       )}
+      {analysis && !supportMetricResponse ? <ArtifactPreparationReport analysis={analysis} catalog={catalog} /> : null}
     </section>
   )
 }

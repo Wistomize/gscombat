@@ -105,7 +105,8 @@ describe("declared direct scenario actions", () => {
       teammates: [bennettNationalBuiltinBuild, xingqiuNationalBuiltinBuild, raidenNationalBuiltinBuild]
     })
 
-    expect(evaluation.stats.attackPercent).toBeCloseTo(coreStats.attackPercent + 0.14)
+    // Bennett's maintained Noblesse preparation now contributes automatically as a party buff.
+    expect(evaluation.stats.attackPercent).toBeCloseTo(coreStats.attackPercent + 0.14 + 0.2)
     expect(evaluation.stats.elementalMastery).toBeCloseTo(coreStats.elementalMastery + 180)
     expect(evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
@@ -655,10 +656,10 @@ describe("declared direct scenario actions", () => {
     expect(r1.stats.flatAttack).toBeCloseTo(r1Core.flatAttack + expectedR1FlatAttack)
     expect(r5.stats.flatAttack).toBeCloseTo(r5Core.flatAttack + expectedR5FlatAttack)
     expect(r1.stats.effectiveAttack).toBeCloseTo(
-      r1Core.baseAttack * (1 + r1Core.attackPercent) + r1Core.flatAttack + expectedR1FlatAttack
+      r1Core.baseAttack * (1 + r1Core.attackPercent + 0.2) + r1Core.flatAttack + expectedR1FlatAttack
     )
     expect(r5.stats.effectiveAttack).toBeCloseTo(
-      r5Core.baseAttack * (1 + r5Core.attackPercent) + r5Core.flatAttack + expectedR5FlatAttack
+      r5Core.baseAttack * (1 + r5Core.attackPercent + 0.2) + r5Core.flatAttack + expectedR5FlatAttack
     )
     expect(r1Effect).toMatchObject({ target: "flatAttack", value: expectedR1FlatAttack })
     expect(r5Effect).toMatchObject({ target: "flatAttack", value: expectedR5FlatAttack })
@@ -1980,8 +1981,12 @@ describe("declared direct scenario actions", () => {
     })
 
     expect(automatic.stats.elementalMastery).toBeCloseTo(baseline.stats.elementalMastery + 80)
-    expect(active.stats.elementalMastery).toBeCloseTo(baseline.stats.elementalMastery + 200)
-    expect(active.result.expectedDamage).toBeGreaterThan(automatic.result.expectedDamage)
+    expect(active.stats.elementalMastery).toBeCloseTo(automatic.stats.elementalMastery)
+    const qualified = evaluateDeclaredDirectScenarioAction({
+      action, build: instructorBuild, buffs: [], enemy, gameData, teammates: [xingqiuNationalBuiltinBuild]
+    })
+    expect(qualified.stats.elementalMastery).toBeCloseTo(baseline.stats.elementalMastery + 200)
+    expect(qualified.result.expectedDamage).toBeGreaterThan(automatic.result.expectedDamage)
     expect(active.rotation.dpr).toBeCloseTo(active.result.expectedDamage)
   })
 

@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { sandroneDefinition } from "./definition.js"
@@ -9,6 +10,13 @@ const sandroneC6ClusterBeamActionIds = {
 } as const
 
 export const sandroneCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("sandrone", 2),
+    { id: "sandrone.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["stellar_superconduct","stellar_swirl"] },
+    { id: "sandrone.kit.stellar-damage", label: "辉映状态下自身造成星烁反应伤害", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "on_field", sustained: true, specialReactions: ["stellar_superconduct","stellar_swirl"], requiredTeamReaction: "stellar" },
+    ...declareWeaponHitCapabilities(sandroneDefinition),
+    declareHitCapability("sandrone.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill","burst"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Sandrone",

@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { naviaDefinition } from "./definition.js"
 
 export const naviaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("navia", 3, {"initialUses":2}),
+    ...declareWeaponHitCapabilities(naviaDefinition),
+    declareHitCapability("navia.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+  ],
   actions: [
     {
       characterId: "Navia",

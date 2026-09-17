@@ -1,8 +1,16 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { baizhuDefinition } from "./definition.js"
 
 export const baizhuCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("baizhu", 3),
+    { ...declareSkillCastCapability("baizhu", 3, {"initialUses":2}), id: "baizhu.kit.extra-skill-charge", minimumSourceConstellation: 1 },
+    { id: "baizhu.kit.retained-shield", label: "无郤气护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(baizhuDefinition),
+    declareHitCapability("baizhu.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["dendro"]),
+  ],
   actions: [
     {
       characterId: "Baizhu",

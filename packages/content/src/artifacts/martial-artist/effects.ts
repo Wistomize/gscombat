@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { afterSkillUntilExit } from "../../combat/capabilities.js"
 
 export const MARTIAL_ARTIST_TWO_PIECE_NORMAL_CHARGED_DAMAGE_BONUS = 0.15
 export const MARTIAL_ARTIST_FOUR_PIECE_NORMAL_CHARGED_DAMAGE_BONUS = 0.25
@@ -15,9 +16,10 @@ export const martialArtistCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "fixed", value: MARTIAL_ARTIST_TWO_PIECE_NORMAL_CHARGED_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: afterSkillUntilExit("默认已施放元素战技；四件套仅当前前台生效"),
     id: "artifact.martial-artist.4pc.after-skill.normal-charged-damage-bonus",
-    label: "武人 · 四件套（元素战技后8秒内）",
+    label: "武人 · 四件套（默认战技后，前台）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "MartialArtist" },
     target: "damageBonus",
     targetFilter: { attackKinds: ["normal", "charged"] },

@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type {
   CharacterCombatCoverage,
   CombatActionMetadata,
@@ -110,6 +111,12 @@ function createMavuikaC6DamageMetric(actionId: string, label: string): CombatDam
 }
 
 export const mavuikaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("mavuika", 13),
+    ...declareWeaponHitCapabilities(mavuikaDefinition),
+    declareHitCapability("mavuika.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+    { ...declareHitCapability("mavuika.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["pyro"], true, "any"), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Mavuika",

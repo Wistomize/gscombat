@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { columbinaDefinition } from "./definition.js"
@@ -12,6 +13,13 @@ const gravityInterferenceActions = Object.values(gravityInterferenceActionIds)
 const lunarReactionKinds = ["lunar_bloom", "lunar_charged", "lunar_crystallize"] as const
 
 export const columbinaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("columbina", 9),
+    { id: "columbina.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_charged","lunar_bloom","lunar_crystallize"] },
+    ...declareWeaponHitCapabilities(columbinaDefinition),
+    declareHitCapability("columbina.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill"], ["hydro"]),
+    { ...declareHitCapability("columbina.kit.sustained_skill_hits", "引力涟漪持续战技命中", ["skill"], ["hydro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Columbina",

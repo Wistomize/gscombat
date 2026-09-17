@@ -1,4 +1,5 @@
 import {
+  getArtifactConditionRequirements,
   supportedArtifactSets,
   supportedBuffPresets,
   supportedCharacters,
@@ -9,7 +10,10 @@ import type { CatalogResponse } from "@gscombat/contracts"
 /** Projects the immutable Content catalog into the mutable public API response. */
 export function serializeCatalogResponse(): CatalogResponse {
   return {
-    artifactSets: [...supportedArtifactSets],
+    artifactSets: supportedArtifactSets.map((set) => {
+      const conditionRequirements = getArtifactConditionRequirements(set.setId)
+      return { ...set, ...(conditionRequirements.length ? { conditionRequirements } : {}) }
+    }),
     buffPresets: supportedBuffPresets.map((preset) => ({ ...preset, buffs: [...preset.buffs] })),
     characters: supportedCharacters.map((character) => ({
       ...character,

@@ -6,7 +6,12 @@ export const OBSIDIAN_CODEX_AFTER_NIGHTSOUL_CONSUMPTION_CRIT_RATE = 0.4
 /** Typed selected Nightsoul-state contributions of Obsidian Codex to maintained core actions. */
 export const obsidianCodexCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "while_applicable",
+      trigger: { event: "none", sourceFieldPresence: "any" },
+      applicability: { sourceFieldPresence: "on_field" }, explanation: "当前前台且来源具有夜魂资格"
+    },
     condition: { kind: "source_nightsoul_blessing", required: true },
     id: "artifact.obsidian-codex.2pc.nightsoul-blessing.damage-bonus",
     label: "黑曜秘典 · 二件套（前台且处于夜魂加持状态）",
@@ -15,7 +20,12 @@ export const obsidianCodexCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "fixed", value: OBSIDIAN_CODEX_NIGHTSOUL_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "while_applicable",
+      trigger: { event: "none", sourceFieldPresence: "any" },
+      applicability: { sourceFieldPresence: "on_field" }, explanation: "当前前台且来源具有夜魂资格"
+    },
     condition: { kind: "source_nightsoul_blessing", required: true },
     id: "artifact.obsidian-codex.4pc.after-nightsoul-consumption.crit-rate",
     label: "黑曜秘典 · 四件套（消耗1点夜魂值后6秒内）",

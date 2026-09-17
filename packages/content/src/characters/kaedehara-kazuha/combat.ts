@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { kaedeharaKazuhaDefinition } from "./definition.js"
 
 export const kaedeharaKazuhaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("kaedehara-kazuha", 1),
+    { id: "kaedehara-kazuha.kit.plunge-access", label: "千早振振腾空后进行乱岚拨止", kind: "plunge_access", recipient: "self", sourceFieldPresence: "on_field", sustained: true },
+    ...declareWeaponHitCapabilities(kaedeharaKazuhaDefinition),
+    declareHitCapability("kaedehara-kazuha.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "KaedeharaKazuha",

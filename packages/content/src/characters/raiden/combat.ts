@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { raidenDefinition } from "./definition.js"
@@ -6,6 +7,12 @@ export const RAIDEN_SKILL_EYE_EFFECT_ID = "raiden.skill.eye"
 const RAIDEN_BURST_INITIAL_SLASH_ACTION_ID = "raiden.burst.initial_slash"
 
 export const raidenCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("raiden", 4),
+    ...declareWeaponHitCapabilities(raidenDefinition),
+    declareHitCapability("raiden.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+    { ...declareHitCapability("raiden.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["electro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "RaidenShogun",

@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { kujouSaraDefinition } from "./definition.js"
 
 export const kujouSaraCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("kujou-sara", 3),
+    ...declareWeaponHitCapabilities(kujouSaraDefinition),
+    declareHitCapability("kujou-sara.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "KujouSara",

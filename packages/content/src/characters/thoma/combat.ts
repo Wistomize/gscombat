@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { thomaDefinition } from "./definition.js"
 
 export const thomaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("thoma", 6),
+    { id: "thoma.kit.retained-shield", label: "烈烧佑命护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(thomaDefinition),
+    declareHitCapability("thoma.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+  ],
   actions: [
     {
       characterId: "Thoma",

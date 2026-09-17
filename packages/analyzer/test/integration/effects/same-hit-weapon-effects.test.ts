@@ -72,9 +72,9 @@ function expectNoSameHitTerm(evaluation: DeclaredDirectScenarioEvaluation, label
 }
 
 describe("same-hit weapon additive terms", () => {
-  it("keeps Echoes of an Offering's selected Valley Rite on its triggering normal hit", () => {
+  it("keeps Echoes of an Offering's automatic average Valley Rite on its normal hit", () => {
     const termId = "artifact.echoes-of-an-offering.4pc.valley-rite.normal-attack-additive-damage"
-    const termLabel = "来歆余响 · 四件套（本次普通攻击触发幽谷祝祀）"
+    const termLabel = "来歆余响 · 四件套（前台普攻，平均触发率约 50.2%）"
     const normalAction = requireAction("tartaglia.skill.foul_legacy_raging_tide.melee_normal.first_hit")
     const skillAction = requireAction("tartaglia.skill.foul_legacy_raging_tide.stance_activation")
     const build = createArtifactSetBuild("Tartaglia", "EchoesOfAnOffering")
@@ -103,7 +103,7 @@ describe("same-hit weapon additive terms", () => {
     })
     const activeTerm = requireSameHitTerm(active, termLabel)
 
-    expectNoSameHitTerm(inactive, termLabel)
+    expect(requireSameHitTerm(inactive, termLabel).term).toMatchObject({ coefficient: 0.7 / 1.99188736 })
     expectNoSameHitTerm(wrongAction, termLabel)
     expect(active.appliedEffects).toEqual(
       expect.arrayContaining([
@@ -111,14 +111,14 @@ describe("same-hit weapon additive terms", () => {
           id: termId,
           scalingStat: "attack",
           target: "matchedActionAdditiveDamageTerm",
-          value: 0.7
+          value: 0.7 / 1.99188736
         })
       ])
     )
-    expect(activeTerm.term).toMatchObject({ coefficient: 0.7, stat: "attack" })
+    expect(activeTerm.term).toMatchObject({ coefficient: 0.7 / 1.99188736, stat: "attack" })
     expect(active.rotation.events).toHaveLength(1)
     expect(active.rotation.events.some((event) => event.id.includes("echoes-of-an-offering"))).toBe(false)
-    expect(active.rotation.dpr).toBeGreaterThan(inactive.rotation.dpr)
+    expect(active.rotation.dpr).toBeCloseTo(inactive.rotation.dpr)
   })
 
   it("activates Hunter's Path only for a charged hit, scales with refinement, and precedes Tighnari's Spread", () => {

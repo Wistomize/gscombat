@@ -1,4 +1,6 @@
 import type { ScalingStat } from "@gscombat/calculator"
+import { getBuildFieldPresence } from "../core/field-presence.js"
+import { resolveCombatEffectLifecycle } from "../scenario/effect-lifecycle.js"
 import {
   canEnterNightsoulBlessing, hasHexereiSecretRite,
   getCharacterBurstEnergyCost,
@@ -31,6 +33,7 @@ import {
 } from "./types.js"
 
 export { EMPTY_COMBAT_ACTION_EFFECTS } from "./types.js"
+export { resolveCombatEffectLifecycle } from "../scenario/effect-lifecycle.js"
 export type {
   AppliedCombatActionEffect,
   ResolveAdditionalDamageEventEffectsInput,
@@ -44,6 +47,7 @@ interface EligibleActionEffect {
   readonly effect: CombatActionEffect
   readonly source: CharacterBuild
 }
+
 
 interface EligibleStatActionEffect {
   readonly effect: CombatActionStatEffect
@@ -192,6 +196,7 @@ export function resolveSelfAutomaticEquipmentEffects(
   )
   const candidateInput: ResolveCombatActionEffectCandidatesInput = {
     action: input.action,
+    ...(input.fieldContext === undefined ? {} : { fieldContext: input.fieldContext }),
     activeEffectIds: [],
     baseEnergyRecharge: input.baseEnergyRecharge,
     ...(input.gameData === undefined ? {} : { gameData: input.gameData }),
@@ -222,6 +227,7 @@ export function resolveSelfMaximumReachableCharacterHpEffects(
   )
   const candidateInput: ResolveCombatActionEffectCandidatesInput = {
     action: input.action,
+    ...(input.fieldContext === undefined ? {} : { fieldContext: input.fieldContext }),
     activeEffectIds: [],
     baseEnergyRecharge: input.baseEnergyRecharge,
     ...(input.gameData === undefined ? {} : { gameData: input.gameData }),
@@ -265,7 +271,7 @@ export function resolveCombatActionDefenseEffects(
 ): ResolvedCombatActionEffects {
   const candidates = listCombatActionEffects().filter(
     (effect) =>
-      effect.activation !== "automatic" &&
+      (effect.activation !== "automatic" || isAutomaticPartyArtifactStatEffect(effect)) &&
       (effect.target === "defenseFlat" || effect.target === "defensePercent")
   )
   return resolveCombatActionEffectsForCandidates(input, candidates)
@@ -277,10 +283,16 @@ export function resolveCombatActionAttackEffects(
 ): ResolvedCombatActionEffects {
   const candidates = listCombatActionEffects().filter(
     (effect) =>
-      effect.activation !== "automatic" &&
+      (effect.activation !== "automatic" || isAutomaticPartyArtifactStatEffect(effect)) &&
       (effect.target === "attackPercent" || effect.target === "baseAttackFlat" || effect.target === "flatAttack")
   )
   return resolveCombatActionEffectsForCandidates(input, candidates)
+}
+
+/** Includes prepared party stats in source conversion inputs, without counting self equipment twice. */
+function isAutomaticPartyArtifactStatEffect(effect: CombatActionEffect): boolean {
+  return effect.activation === "automatic" && effect.lifecycle !== undefined &&
+    effect.source.kind === "artifact_set" && effect.source.holder === "party_member"
 }
 
 /** Resolves only elemental-mastery effects while assembling a source build's final mastery snapshot. */
@@ -374,7 +386,7 @@ export function resolveCombatActionEffectsForCandidates(
       return true
     }) ?? true
   }
-  const eligibleEffects = candidates
+  const eligibleCandidates = candidates
     .filter((effect) => hasQualifiedDependencies(effect))
     .filter((effect) =>
       isCombatActionEffectApplicable(
@@ -389,6 +401,14 @@ export function resolveCombatActionEffectsForCandidates(
       )
     )
     .flatMap((effect) => resolveEligibleActionEffect(effect, input))
+  const priorities = new Map<string, number>()
+  for (const { effect } of eligibleCandidates) {
+    const exclusive = effect.exclusivity
+    if (exclusive?.automaticPriority === undefined || effect.activation !== "automatic") continue
+    priorities.set(exclusive.group, Math.max(priorities.get(exclusive.group) ?? -Infinity, exclusive.automaticPriority))
+  }
+  const eligibleEffects = eligibleCandidates.filter(({ effect }) => effect.exclusivity?.automaticPriority === undefined ||
+    effect.activation !== "automatic" || effect.exclusivity.automaticPriority === priorities.get(effect.exclusivity.group))
   assertExclusiveActionEffectsAreCompatible([...qualifiedParents, ...eligibleEffects.map(({ effect }) => effect)])
   const additionalDamageEvents = eligibleEffects.flatMap(({ effect, source }) =>
     effect.target === "additionalDamageEvent" ? [resolveAdditionalDamageEvent(effect, source, input)] : []
@@ -699,6 +719,11 @@ function resolveEligibleActionEffect(
   effect: CombatActionEffect,
   input: ResolveCombatActionEffectCandidatesInput
 ): readonly EligibleActionEffect[] {
+  const fieldContext = input.fieldContext ?? {
+    actionOwnerBuildId: input.actionOwnerBuildId ?? input.primary.buildId,
+    onFieldBuildId: input.action.fieldPresence === "off_field" ? null : input.actionOwnerBuildId ?? input.primary.buildId
+  }
+  if (effect.requiresRecipientOnField && getBuildFieldPresence(fieldContext, input.primary.buildId) !== "on_field") return []
   if (!hasRequiredActiveEffects(effect, input.activeEffectIds)) return []
   if (
     effect.deterministicSnapshotActivation !== undefined &&
@@ -714,7 +739,9 @@ function resolveEligibleActionEffect(
     }
   }
   const isSelectedActiveEffect = input.activeEffectIds.includes(effect.id)
-  if (effect.activation !== "automatic" && !isSelectedActiveEffect) return []
+  const hasQualifiedDefault = effect.lifecycle?.kind === "conditional" &&
+    effect.lifecycle.preparation === "qualified_or_selected"
+  if (effect.activation !== "automatic" && !isSelectedActiveEffect && !hasQualifiedDefault) return []
   const selectedSourceBuildId = input.activeEffectSourceBuildIds?.[effect.id]
   const effectSource = effect.source
   const selectedTeammateSource = input.teammates.find((build) => build.buildId === selectedSourceBuildId)
@@ -732,11 +759,13 @@ function resolveEligibleActionEffect(
   ) {
     return []
   }
+  const deduplicateQualifiedSources = effect.source.kind === "artifact_set" &&
+    effect.source.resolveOneMatchingPartySource === true
   const sources = resolveEffectSources(
     effect,
     input.primary,
     input.teammates,
-    input.activeEffectSourceBuildIds?.[effect.id]
+    deduplicateQualifiedSources ? undefined : input.activeEffectSourceBuildIds?.[effect.id]
   )
   if (sources.length === 0) {
     if (effect.activation !== "automatic" && isSelectedActiveEffect) {
@@ -744,10 +773,20 @@ function resolveEligibleActionEffect(
     }
     return []
   }
-  return sources.flatMap((source) => {
-    // A teammate cannot occupy the field with the target. Unknown actions are
-    // conservative: only explicitly reviewed background actions may overlap.
-    if (effect.requiresSourceOnField && source.buildId !== (input.actionOwnerBuildId ?? input.primary.buildId) && input.action.fieldPresence !== "off_field") return []
+  const qualified = sources.flatMap((source) => {
+    const lifecycle = resolveCombatEffectLifecycle({
+      targetFrozen: input.targetFrozen ?? false,
+      enemyCount: input.enemyCount ?? 1,
+      ...(effect.lifecycle === undefined ? {} : { lifecycle: effect.lifecycle }),
+      ...(effect.requiresSourceOnField === undefined ? {} : { requiresSourceOnField: effect.requiresSourceOnField }),
+      ...(effect.requiresRecipientOnField === undefined ? {} : { requiresRecipientOnField: effect.requiresRecipientOnField }),
+      source, recipient: input.primary, builds: [input.primary, ...input.teammates], fieldContext,
+      ...(input.gameData === undefined ? {} : { gameData: input.gameData }),
+      activeEffectIds: input.activeEffectIds,
+      selected: isSelectedActiveEffect && (selectedSourceBuildId === undefined || selectedSourceBuildId === source.buildId),
+      ...(input.activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds: input.activeEffectSourceBuildIds })
+    })
+    if (!lifecycle.eligible) return []
     if (effect.source.kind === "character") {
       const requiredAscension = effect.source.minimumSourceAscension
       if (requiredAscension !== undefined && source.ascension < requiredAscension) return []
@@ -786,6 +825,10 @@ function resolveEligibleActionEffect(
     }
     return [{ effect, source }]
   })
+  // Eligibility precedes same-name deduplication; an ineligible wearer must not shadow a valid source.
+  return deduplicateQualifiedSources
+    ? qualified.sort((left, right) => left.source.buildId.localeCompare(right.source.buildId)).slice(0, 1)
+    : qualified
 }
 
 function hasRequiredActiveEffects(effect: CombatActionEffect, activeEffectIds: readonly string[]): boolean {
@@ -808,7 +851,8 @@ function matchesEffectCondition(effect: CombatActionEffect, input: ResolveCombat
   }
   if (effect.condition.kind === "moonsign_level") {
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
-    return input.moonsignLevel !== undefined && rank[input.moonsignLevel] >= rank[effect.condition.minimum]
+    return input.moonsignLevel !== undefined && rank[input.moonsignLevel] >= rank[effect.condition.minimum] &&
+      (effect.condition.maximum === undefined || rank[input.moonsignLevel] <= rank[effect.condition.maximum])
   }
   if (effect.condition.kind === "source_nightsoul_blessing") return true
   if (effect.condition.kind === "primary_nightsoul_blessing") {
@@ -957,7 +1001,7 @@ function resolveEffectSourceCandidates(
     throw new Error(`Active effect ${effectId} cannot use selected source build ${selectedSourceBuildId}`)
   }
   if (resolveAllMatchingSources) return candidates
-  if (resolveOneMatchingSource) return candidates.slice(0, 1)
+  if (resolveOneMatchingSource) return candidates
   const soleCandidate = candidates[0]
   if (candidates.length === 1 && soleCandidate) return [soleCandidate]
   if (characterId) throw new Error(`Active effect ${effectId} requires exactly one ${characterId} source build`)

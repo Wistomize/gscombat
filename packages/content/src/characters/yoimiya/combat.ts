@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { yoimiyaDefinition } from "./definition.js"
 
 export const yoimiyaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("yoimiya", 2),
+    ...declareWeaponHitCapabilities(yoimiyaDefinition),
+    declareHitCapability("yoimiya.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["pyro"]),
+  ],
   actions: [
     {
       characterId: "Yoimiya",

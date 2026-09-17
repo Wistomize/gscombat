@@ -1,8 +1,17 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { lyneyDefinition } from "./definition.js"
 
 export const lyneyCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("lyney", 3),
+    ...declareWeaponHitCapabilities(lyneyDefinition),
+    declareHitCapability("lyney.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+  {
+    id: "lyney.charged.prop_arrow.hp_loss", label: "隐具魔术箭 · 命中时消耗自身生命值",
+    kind: "hp_loss", recipient: "self", sourceFieldPresence: "on_field", sustained: true
+  }],
   actions: [
     {
       characterId: "Lyney",

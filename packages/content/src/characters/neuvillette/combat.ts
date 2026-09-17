@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { neuvilletteDefinition } from "./definition.js"
@@ -6,6 +7,14 @@ const neuvilletteC6WaterfallActionId =
   "neuvillette.constellation.6.wrathful_recompense.three_droplets.six_waterfalls"
 
 export const neuvilletteCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("neuvillette", 3),
+    ...declareWeaponHitCapabilities(neuvilletteDefinition),
+    declareHitCapability("neuvillette.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),
+  {
+    id: "neuvillette.charged.equitable_judgment.hp_loss", label: "重击·衡平推裁 · 持续消耗自身生命值",
+    kind: "hp_loss", recipient: "self", sourceFieldPresence: "on_field", sustained: true
+  }],
   actions: [
     {
       characterId: "Neuvillette",

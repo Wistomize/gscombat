@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { candaceDefinition } from "./definition.js"
 
 export const candaceCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("candace", 4),
+    ...declareWeaponHitCapabilities(candaceDefinition),
+    declareHitCapability("candace.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),
+  ],
   actions: [
     {
       characterId: "Candace",

@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { escoffierDefinition } from "./definition.js"
 
 export const escoffierCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("escoffier", 5),
+    ...declareWeaponHitCapabilities(escoffierDefinition),
+    declareHitCapability("escoffier.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),
+    { ...declareHitCapability("escoffier.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["cryo"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Escoffier",

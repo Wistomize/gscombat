@@ -1,8 +1,16 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { xianyunDefinition } from "./definition.js"
 
 export const xianyunCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("xianyun", 4),
+    { ...declareSkillCastCapability("xianyun", 4, {"initialUses":2}), id: "xianyun.kit.extra-skill-charge", minimumSourceConstellation: 1 },
+    { id: "xianyun.kit.plunge-access", label: "竹星协助当前前台提高跳跃能力", kind: "plunge_access", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(xianyunDefinition),
+    declareHitCapability("xianyun.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Xianyun",

@@ -11,11 +11,11 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: ["artifact.bloodstained-chivalry.4pc.after-defeat.charged-damage-bonus"],
       id: "artifact.bloodstained-chivalry.4pc.after-defeat.charged-damage-bonus",
       label: "染血的骑士道 · 四件套（击败敌人后）",
       source: artifactSource("BloodstainedChivalry", 4),
-      status: "implemented"
+      status: "not_applicable",
+      reason: "用户确认四件套暂不计入，保留旧效果 ID 仅用于兼容；不默认击杀条件。"
     },
     {
       id: "artifact.bloodstained-chivalry.4pc.after-defeat.charged-stamina",

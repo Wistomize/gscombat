@@ -17,6 +17,7 @@ function createChargedDamageStackEffect(
   return {
     activation: "active",
     selectionMode: "optional",
+    ...(stackCount === 3 ? { weaponComparisonDefault: { recipientCharacterIds: ["Neuvillette"] } } : {}),
     exclusivity: { group: "tome-of-the-eternal-flow-raging-tides", variant: stackCount + "-stack" },
     id: "weapon.tome-of-the-eternal-flow.raging-tides." + stackCount + "-stack.charged-damage-bonus",
     label: "万世流涌大典 · 荡尽" + stackCount + "层重击伤害",

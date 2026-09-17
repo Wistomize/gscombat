@@ -171,13 +171,14 @@ interface CandidateActiveEffects {
 
 function getCandidateActiveEffects(
   scenario: EvaluationScenario,
-  candidateWeaponId: string
+  candidateWeaponId: string,
+  hasObservedReaction = false
 ): CandidateActiveEffects {
   const activeEffectSourceBuildIds = { ...(scenario.conditions.activeEffectSourceBuildIds ?? {}) }
   const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
   const activeEffectIds = scenario.conditions.activeEffectIds.filter((effectId) => {
     const effect = effectsById.get(effectId)
-    if (effect?.activation !== "active" || effect.source.kind !== "weapon") return true
+    if (!effect || effect.source.kind !== "weapon") return true
 
     if (effect.source.resolveAllMatchingPartySources === true) {
       delete activeEffectSourceBuildIds[effectId]
@@ -197,20 +198,34 @@ function getCandidateActiveEffects(
     return true
   })
 
-  let candidateActiveEffectIds = activeEffectIds
+  const action = getCombatActionDefinition(scenario.targetActionId)
   const comparisonDefaultEffects = [...effectsById.values()].filter(
-    (effect) =>
-      effect.source.kind === "weapon" &&
-      effect.source.weaponId === candidateWeaponId &&
-      effect.weaponComparisonDefault?.recipientCharacterIds.includes(scenario.primary.characterId) === true
-  )
-  for (const effect of comparisonDefaultEffects) {
-    if (effect.exclusivity) {
-      candidateActiveEffectIds = candidateActiveEffectIds.filter(
-        (effectId) => effectsById.get(effectId)?.exclusivity?.group !== effect.exclusivity?.group
-      )
+    (effect) => {
+      const defaults = effect.weaponComparisonDefault
+      if (effect.source.kind !== "weapon" || effect.source.weaponId !== candidateWeaponId || !defaults) return false
+      if (defaults.recipientCharacterIds !== "all" && !defaults.recipientCharacterIds.includes(scenario.primary.characterId)) return false
+      if (defaults.requiresOffFieldAction && action?.fieldPresence !== "off_field") return false
+      if (defaults.requiresTeammate && scenario.teammates.length === 0) return false
+      if (defaults.requiresReactionAction && !hasObservedReaction && !isReactionComparisonAction(action)) return false
+      return true
     }
-    if (!candidateActiveEffectIds.includes(effect.id)) candidateActiveEffectIds = [...candidateActiveEffectIds, effect.id]
+  )
+  const defaultGroups = new Map<string, string>()
+  for (const effect of comparisonDefaultEffects) {
+    if (!effect.exclusivity) continue
+    const { group, variant } = effect.exclusivity
+    const previous = defaultGroups.get(group)
+    if (previous !== undefined && previous !== variant) {
+      throw new Error(`Conflicting weapon comparison defaults for ${candidateWeaponId}: ${group}`)
+    }
+    defaultGroups.set(group, variant)
+  }
+  const candidateActiveEffectIds = activeEffectIds.filter((effectId) => {
+    const group = effectsById.get(effectId)?.exclusivity?.group
+    return group === undefined || !defaultGroups.has(group)
+  })
+  for (const effect of comparisonDefaultEffects) {
+    if (!candidateActiveEffectIds.includes(effect.id)) candidateActiveEffectIds.push(effect.id)
     activeEffectSourceBuildIds[effect.id] = scenario.primary.buildId
   }
   const selectedEffectIds = new Set(candidateActiveEffectIds)
@@ -221,6 +236,15 @@ function getCandidateActiveEffects(
     activeEffectIds: candidateActiveEffectIds,
     ...(Object.keys(activeEffectSourceBuildIds).length === 0 ? {} : { activeEffectSourceBuildIds })
   }
+}
+
+/** A comparison assumes stacks already earned by this explicit reaction output, never by an arbitrary teammate. */
+function isReactionComparisonAction(action: ReturnType<typeof getCombatActionDefinition>): boolean {
+  if (!action) return false
+  if (action.amplifyingReaction || action.additiveReaction || action.transformativeReaction) return true
+  return action.timeline?.damageEvents.some((event) =>
+    event.stellarSwirlReaction !== undefined
+  ) ?? false
 }
 
 function hasCandidateWeaponEffectSource(
@@ -260,7 +284,8 @@ function matchesEffectCondition(
   if (effect.condition.kind === "moonsign_level") {
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
     const moonsignLevel = resolveTeamState(scenario.primary, scenario.teammates, gameData).moonsign.level
-    return rank[moonsignLevel] >= rank[effect.condition.minimum]
+    return rank[moonsignLevel] >= rank[effect.condition.minimum] &&
+      (effect.condition.maximum === undefined || rank[moonsignLevel] <= rank[effect.condition.maximum])
   }
   if (effect.condition.kind === "source_nightsoul_blessing") return true
   if (effect.condition.kind === "primary_nightsoul_blessing") {
@@ -344,26 +369,28 @@ function analyzeWeapons(
   scenario: EvaluationScenario,
   gameData: GameDataRepository,
   baselineExpectedDamage: number,
-  refinementOverrides: Readonly<Record<string, number>>
+  refinementOverrides: Readonly<Record<string, number>>,
+  hasObservedReaction: boolean
 ): readonly WeaponComparisonResult[] {
   return supportedWeapons
     .flatMap((weapon) => {
       const refinement = refinementOverrides[weapon.weaponId] ?? getWeaponComparisonRefinement(weapon.rarity)
-      const candidate = prepareWeaponCandidate(scenario, gameData, weapon.weaponId, refinement)
+      const candidate = prepareWeaponCandidate(scenario, gameData, weapon.weaponId, refinement, hasObservedReaction)
       return candidate ? [evaluateWeaponCandidate(candidate, gameData, baselineExpectedDamage)] : []
     })
     .sort((left, right) => right.expectedDamage - left.expectedDamage)
 }
 
 function prepareWeaponCandidate(
-  scenario: EvaluationScenario, gameData: GameDataRepository, weaponId: string, refinement: number
+  scenario: EvaluationScenario, gameData: GameDataRepository, weaponId: string, refinement: number,
+  hasObservedReaction = false
 ) {
   const primaryCharacter = gameData.getCharacter(scenario.primary.characterId)
   if (!primaryCharacter) throw new Error(`Missing primary character in game data: ${scenario.primary.characterId}`)
   const weapon = supportedWeapons.find((candidate) => candidate.weaponId === weaponId)
   if (!weapon || (weapon.rarity !== 4 && weapon.rarity !== 5) || weapon.weaponType !== primaryCharacter.weaponType ||
     gameData.getWeaponStat(weaponId, "atk", 90, 6) === undefined) return undefined
-  const candidateActiveEffects = getCandidateActiveEffects(scenario, weaponId)
+  const candidateActiveEffects = getCandidateActiveEffects(scenario, weaponId, hasObservedReaction)
   if (!canEvaluateCandidateWeapon(scenario, weaponId, candidateActiveEffects.activeEffectIds, gameData)) return undefined
   return {
     weapon,
@@ -398,9 +425,10 @@ export function analyzeWeaponComparison(
   if (!Number.isInteger(refinement) || refinement < 1 || refinement > 5) {
     throw Object.assign(new Error("武器精炼等级必须为 1 至 5 的整数"), { statusCode: 400 })
   }
-  const candidate = prepareWeaponCandidate(scenario, gameData, weaponId, refinement)
+  const baseline = evaluateScenario(scenario, gameData)
+  const candidate = prepareWeaponCandidate(scenario, gameData, weaponId, refinement, hasObservedElementalReaction(baseline))
   if (!candidate) throw Object.assign(new Error(`当前场景无法比较武器：${weaponId}`), { statusCode: 400 })
-  const baselineExpectedDamage = evaluateScenario(scenario, gameData).actionExpectedDamage
+  const baselineExpectedDamage = baseline.actionExpectedDamage
   return { baselineExpectedDamage, weapon: evaluateWeaponCandidate(candidate, gameData, baselineExpectedDamage) }
 }
 
@@ -467,8 +495,8 @@ export function analyzeScenario(
   gameData: GameDataRepository,
   options: AnalyzeScenarioOptions = {}
 ): ScenarioAnalysis {
-  const baselineExpectedDamage = evaluateScenario(scenario, gameData).actionExpectedDamage
-  return analyzeWithBaseline(scenario, gameData, baselineExpectedDamage, options)
+  const baseline = evaluateScenario(scenario, gameData)
+  return analyzeWithBaseline(scenario, gameData, baseline, options)
 }
 
 /** Produces the complete report while evaluating its authoritative baseline exactly once. */
@@ -476,13 +504,19 @@ export function evaluateScenarioAnalysis(
   scenario: EvaluationScenario, gameData: GameDataRepository, options: AnalyzeScenarioOptions = {}
 ): { readonly evaluation: ScenarioEvaluation; readonly analysis: ScenarioAnalysis } {
   const evaluation = evaluateScenario(scenario, gameData)
-  return { evaluation, analysis: analyzeWithBaseline(scenario, gameData, evaluation.actionExpectedDamage, options) }
+  return { evaluation, analysis: analyzeWithBaseline(scenario, gameData, evaluation, options) }
+}
+
+/** Uses the already evaluated baseline's application result; a compatible aura alone is not a reaction. */
+function hasObservedElementalReaction(evaluation: ScenarioEvaluation): boolean {
+  return evaluation.rotation.events.some((event) => event.elementalApplication?.reaction !== undefined)
 }
 
 function analyzeWithBaseline(
   scenario: EvaluationScenario, gameData: GameDataRepository,
-  baselineExpectedDamage: number, options: AnalyzeScenarioOptions
+  baseline: ScenarioEvaluation, options: AnalyzeScenarioOptions
 ): ScenarioAnalysis {
+  const baselineExpectedDamage = baseline.actionExpectedDamage
   const averageRolls = getAverageRolls(gameData)
   const marginalSubstats = analyzeMarginalSubstats(scenario, gameData, baselineExpectedDamage, averageRolls)
   const effectiveArtifacts = analyzeEffectiveArtifacts(scenario, averageRolls, marginalSubstats)
@@ -492,6 +526,7 @@ function analyzeWithBaseline(
     marginalSubstats,
     progressionGains: analyzeProgressionGains(scenario, gameData, baselineExpectedDamage),
     totalEffectiveRolls: effectiveArtifacts.reduce((total, artifact) => total + artifact.effectiveRolls, 0),
-    weapons: analyzeWeapons(scenario, gameData, baselineExpectedDamage, options.weaponComparisonRefinements ?? {})
+    weapons: analyzeWeapons(scenario, gameData, baselineExpectedDamage, options.weaponComparisonRefinements ?? {},
+      hasObservedElementalReaction(baseline))
   }
 }

@@ -1,7 +1,11 @@
 import { getCombatActionDefinition, type CombatActionMetadata, xianglingNationalBuiltinBuild } from "@gscombat/content"
-import { describe, expect, it } from "vitest"
+import { afterAll, describe, expect, it } from "vitest"
+import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 
 import { resolveCombatActionEffects, resolveFinalHpToFlatAttack } from "../../../src/effects/action-effects.js"
+
+const gameData = new GameDataRepository(DEFAULT_GAME_DATA_PATH)
+afterAll(() => gameData.close())
 
 function requireAction(actionId: string) {
   const action = getCombatActionDefinition(actionId)
@@ -37,6 +41,7 @@ function withHexereiSecretRite(teammates: readonly typeof xianglingNationalBuilt
 
 function resolveEffects(actionId: string, setId: string, activeEffectIds: readonly string[] = []) {
   return resolveCombatActionEffects({
+    gameData,
     action: requireAction(actionId),
     activeEffectIds,
     baseEnergyRecharge: 1,
@@ -150,9 +155,9 @@ describe("current-action equipment effects", () => {
     ])
 
     expect(berserker.critRate).toBeCloseTo(0.36)
-    expect(bloodstained.damageBonus).toBeCloseTo(0.5)
+    expect(bloodstained.damageBonus).toBe(0) // Four-piece kill preparation is deliberately excluded.
     expect(braveHeart.attackPercent).toBeCloseTo(0.18)
-    expect(braveHeart.damageBonus).toBeCloseTo(0.3)
+    expect(braveHeart.damageBonus).toBeCloseTo(0.15) // Reviewed foreground average, not the old 30% window.
     expect(deepwood.damageBonus).toBeCloseTo(0.15)
     expect(deepwood.enemyResistanceReduction).toBeCloseTo(0.3)
     expect(goldenTroupe.damageBonus).toBeCloseTo(0.45)
@@ -164,7 +169,7 @@ describe("current-action equipment effects", () => {
     const vaporize = resolveEffects("xiangling.burst.pyronado.reverse_vaporize", "CrimsonWitchOfFlames")
     const nonReaction = resolveEffects("xiangling.skill.guoba.single_flame_breath", "CrimsonWitchOfFlames")
 
-    expect(vaporize.damageBonus).toBeCloseTo(0.15)
+    expect(vaporize.damageBonus).toBeCloseTo(0.225) // Guoba permits one prepared cast, independently of the reaction bonus.
     expect(vaporize.amplifyingReactionBonus).toBeCloseTo(0.15)
     expect(vaporize.appliedEffects).toEqual(
       expect.arrayContaining([
@@ -243,18 +248,17 @@ describe("current-action equipment effects", () => {
       enemyCount: 1,
       moonsignLevel: "ascendant_gleam",
       primary: withArtifactSet("TestNoArtifactSet"),
-      teammates: [withArtifactSet("Instructor")]
+      teammates: [{ ...withArtifactSet("Instructor"), characterId: "Xingqiu" }]
     })
 
     expect(automatic.elementalMastery).toBeCloseTo(80)
-    expect(active.elementalMastery).toBeCloseTo(200)
+    expect(active.elementalMastery).toBeCloseTo(80)
     expect(teammateActive.elementalMastery).toBeCloseTo(120)
     expect(teammateActive.appliedEffects).toEqual(
       expect.arrayContaining([expect.objectContaining({ sourceId: "test.equipment.Instructor" })])
     )
-    expect(active.appliedEffects.map((effect) => effect.id)).toEqual(
+    expect(teammateActive.appliedEffects.map((effect) => effect.id)).toEqual(
       expect.arrayContaining([
-        "artifact.instructor.2pc.elemental-mastery",
         "artifact.instructor.4pc.after-reaction.party-elemental-mastery"
       ])
     )
@@ -274,14 +278,14 @@ describe("current-action equipment effects", () => {
       teammates: [withArtifactSet("SilkenMoonsSerenade")]
     })
 
-    expect(initial.elementalMastery).toBeCloseTo(60)
+    expect(initial.elementalMastery).toBeCloseTo(120) // Actual full Moonsign wins over a retired initial-state selection.
     expect(teammateFull.elementalMastery).toBeCloseTo(120)
     expect(teammateFull.appliedEffects).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: fullEffectId, sourceId: "test.equipment.SilkenMoonsSerenade" })])
     )
     expect(() =>
       resolveEffects("xiangling.burst.pyronado.reverse_vaporize", "SilkenMoonsSerenade", [initialEffectId, fullEffectId])
-    ).toThrow("silken-moons-serenade-moonsign")
+    ).not.toThrow()
   })
 
   it("resolves every reviewed elemental-mastery two-piece effect while retaining unsupported four-piece clauses", () => {
@@ -326,21 +330,22 @@ describe("current-action equipment effects", () => {
     expect(martialArtist.damageBonus).toBeCloseTo(0.4)
     expect(shimenawa.attackPercent).toBeCloseTo(0.18)
     expect(shimenawa.damageBonus).toBeCloseTo(0.5)
-    expect(desertTwoPiece.damageBonus).toBeCloseTo(0.15)
+    expect(desertTwoPiece.damageBonus).toBeCloseTo(0.55) // Charged-hit preparation is now automatic.
     expect(desertFourPiece.damageBonus).toBeCloseTo(0.4)
     expect(lavawalker.damageBonus).toBeCloseTo(0.35)
-    expect(thundersoother.damageBonus).toBeCloseTo(0.35)
+    expect(thundersoother.damageBonus).toBe(0) // This fixture is a solo Xiangling, with no Electro teammate.
     expect(tenacity.hpPercent).toBeCloseTo(0.2)
     expect(tenacity.attackPercent).toBeCloseTo(0.2)
-    expect(retracingBolide.damageBonus).toBeCloseTo(0.4)
+    expect(retracingBolide.damageBonus).toBe(0) // This isolated Xiangling fixture has no shield provider or Geo teammate.
     expect(defendersWill.defensePercent).toBeCloseTo(0.3)
   })
 
   it("resolves frozen target snapshots and a teammate's swirled-element resistance shred", () => {
-    const blizzardStrayer = resolveEffects("ganyu.normal.frostflake_arrow.level_two.hit_and_bloom", "BlizzardStrayer", [
-      "artifact.blizzard-strayer.4pc.cryo-aura.crit-rate",
-      "artifact.blizzard-strayer.4pc.frozen.crit-rate"
-    ])
+    const blizzardStrayer = resolveCombatActionEffects({
+      gameData, action: requireAction("ganyu.normal.frostflake_arrow.level_two.hit_and_bloom"),
+      primary: { ...withArtifactSet("BlizzardStrayer"), characterId: "Ganyu" }, teammates: [],
+      activeEffectIds: [], targetFrozen: true, baseEnergyRecharge: 1, enemyCount: 1
+    })
     const viridescentTwoPiece = resolveEffects("xiao.burst.bane_of_all_evil.high_plunge", "ViridescentVenerer")
     const viridescentTeammate = resolveCombatActionEffects({
       action: requireAction("xiangling.burst.pyronado.reverse_vaporize"),
@@ -348,7 +353,7 @@ describe("current-action equipment effects", () => {
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: withArtifactSet("TestNoArtifactSet"),
-      teammates: [withArtifactSet("ViridescentVenerer")]
+      teammates: [{ ...withArtifactSet("ViridescentVenerer"), characterId: "KaedeharaKazuha" }]
     })
 
     expect(blizzardStrayer.damageBonus).toBeCloseTo(0.15)
@@ -396,7 +401,7 @@ describe("current-action equipment effects", () => {
     const standardEffectId = "artifact.scroll-of-the-hero-of-cinder-city.4pc.reaction-element.pyro.standard.damage-bonus"
     const nightsoulEffectId = "artifact.scroll-of-the-hero-of-cinder-city.4pc.reaction-element.pyro.nightsoul.damage-bonus"
     const hydroEffectId = "artifact.scroll-of-the-hero-of-cinder-city.4pc.reaction-element.hydro.standard.damage-bonus"
-    const teammate = { ...withArtifactSet("ScrollOfTheHeroOfCinderCity"), buildId: "test.cinder-city" }
+    const teammate = { ...withArtifactSet("ScrollOfTheHeroOfCinderCity"), buildId: "test.cinder-city", characterId: "KaedeharaKazuha" }
     const nightsoulTeammate = {
       ...teammate,
       buildId: "test.cinder-city.xilonen",
@@ -409,13 +414,13 @@ describe("current-action equipment effects", () => {
       primary: withArtifactSet("TestNoArtifactSet"),
       teammates: [teammate]
     }
-    const standard = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [standardEffectId] })
+    const standard = resolveCombatActionEffects({ ...baseInput, gameData, activeEffectIds: [standardEffectId] })
     const nightsoul = resolveCombatActionEffects({
       ...baseInput,
       activeEffectIds: [nightsoulEffectId],
       teammates: [nightsoulTeammate]
     })
-    const wrongElement = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [hydroEffectId] })
+    const wrongElement = resolveCombatActionEffects({ ...baseInput, action: requireAction("xingqiu.skill.fatal_rainscreen"), activeEffectIds: [hydroEffectId] })
 
     expect(standard.damageBonus).toBeCloseTo(0.12)
     expect(standard.appliedEffects).toEqual(
@@ -432,7 +437,7 @@ describe("current-action equipment effects", () => {
         activeEffectIds: [standardEffectId, nightsoulEffectId],
         teammates: [teammate, nightsoulTeammate]
       })
-    ).toThrow("scroll-of-the-hero-of-cinder-city-reaction-element-pyro")
+    ).not.toThrow()
   })
 
   it("resolves one Celestial Gift team-buff state from its selected party holder", () => {
@@ -452,22 +457,22 @@ describe("current-action equipment effects", () => {
       primary: withArtifactSet("TestNoArtifactSet"),
       teammates: [teammate, hexereiTeammate]
     }
-    const celestialGuidance = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [celestialGuidanceEffectId] })
-    const mortalHymn = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [mortalHymnEffectId] })
-    const wrongElement = resolveCombatActionEffects({ ...baseInput, activeEffectIds: [hydroEffectId] })
+    const celestialGuidance = resolveCombatActionEffects({ ...baseInput, gameData, teammates: [teammate], activeEffectIds: [celestialGuidanceEffectId] })
+    const mortalHymn = resolveCombatActionEffects({ ...baseInput, gameData, activeEffectIds: [mortalHymnEffectId] })
+    const wrongElement = resolveCombatActionEffects({ ...baseInput, gameData, activeEffectIds: [hydroEffectId] })
 
-    expect(celestialGuidance.damageBonus).toBeCloseTo(0.2)
-    expect(celestialGuidance.appliedEffects).toEqual(
+    expect(celestialGuidance.damageBonus).toBe(0) // Mona without Hexerei grants Hydro, not the selected Pyro.
+    expect(celestialGuidance.appliedEffects).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: celestialGuidanceEffectId, sourceId: teammate.buildId })])
     )
     expect(mortalHymn.damageBonus).toBeCloseTo(0.4)
-    expect(wrongElement.damageBonus).toBe(0)
+    expect(wrongElement.damageBonus).toBeCloseTo(0.4) // Old selection cannot replace the actual foreground element.
     expect(() =>
       resolveCombatActionEffects({
         ...baseInput,
         activeEffectIds: [celestialGuidanceEffectId, mortalHymnEffectId]
       })
-    ).toThrow("celestial-gift-4pc-pyro-damage-bonus")
+    ).not.toThrow()
   })
 
   it("resolves every newly reviewed conventional two-piece stat stage without pretending its four-piece is complete", () => {
@@ -585,7 +590,7 @@ describe("current-action equipment effects", () => {
     })
 
     expect(risingWinds.attackPercent).toBeCloseTo(0.43)
-    expect(risingWinds.critRate).toBeCloseTo(0.2)
+    expect(risingWinds.critRate).toBe(0) // Xiangling has no Witch's Homework mechanism.
     expect(deepGalleriesOrdinaryEnergyNormal.damageBonus).toBeCloseTo(0.15)
     expect(deepGalleriesOrdinaryEnergyNormal.appliedEffects.map((effect) => effect.id)).not.toContain(
       "artifact.finale-of-the-deep-galleries.4pc.zero-energy.normal-damage-bonus"
@@ -595,7 +600,7 @@ describe("current-action equipment effects", () => {
     expect(deepGalleriesMavuikaNormal.damageBonus).toBeCloseTo(0.6)
     expect(deepGalleriesMavuikaNormal.appliedEffects.map((effect) => effect.id)).toContain(deepGalleriesNormalEffectId)
     expect(nighttimeWhispers.attackPercent).toBeCloseTo(0.18)
-    expect(nighttimeWhispers.damageBonus).toBeCloseTo(0.5)
+    expect(nighttimeWhispers.damageBonus).toBeCloseTo(0.2) // No Geo/Hydro conversion or ordinary crystallize partner.
     expect(obsidianCodex.damageBonus).toBeCloseTo(0.15)
     expect(obsidianCodex.critRate).toBeCloseTo(0.4)
   })
@@ -613,16 +618,16 @@ describe("current-action equipment effects", () => {
     const vourukashasGlow = resolveEffects("xiangling.skill.guoba.single_flame_breath", "VourukashasGlow")
 
     expect(disenchantment.attackPercent).toBeCloseTo(0.18)
-    expect(disenchantment.critRate).toBeCloseTo(0.16)
+    expect(disenchantment.critRate).toBe(0) // Solo Pyro cannot prepare Superconduct.
     expect(husk.defensePercent).toBeCloseTo(0.3)
     expect(marechaussee.damageBonus).toBeCloseTo(0.15)
-    expect(paleFlame.damageBonus).toBeCloseTo(0.25)
+    expect(paleFlame.damageBonus).toBeCloseTo(0.5) // Guoba's separated hits prepare two stacks.
     expect(vermillion.attackPercent).toBeCloseTo(0.26)
     expect(vourukashasGlow.hpPercent).toBeCloseTo(0.2)
     expect(vourukashasGlow.damageBonus).toBeCloseTo(0.1)
   })
 
-  it("resolves Husk and Pale Flame's selected current stacks without inferring their trigger timers", () => {
+  it("ignores retired Husk/Pale selections and derives capability-qualified stacks", () => {
     const huskOneStack = resolveEffects("ningguang.normal.charged_attack.with_star_jades", "HuskOfOpulentDreams", [
       "artifact.husk-of-opulent-dreams.4pc.curiosity.1-stack.defense-percent",
       "artifact.husk-of-opulent-dreams.4pc.curiosity.1-stack.geo-damage-bonus"
@@ -643,12 +648,13 @@ describe("current-action equipment effects", () => {
       "artifact.pale-flame.4pc.skill-hit.2-stack.extra-physical-damage-bonus"
     ])
 
-    expect(huskOneStack.defensePercent).toBeCloseTo(0.36)
-    expect(huskOneStack.damageBonus).toBeCloseTo(0.06)
-    expect(huskFourStacks.defensePercent).toBeCloseTo(0.54)
-    expect(huskFourStacks.damageBonus).toBeCloseTo(0.24)
-    expect(paleFlameOneStack.attackPercent).toBeCloseTo(0.09)
-    expect(paleFlameOneStack.damageBonus).toBeCloseTo(0.25)
+    // The fixture's wearer remains Xiangling; choosing a Geo action cannot grant intrinsic Geo attacks.
+    expect(huskOneStack.defensePercent).toBeCloseTo(0.3)
+    expect(huskOneStack.damageBonus).toBe(0)
+    expect(huskFourStacks.defensePercent).toBeCloseTo(0.3)
+    expect(huskFourStacks.damageBonus).toBe(0)
+    expect(paleFlameOneStack.attackPercent).toBeCloseTo(0.18)
+    expect(paleFlameOneStack.damageBonus).toBeCloseTo(0.5)
     expect(paleFlameTwoStacks.attackPercent).toBeCloseTo(0.18)
     expect(paleFlameTwoStacks.damageBonus).toBeCloseTo(0.5)
     expect(paleFlameTwoStacksNonPhysical.attackPercent).toBeCloseTo(0.18)
@@ -658,10 +664,10 @@ describe("current-action equipment effects", () => {
         "artifact.pale-flame.4pc.skill-hit.1-stack.attack-percent",
         "artifact.pale-flame.4pc.skill-hit.2-stack.attack-percent"
       ])
-    ).toThrow("pale-flame-skill-hit")
+    ).not.toThrow()
   })
 
-  it("resolves Nymph's Dream's selected Mirrored Nymph stack snapshot", () => {
+  it("derives Nymph hit categories independently of retired manual stack IDs", () => {
     const oneStack = resolveEffects("xingqiu.skill.fatal_rainscreen", "NymphsDream", [
       "artifact.nymphs-dream.4pc.mirrored-nymph.1-stack.attack-percent",
       "artifact.nymphs-dream.4pc.mirrored-nymph.1-stack.hydro-damage-bonus"
@@ -675,8 +681,8 @@ describe("current-action equipment effects", () => {
       "artifact.nymphs-dream.4pc.mirrored-nymph.3-stack.hydro-damage-bonus"
     ])
 
-    expect(oneStack.attackPercent).toBeCloseTo(0.07)
-    expect(oneStack.damageBonus).toBeCloseTo(0.19)
+    expect(oneStack.attackPercent).toBeCloseTo(0.25)
+    expect(oneStack.damageBonus).toBeCloseTo(0.3)
     expect(threeStacks.attackPercent).toBeCloseTo(0.25)
     expect(threeStacks.damageBonus).toBeCloseTo(0.3)
     expect(threeStacksNonHydro.attackPercent).toBeCloseTo(0.25)
@@ -686,10 +692,10 @@ describe("current-action equipment effects", () => {
         "artifact.nymphs-dream.4pc.mirrored-nymph.1-stack.attack-percent",
         "artifact.nymphs-dream.4pc.mirrored-nymph.3-stack.attack-percent"
       ])
-    ).toThrow("nymphs-dream-mirrored-nymph")
+    ).not.toThrow()
   })
 
-  it("resolves Crimson Witch's selected Elemental Skill stack snapshot without inferring its duration", () => {
+  it("does not allow retired Witch selections to exceed the wearer's cast opportunities", () => {
     const oneStack = resolveEffects("xiangling.skill.guoba.single_flame_breath", "CrimsonWitchOfFlames", [
       "artifact.crimson-witch-of-flames.4pc.skill-cast.1-stack.extra-pyro-damage-bonus"
     ])
@@ -701,14 +707,14 @@ describe("current-action equipment effects", () => {
     ])
 
     expect(oneStack.damageBonus).toBeCloseTo(0.225)
-    expect(threeStacks.damageBonus).toBeCloseTo(0.375)
+    expect(threeStacks.damageBonus).toBeCloseTo(0.225)
     expect(threeStacksNonPyro.damageBonus).toBeCloseTo(0)
     expect(() =>
       resolveEffects("xiangling.skill.guoba.single_flame_breath", "CrimsonWitchOfFlames", [
         "artifact.crimson-witch-of-flames.4pc.skill-cast.1-stack.extra-pyro-damage-bonus",
         "artifact.crimson-witch-of-flames.4pc.skill-cast.3-stack.extra-pyro-damage-bonus"
       ])
-    ).toThrow("crimson-witch-of-flames-skill-cast")
+    ).not.toThrow()
   })
 
   it("resolves remaining conventional reviewed two-piece artifact stages", () => {
@@ -721,10 +727,10 @@ describe("current-action equipment effects", () => {
     const unfinishedReverie = resolveEffects("xiangling.skill.guoba.single_flame_breath", "UnfinishedReverie")
 
     expect(celestialGift.energyRecharge).toBeCloseTo(0.2)
-    expect(crimsonWitch.damageBonus).toBeCloseTo(0.15)
+    expect(crimsonWitch.damageBonus).toBeCloseTo(0.225)
     expect(harmonicWhimsy.attackPercent).toBeCloseTo(0.18)
     expect(longNightsOath.damageBonus).toBeCloseTo(0.25)
-    expect(nymphsDream.damageBonus).toBeCloseTo(0.15)
+    expect(nymphsDream.damageBonus).toBeCloseTo(0.3)
     expect(silkenMoonsSerenade.energyRecharge).toBeCloseTo(0.2)
     expect(unfinishedReverie.attackPercent).toBeCloseTo(0.18)
   })
@@ -751,7 +757,7 @@ describe("current-action equipment effects", () => {
     expect(marechausseeThreeStacks.critRate).toBeCloseTo(0.36)
     expect(harmonicWhimsyThreeStacks.attackPercent).toBeCloseTo(0.18)
     expect(harmonicWhimsyThreeStacks.damageBonus).toBeCloseTo(0.54)
-    expect(longNightsOathFiveStacks.damageBonus).toBeCloseTo(1)
+    expect(longNightsOathFiveStacks.damageBonus).toBeCloseTo(0.25) // Xiangling has no intrinsic plunge-access provider.
     expect(longNightsOathWrongAction.damageBonus).toBe(0)
     expect(() =>
       resolveEffects("xiangling.normal.auto.first_hit", "MarechausseeHunter", [
@@ -770,10 +776,10 @@ describe("current-action equipment effects", () => {
         "artifact.long-nights-oath.4pc.radiance-everlasting.1-stack.plunge-damage-bonus",
         "artifact.long-nights-oath.4pc.radiance-everlasting.5-stack.plunge-damage-bonus"
       ])
-    ).toThrow("long-nights-oath-radiance-everlasting")
+    ).not.toThrow()
   })
 
-  it("resolves mutually exclusive current-action snapshots for Vermillion, Vourukasha, and Unfinished Reverie", () => {
+  it("ignores retired manual states while retaining Vourukasha's explicit stack choice", () => {
     const vermillionFourStacks = resolveEffects("xiangling.skill.guoba.single_flame_breath", "VermillionHereafter", [
       "artifact.vermillion-hereafter.4pc.after-burst.4-stack.attack-percent"
     ])
@@ -792,20 +798,20 @@ describe("current-action equipment effects", () => {
       ["artifact.unfinished-reverie.4pc.post-burning.grace-expired.1-second.damage-bonus"]
     )
 
-    expect(vermillionFourStacks.attackPercent).toBeCloseTo(0.66)
+    expect(vermillionFourStacks.attackPercent).toBeCloseTo(0.26) // No applicable HP-loss provider.
     expect(vourukashasGlowSkill.hpPercent).toBeCloseTo(0.2)
     expect(vourukashasGlowSkill.damageBonus).toBeCloseTo(0.5)
     expect(vourukashasGlowNormal.hpPercent).toBeCloseTo(0.2)
     expect(vourukashasGlowNormal.damageBonus).toBe(0)
     expect(unfinishedReverieFull.attackPercent).toBeCloseTo(0.18)
-    expect(unfinishedReverieFull.damageBonus).toBeCloseTo(0.5)
-    expect(unfinishedReverieFirstSecondAfterGrace.damageBonus).toBeCloseTo(0.4)
+    expect(unfinishedReverieFull.damageBonus).toBe(0) // No Dendro member; old selections cannot grant it.
+    expect(unfinishedReverieFirstSecondAfterGrace.damageBonus).toBe(0)
     expect(() =>
       resolveEffects("xiangling.skill.guoba.single_flame_breath", "VermillionHereafter", [
         "artifact.vermillion-hereafter.4pc.after-burst.attack-percent",
         "artifact.vermillion-hereafter.4pc.after-burst.4-stack.attack-percent"
       ])
-    ).toThrow("vermillion-hereafter-after-burst-hp-loss")
+    ).not.toThrow()
     expect(() =>
       resolveEffects("xiangling.skill.guoba.single_flame_breath", "VourukashasGlow", [
         "artifact.vourukashas-glow.4pc.taking-damage.1-stack.skill-burst-damage-bonus",
@@ -817,21 +823,21 @@ describe("current-action equipment effects", () => {
         "artifact.unfinished-reverie.4pc.out-of-combat-nearby-burning-or-post-burning-grace.damage-bonus",
         "artifact.unfinished-reverie.4pc.post-burning.grace-expired.1-second.damage-bonus"
       ])
-    ).toThrow("unfinished-reverie-damage-bonus-state")
+    ).not.toThrow()
   })
 
-  it("resolves the selected Night of the Sky's Unveiling moonsign snapshot and rejects both at once", () => {
+  it("does not grant Night of the Sky's Unveiling from old Moonsign choices without reaction eligibility", () => {
     const initialEffectId = "artifact.night-of-the-skys-unveiling.4pc.lunar-reaction.initial-moonsign.crit-rate"
     const fullEffectId = "artifact.night-of-the-skys-unveiling.4pc.lunar-reaction.full-moonsign.crit-rate"
     const initial = resolveEffects("xiangling.skill.guoba.single_flame_breath", "NightOfTheSkysUnveiling", [initialEffectId])
     const full = resolveEffects("xiangling.skill.guoba.single_flame_breath", "NightOfTheSkysUnveiling", [fullEffectId])
 
-    expect(initial.critRate).toBeCloseTo(0.15)
-    expect(full.critRate).toBeCloseTo(0.3)
-    expect(full.appliedEffects).toEqual(expect.arrayContaining([expect.objectContaining({ id: fullEffectId, value: 0.3 })]))
+    expect(initial.critRate).toBe(0)
+    expect(full.critRate).toBe(0)
+    expect(full.appliedEffects).not.toEqual(expect.arrayContaining([expect.objectContaining({ id: fullEffectId, value: 0.3 })]))
     expect(() =>
       resolveEffects("xiangling.skill.guoba.single_flame_breath", "NightOfTheSkysUnveiling", [initialEffectId, fullEffectId])
-    ).toThrow("night-of-the-skys-unveiling-moonsign")
+    ).not.toThrow()
   })
 
   it("resolves reviewed weapon passives and one explicit current-hit proc without a rotation simulator", () => {

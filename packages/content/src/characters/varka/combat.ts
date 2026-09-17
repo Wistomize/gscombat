@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type {
   CharacterCombatCoverage,
   CombatActionMetadata,
@@ -275,6 +276,11 @@ const varkaSpecialMetrics: readonly CombatDamageMetricDefinition[] = [
 ]
 
 export const varkaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("varka", 19),
+    ...declareWeaponHitCapabilities(varkaDefinition),
+    declareHitCapability("varka.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Varka",

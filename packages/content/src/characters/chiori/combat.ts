@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { chioriDefinition } from "./definition.js"
 
 export const chioriCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("chiori", 6),
+    ...declareWeaponHitCapabilities(chioriDefinition),
+    declareHitCapability("chiori.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+    { ...declareHitCapability("chiori.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["geo"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Chiori",

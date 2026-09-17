@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { ventiDefinition } from "./definition.js"
 
 export const ventiCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("venti", 1),
+    { id: "venti.kit.plunge-access", label: "拥抱之风创造上升气流", kind: "plunge_access", recipient: "on_field", sourceFieldPresence: "any", sustained: true, minimumSourceAscension: 1 },
+    ...declareWeaponHitCapabilities(ventiDefinition),
+    declareHitCapability("venti.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Venti",
@@ -81,6 +88,7 @@ export const ventiCombatCoverage: CharacterCombatCoverage = {
       evaluator: "declared_direct",
       id: "venti.burst.winds_grand_ode.stormeye.single_tick",
       kind: "damage",
+      fieldPresence: "off_field",
       parameterReferences: [
         {
           groupId: "burst",

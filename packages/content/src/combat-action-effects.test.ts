@@ -158,6 +158,7 @@ describe("combat action effects", () => {
     expect(effect).toEqual({
       activation: "automatic",
       id: "artifact.crimson-witch-of-flames.4pc.vaporize-melt.amplifying-reaction-bonus",
+      lifecycle: { kind: "constant" },
       label: "炽烈的炎之魔女 · 四件套（蒸发与融化反应加成）",
       source: { kind: "artifact_set", minimumPieces: 4, setId: "CrimsonWitchOfFlames" },
       target: "amplifyingReactionBonus",
@@ -482,6 +483,7 @@ describe("combat action effects", () => {
       .toEqual({
         activation: "automatic",
         id: "artifact.crimson-witch-of-flames.4pc.overload-burning-burgeon.reaction-damage-bonus",
+        lifecycle: { kind: "constant" },
         label: "炽烈的炎之魔女 · 四件套（超载、燃烧、烈绽放反应伤害）",
         source: { kind: "artifact_set", minimumPieces: 4, setId: "CrimsonWitchOfFlames" },
         target: "reactionDamageBonus",
@@ -491,6 +493,7 @@ describe("combat action effects", () => {
     expect(effectsById.get("artifact.viridescent-venerer.4pc.swirl.reaction-damage-bonus")).toEqual({
       activation: "automatic",
       id: "artifact.viridescent-venerer.4pc.swirl.reaction-damage-bonus",
+      lifecycle: { kind: "constant" },
       label: "翠绿之影 · 四件套（扩散反应伤害）",
       source: { kind: "artifact_set", minimumPieces: 4, setId: "ViridescentVenerer" },
       target: "reactionDamageBonus",
@@ -504,6 +507,7 @@ describe("combat action effects", () => {
     ).toEqual({
       activation: "automatic",
       id: "artifact.thundering-fury.4pc.overload-electro-charged-superconduct-hyperbloom.reaction-damage-bonus",
+      lifecycle: expect.objectContaining({ applicability: { sourceFieldPresence: "on_field" } }),
       label: "如雷的盛怒 · 四件套（超载、感电、超导、超绽放反应伤害）",
       source: { kind: "artifact_set", minimumPieces: 4, setId: "ThunderingFury" },
       target: "reactionDamageBonus",
@@ -513,6 +517,7 @@ describe("combat action effects", () => {
     expect(effectsById.get("artifact.thundering-fury.4pc.aggravate.reaction-damage-bonus")).toEqual({
       activation: "automatic",
       id: "artifact.thundering-fury.4pc.aggravate.reaction-damage-bonus",
+      lifecycle: expect.objectContaining({ applicability: { sourceFieldPresence: "on_field" } }),
       label: "如雷的盛怒 · 四件套（超激化附加伤害）",
       source: { kind: "artifact_set", minimumPieces: 4, setId: "ThunderingFury" },
       target: "reactionDamageBonus",
@@ -521,7 +526,8 @@ describe("combat action effects", () => {
     })
     expect(flowerStackIds.map((id) => effectsById.get(id))).toEqual(
       FLOWER_OF_PARADISE_LOST_REACTION_DAMAGE_BONUS_BY_STACK.map((value, stackCount) => ({
-        activation: "active",
+        activation: "automatic",
+        lifecycle: expect.objectContaining({ kind: stackCount === 0 || stackCount === 4 ? "conditional" : "excluded" }),
         exclusivity: { group: "flower-of-paradise-lost-reaction-trigger", variant: `${stackCount}-stack` },
         id: flowerStackIds[stackCount],
         label: `乐园遗落之花 · 四件套（绽放、超绽放、烈绽放反应触发${stackCount}层；10秒内）`,
@@ -540,7 +546,7 @@ describe("combat action effects", () => {
     )
 
     expect(DISENCHANTMENT_IN_DEEP_SHADOW_SUPERCONDUCT_REACTION_DAMAGE_BONUS).toBeCloseTo(0.8)
-    expect(effect).toEqual({
+    expect(effect).toMatchObject({
       activation: "automatic",
       id: "artifact.disenchantment-in-deep-shadow.4pc.superconduct.reaction-damage-bonus",
       label: "影中沉凝的幻灭 · 四件套（超导反应伤害）",
@@ -597,9 +603,9 @@ describe("combat action effects", () => {
     expect(NIGHT_OF_THE_SKYS_UNVEILING_TWO_PIECE_ELEMENTAL_MASTERY).toBe(80)
     expect(NIGHT_OF_THE_SKYS_UNVEILING_INITIAL_MOONSIGN_CRIT_RATE).toBeCloseTo(0.15)
     expect(NIGHT_OF_THE_SKYS_UNVEILING_FULL_MOONSIGN_CRIT_RATE).toBeCloseTo(0.3)
-    expect([effectsById.get(initialId), effectsById.get(fullId)]).toEqual([
+    expect([effectsById.get(initialId), effectsById.get(fullId)]).toMatchObject([
       {
-        activation: "active",
+        activation: "automatic",
         condition: { kind: "moonsign_level", minimum: "nascent_gleam" },
         exclusivity: { group: "night-of-the-skys-unveiling-moonsign", variant: "initial" },
         id: initialId,
@@ -609,7 +615,7 @@ describe("combat action effects", () => {
         value: { kind: "fixed", value: 0.15 }
       },
       {
-        activation: "active",
+        activation: "automatic",
         condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
         exclusivity: { group: "night-of-the-skys-unveiling-moonsign", variant: "full" },
         id: fullId,
@@ -628,9 +634,9 @@ describe("combat action effects", () => {
 
     expect(SILKEN_MOONS_SERENADE_INITIAL_MOONSIGN_PARTY_ELEMENTAL_MASTERY).toBe(60)
     expect(SILKEN_MOONS_SERENADE_FULL_MOONSIGN_PARTY_ELEMENTAL_MASTERY).toBe(120)
-    expect([effectsById.get(initialId), effectsById.get(fullId)]).toEqual([
+    expect([effectsById.get(initialId), effectsById.get(fullId)]).toMatchObject([
       {
-        activation: "active",
+        activation: "automatic",
         condition: { kind: "moonsign_level", minimum: "nascent_gleam" },
         exclusivity: { group: "silken-moons-serenade-moonsign", variant: "initial" },
         id: initialId,
@@ -640,7 +646,7 @@ describe("combat action effects", () => {
         value: { kind: "fixed", value: 60 }
       },
       {
-        activation: "active",
+        activation: "automatic",
         condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
         exclusivity: { group: "silken-moons-serenade-moonsign", variant: "full" },
         id: fullId,
@@ -930,8 +936,8 @@ describe("combat action effects", () => {
     const standardEffect = listCombatActionEffects().find((effect) => effect.id === standardEffectId)
     const nightsoulEffect = listCombatActionEffects().find((effect) => effect.id === nightsoulEffectId)
 
-    expect(standardEffect).toEqual({
-      activation: "active",
+    expect(standardEffect).toMatchObject({
+      activation: "automatic",
       condition: { kind: "source_nightsoul_blessing", required: false },
       exclusivity: { group: "scroll-of-the-hero-of-cinder-city-reaction-element-pyro", variant: "standard" },
       id: standardEffectId,
@@ -949,16 +955,11 @@ describe("combat action effects", () => {
     expect(nightsoulEffect).toEqual(
       expect.objectContaining({
         condition: { kind: "source_nightsoul_blessing", required: true },
-        exclusivity: { group: "scroll-of-the-hero-of-cinder-city-reaction-element-pyro", variant: "nightsoul" },
+        exclusivity: { group: "scroll-of-the-hero-of-cinder-city-reaction-element-pyro", variant: "nightsoul", automaticPriority: 40 },
         value: { kind: "fixed", value: 0.4 }
       })
     )
-    expect(scenarioEffects).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: standardEffectId }),
-        expect.objectContaining({ id: nightsoulEffectId })
-      ])
-    )
+    expect(scenarioEffects.some((effect) => effect.id === standardEffectId || effect.id === nightsoulEffectId)).toBe(false)
     expect(scenarioEffects).not.toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -977,8 +978,8 @@ describe("combat action effects", () => {
     const celestialGuidanceEffect = listCombatActionEffects().find((effect) => effect.id === celestialGuidanceEffectId)
     const mortalHymnEffect = listCombatActionEffects().find((effect) => effect.id === mortalHymnEffectId)
 
-    expect(celestialGuidanceEffect).toEqual({
-      activation: "active",
+    expect(celestialGuidanceEffect).toMatchObject({
+      activation: "automatic",
       exclusivity: { group: "celestial-gift-4pc-pyro-damage-bonus", variant: "celestial-guidance" },
       id: celestialGuidanceEffectId,
       label: "天之美赐 · 天光之引（已完成魔女的课业，装备者为火元素；施放元素战技后20秒内）",
@@ -992,8 +993,8 @@ describe("combat action effects", () => {
       targetFilter: { elements: ["pyro"] },
       value: { kind: "fixed", value: CELESTIAL_GIFT_CELESTIAL_GUIDANCE_DAMAGE_BONUS }
     })
-    expect(mortalHymnEffect).toEqual({
-      activation: "active",
+    expect(mortalHymnEffect).toMatchObject({
+      activation: "automatic",
       condition: { kind: "hexerei_secret_rite" },
       exclusivity: { group: "celestial-gift-4pc-pyro-damage-bonus", variant: "mortal-hymn" },
       id: mortalHymnEffectId,
@@ -1009,12 +1010,7 @@ describe("combat action effects", () => {
       targetFilter: { elements: ["pyro"] },
       value: { kind: "fixed", value: CELESTIAL_GIFT_MORTAL_HYMN_DAMAGE_BONUS }
     })
-    expect(scenarioEffects).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: celestialGuidanceEffectId }),
-        expect.objectContaining({ id: mortalHymnEffectId })
-      ])
-    )
+    expect(scenarioEffects.some((effect) => effect.id === celestialGuidanceEffectId || effect.id === mortalHymnEffectId)).toBe(false)
     expect(scenarioEffects).not.toEqual(expect.arrayContaining([expect.objectContaining({ id: hydroEffectId })]))
   })
 
@@ -1208,7 +1204,7 @@ describe("combat action effects", () => {
   it("gives every selectable weapon and artifact set an explicit coverage status", () => {
     const effects = listCombatActionEffects()
     const typedEquipmentEffects = [
-      ...effects.filter((effect) => effect.source.kind !== "character"),
+      ...effects.filter((effect) => effect.source.kind !== "character" && effect.lifecycle?.kind !== "excluded"),
       ...listHealingEquipmentEffects(),
       ...listRecipientEquipmentEffects()
     ]
@@ -1236,6 +1232,11 @@ describe("combat action effects", () => {
     expect(artifactSetIds).toEqual(new Set(supportedArtifactSets.map((artifactSet) => artifactSet.setId)))
     expect([...implementedEffectIds].every((effectId) => typedEquipmentEffectIds.has(effectId))).toBe(true)
     expect(allImplementedEffectIds).toEqual(typedEquipmentEffectIds)
+    for (const effect of effects.filter((entry) => entry.lifecycle?.kind === "excluded")) {
+      expect(allImplementedEffectIds.has(effect.id), effect.id).toBe(false)
+      expect(effect.lifecycle?.kind === "excluded" && effect.lifecycle.reason.length > 0).toBe(true)
+      expect(effect.activation).toBe("automatic")
+    }
     for (const entry of coverage) {
       if (entry.status === "implemented") {
         expect(entry.effectIds.length).toBeGreaterThan(0)
@@ -1292,19 +1293,13 @@ describe("combat action effects", () => {
           source: { characterId: "Xiangling", kind: "character" }
         }),
         expect.objectContaining({
-          id: "artifact.noblesse-oblige.4pc-attack",
-          source: {
-            holder: "party_member",
-            kind: "artifact_set",
-            minimumPieces: 4,
-            setId: "NoblesseOblige"
-          }
-        }),
-        expect.objectContaining({
           id: "weapon.thrilling-tales-of-dragon-slayers.after-switch.party-attack-percent",
           recipientSourceRelation: "not_source"
         })
       ])
+    )
+    expect(listActiveCombatActionEffectOptionsForAction(pyronado)).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: "artifact.noblesse-oblige.4pc-attack" })])
     )
     expect(listActiveCombatActionEffectOptionsForAction(pyronado)).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: "weapon.engulfing-lightning.post-burst-energy-recharge" })])
@@ -1404,21 +1399,22 @@ describe("combat action effects", () => {
     )
   })
 
-  it("declares Echoes of an Offering's selected Valley Rite as a normal same-hit term", () => {
+  it("declares Echoes of an Offering's average Valley Rite as a foreground normal same-hit term", () => {
     const normalAttack = requireAction("tartaglia.skill.foul_legacy_raging_tide.melee_normal.first_hit")
     const skill = requireAction("tartaglia.skill.foul_legacy_raging_tide.stance_activation")
     const effectId = "artifact.echoes-of-an-offering.4pc.valley-rite.normal-attack-additive-damage"
     const effect = listCombatActionEffects().find((entry) => entry.id === effectId)
 
     expect(effect).toEqual({
-      activation: "active",
+      activation: "automatic",
       id: effectId,
-      label: "来歆余响 · 四件套（本次普通攻击触发幽谷祝祀）",
+      label: "来歆余响 · 四件套（前台普攻，平均触发率约 50.2%）",
+      lifecycle: expect.objectContaining({ applicability: { sourceFieldPresence: "on_field" } }),
       source: { kind: "artifact_set", minimumPieces: 4, setId: "EchoesOfAnOffering" },
       target: "matchedActionAdditiveDamageTerm",
       targetFilter: { attackKinds: ["normal"] },
       value: {
-        coefficient: { kind: "fixed", value: 0.7 },
+        coefficient: { kind: "fixed", value: 0.7 / 1.99188736 },
         kind: "matched_action_additive_damage_term",
         scalingStat: "attack"
       }
@@ -1426,9 +1422,7 @@ describe("combat action effects", () => {
     expect(effect).toBeDefined()
     expect(isCombatActionEffectApplicable(effect!, normalAttack)).toBe(true)
     expect(isCombatActionEffectApplicable(effect!, skill)).toBe(false)
-    expect(listActiveCombatActionEffectOptionsForAction(normalAttack)).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: effectId })])
-    )
+    expect(listActiveCombatActionEffectOptionsForAction(normalAttack).some((option) => option.id === effectId)).toBe(false)
     expect(listActiveCombatActionEffectOptionsForAction(skill)).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: effectId })])
     )

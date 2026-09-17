@@ -65,7 +65,8 @@ function isMaximumReachableEffectConditionSatisfied(
   }
   if (condition.kind === "moonsign_level") {
     const rank = { ascendant_gleam: 2, nascent_gleam: 1, none: 0 } as const
-    return rank[teamState.moonsign.level] >= rank[condition.minimum]
+    return rank[teamState.moonsign.level] >= rank[condition.minimum] &&
+      (condition.maximum === undefined || rank[teamState.moonsign.level] <= rank[condition.maximum])
   }
   if (condition.kind === "source_nightsoul_blessing") return true
   if (condition.kind === "primary_nightsoul_blessing") {
@@ -155,6 +156,7 @@ function addMaximumReachableEquipmentEffects(
       (effect.activation !== "active" && effect.activation !== "maximum_reachable") ||
       (effect.source.kind === "character" && effect.activation !== "maximum_reachable") ||
       effect.selectionMode !== undefined ||
+      effect.lifecycle !== undefined ||
       (effect.target === "additionalDamageEvent" && effect.source.kind !== "character") ||
       (effect.target === "matchedActionAdditiveDamageTerm" &&
         (effect.source.kind !== "character" || effect.activation !== "maximum_reachable")) ||
@@ -208,6 +210,7 @@ function selectAutomaticEffectSources(
     const effect = effectsById.get(effectId)
     if (
       !effect ||
+      (effect.source.kind === "artifact_set" && effect.source.resolveOneMatchingPartySource === true) ||
       effect.source.kind === "character" ||
       (effect.source.kind === "weapon" && effect.source.resolveAllMatchingPartySources === true)
     ) continue

@@ -65,6 +65,8 @@ const ActiveEffectSourceBuildIdsSchema = Type.Record(
 )
 
 export const ScenarioConditionsSchema = Type.Object({
+  /** Actual active party member; off-field metrics otherwise leave the active teammate unknown. */
+  onFieldBuildId: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
   activeEffectIds: Type.Array(Type.String({ minLength: 1, maxLength: 100 }), { maxItems: 40, uniqueItems: true }),
   /** Selects a concrete source build when one active party-owned effect has multiple eligible holders. */
   activeEffectSourceBuildIds: Type.Optional(ActiveEffectSourceBuildIdsSchema),
@@ -109,6 +111,8 @@ export type MetricSourceContext = Type.Static<typeof MetricSourceContextSchema>
 
 /** Team state supplied to a typed character metric without binding it to a main-damage conversion. */
 export const MetricEvaluationContextSchema = Type.Object({
+  /** Actual active member shared by support equipment and damage scenarios; omitted means unknown. */
+  onFieldBuildId: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
   /** Explicit active support-metric snapshots, such as party recipient equipment effects. */
   activeEffectIds: Type.Optional(Type.Array(Type.String({ minLength: 1, maxLength: 100 }), { maxItems: 40, uniqueItems: true })),
   /** Selects a concrete equipped source build when an active metric effect has multiple eligible holders. */

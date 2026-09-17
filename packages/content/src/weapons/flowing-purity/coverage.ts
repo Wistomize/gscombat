@@ -12,6 +12,7 @@ export const equipmentCoverage = {
     },
     {
       effectIds: [
+        "weapon.flowing-purity.bond-of-life-cleared.full-clear.all-element-damage-bonus",
         "weapon.flowing-purity.bond-of-life-cleared.1-thousand-points.all-element-damage-bonus",
         "weapon.flowing-purity.bond-of-life-cleared.2-thousand-points.all-element-damage-bonus",
         "weapon.flowing-purity.bond-of-life-cleared.3-thousand-points.all-element-damage-bonus",
@@ -20,7 +21,7 @@ export const equipmentCoverage = {
         "weapon.flowing-purity.bond-of-life-cleared.6-thousand-points.all-element-damage-bonus"
       ],
       id: "weapon.flowing-purity.bond-of-life-cleared.extra-elemental-damage-bonus",
-      label: "纯水流华 · 清除生命之契后按完整千点获得的额外所有元素伤害",
+      label: "纯水流华 · 默认完整清除24%生命之契、按实际生命上限计算额外元素增伤；兼容手选部分清除",
       source: weaponSource("FlowingPurity"),
       status: "implemented"
     }

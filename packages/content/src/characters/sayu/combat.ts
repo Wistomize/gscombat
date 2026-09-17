@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { sayuDefinition } from "./definition.js"
 
 export const sayuCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("sayu", 6),
+    ...declareWeaponHitCapabilities(sayuDefinition),
+    declareHitCapability("sayu.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+    { ...declareHitCapability("sayu.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["anemo"], true, "on_field"), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Sayu",

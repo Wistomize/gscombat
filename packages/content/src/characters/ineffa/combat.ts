@@ -1,8 +1,17 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { ineffaDefinition } from "./definition.js"
 
 export const ineffaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("ineffa", 6),
+    { id: "ineffa.kit.retained-shield", label: "光流屏障护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    { id: "ineffa.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_charged"] },
+    ...declareWeaponHitCapabilities(ineffaDefinition),
+    declareHitCapability("ineffa.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+    { ...declareHitCapability("ineffa.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["electro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Ineffa",

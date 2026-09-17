@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { noelleDefinition } from "./definition.js"
 
 export const noelleCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("noelle", 4),
+    { id: "noelle.kit.retained-shield", label: "护心铠护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(noelleDefinition),
+    declareHitCapability("noelle.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+  ],
   actions: [
     {
       characterId: "Noelle",

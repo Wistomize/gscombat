@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { freminetDefinition } from "./definition.js"
 
 export const freminetCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("freminet", 11),
+    ...declareWeaponHitCapabilities(freminetDefinition),
+    declareHitCapability("freminet.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Freminet",

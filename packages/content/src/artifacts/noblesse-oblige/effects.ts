@@ -14,10 +14,18 @@ export const noblesseObligeCombatActionEffects: readonly CombatActionEffect[] = 
     value: { kind: "fixed", value: NOBLESSE_OBLIGE_BURST_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
+      trigger: { event: "burst_cast", sourceFieldPresence: "on_field" },
+      explanation: "默认已施放元素爆发；来源退场后保留，同名全队增益不叠加"
+    },
     id: "artifact.noblesse-oblige.4pc-attack",
     label: "昔日宗室之仪 · 四件套（当前动作前已触发）",
-    source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "NoblesseOblige" },
+    source: {
+      holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "NoblesseOblige",
+      resolveOneMatchingPartySource: true
+    },
     target: "attackPercent",
     value: { kind: "fixed", value: 0.2 }
   }

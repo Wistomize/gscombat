@@ -166,7 +166,7 @@ describe("support metric API system", () => {
 
       expect(response.statusCode, `${metric.id}: ${response.body}`).toBe(200)
       expect(response.json()).toMatchObject({
-        engineVersion: "support-metric-1",
+        engineVersion: "support-metric-2-artifact-lifecycle",
         metric: { id: metric.id, kind: metric.kind }
       })
       expect(response.json().metric.label).not.toMatch(/C0|0命|零命/)

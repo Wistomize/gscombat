@@ -9,7 +9,7 @@ export const equipmentCoverage = {
         "weapon.sacrificial-jade.after-off-field.elemental-mastery"
       ],
       id: "weapon.sacrificial-jade.after-off-field.stats",
-      label: "遗祀玉珑 · 后台超过5秒后登场的生命值与元素精通",
+      label: "遗祀玉珑 · 武器比较默认后台超过5秒、登场不足10秒的生命值与元素精通",
       source: weaponSource("SacrificialJade"),
       status: "implemented"
     }

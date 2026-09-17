@@ -1,8 +1,17 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { wriothesleyDefinition } from "./definition.js"
 
 export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("wriothesley", 3),
+    ...declareWeaponHitCapabilities(wriothesleyDefinition),
+    declareHitCapability("wriothesley.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["cryo"]),
+  {
+    id: "wriothesley.skill.chilling_penalty.hp_loss", label: "冰驰惩戒 · 强化普攻消耗自身生命值",
+    kind: "hp_loss", recipient: "self", sourceFieldPresence: "on_field", sustained: true
+  }],
   actions: [
     {
       characterId: "Wriothesley",

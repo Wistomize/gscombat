@@ -1,8 +1,18 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { huTaoDefinition } from "./definition.js"
 
 export const huTaoCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("hu-tao", 5),
+    ...declareWeaponHitCapabilities(huTaoDefinition),
+    declareHitCapability("hu-tao.kit.skill_burst_hits", "血梅香与安神秘法命中准备", ["skill", "burst"], ["pyro"]),
+    { ...declareHitCapability("hu-tao.kit.sustained_skill_hits", "重击施加血梅香后持续战技伤害", ["skill"], ["pyro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  {
+    id: "hu_tao.skill.guide_to_afterlife.hp_loss", label: "蝶引来生 · 施放时消耗自身生命值",
+    kind: "hp_loss", recipient: "self", sourceFieldPresence: "on_field", sustained: false
+  }],
   actions: [
     {
       characterId: "HuTao",

@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { chascaDefinition } from "./definition.js"
 
 export const chascaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("chasca", 5),
+    ...declareWeaponHitCapabilities(chascaDefinition),
+    declareHitCapability("chasca.kit.skill_burst_hits", "灵缰共鸣初始战技与爆发命中准备", ["skill", "burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Chasca",

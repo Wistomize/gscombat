@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { sucroseDefinition } from "./definition.js"
 
 export const sucroseCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("sucrose", 1),
+    { ...declareSkillCastCapability("sucrose", 1, {"initialUses":2}), id: "sucrose.kit.extra-skill-charge", minimumSourceConstellation: 1 },
+    ...declareWeaponHitCapabilities(sucroseDefinition),
+    declareHitCapability("sucrose.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Sucrose",

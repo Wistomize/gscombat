@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { zibaiDefinition } from "./definition.js"
 
 export const zibaiCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("zibai", 4),
+    { id: "zibai.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_crystallize"] },
+    ...declareWeaponHitCapabilities(zibaiDefinition),
+    declareHitCapability("zibai.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill","burst"], ["geo"]),
+  ],
   actions: [
     {
       characterId: "Zibai",

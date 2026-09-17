@@ -1,4 +1,5 @@
 import {
+  getArtifactConditionRequirements,
   supportedArtifactSets,
   supportedBuffPresets,
   supportedCharacters,
@@ -8,7 +9,10 @@ import type { CatalogResponse } from "@gscombat/contracts"
 
 /** Catalog shared by the configuration and calculation routes. */
 export const webCatalog: CatalogResponse = {
-  artifactSets: [...supportedArtifactSets],
+  artifactSets: supportedArtifactSets.map((set) => {
+    const conditionRequirements = getArtifactConditionRequirements(set.setId)
+    return { ...set, ...(conditionRequirements.length ? { conditionRequirements } : {}) }
+  }),
   buffPresets: supportedBuffPresets.map((preset) => ({ ...preset, buffs: [...preset.buffs] })),
   characters: supportedCharacters.map((character) => ({
     ...character,

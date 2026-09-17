@@ -6,6 +6,7 @@ import {
 } from "@gscombat/content"
 import type { CharacterBuild } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
+import type { FieldContext } from "../core/field-presence.js"
 import {
   addFormula,
   applyConditions,
@@ -50,10 +51,11 @@ export function evaluateHealingMetric(
   recipient: ResolvedFriendlyRecipient,
   sourceContext: CombatMetricSourceContext | undefined,
   teammates: readonly CharacterBuild[] | undefined,
-  gameData: GameDataRepository
+  gameData: GameDataRepository,
+  fieldContext?: FieldContext
 ): CombatHealingMetricEvaluation {
   const label = normalizeProjectedMetricLabel(metric.label)
-  const stats = runtime.resolveMetricSourceCombatStats(metric, build, sourceContext, teammates, gameData)
+  const stats = runtime.resolveMetricSourceCombatStats(metric, build, sourceContext, teammates, gameData, fieldContext)
   const percentageParameter = metric.percentageParameter
   const resolvedPercentageParameter = percentageParameter
     ? runtime.resolveMetricParameter(metric, percentageParameter, build, gameData)

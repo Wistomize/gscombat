@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { beidouDefinition } from "./definition.js"
 
 export const beidouCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("beidou", 4),
+    { id: "beidou.kit.retained-shield", label: "祸潮护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true, minimumSourceConstellation: 1 },
+    ...declareWeaponHitCapabilities(beidouDefinition),
+    declareHitCapability("beidou.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Beidou",

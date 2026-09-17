@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { yaeMikoDefinition } from "./definition.js"
@@ -23,6 +24,13 @@ const c2SesshouSakuraRankFourParameter = {
 } as const
 
 export const yaeMikoCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("yae-miko", 5, {"initialUses":3}),
+    { id: "yae-miko.kit.stellar-damage", label: "辉映状态下自身造成星烁反应伤害", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["stellar_superconduct"], requiredTeamReaction: "stellar_superconduct" },
+    ...declareWeaponHitCapabilities(yaeMikoDefinition),
+    declareHitCapability("yae-miko.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+    { ...declareHitCapability("yae-miko.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["electro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "YaeMiko",
@@ -316,6 +324,7 @@ export const yaeMikoCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "yae_miko.constellation.2.active_character.elemental_mastery",
+      requiresRecipientOnField: true,
       label: "望月吼哕声 · C2 肆阶杀生樱（当前场上角色元素精通提高200点）",
       source: { characterId: "YaeMiko", kind: "character", minimumSourceConstellation: 2 },
       target: "elementalMastery",

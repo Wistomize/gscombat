@@ -1,8 +1,16 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { albedoDefinition } from "./definition.js"
 
 export const albedoCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("albedo", 3),
+    { id: "albedo.kit.plunge-access", label: "阳华电梯提供腾空条件", kind: "plunge_access", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(albedoDefinition),
+    declareHitCapability("albedo.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+    { ...declareHitCapability("albedo.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["geo"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Albedo",

@@ -1,4 +1,13 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import type { CombatEffectLifecycle } from "../../combat/capabilities.js"
+
+const lunarPreparation: CombatEffectLifecycle = {
+  kind: "conditional", preparation: "qualified", retention: "while_applicable",
+  applicability: { sourceFieldPresence: "on_field" },
+  trigger: { event: "capability", sourceFieldPresence: "any", capability: {
+    kind: "reaction_trigger", provider: "party", recipient: "source", reactionFamily: "lunar"
+  } }, explanation: "装备者当前在前台，队伍具有月曜转换及合法元素触发条件；后台不保留暴击与蓄念"
+}
 
 export const NIGHT_OF_THE_SKYS_UNVEILING_TWO_PIECE_ELEMENTAL_MASTERY = 80
 export const NIGHT_OF_THE_SKYS_UNVEILING_INITIAL_MOONSIGN_CRIT_RATE = 0.15
@@ -16,8 +25,9 @@ export const nightOfTheSkysUnveilingCombatActionEffects: readonly CombatActionEf
     value: { kind: "fixed", value: NIGHT_OF_THE_SKYS_UNVEILING_TWO_PIECE_ELEMENTAL_MASTERY }
   },
   {
-    activation: "active",
-    condition: { kind: "moonsign_level", minimum: "nascent_gleam" },
+    activation: "automatic",
+    lifecycle: lunarPreparation,
+    condition: { kind: "moonsign_level", minimum: "nascent_gleam", maximum: "nascent_gleam" },
     exclusivity: { group: "night-of-the-skys-unveiling-moonsign", variant: "initial" },
     id: "artifact.night-of-the-skys-unveiling.4pc.lunar-reaction.initial-moonsign.crit-rate",
     label: "穹境示现之夜 · 附近队伍触发月曜反应后（初辉，装备者在场，4秒内）",
@@ -26,7 +36,8 @@ export const nightOfTheSkysUnveilingCombatActionEffects: readonly CombatActionEf
     value: { kind: "fixed", value: NIGHT_OF_THE_SKYS_UNVEILING_INITIAL_MOONSIGN_CRIT_RATE }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: lunarPreparation,
     condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
     exclusivity: { group: "night-of-the-skys-unveiling-moonsign", variant: "full" },
     id: "artifact.night-of-the-skys-unveiling.4pc.lunar-reaction.full-moonsign.crit-rate",
@@ -36,11 +47,12 @@ export const nightOfTheSkysUnveilingCombatActionEffects: readonly CombatActionEf
     value: { kind: "fixed", value: NIGHT_OF_THE_SKYS_UNVEILING_FULL_MOONSIGN_CRIT_RATE }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: lunarPreparation,
     condition: { kind: "moonsign_level", minimum: "nascent_gleam" },
     id: "artifact.night-of-the-skys-unveiling.4pc.moongleam.lunar-reaction-damage-bonus",
     label: "穹境示现之夜 · 月辉明光·蓄念（月曜反应伤害）",
-    source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "NightOfTheSkysUnveiling" },
+    source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "NightOfTheSkysUnveiling", resolveOneMatchingPartySource: true },
     target: "specialReactionDamageBonus",
     targetFilter: { specialReactionKinds: ["lunar_bloom", "lunar_charged", "lunar_crystallize"] },
     value: { kind: "fixed", value: NIGHT_OF_THE_SKYS_UNVEILING_MOONGLEAM_LUNAR_REACTION_DAMAGE_BONUS }

@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { kachinaDefinition } from "./definition.js"
 
 export const kachinaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("kachina", 3),
+    ...declareWeaponHitCapabilities(kachinaDefinition),
+    declareHitCapability("kachina.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+    { ...declareHitCapability("kachina.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["geo"], true, "any"), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Kachina",

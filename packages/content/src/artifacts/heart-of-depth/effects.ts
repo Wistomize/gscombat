@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { afterSkillUntilExit } from "../../combat/capabilities.js"
 
 export const HEART_OF_DEPTH_HYDRO_DAMAGE_BONUS = 0.15
 export const HEART_OF_DEPTH_AFTER_SKILL_NORMAL_CHARGED_DAMAGE_BONUS = 0.3
@@ -15,7 +16,8 @@ export const heartOfDepthCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "fixed", value: HEART_OF_DEPTH_HYDRO_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: afterSkillUntilExit("默认已施放元素战技；四件套仅当前前台生效"),
     id: "artifact.heart-of-depth.4pc.after-skill.normal-charged-damage-bonus",
     label: "沉沦之心 · 四件套（元素战技后）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "HeartOfDepth" },

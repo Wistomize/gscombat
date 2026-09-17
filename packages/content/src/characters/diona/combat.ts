@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { dionaDefinition } from "./definition.js"
 
 export const dionaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("diona", 3),
+    { id: "diona.kit.retained-shield", label: "猫爪护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(dionaDefinition),
+    declareHitCapability("diona.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Diona",
@@ -116,7 +123,8 @@ export const dionaCombatCoverage: CharacterCombatCoverage = {
   actionEffects: [
     {
       activation: "active",
-      id: "diona.constellation.6.cat_tail_closing_time.high_hp.elemental_mastery",
+    id: "diona.constellation.6.cat_tail_closing_time.high_hp.elemental_mastery",
+    requiresRecipientOnField: true,
       label: "猫尾酒馆打烊之时 · C6 最烈特调领域内生命值高于50%（元素精通提高200）",
       source: { characterId: "Diona", kind: "character", minimumSourceConstellation: 6 },
       target: "elementalMastery",

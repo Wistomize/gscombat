@@ -13,7 +13,7 @@ export const equipmentCoverage = {
     {
       effectIds: ["artifact.echoes-of-an-offering.4pc.valley-rite.normal-attack-additive-damage"],
       id: "artifact.echoes-of-an-offering.4pc.valley-rite.additional-damage",
-      label: "来歆余响 · 四件套（本次普通攻击触发幽谷祝祀的同一命中加算）",
+      label: "来歆余响 · 四件套（前台普攻按 0.7 / 1.99188736 × 最终攻击作平均同击加算）",
       source: artifactSource("EchoesOfAnOffering", 4),
       status: "implemented"
     }

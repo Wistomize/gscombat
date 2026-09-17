@@ -31,6 +31,7 @@ export type {
 } from "./types.js"
 
 import { evaluateDamageMetric } from "./damage.js"
+import { resolveSupportFieldContext } from "../core/field-presence.js"
 import { evaluateHealingMetric } from "./healing.js"
 import * as runtime from "./runtime.js"
 import { evaluateScalarMetric } from "./scalar.js"
@@ -41,6 +42,10 @@ export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMe
   if (!metric) throw new Error(`Combat metric ${input.metricId} is not registered`)
 
   runtime.assertMetricBuild(metric, input.build)
+  if (input.context?.onFieldBuildId !== undefined &&
+    ![input.build, ...(input.context.teammates ?? [])].some((build) => build.buildId === input.context!.onFieldBuildId)) {
+    throw new Error("前台角色必须是当前队伍成员")
+  }
   if (metric.kind === "damage") return evaluateDamageMetric(metric, input)
   if (metric.kind === "scalar") return evaluateScalarMetric(metric, input)
 
@@ -52,7 +57,8 @@ export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMe
       recipient,
       input.context?.source,
       input.context?.teammates,
-      input.gameData
+      input.gameData,
+      resolveSupportFieldContext(input.build.buildId, input.context?.onFieldBuildId)
     )
   }
   return evaluateFlatStatBuffMetric(
@@ -61,6 +67,7 @@ export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMe
     recipient,
     input.context?.source,
     input.context?.teammates,
-    input.gameData
+    input.gameData,
+    resolveSupportFieldContext(input.build.buildId, input.context?.onFieldBuildId)
   )
 }

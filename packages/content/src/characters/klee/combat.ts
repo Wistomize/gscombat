@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { kleeDefinition } from "./definition.js"
 
 export const kleeCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("klee", 5, {"initialUses":2}),
+    ...declareWeaponHitCapabilities(kleeDefinition),
+    declareHitCapability("klee.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+  ],
   actions: [
     {
       characterId: "Klee",

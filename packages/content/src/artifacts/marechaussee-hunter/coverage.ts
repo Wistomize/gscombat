@@ -12,12 +12,13 @@ export const equipmentCoverage = {
     },
     {
       effectIds: [
+        "artifact.marechaussee-hunter.4pc.hp-change.0-stack.crit-rate",
         "artifact.marechaussee-hunter.4pc.hp-change.1-stack.crit-rate",
         "artifact.marechaussee-hunter.4pc.hp-change.2-stack.crit-rate",
         "artifact.marechaussee-hunter.4pc.hp-change.3-stack.crit-rate"
       ],
       id: "artifact.marechaussee-hunter.4pc.hp-change-crit-rate-stacks",
-      label: "逐影猎人 · 四件套（生命值变化后的暴击率层数）",
+      label: "逐影猎人 · 四件套（前台有效扣血默认三层，否则零层；可手选 0～3 层）",
       source: artifactSource("MarechausseeHunter", 4),
       status: "implemented"
     }

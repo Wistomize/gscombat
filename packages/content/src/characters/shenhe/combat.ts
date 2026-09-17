@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { shenheDefinition } from "./definition.js"
 
 export const shenheCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("shenhe", 7),
+    { ...declareSkillCastCapability("shenhe", 7, {"initialUses":2}), id: "shenhe.kit.extra-skill-charge", minimumSourceConstellation: 1 },
+    ...declareWeaponHitCapabilities(shenheDefinition),
+    declareHitCapability("shenhe.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Shenhe",

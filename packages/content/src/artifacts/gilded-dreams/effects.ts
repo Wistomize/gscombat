@@ -11,7 +11,13 @@ function createSameElementTeammateEffect(
 ): CombatActionEffect {
   const suffix = teammateCount === 1 ? "teammate" : "teammates"
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
+      trigger: { event: "capability", sourceFieldPresence: "any", capability: {
+        kind: "reaction_trigger", recipient: "source", provider: "source"
+      } }, explanation: "装备者自身具备合法反应触发条件，默认准备；仅统计其他实际队员，后台可触发"
+    },
     condition: {
       kind: "primary_same_element_teammate_count",
       maximum: teammateCount,
@@ -31,7 +37,13 @@ function createDifferentElementTeammateEffect(
 ): CombatActionEffect {
   const suffix = teammateCount === 1 ? "teammate" : "teammates"
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
+      trigger: { event: "capability", sourceFieldPresence: "any", capability: {
+        kind: "reaction_trigger", recipient: "source", provider: "source"
+      } }, explanation: "装备者自身具备合法反应触发条件，默认准备；仅统计其他实际队员，后台可触发"
+    },
     condition: {
       kind: "primary_different_element_teammate_count",
       maximum: teammateCount,

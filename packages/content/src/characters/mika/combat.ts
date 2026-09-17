@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { mikaDefinition } from "./definition.js"
 
 export const mikaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("mika", 5),
+    ...declareWeaponHitCapabilities(mikaDefinition),
+    declareHitCapability("mika.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Mika",
@@ -133,6 +139,7 @@ export const mikaCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "active",
       id: "mika.constellation.6.companions_counsel.spiritwind.physical_crit_damage",
+      requiresRecipientOnField: true,
       label: "依随的策援 · C6 灵风状态下当前场上角色物理伤害暴击伤害提高60%",
       source: { characterId: "Mika", kind: "character", minimumSourceConstellation: 6 },
       target: "critDamage",

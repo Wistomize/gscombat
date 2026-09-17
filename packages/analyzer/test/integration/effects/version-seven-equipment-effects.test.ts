@@ -75,6 +75,9 @@ describe("7.0 equipment effect integration", () => {
     const effects = resolveVersionSevenEffects(withArtifactSet("ScarletProof"), [
       "artifact.scarlet-proof.4pc.after-stellar-swirl.crit-rate",
       "artifact.scarlet-proof.4pc.after-stellar-swirl.reaction-damage-bonus"
+    ], [
+      { ...withWeapon("TestNoWeapon"), characterId: "Odette", buildId: "scarlet.odette" },
+      { ...withWeapon("TestNoWeapon"), characterId: "YumemizukiMizuki", buildId: "scarlet.mizuki" }
     ])
 
     expect(effects.attackPercent).toBeCloseTo(0.18)
@@ -83,8 +86,8 @@ describe("7.0 equipment effect integration", () => {
   })
 
   it("applies one Heart of the Furnace party bonus when two teammates hold the same set", () => {
-    const holderOne = withArtifactSet("HeartOfTheFurnace", "version-seven.artifact.heart.one")
-    const holderTwo = withArtifactSet("HeartOfTheFurnace", "version-seven.artifact.heart.two")
+    const holderOne = { ...withArtifactSet("HeartOfTheFurnace", "version-seven.artifact.heart.one"), characterId: "Odette" }
+    const holderTwo = { ...withArtifactSet("HeartOfTheFurnace", "version-seven.artifact.heart.two"), characterId: "Venti" }
     const effects = resolveVersionSevenEffects(withArtifactSet("TestNoArtifactSet"), [
       "artifact.heart-of-the-furnace.4pc.party-stellar-reaction-damage-bonus"
     ], [holderOne, holderTwo])

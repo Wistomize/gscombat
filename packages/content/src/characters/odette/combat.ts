@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type {
   CharacterCombatCoverage,
   CombatActionMetadata,
@@ -206,6 +207,15 @@ const odetteDamageMetrics: readonly CombatDamageMetricDefinition[] = odetteDamag
 })
 
 export const odetteCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("odette", 12, {"castsPerUse":2}),
+    { id: "odette.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["stellar_superconduct","stellar_swirl"] },
+    { id: "odette.kit.stellar-damage", label: "辉映状态下自身造成星烁反应伤害", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["stellar_superconduct","stellar_swirl"], requiredTeamReaction: "stellar" },
+    ...declareWeaponHitCapabilities(odetteDefinition),
+    { ...declareHitCapability("odette.kit.sustained_skill_hits", "独舞倒影持续后台战技命中", ["skill"], ["cryo"], true),
+      skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+    declareHitCapability("odette.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill"], ["cryo"]),
+  ],
   actions: [
     ...odetteDamageActions,
     {

@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { alhaithamDefinition } from "./definition.js"
 
 export const alhaithamCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("alhaitham", 10),
+    ...declareWeaponHitCapabilities(alhaithamDefinition),
+    declareHitCapability("alhaitham.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["dendro"]),
+    { ...declareHitCapability("alhaitham.kit.sustained_skill_hits", "琢光镜仅当前台存在时持续战技命中", ["skill"], ["dendro"], true, "on_field"), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Alhaitham",

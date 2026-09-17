@@ -13,13 +13,10 @@ export const equipmentCoverage = {
     {
       effectIds: [
         "artifact.vermillion-hereafter.4pc.after-burst.attack-percent",
-        "artifact.vermillion-hereafter.4pc.after-burst.1-stack.attack-percent",
-        "artifact.vermillion-hereafter.4pc.after-burst.2-stack.attack-percent",
-        "artifact.vermillion-hereafter.4pc.after-burst.3-stack.attack-percent",
         "artifact.vermillion-hereafter.4pc.after-burst.4-stack.attack-percent"
       ],
       id: "artifact.vermillion-hereafter.4pc.after-burst.attack-percent",
-      label: "辰砂往生录 · 四件套（爆发后生命值降低层数对应的攻击力）",
+      label: "辰砂往生录 · 四件套（前台爆发后 8%，有有效自身扣血来源默认 48%；后台不计）",
       source: artifactSource("VermillionHereafter", 4),
       status: "implemented"
     }

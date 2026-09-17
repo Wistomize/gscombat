@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { nilouDefinition } from "./definition.js"
 
 export const nilouCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("nilou", 8, {"castsPerUse":4}),
+    ...declareWeaponHitCapabilities(nilouDefinition),
+    declareHitCapability("nilou.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),
+  ],
   actions: [
     {
       characterId: "Nilou",

@@ -23,6 +23,7 @@ describe("Barbara C2 current-action effect", () => {
     expect(effect).toEqual({
       activation: "active",
       id: effectId,
+      requiresRecipientOnField: true,
       label: "演唱，开始♪持续期间 · C2 当前场上角色水元素伤害加成",
       source: { characterId: "Barbara", kind: "character", minimumSourceConstellation: 2 },
       target: "damageBonus",

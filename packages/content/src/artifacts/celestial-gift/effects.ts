@@ -22,7 +22,15 @@ function createCelestialGiftElementDamageBonusEffect(
 ): CombatActionEffect {
   const isMortalHymn = state === "mortal-hymn"
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
+      trigger: { event: "skill_cast", sourceFieldPresence: "any" },
+      applicability: {
+        sourceHomework: true, hexereiSecretRite: isMortalHymn,
+        elementRelationship: { element, includeOnField: isMortalHymn }
+      }, explanation: "仅有魔女课业机制的装备者默认完成课业并施放战技；秘仪元素集合固定按来源与真实前台解析"
+    },
     ...(isMortalHymn ? { condition: { kind: "hexerei_secret_rite" as const } } : {}),
     exclusivity: {
       group: `celestial-gift-4pc-${element}-damage-bonus`,
@@ -36,6 +44,7 @@ function createCelestialGiftElementDamageBonusEffect(
       holder: "party_member",
       kind: "artifact_set",
       minimumPieces: 4,
+      resolveOneMatchingPartySource: true,
       setId: "CelestialGift"
     },
     target: "damageBonus",

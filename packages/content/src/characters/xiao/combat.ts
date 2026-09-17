@@ -1,8 +1,19 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { xiaoDefinition } from "./definition.js"
 
 export const xiaoCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("xiao", 1, {"initialUses":2}),
+    { ...declareSkillCastCapability("xiao", 1, {"initialUses":3}), id: "xiao.kit.extra-skill-charge", minimumSourceConstellation: 1 },
+    { id: "xiao.kit.plunge-access", label: "靖妖傩舞提高自身跳跃能力", kind: "plunge_access", recipient: "self", sourceFieldPresence: "on_field", sustained: true },
+    ...declareWeaponHitCapabilities(xiaoDefinition),
+    declareHitCapability("xiao.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["anemo"]),
+  {
+    id: "xiao.burst.bane_of_all_evil.self_hp_loss", label: "靖妖傩舞 · 持续消耗自身生命值",
+    kind: "hp_loss", recipient: "self", sourceFieldPresence: "on_field", sustained: true
+  }],
   actions: [
     {
       characterId: "Xiao",

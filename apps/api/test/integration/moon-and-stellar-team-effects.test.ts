@@ -118,7 +118,8 @@ async function analyze(
   teammates: readonly CharacterBuild[],
   targetActionId: string,
   actionParameters: Readonly<Record<string, number>> = {},
-  externalBuffs: readonly ExternalBuff[] = []
+  externalBuffs: readonly ExternalBuff[] = [],
+  onFieldBuildId?: string
 ): Promise<SpecialReactionAnalysis> {
   const response = await app.inject({
     method: "POST",
@@ -128,6 +129,7 @@ async function analyze(
         actionParameters,
         activeEffectIds: [],
         enemyCount: 1,
+        ...(onFieldBuildId === undefined ? {} : { onFieldBuildId }),
         equipmentEffectMode: "maximum_reachable"
       },
       externalBuffs,
@@ -147,9 +149,10 @@ async function evaluate(
   teammates: readonly CharacterBuild[],
   targetActionId: string,
   actionParameters: Readonly<Record<string, number>> = {},
-  externalBuffs: readonly ExternalBuff[] = []
+  externalBuffs: readonly ExternalBuff[] = [],
+  onFieldBuildId?: string
 ): Promise<SpecialReactionEvaluation> {
-  return (await analyze(primary, teammates, targetActionId, actionParameters, externalBuffs)).evaluation
+  return (await analyze(primary, teammates, targetActionId, actionParameters, externalBuffs, onFieldBuildId)).evaluation
 }
 
 function findEffect(evaluation: SpecialReactionEvaluation, effectId: string) {
@@ -161,6 +164,22 @@ afterAll(async () => {
 })
 
 describe("Moon and Stellar reaction team effects API integration", () => {
+  it("excludes Gorou's field defense only from Linnea's background hammer in the public report", async () => {
+    const linnea = createBuild("Linnea", "FavoniusWarbow", "test.linnea.field")
+    const gorou = createBuild("Gorou", "FavoniusWarbow", "test.gorou.field")
+    const background = await evaluate(linnea, [gorou], "linnea.skill.lumi.enhanced_hammer.lunar_crystallize")
+    const foreground = await evaluate(linnea, [gorou], "linnea.skill.lumi.million_ton_hammer.lunar_crystallize")
+    expect(findEffect(background, "gorou.skill.field.defense_buff")).toBeUndefined()
+    expect(JSON.stringify(background)).not.toContain("大将旗指物 · 防御力提升")
+    const field = findEffect(foreground, "gorou.skill.field.defense_buff")!
+    expect(field.value).toBeGreaterThan(0)
+    expect(foreground.stats.effectiveDefense - background.stats.effectiveDefense).toBeCloseTo(field.value)
+    for (const result of [background, foreground]) {
+      expect(findEffect(result, "gorou.burst.general_glory.defense_percent_buff")?.value).toBe(0.25)
+      expect(result.rotation.events).toHaveLength(1)
+    }
+  })
+
   it("uses Sandrone's charged and burst Stellar-Superconduct metrics with the reachable team effects", async () => {
     const sandrone = createBuild("Sandrone", "AThousandBlazingSuns", "test.sandrone.stellar")
     const yae = createBuild("YaeMiko", "TheWidsith", "test.yae.c2.stellar", 2)
@@ -325,9 +344,14 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     const catalogLinnea = (catalogResponse.json().characters as readonly {
       readonly characterId: string
       readonly primaryActionIds: readonly string[]
+      readonly primaryActions: readonly { readonly id: string; readonly label: string }[]
       readonly supportMetrics: readonly { readonly id: string }[]
     }[]).find((character) => character.characterId === "Linnea")
     expect(catalogLinnea?.primaryActionIds).toEqual(actionIds)
+    expect(catalogLinnea?.primaryActions.map((action) => action.label)).toEqual([
+      "对策·露米呀吼吼！/ 点按·露米加力重锤单次月结晶伤害（后台）",
+      "对策·露米呀吼吼！/ 连续点按·露米百万吨重锤月结晶爆发伤害（前台）"
+    ])
     expect(catalogLinnea?.supportMetrics.map((metric) => metric.id)).toEqual([
       "linnea.burst.initial_team_healing",
       "linnea.burst.continuous_healing_tick"
@@ -782,7 +806,7 @@ describe("Moon and Stellar reaction team effects API integration", () => {
     const c1FlatDamage = mizukiParticipant?.trace.find((entry) => entry.stage === "flat_damage_addition")
     expect(aggregation?.reactionCoefficient).toBeCloseTo(0.75)
     expect(aggregation?.participants.map((participant) => participant.participantId)).toEqual([
-      "test.mizuki.stellar.c1", "test.mizuki.stellar.diona"
+      "test.mizuki.stellar.c1", "test.mizuki.stellar.sucrose", "test.mizuki.stellar.fischl", "test.mizuki.stellar.diona"
     ])
     expect(c1FlatDamage?.formula.flatDamageAddition).toBeCloseTo(reaction.stats.elementalMastery * 5.5)
     expect(aggregation?.participants.find((participant) => participant.participantId === "test.mizuki.stellar.diona")
@@ -894,9 +918,9 @@ describe("Moon and Stellar reaction team effects API integration", () => {
       evaluate(createBuild("Odette", "FavoniusSword", "test.odette.mizuki-c5"), [mizukiC5], odetteActionId),
       evaluate(createBuild("Odette", "FavoniusSword", "test.odette.mizuki-c6"), [mizukiC6], odetteActionId),
       evaluate(createBuild("Odette", "FavoniusSword", "test.odette.background-mizuki-c5", 4), [mizukiC5],
-        "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl"),
+        "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl", {}, [], mizukiC5.buildId),
       evaluate(createBuild("Odette", "FavoniusSword", "test.odette.background-mizuki-c6", 4), [mizukiC6],
-        "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl"),
+        "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl", {}, [], mizukiC6.buildId),
       evaluate(mizukiC5, [], mizukiSwirlActionId),
       analyze(mizukiC6, [], mizukiSwirlActionId),
       evaluate(mizukiC6, [], mizukiSwirlActionId, {}, [

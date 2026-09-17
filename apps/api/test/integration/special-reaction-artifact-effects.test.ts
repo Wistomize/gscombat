@@ -114,6 +114,7 @@ describe("special-reaction artifact effects API integration", () => {
       "FlowerOfParadiseLost"
     )
     const lauma = createBuild("Lauma", "FavoniusCodex", "artifact.lunar.lauma")
+    const hydro = createBuild("Xingqiu", "FavoniusSword", "artifact.lunar.hydro")
     const aubadeFlins = equipArtifactSet(
       createBuild("Flins", "CalamityQueller", "artifact.lunar.aubade"),
       "AubadeOfMorningstarAndMoon"
@@ -134,7 +135,7 @@ describe("special-reaction artifact effects API integration", () => {
     )
     const flower = await evaluateSpecialAction(
       flowerNefer,
-      [lauma],
+      [lauma, hydro],
       "nefer.skill.senet_strategy.phantom_performance.second_hit"
     )
     const aubade = await evaluateSpecialAction(
@@ -142,9 +143,14 @@ describe("special-reaction artifact effects API integration", () => {
       [ineffa],
       "flins.burst.thunder_symphony.lunar_charged"
     )
+    const aubadeBackground = await evaluateSpecialAction(
+      equipArtifactSet(createBuild("Linnea", "FavoniusWarbow", "artifact.lunar.aubade.background"), "AubadeOfMorningstarAndMoon"),
+      [createBuild("Zibai", "FavoniusSword", "artifact.lunar.zibai")],
+      "linnea.skill.lumi.enhanced_hammer.lunar_crystallize"
+    )
     const twoMoongleams = await evaluateSpecialAction(
       nightFlins,
-      [silkenIneffa],
+      [silkenIneffa, hydro],
       "flins.burst.thunder_symphony.lunar_charged"
     )
 
@@ -167,7 +173,13 @@ describe("special-reaction artifact effects API integration", () => {
         value: 0.2
       })
     ]))
+    // Flins's foreground Burst cannot borrow Aubade's off-field bonus; Linnea's background hammer can.
+    expect(aubade.appliedEffects.some((effect) => effect.id.startsWith("artifact.aubade-of-morningstar-and-moon.4pc")))
+      .toBe(false)
     expect(aubade.appliedEffects).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "artifact.aubade-of-morningstar-and-moon.2pc.elemental-mastery", value: 80 })
+    ]))
+    expect(aubadeBackground.appliedEffects).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "artifact.aubade-of-morningstar-and-moon.4pc.off-field.lunar-reaction-damage-bonus",
         value: 0.2

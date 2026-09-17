@@ -45,6 +45,9 @@ const traceResult = evaluateExpectedDamage({
 })
 
 const analysisResponse: AnalysisResponse = {
+  artifactPreparations: [{ effectId: "artifact.test.preparation", label: "测试套装准备", sourceBuildId: raidenNationalBuiltinScenario.primary.buildId,
+    sourceCharacterId: "RaidenShogun", sourcePresence: "on_field", qualified: false, applied: false,
+    capabilitySourceIds: [], reason: "当前来源不满足后台条件" }],
   analysis: {
     baselineExpectedDamage: traceResult.expectedDamage,
     effectiveArtifacts: [],
@@ -232,6 +235,77 @@ function findButton(label: string): HTMLButtonElement | undefined {
 }
 
 describe("build editor artifact display", () => {
+  it("keeps automatic artifact preparation separate from source-bound explicit zero and shared frozen state", async () => {
+    const primary = { ...raidenNationalBuiltinScenario.primary,
+      artifacts: raidenNationalBuiltinScenario.primary.artifacts.map((piece) => ({ ...piece, setId: "MarechausseeHunter" })) }
+    const teammate = { ...primary, buildId: "web-artifact.blizzard", characterId: "Kaeya",
+      weapon: { weaponId: "FavoniusSword", level: 90, ascension: 6, refinement: 1 },
+      artifacts: primary.artifacts.map((piece) => ({ ...piece, setId: "BlizzardStrayer" })) }
+    const zero = "artifact.marechaussee-hunter.4pc.hp-change.0-stack.crit-rate"
+    const fetchMock = createCalculationFetchMock(analysisResponse, [0, 3].map((count) => ({
+      exclusiveGroup: "marechaussee-hunter-hp-change",
+      id: `artifact.marechaussee-hunter.4pc.hp-change.${count}-stack.crit-rate`,
+      label: `逐影猎人 · ${count}层`, selectionMode: "optional", automaticPreparation: count === 3,
+      preparationDescription: "按来源能力和前后台判断，显式零层覆盖默认。",
+      source: { kind: "artifact_set", setId: "MarechausseeHunter", minimumPieces: 4 }
+    })))
+    vi.stubGlobal("fetch", fetchMock)
+    saveBuildLibrary(window.localStorage, [primary, teammate])
+    saveParty(window.localStorage, { memberBuildIds: [primary.buildId, teammate.buildId] })
+    await render(createElement(TeamCalculationWorkspace, { catalog: webCatalog,
+      initialScenario: { ...raidenNationalBuiltinScenario, primary, teammates: [teammate] } }))
+    await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
+    await click(findButton("梦想真说"))
+    await flushAsyncWork()
+    const select = document.querySelector<HTMLSelectElement>('select[aria-label="逐影猎人"]')
+    expect(select?.options[0]?.textContent).toContain("自动")
+    expect(document.body.textContent).toContain("目标处于冻结状态")
+    await changeSelect(select, zero)
+    await click(findButton("开始计算"))
+    await flushAsyncWork()
+    const request = fetchMock.mock.calls.filter(([input]) => String(input).endsWith("/analysis")).at(-1)?.[1] as RequestInit
+    expect(JSON.parse(String(request.body)).conditions).toMatchObject({ activeEffectIds: expect.arrayContaining([zero]),
+      activeEffectSourceBuildIds: { [zero]: primary.buildId } })
+    expect(document.body.textContent).toContain("当前来源不满足后台条件")
+  })
+  it("selects an active teammate for a background metric and clears the selection for a foreground metric", async () => {
+    const primary = { ...raidenNationalBuiltinScenario.primary, characterId: "Linnea", buildId: "web-field.Linnea",
+      weapon: { weaponId: "FavoniusWarbow", level: 90, ascension: 6, refinement: 1 } }
+    const gorou = { ...primary, characterId: "Gorou", buildId: "web-field.Gorou" }
+    const actionId = "linnea.skill.lumi.enhanced_hammer.lunar_crystallize"
+    const fetchMock = createCalculationFetchMock(analysisResponse)
+    vi.stubGlobal("fetch", fetchMock)
+    saveBuildLibrary(window.localStorage, [primary, gorou])
+    saveParty(window.localStorage, { memberBuildIds: [primary.buildId, gorou.buildId] })
+    await render(createElement(TeamCalculationWorkspace, {
+      catalog: webCatalog, initialScenario: { ...raidenNationalBuiltinScenario, primary, teammates: [gorou], targetActionId: actionId }
+    }))
+    await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
+    await click(findButton("（后台）"))
+    await flushAsyncWork()
+    const select = document.querySelector<HTMLSelectElement>('select[aria-label="本次计算的前台角色"]')
+    expect([...select!.options].map((option) => option.value)).toEqual(["", gorou.buildId])
+    await changeSelect(select, gorou.buildId)
+    await click(findButton("开始计算"))
+    await flushAsyncWork()
+    const request = fetchMock.mock.calls.find(([input]) => String(input).endsWith("/analysis"))?.[1] as RequestInit
+    expect(JSON.parse(String(request.body))).toMatchObject({ targetActionId: actionId,
+      primary: { buildId: primary.buildId }, conditions: { onFieldBuildId: gorou.buildId } })
+    await click(findButton("（前台）"))
+    await flushAsyncWork()
+    expect(document.querySelector('select[aria-label="本次计算的前台角色"]')).toBeNull()
+    await click(findButton("开始计算"))
+    await flushAsyncWork()
+    const last = fetchMock.mock.calls.filter(([input]) => String(input).endsWith("/analysis")).at(-1)?.[1] as RequestInit
+    expect(JSON.parse(String(last.body)).conditions.onFieldBuildId).toBeUndefined()
+    await click(findButton("首次单人治疗量"))
+    await flushAsyncWork()
+    const supportFront = document.querySelector<HTMLSelectElement>('select[aria-label="本次计算的前台角色"]')
+    expect([...supportFront!.options].map((option) => option.value)).toEqual(["", primary.buildId, gorou.buildId])
+    await changeSelect(supportFront, gorou.buildId)
+    await flushAsyncWork()
+    expect(document.querySelector<HTMLSelectElement>('select[aria-label="本次计算的前台角色"]')?.value).toBe(gorou.buildId)
+  })
   it("identifies an imported build without equipped artifacts", async () => {
     await render(createElement(BuildEditor, {
       build: { ...raidenNationalBuiltinScenario.primary, artifacts: [] },

@@ -5,6 +5,7 @@ import {
   type CharacterBuild
 } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
+import type { FieldContext } from "../core/field-presence.js"
 import {
   addFormula,
   applyConditions, multiplyFormula, sourceStatTerm
@@ -47,10 +48,11 @@ export function evaluateFlatStatBuffMetric(
   recipient: ResolvedFriendlyRecipient,
   sourceContext: CombatMetricSourceContext | undefined,
   teammates: readonly CharacterBuild[] | undefined,
-  gameData: GameDataRepository
+  gameData: GameDataRepository,
+  fieldContext?: FieldContext
 ): CombatFlatStatBuffMetricEvaluation {
   const label = normalizeProjectedMetricLabel(metric.label)
-  const stats = runtime.resolveMetricSourceCombatStats(metric, build, sourceContext, teammates, gameData)
+  const stats = runtime.resolveMetricSourceCombatStats(metric, build, sourceContext, teammates, gameData, fieldContext)
   const ratio = runtime.resolveMetricParameter(metric, metric.ratioParameter, build, gameData)
   const ratioConstellationBonus = (metric.ratioConstellationBonuses ?? []).reduce(
     (total, bonus) => total + (build.constellation >= bonus.minimumConstellation ? bonus.value : 0),

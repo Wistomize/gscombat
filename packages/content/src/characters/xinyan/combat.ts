@@ -1,8 +1,18 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { xinyanDefinition } from "./definition.js"
 
 export const xinyanCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("xinyan", 9),
+    { id: "xinyan.kit.retained-shield", label: "热情拂扫护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(xinyanDefinition),
+    declareHitCapability("xinyan.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+    { ...declareHitCapability("xinyan.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["pyro"], true, "any"), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 }, minimumEnemyCount: 3 },
+    { ...declareHitCapability("xinyan.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["pyro"], true, "any"), id: "xinyan.kit.ascension-sustained-skill-hits", skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 }, minimumEnemyCount: 2, minimumSourceAscension: 1 },
+    { ...declareHitCapability("xinyan.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["pyro"], true, "any"), id: "xinyan.kit.constellation-sustained-skill-hits", skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 }, minimumSourceConstellation: 2 },
+  ],
   actions: [
     {
       characterId: "Xinyan",

@@ -1,3 +1,4 @@
+import { resolveFieldContext } from "../core/field-presence.js"
 import {
   type ExpectedDamageResult,
   type RotationResult
@@ -88,6 +89,7 @@ function evaluateVerifiedTargetAction(
   intervention: ScenarioIntervention
 ): ScenarioTargetEvaluation {
   const action = getVerifiedDamageAction(scenario)
+  const fieldContext = resolveFieldContext(action, scenario.primary, scenario.teammates, scenario.conditions.onFieldBuildId)
   const moonsignLevel = resolveTeamState(scenario.primary, scenario.teammates, gameData).moonsign.level
   if (action.evaluator === "declared_direct") {
     const artifactStatDeltas = intervention.artifactStatDeltas
@@ -104,6 +106,8 @@ function evaluateVerifiedTargetAction(
         ? {}
         : { activeEffectSourceBuildIds: scenario.conditions.activeEffectSourceBuildIds }),
       action,
+      fieldContext,
+      targetFrozen: scenario.conditions.targetFrozen ?? false,
       ...(scenario.conditions.actionParameters ? { actionParameters: scenario.conditions.actionParameters } : {}),
       build: scenario.primary,
       buffs: appliedBuffs,
@@ -125,6 +129,8 @@ function evaluateVerifiedTargetAction(
         ? {}
         : { activeEffectSourceBuildIds: scenario.conditions.activeEffectSourceBuildIds }),
       action,
+      fieldContext,
+      targetFrozen: scenario.conditions.targetFrozen ?? false,
       ...(scenario.conditions.actionParameters ? { actionParameters: scenario.conditions.actionParameters } : {}),
       build: scenario.primary,
       buffs: appliedBuffs,
@@ -144,6 +150,8 @@ function evaluateVerifiedTargetAction(
         ? {}
         : { activeEffectSourceBuildIds: scenario.conditions.activeEffectSourceBuildIds }),
       action,
+      fieldContext,
+      targetFrozen: scenario.conditions.targetFrozen ?? false,
       ...(scenario.conditions.actionParameters ? { actionParameters: scenario.conditions.actionParameters } : {}),
       build: scenario.primary,
       buffs: appliedBuffs,

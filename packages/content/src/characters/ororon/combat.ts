@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { ororonDefinition } from "./definition.js"
 
 export const ororonCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("ororon", 1),
+    ...declareWeaponHitCapabilities(ororonDefinition),
+    declareHitCapability("ororon.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Ororon",
@@ -78,6 +84,7 @@ export const ororonCombatCoverage: CharacterCombatCoverage = {
       evaluator: "declared_direct",
       id: "ororon.passive.nightshade_synesthesia.super_sensory_thunderbolt",
       kind: "damage",
+      fieldPresence: "off_field",
       parameterReferences: [
         {
           groupId: "passive1",

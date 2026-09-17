@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { keqingDefinition } from "./definition.js"
 
 export const keqingCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("keqing", 3, {"castsPerUse":2}),
+    ...declareWeaponHitCapabilities(keqingDefinition),
+    declareHitCapability("keqing.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Keqing",

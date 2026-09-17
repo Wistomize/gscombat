@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { yanfeiDefinition } from "./definition.js"
 
 export const yanfeiCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("yanfei", 1),
+    { id: "yanfei.kit.retained-shield", label: "丹书金铁护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true, minimumSourceConstellation: 4 },
+    ...declareWeaponHitCapabilities(yanfeiDefinition),
+    declareHitCapability("yanfei.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+  ],
   actions: [
     {
       characterId: "Yanfei",

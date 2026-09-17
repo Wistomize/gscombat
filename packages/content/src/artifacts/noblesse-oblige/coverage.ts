@@ -13,7 +13,7 @@ export const equipmentCoverage = {
     {
       effectIds: ["artifact.noblesse-oblige.4pc-attack"],
       id: "artifact.noblesse-oblige.4pc-attack",
-      label: "昔日宗室之仪 · 四件套",
+      label: "昔日宗室之仪 · 四件套（默认爆发准备，退场保留，全队 20% 攻击同名不叠加）",
       source: artifactSource("NoblesseOblige", 4, "party_member"),
       status: "implemented"
     }

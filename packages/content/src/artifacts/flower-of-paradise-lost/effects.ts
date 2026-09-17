@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import type { CombatEffectLifecycle } from "../../combat/capabilities.js"
 
 export const FLOWER_OF_PARADISE_LOST_TWO_PIECE_ELEMENTAL_MASTERY = 80
 export const FLOWER_OF_PARADISE_LOST_BASE_REACTION_DAMAGE_BONUS = 0.4
@@ -8,6 +9,18 @@ export const FLOWER_OF_PARADISE_LOST_REACTION_DAMAGE_BONUS_BY_STACK = [0.4, 0.5,
 export const FLOWER_OF_PARADISE_LOST_LUNAR_BLOOM_DAMAGE_BONUS_BY_STACK = [0.1, 0.125, 0.15, 0.175, 0.2] as const
 
 const reactionDamageBonusStackCounts = [0, 1, 2, 3, 4] as const
+
+function reactionPreparation(stackCount: number): CombatEffectLifecycle {
+  if (stackCount !== 0 && stackCount !== 4) return { kind: "excluded", reason: "采用无触发资格零层、有资格满层的默认策略；旧中间层仅兼容" }
+  return {
+    kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
+    trigger: { event: "capability", sourceFieldPresence: "any", capability: {
+      kind: "reaction_trigger", recipient: "source", provider: "source", reactionFamily: "bloom_family", present: stackCount === 4
+    } }, explanation: stackCount === 4
+      ? "装备者自身与队伍具备绽放系列反应触发资格，默认满层；单有直伤月绽放指标不构成资格"
+      : "未证明装备者的绽放系列触发资格，仅保留四件套基础反应增伤"
+  }
+}
 
 function getReactionDamageBonus(stackCount: (typeof reactionDamageBonusStackCounts)[number]): number {
   const bonus = FLOWER_OF_PARADISE_LOST_REACTION_DAMAGE_BONUS_BY_STACK[stackCount]
@@ -25,7 +38,8 @@ function createReactionDamageBonusEffect(
   stackCount: (typeof reactionDamageBonusStackCounts)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: reactionPreparation(stackCount),
     exclusivity: { group: "flower-of-paradise-lost-reaction-trigger", variant: `${stackCount}-stack` },
     id: `artifact.flower-of-paradise-lost.4pc.reaction-trigger.${stackCount}-stack.reaction-damage-bonus`,
     label: `乐园遗落之花 · 四件套（绽放、超绽放、烈绽放反应触发${stackCount}层；10秒内）`,
@@ -40,7 +54,8 @@ function createLunarBloomDamageBonusEffect(
   stackCount: (typeof reactionDamageBonusStackCounts)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: reactionPreparation(stackCount),
     exclusivity: { group: "flower-of-paradise-lost-reaction-trigger", variant: `${stackCount}-stack` },
     id: `artifact.flower-of-paradise-lost.4pc.reaction-trigger.${stackCount}-stack.lunar-bloom-reaction-damage-bonus`,
     label: `乐园遗落之花 · 四件套（月绽放反应触发${stackCount}层；10秒内）`,

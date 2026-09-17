@@ -13,10 +13,9 @@ export const equipmentCoverage = {
     {
       id: "artifact.ocean-hued-clam.4pc.sea-dyed-foam-damage",
       label: "海染砗磲 · 四件套（海染泡沫的治疗记录伤害）",
-      reason: "需要治疗累计、溢出治疗、延迟独立伤害事件、上限与专属结算规则。",
-      requiredCapability: "healing_accumulation_delayed_independent_damage_event",
+      reason: "用户确认本轮不计入此条款。需要治疗累计、溢出治疗、延迟独立伤害事件、上限与专属结算规则。原机制允许后台治疗记录，但本工具不默认累计满额。",
       source: artifactSource("OceanHuedClam", 4),
-      status: "unsupported"
+      status: "not_applicable"
     }
   ],
   equipmentId: "OceanHuedClam",

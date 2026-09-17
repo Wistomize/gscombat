@@ -1,8 +1,16 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { zhongliDefinition } from "./definition.js"
 
 export const zhongliCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("zhongli", 2),
+    { id: "zhongli.kit.retained-shield", label: "玉璋护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(zhongliDefinition),
+    declareHitCapability("zhongli.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+    { ...declareHitCapability("zhongli.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["geo"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Zhongli",

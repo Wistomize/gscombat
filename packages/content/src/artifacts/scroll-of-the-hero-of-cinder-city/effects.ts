@@ -21,10 +21,17 @@ function createReactionElementDamageBonusEffect(
 ): CombatActionEffect {
   const isNightsoul = state === "nightsoul"
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
+      trigger: { event: "capability", sourceFieldPresence: "any", capability: {
+        kind: "reaction_trigger", recipient: "source", provider: "source", reactionFamily: "any", reactionElements: [element]
+      } }, explanation: "由装备者自身合法反应确定关联元素，夜魂资格仅取装备者；默认准备、前后台均保留"
+    },
     condition: { kind: "source_nightsoul_blessing", required: isNightsoul },
     exclusivity: {
       group: `scroll-of-the-hero-of-cinder-city-reaction-element-${element}`,
+      automaticPriority: isNightsoul ? 40 : 12,
       variant: state
     },
     id: `artifact.scroll-of-the-hero-of-cinder-city.4pc.reaction-element.${element}.${state}.damage-bonus`,
@@ -33,6 +40,7 @@ function createReactionElementDamageBonusEffect(
       holder: "party_member",
       kind: "artifact_set",
       minimumPieces: 4,
+      resolveOneMatchingPartySource: true,
       setId: "ScrollOfTheHeroOfCinderCity"
     },
     target: "damageBonus",

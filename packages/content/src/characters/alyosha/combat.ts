@@ -1,4 +1,5 @@
 import type { CharacterCombatCoverage } from "../../combat/types.js"
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 
 import { alyoshaDefinition } from "./definition.js"
 
@@ -22,6 +23,11 @@ const huntersPrecisionParameter = {
 } as const
 
 export const alyoshaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("alyosha", 2),
+    ...declareWeaponHitCapabilities(alyoshaDefinition),
+    declareHitCapability("alyosha.kit.skill-burst-hits", "伏袭霆击与轰霆猎场、图加林可造成雷伤", ["skill", "burst"], ["electro"])
+  ],
   actions: [
     {
       characterId: "Alyosha",
@@ -99,6 +105,7 @@ export const alyoshaCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "alyosha.passive.stellar_frontier.active_character.stellar_superconduct_damage_bonus",
+      requiresRecipientOnField: true,
       label: "星赴险域 · 场上角色星超导反应伤害提升20%",
       source: { characterId: "Alyosha", kind: "character" },
       target: "specialReactionDamageBonus",

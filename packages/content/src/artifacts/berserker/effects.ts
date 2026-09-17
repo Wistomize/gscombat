@@ -15,6 +15,13 @@ export const berserkerCombatActionEffects: readonly CombatActionEffect[] = [
   },
   {
     activation: "active",
+    selectionMode: "optional",
+    lifecycle: {
+      kind: "conditional", preparation: "selected", retention: "while_applicable",
+      trigger: { event: "none", sourceFieldPresence: "any" },
+      applicability: { sourceFieldPresence: "on_field" },
+      explanation: "仅手选装备者生命低于 70% 且当前前台生效；扣血能力不等于低血状态"
+    },
     id: "artifact.berserker.4pc.low-hp-crit-rate",
     label: "战狂 · 四件套（当前生命值低于70%）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "Berserker" },

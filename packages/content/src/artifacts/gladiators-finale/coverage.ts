@@ -13,7 +13,7 @@ export const equipmentCoverage = {
     {
       effectIds: ["artifact.gladiators-finale.4pc.weapon-restricted-normal-damage-bonus"],
       id: "artifact.gladiators-finale.4pc.weapon-restricted-normal-damage-bonus",
-      label: "角斗士的终幕礼 · 四件套（单手剑、双手剑或长柄武器角色的普通攻击）",
+      label: "角斗士的终幕礼 · 四件套（仅前台实际单手剑、双手剑或长柄武器普攻）",
       source: artifactSource("GladiatorsFinale", 4),
       status: "implemented"
     }

@@ -31,6 +31,8 @@ docs/adr/ 是长期架构决策档案，继续保留每项决策的背景、备�
 | [ADR-0019](0019-adopt-selective-openspec-change-management.md) | Accepted | [OpenSpec 项目约束](../../openspec/config.yaml) |
 | [ADR-0020](0020-preserve-explicit-event-effect-eligibility.md) | Accepted | [显式事件资格修复设计](../../openspec/changes/audit-and-repair-combat-metric-regressions/design.md) |
 | [ADR-0021](0021-use-stateless-incremental-weapon-comparison.md) | Accepted | [无状态单武器比较设计](../../openspec/changes/optimize-counterfactual-analysis-performance/design.md) |
+| [ADR-0022](0022-preserve-scenario-field-identity.md) | 已接受 | [场景前台身份与参与者设计](../../openspec/changes/fix-team-reaction-participants-and-buff-scope/design.md) |
+| [ADR-0023](0023-declare-effect-field-lifecycle.md) | Accepted，实现中 | [效果生命周期设计](../../openspec/changes/model-artifact-field-lifecycle/design.md) |
 
 更细的当前性、实现证据和 Agent 规则无损核对见
 [openspec/governance-migration-map.md](../../openspec/governance-migration-map.md)。新增决策时继续使用顺序编号，

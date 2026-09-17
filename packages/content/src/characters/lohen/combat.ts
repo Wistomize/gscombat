@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { lohenDefinition } from "./definition.js"
 
 export const lohenCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("lohen", 18),
+    ...declareWeaponHitCapabilities(lohenDefinition),
+    declareHitCapability("lohen.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Lohen",

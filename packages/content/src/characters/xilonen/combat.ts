@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { xilonenDefinition } from "./definition.js"
 
 export const xilonenCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("xilonen", 5),
+    ...declareWeaponHitCapabilities(xilonenDefinition),
+    declareHitCapability("xilonen.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+  ],
   actions: [
     {
       characterId: "Xilonen",

@@ -16,6 +16,13 @@ function sortedIds(entries: readonly { readonly equipmentId: string }[]): string
 }
 
 describe("full equipment coverage ledger", () => {
+  it("classifies every maintained four-piece clause across damage and recipient pipelines", () => {
+    const effects = [...listCombatActionEffects(), ...listRecipientEquipmentEffects()]
+    for (const effect of effects) {
+      if (effect.source.kind !== "artifact_set" || effect.source.minimumPieces < 4) continue
+      expect(effect.lifecycle, effect.id).toBeDefined()
+    }
+  })
   it("contains exactly one audited entry for every pinned inventory record", () => {
     const weaponEntries = equipmentCoverageLedger.filter((entry) => entry.kind === "weapon")
     const artifactEntries = equipmentCoverageLedger.filter((entry) => entry.kind === "artifact_set")
@@ -192,7 +199,7 @@ describe("full equipment coverage ledger", () => {
     expect(listPublishedWeapons().map((weapon) => weapon.weaponId)).toContain("Messenger")
   })
 
-  it("publishes Flowing Purity only after every complete-thousand Bond-of-Life snapshot resolves", () => {
+  it("publishes Flowing Purity full-clear and compatible partial Bond-of-Life snapshots", () => {
     const flowingPurity = equipmentCoverageLedger.find((entry) => entry.equipmentId === "FlowingPurity")
 
     expect(flowingPurity?.clauses).toEqual(
@@ -203,6 +210,7 @@ describe("full equipment coverage ledger", () => {
         }),
         expect.objectContaining({
           effectIds: [
+            "weapon.flowing-purity.bond-of-life-cleared.full-clear.all-element-damage-bonus",
             "weapon.flowing-purity.bond-of-life-cleared.1-thousand-points.all-element-damage-bonus",
             "weapon.flowing-purity.bond-of-life-cleared.2-thousand-points.all-element-damage-bonus",
             "weapon.flowing-purity.bond-of-life-cleared.3-thousand-points.all-element-damage-bonus",
@@ -740,6 +748,10 @@ describe("full equipment coverage ledger", () => {
       expect.objectContaining({ status: "implemented" }),
       expect.objectContaining({
         effectIds: ["artifact.viridescent-venerer.4pc.swirl.reaction-damage-bonus"],
+        status: "implemented"
+      }),
+      expect.objectContaining({
+        effectIds: ["artifact.viridescent-venerer.4pc.stellar-swirl.reaction-damage-bonus"],
         status: "implemented"
       })
     ])

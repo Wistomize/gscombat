@@ -8,6 +8,7 @@ import type {
 } from "@gscombat/content"
 import type { CharacterBuild } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
+import type { FieldContext } from "../core/field-presence.js"
 
 /** One content-owned automatic or explicitly selected snapshot contribution resolved for a target action. */
 export interface AppliedCombatActionEffect {
@@ -167,6 +168,8 @@ export const EMPTY_COMBAT_ACTION_EFFECTS: ResolvedCombatActionEffects = {
 }
 
 export interface ResolveCombatActionEffectCandidatesInput {
+  readonly targetFrozen?: boolean
+  readonly fieldContext?: FieldContext
   readonly action: CombatActionMetadata
   /** Stable action-relative event ID used by event-scoped effect filters. */
   readonly candidateEventId?: string
@@ -228,6 +231,7 @@ export interface ResolveAdditionalDamageEventEffectsInput extends ResolveCombatA
 
 /** Input for effects that are always available from the metric source's own equipped weapon or artifact set. */
 export interface ResolveSelfAutomaticEquipmentEffectsInput {
+  readonly fieldContext?: FieldContext
   readonly action: CombatActionMetadata
   /** Source energy recharge before any typed equipment effect is applied. */
   readonly baseEnergyRecharge: number

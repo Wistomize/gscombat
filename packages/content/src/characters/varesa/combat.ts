@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { varesaDefinition } from "./definition.js"
 
 export const varesaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("varesa", 4, {"initialUses":2}),
+    { id: "varesa.kit.plunge-access", label: "战技腾跃后进行下落攻击", kind: "plunge_access", recipient: "self", sourceFieldPresence: "on_field", sustained: true },
+    ...declareWeaponHitCapabilities(varesaDefinition),
+    declareHitCapability("varesa.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Varesa",

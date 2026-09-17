@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage, CombatActionMetadata } from "../../combat/types.js"
 
 import { furinaDefinition } from "./definition.js"
@@ -75,6 +76,15 @@ function createCenterOfAttentionNormalAction(arkhe: keyof typeof furinaC6NormalA
 }
 
 export const furinaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("furina", 10),
+    ...declareWeaponHitCapabilities(furinaDefinition),
+    declareHitCapability("furina.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),
+    { ...declareHitCapability("furina.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["hydro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  {
+    id: "furina.skill.salon_solitaire.ousia.party_hp_loss", label: "孤心沙龙 · 荒性沙龙成员消耗队伍生命值",
+    kind: "hp_loss", recipient: "party", sourceFieldPresence: "any", sustained: true
+  }],
   actions: [
     {
       characterId: "Furina",

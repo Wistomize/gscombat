@@ -130,7 +130,7 @@ export function serializeAnalysisResponse(
       progressionGains: [...analysis.progressionGains],
       weapons: [...analysis.weapons]
     },
-    engineVersion: "scenario-1",
+    engineVersion: "scenario-2-artifact-lifecycle",
     evaluation: {
       appliedEffects: [...evaluation.appliedEffects],
       appliedBuffs: [...evaluation.appliedBuffs],

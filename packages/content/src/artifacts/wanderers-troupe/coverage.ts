@@ -13,7 +13,7 @@ export const equipmentCoverage = {
     {
       effectIds: ["artifact.wanderers-troupe.4pc.bow-catalyst-charged-damage-bonus"],
       id: "artifact.wanderers-troupe.4pc.bow-catalyst-charged-damage-bonus",
-      label: "流浪大地的乐团 · 四件套",
+      label: "流浪大地的乐团 · 四件套（仅前台实际弓或法器重击）",
       source: artifactSource("WanderersTroupe", 4),
       status: "implemented"
     }

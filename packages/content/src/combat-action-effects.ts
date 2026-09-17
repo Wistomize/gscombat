@@ -15,6 +15,26 @@ import {
   type PublishedEquipmentCoverageClause
 } from "./equipment-coverage-ledger.js"
 import { isHexereiCharacter } from "./rules/hexerei.js"
+import { assertWeaponComparisonDefaults } from "./combat/weapon-comparison-defaults.js"
+import { assertCombatEffectLifecycles } from "./combat/capabilities.js"
+import type { CombatEffectLifecycle } from "./combat/capabilities.js"
+
+/** Small UI projection shared by the server-rendered website and public catalog API. */
+export function getArtifactConditionRequirements(setId: string): { condition: "targetFrozen"; minimumPieces: number }[] {
+  const requiresFrozen = (lifecycle: CombatEffectLifecycle | undefined): boolean =>
+    lifecycle?.kind === "any_of" ? lifecycle.alternatives.some(requiresFrozen)
+      : lifecycle?.kind === "conditional" && lifecycle.applicability?.targetFrozen === true
+  const thresholds = new Set(equipmentCombatActionEffects.flatMap((effect) =>
+    effect.source.kind === "artifact_set" && effect.source.setId === setId && requiresFrozen(effect.lifecycle)
+      ? [effect.source.minimumPieces] : []))
+  return [...thresholds].map((minimumPieces) => ({ condition: "targetFrozen", minimumPieces }))
+}
+
+assertWeaponComparisonDefaults(equipmentCombatActionEffects)
+assertCombatEffectLifecycles([
+  ...equipmentCombatActionEffects,
+  ...characterCombatCoverageRegistry.flatMap((coverage) => coverage.actionEffects ?? [])
+])
 
 /** A JSON-safe source requirement that a UI can validate against the configured team. */
 export type CombatActionEffectOptionSource =
@@ -41,6 +61,8 @@ export interface CombatActionEffectOption {
   /** IDs whose active selection derives this option instead of exposing an independent snapshot toggle. */
   readonly requiredActiveEffectIds?: string[]
   readonly selectionMode?: "optional" | "required"
+  readonly automaticPreparation?: boolean
+  readonly preparationDescription?: string
   readonly source: CombatActionEffectOptionSource
 }
 
@@ -172,6 +194,10 @@ export function listActiveCombatActionEffectOptionsForAction(
         ? {}
         : { recipientSourceRelation: effect.targetFilter.recipientSourceRelation }),
       ...(effect.selectionMode === undefined ? {} : { selectionMode: effect.selectionMode }),
+      ...(effect.lifecycle?.kind === "conditional" ? {
+        automaticPreparation: effect.lifecycle.preparation === "qualified_or_selected",
+        preparationDescription: effect.lifecycle.explanation
+      } : {}),
       source: projectCombatActionEffectOptionSource(effect.source)
     }))
 }

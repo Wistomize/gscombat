@@ -12,6 +12,7 @@ import type {
 import type { TravelerElement } from "@gscombat/contracts"
 
 import type { CatalogWeaponType } from "../catalog-presentation.js"
+import type { CombatCapability, CombatEffectLifecycle } from "./capabilities.js"
 
 /** Declares how much of a character or action has executable, maintained battle logic. */
 export type CombatCoverageStatus = "unsupported" | "draft" | "verified"
@@ -842,6 +843,7 @@ export interface CombatActionEffectPrimaryDifferentElementOrRegionPartyCountCond
 export interface CombatActionEffectMoonsignLevelCondition {
   readonly kind: "moonsign_level"
   readonly minimum: "nascent_gleam" | "ascendant_gleam"
+  readonly maximum?: "nascent_gleam" | "ascendant_gleam"
 }
 
 /** Requires at least two configured Hexerei characters in the party. */
@@ -869,6 +871,8 @@ export type CombatActionEffectCondition =
 export interface CombatActionEffectExclusivity {
   readonly group: string
   readonly variant: string
+  /** Reviewed automatic variants select the highest eligible priority instead of stacking across wearers. */
+  readonly automaticPriority?: number
 }
 
 /** A current-action state that content can establish without inferring a rotation, timing window, or trigger history. */
@@ -1042,14 +1046,21 @@ export interface CombatActionMatchedAdditiveDamageTerm {
 
 /** Shared activation metadata for a typed current-action effect. */
 interface CombatActionEffectActivation {
+  /** Reviewed trigger, retention and current-presence rules; legacy flags remain compatibility constraints. */
+  readonly lifecycle?: CombatEffectLifecycle
   /** This state expires when its source leaves the field; incompatible with another required on-field action. */
   readonly requiresSourceOnField?: boolean
+  /** Applies only while the beneficiary is on field, independently of the effect source's position. */
+  readonly requiresRecipientOnField?: boolean
   readonly activation: "active" | "automatic" | "maximum_reachable"
   /** Keeps a reachable active effect out of automatic maximum selection and exposes it as an explicit UI choice. */
   readonly selectionMode?: "optional" | "required"
-  /** Selects this reachable state by default only when comparing the weapon for one of the listed recipients. */
+  /** Selects an authored pre-existing state only for eligible weapon-comparison recipients and actions. */
   readonly weaponComparisonDefault?: {
-    readonly recipientCharacterIds: readonly string[]
+    readonly recipientCharacterIds: readonly string[] | "all"
+    readonly requiresReactionAction?: boolean
+    readonly requiresOffFieldAction?: boolean
+    readonly requiresTeammate?: boolean
   }
   /**
    * Active snapshot IDs that must be selected before this effect can apply. Scenario evaluation derives the effect
@@ -1167,7 +1178,7 @@ export interface CombatCharacterScenarioEffectOption {
 
 /** Metadata for one prospective rotation action, independent from its numeric calculation. */
 export interface CombatActionMetadata {
-  /** Static eligibility, not a simulated cast order. Only explicit off_field actions can overlap a teammate's required on-field state. */
+  /** The metric owner's required presence. Actual active party identity is resolved once in the scenario. */
   readonly fieldPresence?: "on_field" | "off_field"
   /** Canonical explicitly maintained no-reaction counterpart; legacy generated IDs resolve to it. */
   readonly noReactionActionId?: string
@@ -1214,6 +1225,8 @@ export interface CombatActionMetadata {
 
 /** Content-level declaration for one character's combat coverage. */
 export interface CharacterCombatCoverage {
+  /** Kit-owned capabilities; the analyzer resolves their providers against the actual party and field identity. */
+  readonly capabilities?: readonly CombatCapability[]
   readonly actions: readonly CombatActionMetadata[]
   /** Current-action stat or enemy-state snapshots sourced by this character. */
   readonly actionEffects?: readonly CombatActionEffect[]

@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { whileSourceOnField } from "../../combat/capabilities.js"
 
 export const DISENCHANTMENT_IN_DEEP_SHADOW_ATTACK_PERCENT = 0.18
 export const DISENCHANTMENT_IN_DEEP_SHADOW_SUPERCONDUCT_CRIT_RATE = 0.16
@@ -18,6 +19,7 @@ export const disenchantmentInDeepShadowCombatActionEffects: readonly CombatActio
   {
     activation: "automatic",
     id: "artifact.disenchantment-in-deep-shadow.4pc.superconduct.reaction-damage-bonus",
+    lifecycle: whileSourceOnField("四件套超导增伤仅前台计入"),
     label: "影中沉凝的幻灭 · 四件套（超导反应伤害）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "DisenchantmentInDeepShadow" },
     target: "reactionDamageBonus",
@@ -27,6 +29,7 @@ export const disenchantmentInDeepShadowCombatActionEffects: readonly CombatActio
   {
     activation: "automatic",
     id: "artifact.disenchantment-in-deep-shadow.4pc.stellar-superconduct.reaction-damage-bonus",
+    lifecycle: whileSourceOnField("四件套星超导增伤仅前台计入"),
     label: "影中沉凝的幻灭 · 四件套（星超导反应伤害）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "DisenchantmentInDeepShadow" },
     target: "specialReactionDamageBonus",
@@ -34,7 +37,13 @@ export const disenchantmentInDeepShadowCombatActionEffects: readonly CombatActio
     value: { kind: "fixed", value: DISENCHANTMENT_IN_DEEP_SHADOW_STELLAR_SUPERCONDUCT_REACTION_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: {
+      kind: "conditional", preparation: "qualified", retention: "clear_on_exit",
+      trigger: { event: "capability", sourceFieldPresence: "any", capability: {
+        kind: "reaction_trigger", provider: "party", recipient: "source", reactionFamily: "superconduct"
+      } }, explanation: "前台且队伍具有超导或星超导触发条件时默认目标受影响；不要求装备者本人触发"
+    },
     id: "artifact.disenchantment-in-deep-shadow.4pc.superconduct-affected-target.crit-rate",
     label: "影中沉凝的幻灭 · 四件套（当前攻击的目标受超导或星超导影响）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "DisenchantmentInDeepShadow" },

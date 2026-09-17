@@ -12,6 +12,7 @@ export const equipmentCoverage = {
     },
     {
       effectIds: [
+        "artifact.fragment-of-harmonic-whimsy.4pc.bond-of-life-change.0-stack.damage-bonus",
         "artifact.fragment-of-harmonic-whimsy.4pc.bond-of-life-change.1-stack.damage-bonus",
         "artifact.fragment-of-harmonic-whimsy.4pc.bond-of-life-change.2-stack.damage-bonus",
         "artifact.fragment-of-harmonic-whimsy.4pc.bond-of-life-change.3-stack.damage-bonus"

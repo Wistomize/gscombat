@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { whileSourceOnField } from "../../combat/capabilities.js"
 
 export const THUNDERING_FURY_ELECTRO_DAMAGE_BONUS = 0.15
 export const THUNDERING_FURY_TRANSFORMATIVE_REACTION_DAMAGE_BONUS = 0.4
@@ -19,6 +20,7 @@ export const thunderingFuryCombatActionEffects: readonly CombatActionEffect[] = 
   {
     activation: "automatic",
     id: "artifact.thundering-fury.4pc.overload-electro-charged-superconduct-hyperbloom.reaction-damage-bonus",
+    lifecycle: whileSourceOnField("用户确认：四件套反应增伤仅前台生效"),
     label: "如雷的盛怒 · 四件套（超载、感电、超导、超绽放反应伤害）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "ThunderingFury" },
     target: "reactionDamageBonus",
@@ -28,6 +30,7 @@ export const thunderingFuryCombatActionEffects: readonly CombatActionEffect[] = 
   {
     activation: "automatic",
     id: "artifact.thundering-fury.4pc.aggravate.reaction-damage-bonus",
+    lifecycle: whileSourceOnField("用户确认：四件套超激化加算增伤仅前台生效"),
     label: "如雷的盛怒 · 四件套（超激化附加伤害）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "ThunderingFury" },
     target: "reactionDamageBonus",
@@ -37,6 +40,7 @@ export const thunderingFuryCombatActionEffects: readonly CombatActionEffect[] = 
   {
     activation: "automatic",
     id: "artifact.thundering-fury.4pc.lunar-charged-stellar-superconduct.reaction-damage-bonus",
+    lifecycle: whileSourceOnField("用户确认：四件套特殊反应增伤仅前台生效"),
     label: "如雷的盛怒 · 四件套（月感电、星超导反应伤害）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "ThunderingFury" },
     target: "specialReactionDamageBonus",

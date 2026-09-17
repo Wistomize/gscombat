@@ -42,6 +42,7 @@ export type {
 
 import type { ResolvedFriendlyRecipient, ResolvedRecipientEquipmentEffect } from "./runtime.js"
 import * as runtime from "./runtime.js"
+import { resolveSupportFieldContext } from "../core/field-presence.js"
 
 export function evaluateScalarMetric(
   metric: CombatScalarMetricDefinition,
@@ -53,7 +54,8 @@ export function evaluateScalarMetric(
     input.build,
     input.context?.source,
     input.context?.teammates,
-    input.gameData
+    input.gameData,
+    resolveSupportFieldContext(input.build.buildId, input.context?.onFieldBuildId)
   )
   const ratioParameterDefinition = metric.ratioParameter
   const flatParameterDefinition = metric.flatParameter

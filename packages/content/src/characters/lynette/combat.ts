@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { lynetteDefinition } from "./definition.js"
 
 export const lynetteCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("lynette", 5),
+    { ...declareSkillCastCapability("lynette", 5, {"initialUses":2}), id: "lynette.kit.extra-skill-charge", minimumSourceConstellation: 4 },
+    ...declareWeaponHitCapabilities(lynetteDefinition),
+    declareHitCapability("lynette.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Lynette",

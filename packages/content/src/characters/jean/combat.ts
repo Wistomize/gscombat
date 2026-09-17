@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { jeanDefinition } from "./definition.js"
 
 export const jeanCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("jean", 3),
+    ...declareWeaponHitCapabilities(jeanDefinition),
+    declareHitCapability("jean.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Jean",

@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { fischlDefinition } from "./definition.js"
 
 export const fischlCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("fischl", 3),
+    ...declareWeaponHitCapabilities(fischlDefinition),
+    declareHitCapability("fischl.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+    { ...declareHitCapability("fischl.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["electro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Fischl",
@@ -51,6 +58,7 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
       evaluator: "declared_direct",
       id: "fischl.skill.nightrider.oz.level_one_bolt",
       kind: "damage",
+      fieldPresence: "off_field",
       parameterReferences: [
         {
           groupId: "skill",

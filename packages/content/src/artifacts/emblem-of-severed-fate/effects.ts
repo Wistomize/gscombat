@@ -7,6 +7,7 @@ export const emblemOfSeveredFateCombatActionEffects: readonly CombatActionEffect
   {
     activation: "automatic",
     id: "artifact.emblem-of-severed-fate.2pc.energy-recharge",
+    lifecycle: { kind: "constant" },
     label: "绝缘之旗印 · 二件套",
     source: { kind: "artifact_set", minimumPieces: 2, setId: "EmblemOfSeveredFate" },
     target: "energyRecharge",
@@ -15,6 +16,7 @@ export const emblemOfSeveredFateCombatActionEffects: readonly CombatActionEffect
   {
     activation: "automatic",
     id: "artifact.emblem-of-severed-fate.4pc.burst-damage-bonus",
+    lifecycle: { kind: "constant" },
     label: "绝缘之旗印 · 四件套",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "EmblemOfSeveredFate" },
     target: "damageBonus",

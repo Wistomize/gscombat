@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { barbaraDefinition } from "./definition.js"
 
 export const barbaraCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("barbara", 6),
+    ...declareWeaponHitCapabilities(barbaraDefinition),
+    declareHitCapability("barbara.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["hydro"]),
+  ],
   actions: [
     {
       characterId: "Barbara",
@@ -93,6 +99,7 @@ export const barbaraCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "active",
       id: "barbara.let_the_show_begin.c2.current_character.hydro_damage_bonus",
+      requiresRecipientOnField: true,
       label: "演唱，开始♪持续期间 · C2 当前场上角色水元素伤害加成",
       source: { characterId: "Barbara", kind: "character", minimumSourceConstellation: 2 },
       target: "damageBonus",

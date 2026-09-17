@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { nicoleDefinition } from "./definition.js"
 
 export const nicoleCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("nicole", 7),
+    { id: "nicole.kit.retained-shield", label: "炽光之盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(nicoleDefinition),
+    declareHitCapability("nicole.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill"], ["pyro"]),
+  ],
   actions: [
     {
       characterId: "Nicole",

@@ -13,26 +13,20 @@ export const equipmentCoverage = {
     {
       effectIds: [
         "artifact.flower-of-paradise-lost.4pc.reaction-trigger.0-stack.reaction-damage-bonus",
-        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.1-stack.reaction-damage-bonus",
-        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.2-stack.reaction-damage-bonus",
-        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.3-stack.reaction-damage-bonus",
         "artifact.flower-of-paradise-lost.4pc.reaction-trigger.4-stack.reaction-damage-bonus"
       ],
       id: "artifact.flower-of-paradise-lost.4pc.bloom-hyperbloom-burgeon.reaction-damage-bonus",
-      label: "乐园遗落之花 · 四件套（绽放、超绽放、烈绽放反应伤害）",
+      label: "乐园遗落之花 · 四件套（无触发资格40%，有自身绽放系列触发资格80%，后台可用）",
       source: artifactSource("FlowerOfParadiseLost", 4),
       status: "implemented"
     },
     {
       effectIds: [
         "artifact.flower-of-paradise-lost.4pc.reaction-trigger.0-stack.lunar-bloom-reaction-damage-bonus",
-        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.1-stack.lunar-bloom-reaction-damage-bonus",
-        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.2-stack.lunar-bloom-reaction-damage-bonus",
-        "artifact.flower-of-paradise-lost.4pc.reaction-trigger.3-stack.lunar-bloom-reaction-damage-bonus",
         "artifact.flower-of-paradise-lost.4pc.reaction-trigger.4-stack.lunar-bloom-reaction-damage-bonus"
       ],
       id: "artifact.flower-of-paradise-lost.4pc.lunar-bloom.reaction-damage-bonus",
-      label: "乐园遗落之花 · 四件套（月绽放反应伤害）",
+      label: "乐园遗落之花 · 四件套（月绽放基础10%，有自身绽放系列触发资格20%，不由直伤指标倒推）",
       source: artifactSource("FlowerOfParadiseLost", 4),
       status: "implemented"
     }

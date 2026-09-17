@@ -12,12 +12,13 @@ function build(characterId: string, constellation: number): CharacterBuild {
     talents: { normal: 10, skill: 10, burst: 10 }, weapon: { ascension: 6, level: 90, refinement: 1,
       weaponId: ["Fischl", "Diona"].includes(characterId) ? "HuntersBow" : characterId === "Odette" ? "DullBlade" : "ApprenticesNotes" } }
 }
-function run(primary: CharacterBuild, targetActionId: string, teammates: CharacterBuild[], actionParameters: Record<string, number> = {}) {
+function run(primary: CharacterBuild, targetActionId: string, teammates: CharacterBuild[], actionParameters: Record<string, number> = {}, onFieldBuildId?: string) {
   return evaluateScenario({ ...raidenNationalBuiltinScenario, primary, targetActionId, teammates,
-    externalBuffs: [], conditions: { activeEffectIds: [], actionParameters, equipmentEffectMode: "maximum_reachable", enemyCount: 1 } }, gameData)
+    externalBuffs: [], conditions: { activeEffectIds: [], actionParameters, equipmentEffectMode: "maximum_reachable", enemyCount: 1,
+      ...(onFieldBuildId === undefined ? {} : { onFieldBuildId }) } }, gameData)
 }
 describe("Dreamdrifter fixed-scene eligibility", () => {
-  it("evaluates manually selected Cryo Vortex levels without C1 trigger damage or unrelated contributors", () => {
+  it("evaluates manually selected Cryo Vortex levels with the complete party and without C1 trigger damage", () => {
     const primary = build("YumemizukiMizuki", 6)
     const teammates = [build("Diona", 0), build("Fischl", 0), build("Sucrose", 0)]
     const id = "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex"
@@ -30,7 +31,7 @@ describe("Dreamdrifter fixed-scene eligibility", () => {
       if (!trace || trace.kind !== "stellar_swirl_participant_aggregation") throw new Error("Missing Vortex trace")
       expect(trace.vortexLevel).toBe(index + 1)
       expect(trace.reactionCoefficient).toBe(index < 2 ? 2 : 3)
-      expect(trace.participants.map((participant) => participant.participantId)).toEqual([primary.buildId, "dream.Diona", "dream.Sucrose"])
+      expect(trace.participants.map((participant) => participant.participantId)).toEqual([primary, ...teammates].map((build) => build.buildId))
       expect(result.appliedEffects.some((effect) => effect.id.includes("awaiting_stellar_swirl"))).toBe(false)
       for (const participant of trace.participants) {
         expect(participant.trace.find((entry) => entry.stage === "flat_damage_addition"))
@@ -65,7 +66,7 @@ describe("Dreamdrifter fixed-scene eligibility", () => {
     const aggregate = reaction.rotation.events[0]!.trace.find((entry) => entry.kind === "stellar_swirl_participant_aggregation")
     if (!aggregate || aggregate.kind !== "stellar_swirl_participant_aggregation") throw new Error("Missing reaction aggregation")
     expect(aggregate.reactionCoefficient).toBe(0.75)
-    expect(aggregate.participants.map((participant) => participant.participantId)).toEqual([primary.buildId, "dream.Diona"])
+    expect(aggregate.participants.map((participant) => participant.participantId)).toEqual([primary, ...teammates].map((build) => build.buildId))
     for (const participant of aggregate.participants) {
       const isOwner = participant.participantId === primary.buildId
       expect(participant.trace.find((entry) => entry.stage === "flat_damage_addition"))
@@ -89,7 +90,7 @@ describe("Dreamdrifter fixed-scene eligibility", () => {
   it("blocks mutually exclusive on-field Coda, but retains Dreamdrifter buffs on background coordinated damage", () => {
     const mizuki = build("YumemizukiMizuki", 6), odette = build("Odette", 6)
     const front = run(odette, "odette.skill.adagio_coda_at_dawn.final_hit.stellar_swirl", [mizuki])
-    const back = run(odette, "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl", [mizuki])
+    const back = run(odette, "odette.constellation.4.snow_swan_dream.coordinated_attack.stellar_swirl", [mizuki], {}, mizuki.buildId)
     const related = (result: typeof front) => result.appliedEffects.filter((effect) => effect.id.startsWith("yumemizuki_mizuki."))
     expect(related(front)).toEqual([])
     expect(related(back).map((effect) => effect.target)).toEqual(expect.arrayContaining([

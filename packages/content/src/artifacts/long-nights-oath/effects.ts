@@ -9,7 +9,13 @@ function createRadianceEverlastingDamageBonusEffect(
   stackCount: (typeof stackCounts)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: stackCount !== 5 ? { kind: "excluded", reason: "改为按合法下落能力自动取零层或五层，旧中间层不计入" } : {
+      kind: "conditional", preparation: "qualified", retention: "clear_on_exit",
+      trigger: { event: "capability", sourceFieldPresence: "any", capability: {
+        kind: "plunge_access", provider: "party", recipient: "source"
+      } }, explanation: "装备者当前在前台且具有自身或队友提供的合法下落条件，默认准备五层；后台仅保留二件套"
+    },
     exclusivity: { group: "long-nights-oath-radiance-everlasting", variant: `${stackCount}-stack` },
     id: `artifact.long-nights-oath.4pc.radiance-everlasting.${stackCount}-stack.plunge-damage-bonus`,
     label: `长夜之誓 · 已达成${stackCount}层永照的流辉`,

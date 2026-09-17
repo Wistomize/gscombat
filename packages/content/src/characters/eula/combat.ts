@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { eulaDefinition } from "./definition.js"
 
 export const eulaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("eula", 6),
+    ...declareWeaponHitCapabilities(eulaDefinition),
+    declareHitCapability("eula.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Eula",

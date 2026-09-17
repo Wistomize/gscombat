@@ -21,8 +21,16 @@ const swirl: EvaluationScenario = {
   targetActionId: "yumemizuki_mizuki.skill.aisa_utamakura_pilgrimage.single_stellar_swirl_vortex"
 }
 
+const linnea: EvaluationScenario = {
+  ...raidenNationalBuiltinScenario, primary: build("Linnea", "FavoniusWarbow"),
+  teammates: [build("Gorou", "FavoniusWarbow")], externalBuffs: [],
+  conditions: { activeEffectIds: [], enemyCount: 1, equipmentEffectMode: "maximum_reachable" },
+  targetActionId: "linnea.skill.lumi.enhanced_hammer.lunar_crystallize"
+}
+
 it.each([
   [raidenNationalBuiltinScenario, "TheCatch"],
+  [linnea, "AlleyHunter"],
   [swirl, "AThousandFloatingDreams"]
 ] as const)("matches complete analysis without recalculating unrelated comparisons (%s)", (scenario, weaponId) => {
   const original = structuredClone(scenario)

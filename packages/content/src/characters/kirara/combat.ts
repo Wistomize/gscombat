@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { kiraraDefinition } from "./definition.js"
 
 export const kiraraCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("kirara", 9),
+    { id: "kirara.kit.retained-shield", label: "安全运输护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    ...declareWeaponHitCapabilities(kiraraDefinition),
+    declareHitCapability("kirara.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["dendro"]),
+  ],
   actions: [
     {
       characterId: "Kirara",

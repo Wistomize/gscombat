@@ -1,3 +1,4 @@
+import { resolveFieldContext, type FieldContext } from "../core/field-presence.js"
 import {
   evaluateRotation,
   isAmplifyingReaction,
@@ -645,6 +646,11 @@ export function resolveStatContributions(input: ResolveStatContributionsInput): 
   for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "damageBonus")) {
     add("damageBonus", effect.label, effect.value)
   }
+  for (const effect of actionEffects.appliedEffects.filter((candidate) => candidate.target === "finalHpToDamageBonus")) {
+    const converted = input.effectiveHp * effect.value
+    add("damageBonus", effect.label,
+      effect.finalHpMaximumValue === undefined ? converted : Math.min(converted, effect.finalHpMaximumValue))
+  }
   for (const contribution of input.intrinsicDamageBonusContributions) {
     add("damageBonus", contribution.label, contribution.value)
   }
@@ -1029,6 +1035,7 @@ export function resolveDamageBonusByElement(
 
 /** Fixed action and party inputs used to prepare source or recipient contexts. */
 interface ScenarioActionEffectContextInput {
+  readonly fieldContext?: FieldContext
   readonly action: CombatActionMetadata
   readonly activeEffectIds: readonly string[]
   readonly activeEffectSourceBuildIds?: Readonly<Record<string, string>>
@@ -1091,6 +1098,7 @@ export function resolveScenarioParticipantContext(input: ScenarioActionEffectCon
 
 /** Prepares a full action context, keeping source ownership distinct from temporary recipients. */
 export function resolveScenarioActionEffectContext(input: ScenarioActionEffectContextInput) {
+  const fieldContext = input.fieldContext ?? resolveFieldContext(input.action, input.build, input.teammates)
   const participant = resolveScenarioParticipantContext(input)
   const { resolvedActiveEffectIds } = participant
   const sourceSelfMaximumEquipmentEffectsByBuildId = resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
@@ -1100,7 +1108,8 @@ export function resolveScenarioActionEffectContext(input: ScenarioActionEffectCo
     input.gameData,
     input.enemyCount,
     resolvedActiveEffectIds,
-    input.activeEffectSourceBuildIds
+    input.activeEffectSourceBuildIds,
+    fieldContext
   )
   const sourceFinalHpByBuildId = resolveSourceFinalHpByBuildId(
     input.build,
@@ -1110,7 +1119,8 @@ export function resolveScenarioActionEffectContext(input: ScenarioActionEffectCo
     input.buffs,
     input.artifactStatDeltas,
     input.enemyCount,
-    sourceSelfMaximumEquipmentEffectsByBuildId
+    sourceSelfMaximumEquipmentEffectsByBuildId,
+    fieldContext
   )
   const sourceFinalAttackByBuildId = resolveSourceFinalAttackByBuildId(
     input.build,
@@ -1122,7 +1132,8 @@ export function resolveScenarioActionEffectContext(input: ScenarioActionEffectCo
     input.enemyCount,
     resolvedActiveEffectIds,
     input.activeEffectSourceBuildIds,
-    sourceSelfMaximumEquipmentEffectsByBuildId
+    sourceSelfMaximumEquipmentEffectsByBuildId,
+    fieldContext
   )
   const {
     sourceElementalMasteryBeforeShareByBuildId,
@@ -1139,7 +1150,8 @@ export function resolveScenarioActionEffectContext(input: ScenarioActionEffectCo
     input.activeEffectSourceBuildIds,
     sourceFinalHpByBuildId,
     sourceFinalAttackByBuildId,
-    sourceSelfMaximumEquipmentEffectsByBuildId
+    sourceSelfMaximumEquipmentEffectsByBuildId,
+    fieldContext
   )
   const sourceFinalDefenseByBuildId = resolveSourceFinalDefenseByBuildId(
     input.build,
@@ -1151,7 +1163,8 @@ export function resolveScenarioActionEffectContext(input: ScenarioActionEffectCo
     input.enemyCount,
     input.activeEffectIds,
     input.activeEffectSourceBuildIds,
-    sourceSelfMaximumEquipmentEffectsByBuildId
+    sourceSelfMaximumEquipmentEffectsByBuildId,
+    fieldContext
   )
   return {
     ...participant,

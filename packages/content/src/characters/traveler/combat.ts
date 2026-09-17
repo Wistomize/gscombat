@@ -1,8 +1,23 @@
 import type { CharacterCombatCoverage } from "../../combat/types.js"
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
+import { travelerDefinition } from "./definition.js"
 
 import { travelerCryoCombatCoverage } from "./cryo-combat.js"
 
 export const travelerCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    { id: "traveler.cryo.passive.reaction-conversion", label: "星耀祝礼·幻变冰镜：队伍星烁转换", kind: "reaction_conversion",
+      recipient: "party", sourceFieldPresence: "any", sustained: true, travelerElement: "cryo", specialReactions: ["stellar_superconduct", "stellar_swirl"] },
+    { id: "traveler.cryo.kit.stellar-damage", label: "冰元素旅行者辉映特殊重击与爆发", kind: "special_reaction_damage",
+      recipient: "self", sourceFieldPresence: "on_field", sustained: true, travelerElement: "cryo", specialReactions: ["stellar_superconduct"], requiredTeamReaction: "stellar_superconduct" },
+    ...(["anemo", "geo", "electro", "dendro", "hydro", "pyro", "cryo"] as const).map((element) => ({
+      ...declareSkillCastCapability(`traveler.${element}`, { anemo: 4, geo: 2, electro: 5, dendro: 1, hydro: 7, pyro: 4, cryo: 3 }[element]),
+      travelerElement: element
+    })),
+    ...declareWeaponHitCapabilities(travelerDefinition), ...(["anemo", "geo", "electro", "dendro", "hydro", "pyro", "cryo"] as const).map((element) => ({
+    ...declareHitCapability(`traveler.${element}.skill_burst_hits`, "当前元素旅行者的战技/爆发命中准备", ["skill", "burst"], [element]),
+    travelerElement: element
+  }))],
   actions: [
     {
       characterId: "Traveler",
@@ -279,6 +294,7 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
     {
       activation: "maximum_reachable",
       id: "traveler.pyro.constellation.1.starfires_flowing_light.active_character.damage_bonus",
+      requiresRecipientOnField: true,
       label: "星火流转 · 火元素旅行者C1（流火剑界持续期间，场上角色伤害提高6%）",
       source: {
         characterId: "Traveler",
@@ -293,6 +309,7 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
       activation: "maximum_reachable",
       condition: { kind: "primary_nightsoul_blessing", required: true },
       id: "traveler.pyro.constellation.1.starfires_flowing_light.nightsoul_active_character.extra_damage_bonus",
+      requiresRecipientOnField: true,
       label: "星火流转 · 火元素旅行者C1（场上角色处于夜魂加持，额外伤害提高9%）",
       source: {
         characterId: "Traveler",

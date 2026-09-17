@@ -39,6 +39,8 @@ export const ActiveScenarioEffectOptionSchema = Type.Object({
   recipientSourceRelation: Type.Optional(Type.Union([Type.Literal("not_source"), Type.Literal("source")])),
   requiredActiveEffectIds: Type.Optional(Type.Array(Type.String({ minLength: 1, maxLength: 100 }), { minItems: 1, maxItems: 20 })),
   selectionMode: Type.Optional(Type.Union([Type.Literal("optional"), Type.Literal("required")])),
+  automaticPreparation: Type.Optional(Type.Boolean()),
+  preparationDescription: Type.Optional(Type.String({ maxLength: 600 })),
   source: ActiveScenarioEffectOptionSourceSchema
 })
 
@@ -119,7 +121,13 @@ const SupportMetricCatalogEntrySchema = Type.Object({
 })
 
 export const CatalogResponseSchema = Type.Object({
-  artifactSets: Type.Array(Type.Object({ label: Type.String(), setId: Type.String() })),
+  artifactSets: Type.Array(Type.Object({
+    label: Type.String(), setId: Type.String(),
+    /** Shared scenario controls derived from effect declarations, not artifact names in the client. */
+    conditionRequirements: Type.Optional(Type.Array(Type.Object({
+      condition: Type.Literal("targetFrozen"), minimumPieces: Type.Integer({ minimum: 1, maximum: 4 })
+    })))
+  })),
   buffPresets: Type.Array(
     Type.Object({ buffs: Type.Array(ExternalBuffSchema), id: Type.String(), label: Type.String() })
   ),
@@ -129,6 +137,7 @@ export const CatalogResponseSchema = Type.Object({
       label: Type.String(),
       primaryActions: Type.Array(
         Type.Object({
+          fieldPresence: Type.Optional(Type.Union([Type.Literal("on_field"), Type.Literal("off_field")])),
           id: Type.String(),
           label: Type.String(),
           minimumSourceConstellation: Type.Optional(Type.Integer({ maximum: 6, minimum: 0 })),

@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { skirkDefinition } from "./definition.js"
@@ -6,6 +7,11 @@ const skirkC6RetaliationActionId = "skirk.constellation.6.to_the_source.damage_t
 const skirkC1CrystalBladeActionId = "skirk.constellation.1.far_to_fall.void_rift.crystal_blade"
 
 export const skirkCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("skirk", 14),
+    ...declareWeaponHitCapabilities(skirkDefinition),
+    declareHitCapability("skirk.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Skirk",

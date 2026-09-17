@@ -15,7 +15,8 @@ export const bloodstainedChivalryCombatActionEffects: readonly CombatActionEffec
     value: { kind: "fixed", value: BLOODSTAINED_PHYSICAL_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "excluded", reason: "用户确认：四件套击杀准备与免体力均不计入；旧选择不恢复增伤" },
     id: "artifact.bloodstained-chivalry.4pc.after-defeat.charged-damage-bonus",
     label: "染血的骑士道 · 四件套（击败敌人后）",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "BloodstainedChivalry" },

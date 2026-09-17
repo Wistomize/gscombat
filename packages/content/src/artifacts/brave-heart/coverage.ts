@@ -13,7 +13,7 @@ export const equipmentCoverage = {
     {
       effectIds: ["artifact.brave-heart.4pc.enemy-above-half-health.damage-bonus"],
       id: "artifact.brave-heart.4pc.enemy-above-half-health.damage-bonus",
-      label: "勇士之心 · 四件套（当前目标生命值高于50%）",
+      label: "勇士之心 · 四件套（用户确认前台按平均 15% 折算，后台不计）",
       source: artifactSource("BraveHeart", 4),
       status: "implemented"
     }

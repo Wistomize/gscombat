@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { faruzanDefinition } from "./definition.js"
 
 export const faruzanCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("faruzan", 3),
+    ...declareWeaponHitCapabilities(faruzanDefinition),
+    declareHitCapability("faruzan.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Faruzan",

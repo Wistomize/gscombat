@@ -6,7 +6,7 @@ export const equipmentCoverage = {
     {
       id: "artifact.prayers-for-wisdom.1pc.electro-aura-duration",
       label: "祭雷之人 · 一件套（雷元素附着持续时间）",
-      reason: "当前模型将元素状态作为已选快照，不追踪元素附着时长或循环时间线。",
+      reason: "用户确认本轮不计入此条款。当前模型将元素状态作为已选快照，不追踪元素附着时长或循环时间线。",
       source: artifactSource("PrayersForWisdom", 1),
       status: "not_applicable"
     }

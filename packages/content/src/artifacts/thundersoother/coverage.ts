@@ -6,15 +6,14 @@ export const equipmentCoverage = {
     {
       id: "artifact.thundersoother.2pc.electro-resistance",
       label: "平息鸣雷的尊者 · 二件套",
-      reason: "需要承伤元素抗性指标。",
-      requiredCapability: "incoming_elemental_resistance_metric",
+      reason: "本轮不计算装备者承伤元素抗性，不转为敌人减抗或其他增益。",
       source: artifactSource("Thundersoother", 2),
-      status: "unsupported"
+      status: "not_applicable"
     },
     {
       effectIds: ["artifact.thundersoother.4pc.electro-aura.damage-bonus"],
       id: "artifact.thundersoother.4pc.electro-aura.damage-bonus",
-      label: "平息鸣雷的尊者 · 四件套（当前目标受雷元素影响）",
+      label: "平息鸣雷的尊者 · 四件套（前台且队伍含雷默认 35%，不改写敌人附着）",
       source: artifactSource("Thundersoother", 4),
       status: "implemented"
     }

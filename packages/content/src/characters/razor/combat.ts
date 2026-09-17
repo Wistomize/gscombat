@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { razorDefinition } from "./definition.js"
 
 export const razorCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("razor", 5),
+    { ...declareSkillCastCapability("razor", 5, {"cooldownMultiplier":0.8}), id: "razor.kit.passive-skill-cooldown", minimumSourceAscension: 1 },
+    ...declareWeaponHitCapabilities(razorDefinition),
+    declareHitCapability("razor.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Razor",

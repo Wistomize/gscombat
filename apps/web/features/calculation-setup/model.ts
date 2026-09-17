@@ -50,9 +50,12 @@ export function createSupportMetricContextDraft(): SupportMetricContextDraft {
 
 export function createSupportMetricEvaluationContext(
   draft: SupportMetricContextDraft,
-  teammates: readonly CharacterBuild[]
+  teammates: readonly CharacterBuild[],
+  onFieldBuildId?: string
 ): MetricEvaluationContext {
-  const context: MetricEvaluationContext = { teammates: [...teammates] }
+  const context: MetricEvaluationContext = {
+    teammates: [...teammates], ...(onFieldBuildId === undefined ? {} : { onFieldBuildId })
+  }
   if (draft.actionParameters && Object.keys(draft.actionParameters).length > 0) {
     context.actionParameters = { ...draft.actionParameters }
   }
@@ -202,13 +205,16 @@ export function getMaximumReachableConditions(
     effectOptions.flatMap((effect) => {
       if (!activeEffectIds.includes(effect.id)) return []
       const sourceBuilds = [...getScenarioEffectSourceBuilds(effect, primary, teammates)]
-      if (sourceBuilds.length < 2) return []
-      sourceBuilds.sort((left, right) => right.weapon.refinement - left.weapon.refinement)
+      if (sourceBuilds.length === 0) return []
+      sourceBuilds.sort((left, right) => effect.source.kind === "weapon"
+        ? right.weapon.refinement - left.weapon.refinement || left.buildId.localeCompare(right.buildId)
+        : left.buildId.localeCompare(right.buildId))
       return [[effect.id, sourceBuilds[0]!.buildId] as const]
     })
   )
+  const { activeEffectSourceBuildIds: _previousSources, ...rest } = conditions
   return {
-    ...conditions,
+    ...rest,
     activeEffectIds,
     ...(Object.keys(activeEffectSourceBuildIds).length > 0 ? { activeEffectSourceBuildIds } : {})
   }
@@ -216,7 +222,7 @@ export function getMaximumReachableConditions(
 
 export function removeUnavailableResonanceConditions(
   conditions: EvaluationScenario["conditions"],
-  hasCryoResonance: boolean,
+  hasFrozenCondition: boolean,
   hasGeoResonance: boolean
 ): EvaluationScenario["conditions"] {
   let normalized = conditions
@@ -224,7 +230,7 @@ export function removeUnavailableResonanceConditions(
     const { primaryShielded: _primaryShielded, ...withoutShield } = normalized
     normalized = withoutShield
   }
-  if (!hasCryoResonance && normalized.targetFrozen !== undefined) {
+  if (!hasFrozenCondition && normalized.targetFrozen !== undefined) {
     const { targetFrozen: _targetFrozen, ...withoutFrozen } = normalized
     normalized = withoutFrozen
   }

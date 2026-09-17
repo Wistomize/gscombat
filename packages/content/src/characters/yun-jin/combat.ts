@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { yunJinDefinition } from "./definition.js"
 
 export const yunJinCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("yun-jin", 5),
+    ...declareWeaponHitCapabilities(yunJinDefinition),
+    declareHitCapability("yun-jin.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),
+  ],
   actions: [
     {
       characterId: "YunJin",

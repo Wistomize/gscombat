@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { pruneDefinition } from "./definition.js"
 
 export const pruneCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("prune", 2),
+    ...declareWeaponHitCapabilities(pruneDefinition),
+    declareHitCapability("prune.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Prune",

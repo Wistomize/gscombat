@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { sethosDefinition } from "./definition.js"
 
 export const sethosCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("sethos", 2),
+    ...declareWeaponHitCapabilities(sethosDefinition),
+    declareHitCapability("sethos.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Sethos",

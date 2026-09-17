@@ -27,6 +27,7 @@ export type {
   ResolvedStatContributionStage
 } from "./types.js"
 
+import { resolveFieldContext } from "../core/field-presence.js"
 import * as shared from "./shared.js"
 
 export function evaluateDeclaredTransformativeScenarioAction(
@@ -46,6 +47,7 @@ export function evaluateDeclaredTransformativeScenarioAction(
     teammates = [],
     moonsignLevel = "none"
   } = input
+  const fieldContext = input.fieldContext ?? resolveFieldContext(action, build, teammates)
   shared.assertDeclaredTransformativeAction(action)
   const resolvedActionParameters = resolveActionScenarioParameters(action, actionParameters, build.constellation)
   const {
@@ -62,6 +64,7 @@ export function evaluateDeclaredTransformativeScenarioAction(
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
     action,
+    fieldContext,
     activeEffectIds,
     ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
     ...(artifactStatDeltas === undefined ? {} : { artifactStatDeltas }),
@@ -74,7 +77,9 @@ export function evaluateDeclaredTransformativeScenarioAction(
     teammates
   })
   const actionEffects = resolveCombatActionEffects({
+    targetFrozen: input.targetFrozen ?? false,
     action,
+    fieldContext,
     activeEffectIds: resolvedActiveEffectIds,
     ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
     baseEnergyRecharge: baseStats.scenario.energyRecharge,

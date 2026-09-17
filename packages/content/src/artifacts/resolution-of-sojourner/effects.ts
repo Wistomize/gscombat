@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { whileSourceOnField } from "../../combat/capabilities.js"
 
 export const RESOLUTION_OF_SOJOURNER_ATTACK_PERCENT = 0.18
 export const RESOLUTION_OF_SOJOURNER_CHARGED_CRIT_RATE = 0.3
@@ -16,6 +17,7 @@ export const resolutionOfSojournerCombatActionEffects: readonly CombatActionEffe
   {
     activation: "automatic",
     id: "artifact.resolution-of-sojourner.4pc.charged-crit-rate",
+    lifecycle: whileSourceOnField("四件套仅当前前台重击事件生效，不改变通用面板"),
     label: "行者之心 · 四件套",
     source: { kind: "artifact_set", minimumPieces: 4, setId: "ResolutionOfSojourner" },
     target: "critRate",

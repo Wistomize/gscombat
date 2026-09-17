@@ -28,6 +28,13 @@ export const equipmentCoverage = {
       label: "翠绿之影 · 四件套（扩散反应伤害）",
       source: artifactSource("ViridescentVenerer", 4),
       status: "implemented"
+    },
+    {
+      effectIds: ["artifact.viridescent-venerer.4pc.stellar-swirl.reaction-damage-bonus"],
+      id: "artifact.viridescent-venerer.4pc.stellar-swirl.reaction-damage-bonus",
+      label: "翠绿之影 · 四件套（星扩散20%，前后台常驻，与普通扩散60%分开）",
+      source: artifactSource("ViridescentVenerer", 4),
+      status: "implemented"
     }
   ],
   equipmentId: "ViridescentVenerer",

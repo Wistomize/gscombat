@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { cynoDefinition } from "./definition.js"
 
 export const cynoCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("cyno", 3),
+    ...declareWeaponHitCapabilities(cynoDefinition),
+    declareHitCapability("cyno.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["electro"]),
+  ],
   actions: [
     {
       characterId: "Cyno",

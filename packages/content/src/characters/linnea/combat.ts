@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { linneaDefinition } from "./definition.js"
@@ -15,6 +16,13 @@ const linneaConstellation4DefenseEffectIds = {
 const linneaConstellation4DefenseSnapshotEffectIds = Object.values(linneaConstellation4DefenseEffectIds)
 
 export const linneaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("linnea", 4),
+    { id: "linnea.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_crystallize"] },
+    ...declareWeaponHitCapabilities(linneaDefinition),
+    declareHitCapability("linnea.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["geo"]),
+    { ...declareHitCapability("linnea.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["geo"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       characterId: "Linnea",
@@ -63,6 +71,7 @@ export const linneaCombatCoverage: CharacterCombatCoverage = {
       evaluator: "declared_special_reaction",
       id: linneaSkillActionIds.enhancedHammer,
       kind: "damage",
+      fieldPresence: "off_field",
       parameterReferences: [
         {
           groupId: "skill",
@@ -94,6 +103,7 @@ export const linneaCombatCoverage: CharacterCombatCoverage = {
       evaluator: "declared_special_reaction",
       id: linneaSkillActionIds.millionTonHammer,
       kind: "damage",
+      fieldPresence: "on_field",
       parameterReferences: [
         {
           groupId: "skill",
@@ -506,7 +516,7 @@ export const linneaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Linnea",
       id: linneaSkillActionIds.enhancedHammer,
       kind: "damage",
-      label: "对策·露米呀吼吼！/ 点按·露米加力重锤单次月结晶伤害",
+      label: "对策·露米呀吼吼！/ 点按·露米加力重锤单次月结晶伤害（后台）",
       sourceActionId: linneaSkillActionIds.enhancedHammer,
       status: "verified",
       target: "enemy"
@@ -516,7 +526,7 @@ export const linneaCombatCoverage: CharacterCombatCoverage = {
       characterId: "Linnea",
       id: linneaSkillActionIds.millionTonHammer,
       kind: "damage",
-      label: "对策·露米呀吼吼！/ 连续点按·露米百万吨重锤月结晶爆发伤害",
+      label: "对策·露米呀吼吼！/ 连续点按·露米百万吨重锤月结晶爆发伤害（前台）",
       sourceActionId: linneaSkillActionIds.millionTonHammer,
       status: "verified",
       target: "enemy"

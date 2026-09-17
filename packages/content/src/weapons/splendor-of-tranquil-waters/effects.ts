@@ -14,6 +14,7 @@ function createSelfHpChangeEffect(stackCount: (typeof selfHpChangeStackCounts)[n
   return {
     activation: "active",
     selectionMode: "optional",
+    ...(stackCount === 3 ? { weaponComparisonDefault: { recipientCharacterIds: ["Furina"] } } : {}),
     exclusivity: { group: "splendor-of-tranquil-waters-self-hp-change", variant: `${stackCount}-stack` },
     id: `weapon.splendor-of-tranquil-waters.self-hp-change.${stackCount}-stack.skill-damage-bonus`,
     label: `静水流涌之辉 · 自身生命值变动后的${stackCount}层元素战技伤害`,
@@ -31,6 +32,7 @@ function createTeammateHpChangeEffect(stackCount: (typeof teammateHpChangeStackC
   return {
     activation: "active",
     selectionMode: "optional",
+    ...(stackCount === 2 ? { weaponComparisonDefault: { recipientCharacterIds: ["Furina"], requiresTeammate: true } } : {}),
     exclusivity: { group: "splendor-of-tranquil-waters-teammate-hp-change", variant: `${stackCount}-stack` },
     id: `weapon.splendor-of-tranquil-waters.teammate-hp-change.${stackCount}-stack.hp-percent`,
     label: `静水流涌之辉 · 其他队友生命值变动后的${stackCount}层生命值`,

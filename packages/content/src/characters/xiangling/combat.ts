@@ -1,8 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { xianglingDefinition } from "./definition.js"
 
 export const xianglingCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("xiangling", 1),
+    ...declareWeaponHitCapabilities(xianglingDefinition),
+    declareHitCapability("xiangling.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+    { ...declareHitCapability("xiangling.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["pyro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  ],
   actions: [
     {
       amplifyingReaction: { bonus: 0, kind: "vaporize_reverse" },

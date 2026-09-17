@@ -38,6 +38,7 @@ export type {
   ResolvedStatContributionStage
 } from "./types.js"
 
+import { resolveFieldContext } from "../core/field-presence.js"
 import * as shared from "./shared.js"
 
 export function evaluateDeclaredDirectScenarioAction(
@@ -60,6 +61,7 @@ export function evaluateDeclaredDirectScenarioAction(
     teammates = [],
     moonsignLevel = "none"
   } = input
+  const fieldContext = input.fieldContext ?? resolveFieldContext(action, build, teammates)
   shared.assertDeclaredDirectAction(action)
   if (shared.hasDeclaredMixedSpecialReactionEvents(action)) return evaluateDeclaredMixedSpecialReactionScenarioAction(input)
   const talent = shared.getDamageTalentSlot(action)
@@ -90,6 +92,7 @@ export function evaluateDeclaredDirectScenarioAction(
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
     action,
+    fieldContext,
     activeEffectIds,
     ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
     ...(artifactStatDeltas === undefined ? {} : { artifactStatDeltas }),
@@ -114,7 +117,9 @@ export function evaluateDeclaredDirectScenarioAction(
     rotationElementOverrides
   )
   const actionEffects = resolveCombatActionEffects({
+    targetFrozen: input.targetFrozen ?? false,
     action,
+    fieldContext,
     activeEffectIds: resolvedActiveEffectIds,
     ...(candidateAmplifyingReactionKinds.length > 0 ? { candidateAmplifyingReactionKinds } : {}),
     ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
@@ -291,7 +296,9 @@ export function evaluateDeclaredDirectScenarioAction(
   const additionalDamageEventAppliedEffects: AppliedCombatActionEffect[] = []
   const additionalDamageRotationEvents = actionEffects.additionalDamageEvents.map((event) => {
     const additionalDamageEventEffects = resolveAdditionalDamageEventEffects({
+    targetFrozen: input.targetFrozen ?? false,
       action,
+      fieldContext,
       activeEffectIds: resolvedActiveEffectIds,
       ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
       additionalDamageEvent: event,
@@ -386,6 +393,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     teammates = [],
     moonsignLevel = "none"
   } = input
+  const fieldContext = input.fieldContext ?? resolveFieldContext(action, build, teammates)
   shared.assertDeclaredDirectAction(action)
   shared.getDamageTalentSlot(action)
   const resolvedActionParameters = new Map(
@@ -420,6 +428,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
     action,
+    fieldContext,
     activeEffectIds,
     ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
     ...(artifactStatDeltas === undefined ? {} : { artifactStatDeltas }),
@@ -445,6 +454,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
   )
   const actionEffectContext = {
     action,
+    fieldContext,
     activeEffectIds: resolvedActiveEffectIds,
     ...(candidateAmplifyingReactionKinds.length > 0 ? { candidateAmplifyingReactionKinds } : {}),
     ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
@@ -473,6 +483,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     ])
   ]
   const parameterEffects = resolveCombatActionEffects({
+    targetFrozen: input.targetFrozen ?? false,
     ...actionEffectContext,
     candidateSpecialReactionKinds: specialReactionKinds
   })
@@ -485,6 +496,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
   stellarSwirlReactionEvents = timeline.events.filter(shared.isDeclaredStellarSwirlReactionTimelineEvent)
   const resolvedOrdinaryTimeline = { duration: timeline.duration, events: ordinaryEvents }
   const ordinaryActionEffects = resolveCombatActionEffects({
+    targetFrozen: input.targetFrozen ?? false,
     ...actionEffectContext,
     candidateSpecialReactionKinds: [],
     effectiveElements: shared.resolveDeclaredActionEffectElements(
@@ -555,6 +567,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
   const additionalDamageEventAppliedEffects: AppliedCombatActionEffect[] = []
   const additionalDamageRotationEvents = ordinaryActionEffects.additionalDamageEvents.map((event) => {
     const additionalDamageEventEffects = resolveAdditionalDamageEventEffects({
+    targetFrozen: input.targetFrozen ?? false,
       ...actionEffectContext,
       additionalDamageEvent: event,
       candidateSpecialReactionKinds: [],
@@ -609,6 +622,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     const known = specialEffectsByEventId.get(event.id)
     if (known) return known
     const effects = resolveCombatActionEffects({
+    targetFrozen: input.targetFrozen ?? false,
       ...actionEffectContext,
       candidateEventId: event.id,
       candidateSpecialReactionKinds: [event.specialReaction.kind],
@@ -671,11 +685,8 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
   })
   const party = [build, ...teammates]
   const stellarSwirlReactionEventResults = stellarSwirlReactionEvents.map((event) => {
-    // Fixed Cryo-aura assumption: the current trigger owner and Cryo appliers contribute,
-    // not every support in the party. Vortex assumes the listed Cryo/Anemo appliers participated.
-    const participants = event.stellarSwirlReaction.event === "trigger"
-      ? party.filter((participant) => participant.buildId === build.buildId || resolveBuildElement(participant, gameData) === "cryo")
-      : party.filter((participant) => ["cryo", "anemo"].includes(resolveBuildElement(participant, gameData) ?? ""))
+    // Element restrictions belong to weighted slots, not to the candidate party.
+    const participants = party
     const participantEvaluations = participants.map((participant) => {
       const participantTeammates = party.filter((candidate) => candidate.buildId !== participant.buildId)
       const participantAction: CombatActionMetadata = { ...action, characterId: participant.characterId }
@@ -694,7 +705,9 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
         teammates: participantTeammates
       })
       const effects = resolveCombatActionEffects({
+    targetFrozen: input.targetFrozen ?? false,
         action: participantAction,
+        fieldContext,
         actionOwnerBuildId: build.buildId,
         activeEffectIds: participantContext.resolvedActiveEffectIds,
         ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),

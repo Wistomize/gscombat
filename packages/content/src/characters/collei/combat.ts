@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { colleiDefinition } from "./definition.js"
 
 export const colleiCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("collei", 1),
+    ...declareWeaponHitCapabilities(colleiDefinition),
+    declareHitCapability("collei.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["dendro"]),
+  ],
   actions: [
     {
       additiveReaction: { bonus: 0, kind: "spread" },
@@ -82,6 +88,7 @@ export const colleiCombatCoverage: CharacterCombatCoverage = {
       evaluator: "declared_direct",
       id: "collei.burst.trump_card_kitty.leap_tick",
       kind: "damage",
+      fieldPresence: "off_field",
       parameterReferences: [
         {
           groupId: "burst",

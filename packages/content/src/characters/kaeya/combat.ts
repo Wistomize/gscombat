@@ -1,8 +1,14 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { kaeyaDefinition } from "./definition.js"
 
 export const kaeyaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("kaeya", 1),
+    ...declareWeaponHitCapabilities(kaeyaDefinition),
+    declareHitCapability("kaeya.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),
+  ],
   actions: [
     {
       characterId: "Kaeya",

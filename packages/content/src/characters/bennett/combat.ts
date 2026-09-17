@@ -1,3 +1,4 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { bennettDefinition } from "./definition.js"
@@ -5,6 +6,12 @@ import { bennettDefinition } from "./definition.js"
 export const BENNETT_BURST_FIELD_EFFECT_ID = "bennett.burst.field"
 
 export const bennettCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("bennett", 6),
+    { ...declareSkillCastCapability("bennett", 6, {"cooldownMultiplier":0.8}), id: "bennett.kit.passive-skill-cooldown", minimumSourceAscension: 1 },
+    ...declareWeaponHitCapabilities(bennettDefinition),
+    declareHitCapability("bennett.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
+  ],
   actions: [
     {
       characterId: "Bennett",

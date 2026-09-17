@@ -1,8 +1,18 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { kukiShinobuDefinition } from "./definition.js"
 
 export const kukiShinobuCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("kuki-shinobu", 6),
+    ...declareWeaponHitCapabilities(kukiShinobuDefinition),
+    declareHitCapability("kuki-shinobu.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
+    { ...declareHitCapability("kuki-shinobu.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["electro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+  {
+    id: "kuki_shinobu.skill.sanctifying_ring.hp_loss", label: "越祓雷草之轮 · 施放时消耗自身生命值",
+    kind: "hp_loss", recipient: "self", sourceFieldPresence: "on_field", sustained: false
+  }],
   actions: [
     {
       characterId: "KukiShinobu",

@@ -13,10 +13,9 @@ export const equipmentCoverage = {
     {
       id: "artifact.defenders-will.4pc.party-element-resistance",
       label: "守护之心 · 四件套",
-      reason: "需要队伍元素构成统计与承伤元素抗性指标。",
-      requiredCapability: "team_element_composition_and_incoming_resistance_metric",
+      reason: "用户确认本轮不计入此条款。需要队伍元素构成统计与承伤元素抗性指标。",
       source: artifactSource("DefendersWill", 4),
-      status: "unsupported"
+      status: "not_applicable"
     }
   ],
   equipmentId: "DefendersWill",

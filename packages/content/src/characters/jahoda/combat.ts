@@ -1,9 +1,15 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 import { moonsignCharacterIds } from "../../rules/moonsign.js"
 
 import { jahodaDefinition } from "./definition.js"
 
 export const jahodaCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("jahoda", 5),
+    ...declareWeaponHitCapabilities(jahodaDefinition),
+    declareHitCapability("jahoda.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill","burst"], ["anemo"]),
+  ],
   actions: [
     {
       characterId: "Jahoda",

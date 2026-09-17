@@ -17,10 +17,16 @@ function createCrystallizeDamageBonusEffect(
 ): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
+    lifecycle: {
+      kind: "conditional", preparation: "selected", retention: "retain_on_exit",
+      trigger: { event: "none", sourceFieldPresence: "on_field" },
+      explanation: "按用户选择的晶片元素准备，来源退场后保留；未拾取默认不计，不映射月结晶增伤"
+    },
     exclusivity: { group: "archaic-petra-crystallize-element", variant: element },
     id: `artifact.archaic-petra.4pc.crystallize.${element}-damage-bonus`,
     label: `悠古的磐岩 · 已拾取${crystallizeElementLabels[element]}元素结晶`,
-    source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "ArchaicPetra" },
+    source: { holder: "party_member", kind: "artifact_set", minimumPieces: 4, setId: "ArchaicPetra", resolveOneMatchingPartySource: true },
     target: "damageBonus",
     targetFilter: { elements: [element] },
     value: { kind: "fixed", value: ARCHAIC_PETRA_CRYSTALLIZE_DAMAGE_BONUS }

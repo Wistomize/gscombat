@@ -15,6 +15,7 @@ import type { ArtifactStat, CharacterBuild, EnemyConfig, ExternalBuff } from "@g
 import type { GameDataRepository } from "@gscombat/game-data"
 
 import type { AppliedCombatActionEffect } from "../effects/types.js"
+import type { FieldContext } from "../core/field-presence.js"
 
 /** A resolved hit coefficient inside a semantic direct-action declaration. */
 export interface DeclaredDirectActionPartEvaluation {
@@ -155,6 +156,8 @@ export interface DeclaredSpecialReactionScenarioEvaluation {
 
 /** Input for evaluating a declared baseline direct action in a normalized team scenario. */
 export interface DeclaredDirectScenarioInput {
+  readonly targetFrozen?: boolean
+  readonly fieldContext?: FieldContext
   /** Active current-action snapshots selected through the scenario rather than inferred from a rotation. */
   readonly activeEffectIds?: readonly string[]
   /** Explicit source-build choices for active snapshots with multiple eligible party-owned holders. */

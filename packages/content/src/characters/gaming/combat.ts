@@ -1,8 +1,18 @@
+import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapabilities } from "../../combat/capabilities.js"
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { gamingDefinition } from "./definition.js"
 
 export const gamingCombatCoverage: CharacterCombatCoverage = {
+  capabilities: [
+    declareSkillCastCapability("gaming", 2),
+    { id: "gaming.kit.plunge-access", label: "战技腾跃后进行下落攻击", kind: "plunge_access", recipient: "self", sourceFieldPresence: "on_field", sustained: true },
+    ...declareWeaponHitCapabilities(gamingDefinition),
+    declareHitCapability("gaming.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["pyro"]),
+  {
+    id: "gaming.skill.charmed_cloudstrider.hp_loss", label: "下落攻击·踏云献瑞 · 消耗自身生命值",
+    kind: "hp_loss", recipient: "self", sourceFieldPresence: "on_field", sustained: true
+  }],
   actions: [
     {
       attackKind: "plunge",
