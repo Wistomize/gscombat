@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
+import gameDataSource from "../../../packages/game-data/sources/current.json"
 
 import "./globals.css"
 import "./workspace.css"
@@ -18,16 +19,15 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   const icpRecordUrl = process.env.SITE_ICP_RECORD_URL
   const publicSecurityRecord = process.env.SITE_PUBLIC_SECURITY_RECORD
   const publicSecurityRecordUrl = process.env.SITE_PUBLIC_SECURITY_RECORD_URL
-  const hasFooter = Boolean(githubUrl || contactText || icpRecord || publicSecurityRecord)
 
   return (
     <html lang="zh-CN">
       <body>
         {children}
-        {hasFooter ? (
           <footer aria-label="站点信息" className="siteFooter">
             <div className="siteFooterLinks">
               <span>GSCombat</span>
+              <span>游戏数据版本：{gameDataSource.gameVersion}</span>
               {githubUrl ? (
                 <a href={githubUrl} rel="noreferrer" target="_blank">
                   GitHub
@@ -54,7 +54,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               ) : null}
             </div>
           </footer>
-        ) : null}
       </body>
     </html>
   )

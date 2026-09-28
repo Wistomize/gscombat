@@ -87,32 +87,33 @@ const cryoTravelerDamageActions = [
     evaluator: "declared_special_reaction",
     id: "traveler.cryo.burst.ice_forged_edge.full_cold_radiance.stellar_superconduct",
     kind: "damage",
+    // Raw 7.0 burst rows differ from UI order: hit counts 2/3, energy cost 6, stellar coefficients 7/8.
     parameterReferences: [
       {
         groupId: "burst",
         id: "stellar-superconduct-spear-hit-damage",
-        parameterIndex: 2,
+        parameterIndex: 7,
         source: "talent",
         talentSlot: "burst"
       },
       {
         groupId: "burst",
         id: "stellar-superconduct-cold-radiance-damage-increase",
-        parameterIndex: 3,
+        parameterIndex: 8,
         source: "talent",
         talentSlot: "burst"
       },
       {
         groupId: "burst",
         id: "base-hit-count",
-        parameterIndex: 6,
+        parameterIndex: 2,
         source: "talent",
         talentSlot: "burst"
       },
       {
         groupId: "burst",
         id: "full-cold-radiance-extra-hit-count",
-        parameterIndex: 7,
+        parameterIndex: 3,
         source: "talent",
         talentSlot: "burst"
       }
