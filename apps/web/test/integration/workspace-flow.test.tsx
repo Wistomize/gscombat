@@ -8,6 +8,7 @@ import { createRoot } from "react-dom/client"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { BuildEditor } from "../../features/build-editor/build-editor"
+import { OrderedDamageReport } from "../../features/calculation-report/damage-report"
 import { TeamCalculationWorkspace } from "../../features/calculation-workspace/calculation-workspace"
 import { getMaximumReachableConditions } from "../../features/calculation-setup/model"
 import { ConfigurationWorkspace } from "../../features/configuration-workspace/configuration-workspace"
@@ -237,7 +238,34 @@ function findButton(label: string): HTMLButtonElement | undefined {
 }
 
 describe("build editor artifact display", () => {
-  it("clamps declared special weapon level and ascension before saving an edited build", async () => {
+  it("places compact choices before refinement and highlights only the updated weapon after reordering", async () => {
+    vi.useFakeTimers()
+    try {
+      const weapon = { ...analysisResponse.analysis.weapons[0]!, choiceGroups: [{ id: "condition", label: "特效条件",
+        defaultVariant: "off", options: [{ id: "off", label: "关闭" }, { id: "on", label: "开启" }] }], choices: { condition: "off" } }
+      const other = { ...weapon, weaponId: "TheCatch", label: "渔获", choiceGroups: [] }
+      const report = { ...analysisResponse, analysis: { ...analysisResponse.analysis, weapons: [other, weapon] } }
+      const onChange = vi.fn()
+      const props = { analysis: report, build: raidenNationalBuiltinScenario.primary, catalog: webCatalog,
+        targetAction: undefined, onWeaponRefinementChange: onChange }
+      await render(createElement(OrderedDamageReport, props))
+      const controls = document.querySelectorAll(".weaponControls")[1]!
+      expect(controls).toBeTruthy()
+      const choice = controls.querySelector<HTMLSelectElement>(".weaponChoice select")!
+      const refinement = controls.querySelector(".weaponRefinement")!
+      expect(choice.compareDocumentPosition(refinement) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(document.querySelector('[data-updated="true"]')).toBeNull()
+      await changeSelect(choice, "on")
+      expect(onChange).toHaveBeenCalledWith(weapon.weaponId, weapon.refinement, { condition: "on" })
+      const updated = { ...report, analysis: { ...report.analysis, weapons: [{ ...weapon, choices: { condition: "on" } }, other] } }
+      await act(async () => root!.render(createElement(OrderedDamageReport, { ...props, analysis: updated })))
+      expect(document.querySelectorAll('[data-updated="true"]')).toHaveLength(1)
+      expect(document.querySelector('.weaponRow[data-updated="true"]')?.textContent).toContain(weapon.label)
+      await act(async () => vi.advanceTimersByTime(3200))
+      expect(document.querySelector('[data-updated="true"]')).toBeNull()
+    } finally { vi.useRealTimers() }
+  })
+  it("selects Exaiphanes at resonance five with real R3 and clamps its level to 90", async () => {
     const build = { ...raidenNationalBuiltinScenario.primary, characterId: "Jean", buildId: "local.special-weapon",
       source: { kind: "local" as const },
       weapon: { weaponId: "ExaiphanesBlade", level: 80, ascension: 6, refinement: 1 } }
@@ -246,16 +274,17 @@ describe("build editor artifact display", () => {
       initialScenario: { ...raidenNationalBuiltinScenario, primary: build, teammates: [] } }))
     await click(findButton("查看配置"))
     await click(document.querySelector<HTMLButtonElement>(".configurationEditButton"))
+    await changeSelect(document.querySelector<HTMLSelectElement>(".weaponGrid select"), "ExaiphanesBlade")
     const level = document.querySelector<HTMLInputElement>('.weaponGrid input[type="number"]')
-    expect(level?.max).toBe("80")
+    expect(level?.max).toBe("90")
     await changeInput(level, "79.9")
     expect(level?.value).toBe("79")
-    await changeInput(level, "90")
-    expect(level?.value).toBe("80")
+    await changeInput(level, "100")
+    expect(level?.value).toBe("90")
     await click(findButton("保存配置"))
     await flushAsyncWork()
     expect(loadBuildLibrary(window.localStorage, []).builds.find((entry) => entry.buildId === build.buildId)?.weapon)
-      .toEqual({ weaponId: "ExaiphanesBlade", level: 80, ascension: 5, refinement: 1 })
+      .toEqual({ weaponId: "ExaiphanesBlade", level: 90, ascension: 6, refinement: 3 })
   })
   it("fetches and submits equipped weapon choices for a support metric without opening weapon comparison", async () => {
     const primary = { ...raidenNationalBuiltinScenario.primary, characterId: "Jean", buildId: "web-support.Jean",

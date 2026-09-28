@@ -5,18 +5,60 @@
 }
 
 .weaponChoice {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: 6px 10px 0 0;
-  max-width: 100%;
+  display: block;
+  width: 148px;
+  margin: 0;
   font-size: 12px;
 }
 
 .weaponChoice select {
+  width: 100%;
   min-width: 0;
-  max-width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  text-overflow: ellipsis;
+}
+
+.weaponChoices {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 148px;
+  flex: 0 0 148px;
+}
+
+.weaponRow > .weaponControls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.weaponUpdateGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 3px;
+  animation: weapon-update-pulse 1s ease-in-out 3;
+}
+
+@keyframes weapon-update-pulse {
+  0%, 100% { background: rgba(192, 147, 43, 0.03); box-shadow: inset 3px 0 rgba(192, 147, 43, 0.2); }
+  50% { background: rgba(192, 147, 43, 0.17); box-shadow: inset 3px 0 rgba(192, 147, 43, 0.8); }
+}
+
+.weaponRow .weaponUpdateStatus {
+  color: #80601b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weaponUpdateGlow {
+    animation: none;
+    background: rgba(192, 147, 43, 0.12);
+    box-shadow: inset 3px 0 rgba(192, 147, 43, 0.6);
+  }
 }
 
 .damageHero,
@@ -203,16 +245,24 @@
 
 .weaponRows {
   margin-top: 6px;
+  overflow-x: auto;
 }
 
+.weaponReport { min-width: 0; }
+
 .weaponRow {
+  position: relative;
   align-items: center;
   border-bottom: 1px solid var(--border-light);
   display: grid;
   gap: 16px;
-  grid-template-columns: 28px 42px minmax(180px, 1fr) 82px 120px 90px;
+  grid-template-columns: 28px 42px minmax(130px, 1fr) 242px 120px 90px;
+  min-width: 732px;
   min-height: 56px;
+  padding: 6px 0;
 }
+
+.weaponRow > :not(.weaponUpdateGlow) { position: relative; }
 
 .rankNumber {
   color: var(--muted);
@@ -238,14 +288,17 @@
   align-items: center;
   display: flex;
   gap: 6px;
+  flex: 0 0 82px;
 }
 
 .weaponRefinement span {
   color: var(--muted);
   font-size: 10px;
+  white-space: nowrap;
 }
 
 .weaponRefinement select {
+  min-width: 0;
   background: #ffffff;
   border: 1px solid var(--border);
   min-height: 32px;
@@ -1018,7 +1071,8 @@
 
   .weaponRow {
     gap: 8px;
-    grid-template-columns: 22px 38px minmax(110px, 1fr) 68px 62px;
+    grid-template-columns: 22px 38px minmax(110px, 1fr) 242px 62px;
+    min-width: 506px;
   }
 
   .weaponRow > span:nth-last-child(2) {

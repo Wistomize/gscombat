@@ -173,7 +173,7 @@ describe("reviewed weapon audit fixes", () => {
     expect(explicit.actionExpectedDamage).toBeCloseTo(result.actionExpectedDamage, 8)
   })
 
-  it("uses Exaiphanes' fixed 80/5/R1 candidate and separates native weapon stats from artifact sources", () => {
+  it("uses Exaiphanes' resonance-five 90/6/R3 candidate and separates native weapon stats from artifact sources", () => {
     const primary: CharacterBuild = { ...build("Kaeya", "FavoniusSword"), artifacts: [
       { id: "audit.crit-circlet", slot: "circlet", setId: "GladiatorsFinale", rarity: 5, level: 20,
         mainStat: { stat: "crit_rate", value: 0.311 }, substats: [] },
@@ -181,18 +181,18 @@ describe("reviewed weapon audit fixes", () => {
         mainStat: { stat: "hp", value: 4780 }, substats: [{ stat: "crit_rate", value: 0.0311 }] }
     ] }
     const input = scenario(primary, "kaeya.skill.frostgnaw")
-    const comparison = analyzeWeaponComparison(input, db, "ExaiphanesBlade", 1).weapon
-    expect(comparison).toMatchObject({ level: 80, refinement: 1, legalRefinements: [1] })
+    const comparison = analyzeWeaponComparison(input, db, "ExaiphanesBlade", 3).weapon
+    expect(comparison).toMatchObject({ level: 90, refinement: 3, legalRefinements: [3] })
     expect(() => analyzeWeaponComparison(input, db, "ExaiphanesBlade", 5)).toThrow()
     const equipped = evaluateScenario({ ...input, primary: { ...primary,
-      weapon: { weaponId: "ExaiphanesBlade", level: 80, ascension: 5, refinement: 1 } } }, db)
+      weapon: { weaponId: "ExaiphanesBlade", level: 90, ascension: 6, refinement: 3 } } }, db)
     expect(comparison.expectedDamage).toBeCloseTo(equipped.actionExpectedDamage, 8)
-    expect(equipped.stats.critRate).toBeCloseTo(0.05 + 0.30168 + 0.311 + 0.0311, 8)
+    expect(equipped.stats.critRate).toBeCloseTo(0.05 + 0.330768 + 0.311 + 0.0311, 8)
     const sources = equipped.stats.statContributions
     expect(sources.find((source) => source.stage === "baseAttack" && source.label === "武器基础攻击 · 星锋剑")?.value)
-      .toBeCloseTo(532.2325436, 7)
+      .toBeCloseTo(db.getWeaponStat("ExaiphanesBlade", "atk", 90, 6)!, 7)
     expect(sources.filter((source) => source.stage === "critRate")).toEqual(expect.arrayContaining([
-      expect.objectContaining({ label: "武器副属性 · 暴击率", value: 0.30168 }),
+      expect.objectContaining({ label: "武器副属性 · 暴击率", value: 0.330768 }),
       expect.objectContaining({ label: "理之冠主词条 · 暴击率", value: 0.311 }),
       expect.objectContaining({ label: "生之花副词条 · 暴击率", value: 0.0311 })
     ]))

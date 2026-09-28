@@ -2,7 +2,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 
 /** Reviewed 7.0 coverage for Exaiphanes Blade. */
 export const equipmentCoverage = {
-  comparison: { level: 80, ascension: 5, refinements: [1] },
+  comparison: { level: 90, ascension: 6, refinements: [3] },
   clauses: [
     {
       effectIds: ["weapon.exaiphanes-blade.traveler.resonated-elements.crit-damage"],
