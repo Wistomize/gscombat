@@ -177,8 +177,10 @@ describe("Neuvillette team effects API integration", () => {
   })
 
   it("does not choose a random Widsith theme automatically", () => {
-    expect(evaluation.appliedEffects).not.toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: expect.stringMatching(/^weapon\.the-widsith\./) })
-    ]))
+    const themes = evaluation.appliedEffects.filter((effect) => effect.id.startsWith("weapon.the-widsith."))
+    // The shared choice contract now retains an explicit zero-valued "none" variant.
+    expect(themes).toEqual([expect.objectContaining({
+      id: "weapon.the-widsith.recitative.attack-percent.zero", value: 0
+    })])
   })
 })

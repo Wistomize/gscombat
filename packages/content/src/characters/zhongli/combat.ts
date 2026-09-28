@@ -5,6 +5,7 @@ import { zhongliDefinition } from "./definition.js"
 
 export const zhongliCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "zhongli.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("zhongli", 2),
     { id: "zhongli.kit.retained-shield", label: "玉璋护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     ...declareWeaponHitCapabilities(zhongliDefinition),

@@ -5,6 +5,7 @@ import { zibaiDefinition } from "./definition.js"
 
 export const zibaiCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "zibai.kit.lunar_crystallize-damage", label: "已维护的本人月曜伤害动作", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "on_field", sustained: true, specialReactions: ["lunar_crystallize"] },
     declareSkillCastCapability("zibai", 4),
     { id: "zibai.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_crystallize"] },
     ...declareWeaponHitCapabilities(zibaiDefinition),

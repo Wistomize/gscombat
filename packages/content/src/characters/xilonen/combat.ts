@@ -5,6 +5,9 @@ import { xilonenDefinition } from "./definition.js"
 
 export const xilonenCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "xilonen.kit.healing", label: "两个火水冰雷源音采样时，爆发治疗前台", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: true,
+      minimumPartyElementCount: { elements: ["pyro", "hydro", "cryo", "electro"], count: 2 } },
+    { id: "xilonen.c6.healing", label: "六命前台强化期间治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "on_field", sustained: true, minimumSourceConstellation: 6 },
     declareSkillCastCapability("xilonen", 5),
     ...declareWeaponHitCapabilities(xilonenDefinition),
     declareHitCapability("xilonen.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),

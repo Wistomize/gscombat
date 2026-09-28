@@ -6,6 +6,11 @@ import { travelerCryoCombatCoverage } from "./cryo-combat.js"
 
 export const travelerCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    ...(["anemo", "geo", "electro", "dendro"] as const).map((travelerElement) => ({
+      id: `traveler.${travelerElement}.kit.particle-generation`, label: "已核验的旅行者产球准备",
+      kind: "particle_generation" as const, recipient: "party" as const, sourceFieldPresence: "any" as const,
+      sustained: false, travelerElement
+    })),
     { id: "traveler.cryo.passive.reaction-conversion", label: "星耀祝礼·幻变冰镜：队伍星烁转换", kind: "reaction_conversion",
       recipient: "party", sourceFieldPresence: "any", sustained: true, travelerElement: "cryo", specialReactions: ["stellar_superconduct", "stellar_swirl"] },
     { id: "traveler.cryo.kit.stellar-damage", label: "冰元素旅行者辉映特殊重击与爆发", kind: "special_reaction_damage",
@@ -97,6 +102,7 @@ export const travelerCombatCoverage: CharacterCombatCoverage = {
       element: "electro",
       evaluator: "declared_direct",
       id: "traveler.electro.burst.bellowing_thunder.cast_hit",
+      preparationAtSnapshot: { energyNotFull: false },
       kind: "damage",
       parameterReferences: [
         {

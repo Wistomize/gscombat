@@ -447,7 +447,20 @@ const RotationTraceEntrySchema = Type.Union([
   })
 ])
 
+const StatContributionSchema = Type.Object({
+  label: Type.String(),
+  stage: Type.Union([
+    Type.Literal("attackPercent"), Type.Literal("baseAttack"), Type.Literal("baseDefense"),
+    Type.Literal("baseElementalMastery"), Type.Literal("baseHp"), Type.Literal("critDamage"),
+    Type.Literal("critRate"), Type.Literal("damageBonus"), Type.Literal("defensePercent"),
+    Type.Literal("elementalMastery"), Type.Literal("flatAttack"), Type.Literal("flatDefense"),
+    Type.Literal("flatHp"), Type.Literal("hpPercent")
+  ]),
+  value: Type.Number()
+})
+
 const RotationEventSummarySchema = Type.Object({
+  statContributions: Type.Optional(Type.Array(StatContributionSchema)),
   appliedEffectIds: Type.Array(Type.String()),
   critDamage: Type.Number(),
   elementalApplication: Type.Optional(RotationElementalApplicationOutcomeSchema),
@@ -473,8 +486,18 @@ const RotationSummarySchema = Type.Object({
   events: Type.Array(RotationEventSummarySchema)
 })
 
+/** Authored group and variant identities only; never client-provided effect amounts. */
+export const WeaponChoicesSchema = Type.Record(Type.String({ minLength: 1, maxLength: 100 }),
+  Type.String({ minLength: 1, maxLength: 100 }))
+
+export const WeaponChoiceGroupSchema = Type.Object({
+  id: Type.String(), label: Type.String(), defaultVariant: Type.String(),
+  options: Type.Array(Type.Object({ id: Type.String(), label: Type.String() }))
+})
+
 export const AnalysisRequestSchema = Type.Object({
   ...EvaluationScenarioSchema.properties,
+  weaponComparisonChoices: Type.Optional(Type.Record(Type.String({ minLength: 1, maxLength: 100 }), WeaponChoicesSchema)),
   weaponComparisonRefinements: Type.Optional(
     Type.Record(Type.String({ minLength: 1, maxLength: 100 }), Type.Integer({ minimum: 1, maximum: 5 }))
   )
@@ -487,6 +510,10 @@ export function getWeaponComparisonRefinement(rarity: number): number {
 }
 
 export const WeaponComparisonResultSchema = Type.Object({
+  choices: Type.Optional(WeaponChoicesSchema),
+  choiceGroups: Type.Optional(Type.Array(WeaponChoiceGroupSchema)),
+  level: Type.Optional(Type.Integer()),
+  legalRefinements: Type.Optional(Type.Array(Type.Integer({ minimum: 1, maximum: 5 }))),
   expectedDamage: Type.Number(),
   gainRatio: Type.Number(),
   label: Type.String(),
@@ -496,11 +523,13 @@ export const WeaponComparisonResultSchema = Type.Object({
 })
 
 export const WeaponComparisonRequestSchema = Type.Object({
+  choices: Type.Optional(WeaponChoicesSchema),
   scenario: EvaluationScenarioSchema,
   weaponId: Type.String({ minLength: 1, maxLength: 100 }),
   refinement: Type.Integer({ minimum: 1, maximum: 5 })
 })
 export const WeaponComparisonResponseSchema = Type.Object({
+  engineVersion: Type.Optional(Type.String({ minLength: 1 })),
   baselineExpectedDamage: Type.Number(),
   weapon: WeaponComparisonResultSchema
 })
@@ -625,28 +654,7 @@ export const AnalysisResponseSchema = Type.Object({
       flatHp: Type.Number(),
       hpPercent: Type.Number(),
       resistanceReduction: Type.Number(),
-      statContributions: Type.Array(
-        Type.Object({
-          label: Type.String(),
-          stage: Type.Union([
-            Type.Literal("attackPercent"),
-            Type.Literal("baseAttack"),
-            Type.Literal("baseDefense"),
-            Type.Literal("baseElementalMastery"),
-            Type.Literal("baseHp"),
-            Type.Literal("critDamage"),
-            Type.Literal("critRate"),
-            Type.Literal("damageBonus"),
-            Type.Literal("defensePercent"),
-            Type.Literal("elementalMastery"),
-            Type.Literal("flatAttack"),
-            Type.Literal("flatDefense"),
-            Type.Literal("flatHp"),
-            Type.Literal("hpPercent")
-          ]),
-          value: Type.Number()
-        })
-      ),
+      statContributions: Type.Array(StatContributionSchema),
       scalingTerms: Type.Optional(Type.Readonly(Type.Array(ScalingTermSchema))),
       talentMultiplier: Type.Union([Type.Number(), Type.Null()])
     })

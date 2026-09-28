@@ -10,6 +10,7 @@ export const eyeOfPerceptionCombatActionEffects: readonly CombatActionEffect[] =
     label: "昭心 · 本次攻击触发首发法球物理伤害（冷却已就绪）",
     source: { kind: "weapon", weaponId: "EyeOfPerception" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"] },
     value: {
       canCrit: true,

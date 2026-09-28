@@ -3,9 +3,13 @@ import {
   type CombatActionMetadata,
   xianglingNationalBuiltinBuild
 } from "@gscombat/content"
-import { describe, expect, it } from "vitest"
+import { afterAll, describe, expect, it } from "vitest"
+import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 
 import { resolveCombatActionEffectsForCandidates } from "../../../src/effects/action-effects.js"
+
+const gameData = new GameDataRepository(DEFAULT_GAME_DATA_PATH)
+afterAll(() => gameData.close())
 
 const stellarSwirlAction: CombatActionMetadata = {
   characterId: "Odette",
@@ -51,6 +55,7 @@ function resolveVersionSevenEffects(
       activeEffectIds,
       baseEnergyRecharge: 1,
       enemyCount: 1,
+      gameData,
       primary,
       primaryDifferentElementTeammateCount: 2,
       primarySameElementTeammateCount: 1,
@@ -62,7 +67,7 @@ function resolveVersionSevenEffects(
 
 describe("7.0 equipment effect integration", () => {
   it("resolves Whitelake Frostfeather's full R5 three-stack snapshot", () => {
-    const effects = resolveVersionSevenEffects(withWeapon("WhitelakeFrostfeather", 5), [
+    const effects = resolveVersionSevenEffects({ ...withWeapon("WhitelakeFrostfeather", 5), characterId: "Fischl" }, [
       "weapon.whitelake-frostfeather.lake-hued-lament.3-stack.attack-percent",
       "weapon.whitelake-frostfeather.lake-hued-lament.3-stack.stellar-reaction-crit-damage"
     ])
@@ -104,10 +109,16 @@ describe("7.0 equipment effect integration", () => {
   })
 
   it("resolves the doubled Stellar song of Forged by the Golden Melody at R5", () => {
-    const effects = resolveVersionSevenEffects(withWeapon("ForgedByTheGoldenMelody", 5), [
+    const selected = [
       "weapon.forged-by-the-golden-melody.current-song-and-counterpoint.stellar-reaction-damage-bonus"
+    ]
+    const primary = { ...withWeapon("ForgedByTheGoldenMelody", 5), characterId: "Fischl" }
+    const effects = resolveVersionSevenEffects(primary, selected, [
+      { ...withWeapon("TestNoWeapon"), buildId: "song.odette", characterId: "Odette" }
     ])
 
     expect(effects.specialReactionDamageBonus).toBeCloseTo(1.12)
+    // A special-damage label alone cannot invent an application-based Stellar trigger.
+    expect(resolveVersionSevenEffects(primary, selected).specialReactionDamageBonus).toBeCloseTo(0.56)
   })
 })

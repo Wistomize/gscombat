@@ -71,3 +71,12 @@ it("preserves successful precision on failure and supports retry without full an
   expect(current.weaponStates.first).toEqual({})
   expect(fetchMock.mock.calls.every(([url]) => url.endsWith("/weapon-comparison"))).toBe(true)
 })
+
+it("does not merge a new engine's row into an old report even when the baseline happens to match", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(reply({ ...result("first", 2), engineVersion: "new-rules" })))
+  await mount()
+  await act(async () => current.changeRefinement("first", 2))
+  expect(current.weaponStates.first?.error).toBe("计算规则已更新，请重新开始完整计算")
+  expect(current.analysis?.analysis.weapons[0]?.refinement).toBe(1)
+  expect(current.analysis?.evaluation).toEqual(fixture.evaluation)
+})

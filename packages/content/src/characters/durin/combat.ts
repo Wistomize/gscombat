@@ -46,7 +46,7 @@ export const durinCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
     declareSkillCastCapability("durin", 5),
     ...declareWeaponHitCapabilities(durinDefinition),
-    declareHitCapability("durin.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill"], ["pyro"]),
+    declareHitCapability("durin.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill", "burst"], ["pyro"]),
   ],
   actions: [
     {

@@ -5,6 +5,9 @@ import { faruzanDefinition } from "./definition.js"
 
 export const faruzanCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "faruzan.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "faruzan.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 6 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("faruzan", 3),
     ...declareWeaponHitCapabilities(faruzanDefinition),
     declareHitCapability("faruzan.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),

@@ -11,6 +11,7 @@ export const theFluteCombatActionEffects: readonly CombatActionEffect[] = [
     label: "笛剑 · 五个和音后本次触发物理伤害",
     source: { kind: "weapon", weaponId: "TheFlute" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"] },
     value: {
       canCrit: true,

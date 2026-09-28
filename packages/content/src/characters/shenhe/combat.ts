@@ -5,6 +5,7 @@ import { shenheDefinition } from "./definition.js"
 
 export const shenheCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "shenhe.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("shenhe", 7),
     { ...declareSkillCastCapability("shenhe", 7, {"initialUses":2}), id: "shenhe.kit.extra-skill-charge", minimumSourceConstellation: 1 },
     ...declareWeaponHitCapabilities(shenheDefinition),

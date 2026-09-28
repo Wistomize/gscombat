@@ -5,6 +5,8 @@ import { chongyunDefinition } from "./definition.js"
 
 export const chongyunCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "chongyun.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "chongyun.kit.normal-infusion", label: "灵刃重华叠霜近战冰附魔", kind: "normal_attack_infusion", elements: ["cryo"], recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     declareSkillCastCapability("chongyun", 2),
     ...declareWeaponHitCapabilities(chongyunDefinition),
     declareHitCapability("chongyun.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),

@@ -4,7 +4,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: [
+      effectIds: ["weapon.serpent-spine.wavesplitter.0-stack.damage-bonus",
         "weapon.serpent-spine.wavesplitter.1-stack.damage-bonus",
         "weapon.serpent-spine.wavesplitter.2-stack.damage-bonus",
         "weapon.serpent-spine.wavesplitter.3-stack.damage-bonus",

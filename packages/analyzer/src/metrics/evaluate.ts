@@ -36,12 +36,15 @@ import { evaluateHealingMetric } from "./healing.js"
 import * as runtime from "./runtime.js"
 import { evaluateScalarMetric } from "./scalar.js"
 import { evaluateFlatStatBuffMetric } from "./stat-buff.js"
+import { validateWeaponChoices } from "../effects/weapon-state.js"
 
 export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMetricEvaluation {
   const metric = getCombatMetricDefinition(input.metricId)
   if (!metric) throw new Error(`Combat metric ${input.metricId} is not registered`)
 
   runtime.assertMetricBuild(metric, input.build)
+  validateWeaponChoices({ primary: input.build, teammates: [...(input.context?.teammates ?? [])],
+    conditions: input.context?.weaponEffectChoices ? { weaponEffectChoices: input.context.weaponEffectChoices } : {} })
   if (input.context?.onFieldBuildId !== undefined &&
     ![input.build, ...(input.context.teammates ?? [])].some((build) => build.buildId === input.context!.onFieldBuildId)) {
     throw new Error("前台角色必须是当前队伍成员")
@@ -50,6 +53,8 @@ export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMe
   if (metric.kind === "scalar") return evaluateScalarMetric(metric, input)
 
   const recipient = runtime.resolveFriendlyRecipient(metric, input)
+  const fieldContext = { ...resolveSupportFieldContext(input.build.buildId, input.context?.onFieldBuildId),
+    ...(input.context?.weaponEffectChoices ? { weaponEffectChoices: input.context.weaponEffectChoices } : {}) }
   if (metric.kind === "healing") {
     return evaluateHealingMetric(
       metric,
@@ -58,7 +63,7 @@ export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMe
       input.context?.source,
       input.context?.teammates,
       input.gameData,
-      resolveSupportFieldContext(input.build.buildId, input.context?.onFieldBuildId)
+      fieldContext
     )
   }
   return evaluateFlatStatBuffMetric(
@@ -68,6 +73,6 @@ export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMe
     input.context?.source,
     input.context?.teammates,
     input.gameData,
-    resolveSupportFieldContext(input.build.buildId, input.context?.onFieldBuildId)
+    fieldContext
   )
 }

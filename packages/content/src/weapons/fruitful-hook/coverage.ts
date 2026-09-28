@@ -5,6 +5,7 @@ export const equipmentCoverage = {
   clauses: [
     {
       effectIds: [
+        "weapon.fruitful-hook.plunge-metric.prepared-damage-bonus",
         "weapon.fruitful-hook.plunge-crit-rate",
         "weapon.fruitful-hook.after-plunge.normal-charged-plunge-damage-bonus"
       ],

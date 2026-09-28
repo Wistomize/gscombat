@@ -4,7 +4,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: [
+      effectIds: ["weapon.splendor-of-tranquil-waters.self-hp-change.0-stack.skill-damage-bonus",
         "weapon.splendor-of-tranquil-waters.self-hp-change.1-stack.skill-damage-bonus",
         "weapon.splendor-of-tranquil-waters.self-hp-change.2-stack.skill-damage-bonus",
         "weapon.splendor-of-tranquil-waters.self-hp-change.3-stack.skill-damage-bonus"
@@ -15,7 +15,7 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: [
+      effectIds: ["weapon.splendor-of-tranquil-waters.teammate-hp-change.0-stack.hp-percent",
         "weapon.splendor-of-tranquil-waters.teammate-hp-change.1-stack.hp-percent",
         "weapon.splendor-of-tranquil-waters.teammate-hp-change.2-stack.hp-percent"
       ],

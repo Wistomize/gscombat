@@ -5,6 +5,7 @@ import { qiqiDefinition } from "./definition.js"
 
 export const qiqiCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "qiqi.kit.healing", label: "寒病鬼差治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("qiqi", 6),
     { id: "qiqi.kit.stellar-damage", label: "辉映状态下自身造成星烁反应伤害", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["stellar_superconduct"], requiredTeamReaction: "stellar_superconduct" },
     ...declareWeaponHitCapabilities(qiqiDefinition),

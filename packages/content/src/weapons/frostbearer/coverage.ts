@@ -1,17 +1,17 @@
-import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-coverage.js"
+import type { EquipmentCoverageEntry } from "../../equipment-coverage.js"
 
-/** Maintainer-reviewed single-core-action coverage for this equipment item. */
+/** Reviewed executable effects; excluded legacy states and independent weapon procs are not coverage claims. */
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: [
-        "weapon.frostbearer.frost-icicle.without-cryo-aura.physical-hit",
-        "weapon.frostbearer.frost-icicle.with-cryo-aura.physical-hit"
-      ],
       id: "weapon.frostbearer.frost-icicle.physical-hit",
       label: "忍冬之果 · 冷却就绪的霜葬物理伤害",
-      source: weaponSource("Frostbearer"),
-      status: "implemented"
+      source: {
+        kind: "weapon",
+        weaponId: "Frostbearer"
+      },
+      status: "not_applicable",
+      reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性"
     }
   ],
   equipmentId: "Frostbearer",

@@ -67,6 +67,8 @@ const ActiveEffectSourceBuildIdsSchema = Type.Record(
 export const ScenarioConditionsSchema = Type.Object({
   /** Actual active party member; off-field metrics otherwise leave the active teammate unknown. */
   onFieldBuildId: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
+  weaponEffectChoices: Type.Optional(Type.Record(Type.String({ minLength: 1, maxLength: 100 }),
+    Type.Record(Type.String({ minLength: 1, maxLength: 100 }), Type.String({ minLength: 1, maxLength: 100 })))),
   activeEffectIds: Type.Array(Type.String({ minLength: 1, maxLength: 100 }), { maxItems: 40, uniqueItems: true }),
   /** Selects a concrete source build when one active party-owned effect has multiple eligible holders. */
   activeEffectSourceBuildIds: Type.Optional(ActiveEffectSourceBuildIdsSchema),
@@ -79,6 +81,10 @@ export const ScenarioConditionsSchema = Type.Object({
   primaryShielded: Type.Optional(Type.Boolean()),
   /** Whether the target is frozen at the selected hit for conditional team effects. */
   targetFrozen: Type.Optional(Type.Boolean()),
+  /** Shared enemy fact for every candidate; omitted means the generic training target is not a slime. */
+  targetIsSlime: Type.Optional(Type.Boolean()),
+  /** Applies only to explicitly declared aimed-arrow parts, not their follow-up damage. */
+  arrowHitsWeakPoint: Type.Optional(Type.Boolean()),
   targetAuraWindows: Type.Optional(Type.Array(TargetAuraWindowSchema, { maxItems: 20 }))
 }, { additionalProperties: false })
 
@@ -111,6 +117,7 @@ export type MetricSourceContext = Type.Static<typeof MetricSourceContextSchema>
 
 /** Team state supplied to a typed character metric without binding it to a main-damage conversion. */
 export const MetricEvaluationContextSchema = Type.Object({
+  weaponEffectChoices: Type.Optional(ScenarioConditionsSchema.properties.weaponEffectChoices),
   /** Actual active member shared by support equipment and damage scenarios; omitted means unknown. */
   onFieldBuildId: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
   /** Explicit active support-metric snapshots, such as party recipient equipment effects. */

@@ -11,7 +11,7 @@ export const CASHFLOW_SUPERVISION_STELLAR_SUPERCONDUCT_DAMAGE_BONUS_PER_STACK = 
   0.28
 ] as const
 
-const hpChangeStackCounts = [1, 2, 3] as const
+const hpChangeStackCounts = [0, 1, 2, 3] as const
 
 function getStackValues(values: readonly number[], stackCount: number): readonly number[] {
   return values.map((value) => value * stackCount)
@@ -26,7 +26,10 @@ function createHpChangeStackEffect(
   return {
     activation: "active",
     selectionMode: "optional",
-    ...(stackCount === 3 ? { weaponComparisonDefault: { recipientCharacterIds: ["Wriothesley"] } } : {}),
+    requiresSourceOnField: true,
+    weaponChoice: { group: "cashflow-supervision-hp-change", label: "生命变化层数", variant: `${stackCount}-stack`,
+      variantLabel: `${stackCount}层`, defaultVariant: "0-stack",
+      automaticVariant: { variant: "3-stack", capability: { kind: "hp_loss", provider: "party", recipient: "source" } } },
     exclusivity: { group: "cashflow-supervision-hp-change", variant: `${stackCount}-stack` },
     id: `weapon.cashflow-supervision.hp-change.${stackCount}-stack.${attackKind}-damage-bonus`,
     label: `金流监督 · 生命值变化后的${stackCount}层${actionLabel}伤害`,
@@ -43,7 +46,10 @@ function createHpChangeStellarSuperconductStackEffect(
   return {
     activation: "active",
     selectionMode: "optional",
-    ...(stackCount === 3 ? { weaponComparisonDefault: { recipientCharacterIds: ["Wriothesley"] } } : {}),
+    requiresSourceOnField: true,
+    weaponChoice: { group: "cashflow-supervision-hp-change", label: "生命变化层数", variant: `${stackCount}-stack`,
+      variantLabel: `${stackCount}层`, defaultVariant: "0-stack",
+      automaticVariant: { variant: "3-stack", capability: { kind: "hp_loss", provider: "party", recipient: "source" } } },
     exclusivity: { group: "cashflow-supervision-hp-change", variant: `${stackCount}-stack` },
     id: `weapon.cashflow-supervision.hp-change.${stackCount}-stack.star-superconduct-damage-bonus`,
     label: `金流监督 · 生命值变化后的${stackCount}层星超导伤害`,

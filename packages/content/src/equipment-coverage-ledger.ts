@@ -71,6 +71,7 @@ export function listPublishedWeapons(): readonly PublishedWeapon[] {
     if (!weapon || (weapon.rarity !== 3 && weapon.rarity !== 4 && weapon.rarity !== 5)) return []
     return [
       {
+        ...(entry.comparison ? { comparison: entry.comparison } : {}),
         label: weapon.label,
         rarity: weapon.rarity,
         weaponId: weapon.id,

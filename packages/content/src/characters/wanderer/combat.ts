@@ -5,6 +5,7 @@ import { wandererDefinition } from "./definition.js"
 
 export const wandererCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "wanderer.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("wanderer", 4),
     ...declareWeaponHitCapabilities(wandererDefinition),
     declareHitCapability("wanderer.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),

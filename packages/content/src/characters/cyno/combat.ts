@@ -5,6 +5,7 @@ import { cynoDefinition } from "./definition.js"
 
 export const cynoCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "cyno.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("cyno", 3),
     ...declareWeaponHitCapabilities(cynoDefinition),
     declareHitCapability("cyno.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["electro"]),

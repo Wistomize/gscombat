@@ -2,18 +2,20 @@
 
 import { evaluateExpectedDamage } from "@gscombat/calculator"
 import { raidenNationalBuiltinScenario } from "@gscombat/content"
-import type { AnalysisResponse, CatalogResponse, WorkspaceDocument } from "@gscombat/contracts"
+import type { ActiveScenarioEffectOption, AnalysisResponse, CatalogResponse, WorkspaceDocument } from "@gscombat/contracts"
 import { act, createElement } from "react"
 import { createRoot } from "react-dom/client"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { BuildEditor } from "../../features/build-editor/build-editor"
 import { TeamCalculationWorkspace } from "../../features/calculation-workspace/calculation-workspace"
+import { getMaximumReachableConditions } from "../../features/calculation-setup/model"
 import { ConfigurationWorkspace } from "../../features/configuration-workspace/configuration-workspace"
 import { webCatalog } from "../../lib/catalog"
 import {
   BUILD_LIBRARY_STORAGE_KEY,
   getVolatileWorkspaceStorage,
+  loadBuildLibrary,
   saveBuildLibrary,
   saveParty
 } from "../../lib/workspace/workspace-config"
@@ -235,37 +237,127 @@ function findButton(label: string): HTMLButtonElement | undefined {
 }
 
 describe("build editor artifact display", () => {
-  it("keeps automatic artifact preparation separate from source-bound explicit zero and shared frozen state", async () => {
+  it("clamps declared special weapon level and ascension before saving an edited build", async () => {
+    const build = { ...raidenNationalBuiltinScenario.primary, characterId: "Jean", buildId: "local.special-weapon",
+      source: { kind: "local" as const },
+      weapon: { weaponId: "ExaiphanesBlade", level: 80, ascension: 6, refinement: 1 } }
+    saveBuildLibrary(window.localStorage, [build])
+    await render(createElement(ConfigurationWorkspace, { catalog: webCatalog,
+      initialScenario: { ...raidenNationalBuiltinScenario, primary: build, teammates: [] } }))
+    await click(findButton("查看配置"))
+    await click(document.querySelector<HTMLButtonElement>(".configurationEditButton"))
+    const level = document.querySelector<HTMLInputElement>('.weaponGrid input[type="number"]')
+    expect(level?.max).toBe("80")
+    await changeInput(level, "79.9")
+    expect(level?.value).toBe("79")
+    await changeInput(level, "90")
+    expect(level?.value).toBe("80")
+    await click(findButton("保存配置"))
+    await flushAsyncWork()
+    expect(loadBuildLibrary(window.localStorage, []).builds.find((entry) => entry.buildId === build.buildId)?.weapon)
+      .toEqual({ weaponId: "ExaiphanesBlade", level: 80, ascension: 5, refinement: 1 })
+  })
+  it("fetches and submits equipped weapon choices for a support metric without opening weapon comparison", async () => {
+    const primary = { ...raidenNationalBuiltinScenario.primary, characterId: "Jean", buildId: "web-support.Jean",
+      weapon: { weaponId: "BlackcliffLongsword", level: 90, ascension: 6, refinement: 1 } }
+    const metric = webCatalog.characters.find((character) => character.characterId === "Jean")!.supportMetrics[0]!
+    const group = "blackcliff-longsword-defeated-enemy"
+    const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const request = JSON.parse(String(init?.body))
+      const body = String(input).includes("action-effect-options") ? { options: [], weaponChoices: [{
+        sourceBuildId: primary.buildId, weaponId: primary.weapon.weaponId, choices: { [group]: "none" },
+        choiceGroups: [{ id: group, label: "击败敌人层数", defaultVariant: "none",
+          options: [{ id: "none", label: "0 层" }, { id: "three-stack", label: "3 层" }] }]
+      }] } : { engineVersion: "test", metric: {
+        id: request.metricId, sourceActionId: metric.sourceActionId, kind: "healing", label: metric.label,
+        conditions: [], value: 100, potentialValue: 100, sourceValue: 100, unit: "hp",
+        flatAmount: 0, healingBonus: 0, incomingHealingBonus: 0, percentage: 1, scalingStat: "attack", scalingValue: 100,
+        formula: { kind: "term", label: "治疗量", value: 100 },
+        recipient: { kind: "friendly_recipient", buildId: primary.buildId, characterId: primary.characterId }
+      } }
+      return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } })
+    })
+    vi.stubGlobal("fetch", fetchMock)
+    saveBuildLibrary(window.localStorage, [primary])
+    saveParty(window.localStorage, { memberBuildIds: [primary.buildId] })
+    await render(createElement(TeamCalculationWorkspace, {
+      catalog: webCatalog, initialScenario: { ...raidenNationalBuiltinScenario, primary, teammates: [] }
+    }))
+    await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
+    await click(findButton(metric.label))
+    await flushAsyncWork()
+    const optionsRequest = fetchMock.mock.calls.find(([input]) => String(input).includes("action-effect-options"))![1]!
+    expect(JSON.parse(String(optionsRequest.body))).toMatchObject({
+      actionId: metric.sourceActionId, supportMetricId: metric.id, primary: { buildId: primary.buildId }
+    })
+    await changeSelect(document.querySelector('select[aria-label="黑岩长剑 · 击败敌人层数"]'), "three-stack")
+    await changeSelect(document.querySelector('select[aria-label="本次计算的前台角色"]'), primary.buildId)
+    await changeSelect(document.querySelector('select[aria-label="受益角色"]'), primary.buildId)
+    await flushAsyncWork()
+    await click(findButton("开始计算"))
+    await flushAsyncWork()
+    const evaluationRequest = fetchMock.mock.calls.find(([input]) => String(input).includes("support-metrics/evaluate"))![1]!
+    expect(JSON.parse(String(evaluationRequest.body))).toMatchObject({ metricId: metric.id, context: {
+      onFieldBuildId: primary.buildId, weaponEffectChoices: { [primary.buildId]: { [group]: "three-stack" } }
+    } })
+    expect(document.body.textContent).toContain("辅助指标计算完成")
+    expect(fetchMock.mock.calls.some(([input]) => String(input).includes("weapon-comparison"))).toBe(false)
+  })
+  it("automates artifact groups without overrides while retaining explicit crystal and frozen choices", async () => {
     const primary = { ...raidenNationalBuiltinScenario.primary,
       artifacts: raidenNationalBuiltinScenario.primary.artifacts.map((piece) => ({ ...piece, setId: "MarechausseeHunter" })) }
     const teammate = { ...primary, buildId: "web-artifact.blizzard", characterId: "Kaeya",
       weapon: { weaponId: "FavoniusSword", level: 90, ascension: 6, refinement: 1 },
       artifacts: primary.artifacts.map((piece) => ({ ...piece, setId: "BlizzardStrayer" })) }
     const zero = "artifact.marechaussee-hunter.4pc.hp-change.0-stack.crit-rate"
-    const fetchMock = createCalculationFetchMock(analysisResponse, [0, 3].map((count) => ({
+    const crystal = "artifact.archaic-petra.4pc.crystallize.electro-damage-bonus"
+    const tenacity = "artifact.tenacity-of-the-millelith.4pc.after-skill-hit.party-attack-percent"
+    const petraHolder = { ...teammate, buildId: "web-artifact.petra", characterId: "Noelle",
+      weapon: { ...teammate.weapon, weaponId: "FavoniusGreatsword" },
+      artifacts: teammate.artifacts.map((piece) => ({ ...piece, setId: "ArchaicPetra" })) }
+    const effectOptions: ActiveScenarioEffectOption[] = [0, 3].map((count) => ({
       exclusiveGroup: "marechaussee-hunter-hp-change",
       id: `artifact.marechaussee-hunter.4pc.hp-change.${count}-stack.crit-rate`,
       label: `逐影猎人 · ${count}层`, selectionMode: "optional", automaticPreparation: count === 3,
       preparationDescription: "按来源能力和前后台判断，显式零层覆盖默认。",
       source: { kind: "artifact_set", setId: "MarechausseeHunter", minimumPieces: 4 }
-    })))
+    }))
+    effectOptions.push({
+      id: tenacity, label: "千岩牢固 · 持续战技命中", selectionMode: "optional", automaticPreparation: true,
+      source: { kind: "artifact_set", setId: "TenacityOfTheMillelith", minimumPieces: 4, holder: "party_member" }
+    }, {
+      id: crystal, label: "悠古的磐岩 · 已拾取雷元素结晶", selectionMode: "optional", automaticPreparation: false,
+      source: { kind: "artifact_set", setId: "ArchaicPetra", minimumPieces: 4, holder: "party_member" }
+    })
+    const fetchMock = createCalculationFetchMock(analysisResponse, effectOptions)
     vi.stubGlobal("fetch", fetchMock)
-    saveBuildLibrary(window.localStorage, [primary, teammate])
-    saveParty(window.localStorage, { memberBuildIds: [primary.buildId, teammate.buildId] })
+    saveBuildLibrary(window.localStorage, [primary, teammate, petraHolder])
+    saveParty(window.localStorage, { memberBuildIds: [primary.buildId, teammate.buildId, petraHolder.buildId] })
     await render(createElement(TeamCalculationWorkspace, { catalog: webCatalog,
-      initialScenario: { ...raidenNationalBuiltinScenario, primary, teammates: [teammate] } }))
+      initialScenario: { ...raidenNationalBuiltinScenario, primary, teammates: [teammate, petraHolder] } }))
     await click(document.querySelector<HTMLButtonElement>(".calculationParty button"))
     await click(findButton("梦想真说"))
     await flushAsyncWork()
-    const select = document.querySelector<HTMLSelectElement>('select[aria-label="逐影猎人"]')
-    expect(select?.options[0]?.textContent).toContain("自动")
+    expect(document.querySelector('select[aria-label="逐影猎人"]')).toBeNull()
+    expect(document.querySelector('select[aria-label="千岩牢固"]')).toBeNull()
+    expect(document.body.textContent).not.toContain("站位")
     expect(document.body.textContent).toContain("目标处于冻结状态")
-    await changeSelect(select, zero)
+    await changeSelect(document.querySelector('select[aria-label="悠古的磐岩"]'), crystal)
+    const frozen = [...document.querySelectorAll<HTMLLabelElement>("label")]
+      .find((label) => label.textContent?.includes("目标处于冻结状态"))?.querySelector<HTMLInputElement>("input")
+    await click(frozen)
     await click(findButton("开始计算"))
     await flushAsyncWork()
     const request = fetchMock.mock.calls.filter(([input]) => String(input).endsWith("/analysis")).at(-1)?.[1] as RequestInit
-    expect(JSON.parse(String(request.body)).conditions).toMatchObject({ activeEffectIds: expect.arrayContaining([zero]),
-      activeEffectSourceBuildIds: { [zero]: primary.buildId } })
+    expect(JSON.parse(String(request.body)).conditions).toMatchObject({ activeEffectIds: [crystal], targetFrozen: true,
+      activeEffectSourceBuildIds: { [crystal]: petraHolder.buildId } })
+    // Hidden zero/max selections must not silently survive in requests or their source bindings.
+    const oldConditions = { ...raidenNationalBuiltinScenario.conditions,
+      activeEffectIds: [zero, tenacity, crystal], activeEffectSourceBuildIds: { [zero]: primary.buildId } }
+    const normalized = getMaximumReachableConditions(oldConditions, effectOptions, primary, [teammate, petraHolder],
+      [zero, tenacity, crystal])
+    expect(normalized.activeEffectIds).toEqual([crystal])
+    expect(normalized.activeEffectSourceBuildIds).toEqual({ [crystal]: petraHolder.buildId })
     expect(document.body.textContent).toContain("当前来源不满足后台条件")
   })
   it("selects an active teammate for a background metric and clears the selection for a foreground metric", async () => {
@@ -924,7 +1016,7 @@ describe("team-first workspace integration", () => {
     const refinedRequest = fetchMock.mock.calls[2]?.[1] as RequestInit | undefined
     const refinedPayload = JSON.parse(String(refinedRequest?.body))
     expect(fetchMock.mock.calls[2]?.[0]).toBe("/api/backend/v1/analysis/weapon-comparison")
-    const { weaponComparisonRefinements: _overrides, ...frozenScenario } = JSON.parse(String(request?.body))
+    const { weaponComparisonRefinements: _overrides, weaponComparisonChoices: _choices, ...frozenScenario } = JSON.parse(String(request?.body))
     expect(refinedPayload).toMatchObject({ weaponId: "EngulfingLightning", refinement: 5, scenario: frozenScenario })
     expect(refinementSelect?.value).toBe("5")
     expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/analysis"))).toHaveLength(1)

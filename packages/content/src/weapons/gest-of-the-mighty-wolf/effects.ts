@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const GEST_OF_THE_MIGHTY_WOLF_DAMAGE_OR_CRIT_DAMAGE_PER_STACK = [0.075, 0.095, 0.115, 0.135, 0.155] as const
 
@@ -11,7 +12,8 @@ function getValues(stackCount: number): readonly number[] {
 function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly CombatActionEffect[] {
   return [
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 4, { kind: "damage_hit", hitKinds: ["normal", "charged"], provider: "source", recipient: "source" }, true),
       exclusivity: { group: "gest-of-the-mighty-wolf-howl-damage", variant: `${stackCount}-stack` },
       id: `weapon.gest-of-the-mighty-wolf.howl.${stackCount}-stack.damage-bonus`,
       label: `狼的武功歌 · ${stackCount}层狼嚎全伤害`,
@@ -20,7 +22,11 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
       value: { kind: "refinement_table", values: getValues(stackCount) }
     },
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: { kind: "all_of", alternatives: [
+        prepareMaximumWeaponStacks(stackCount, 4, { kind: "damage_hit", hitKinds: ["normal", "charged"], provider: "source", recipient: "source" }, true),
+        { kind: "conditional", preparation: "qualified", retention: "while_applicable", trigger: { event: "none", sourceFieldPresence: "any" }, applicability: { sourceHomework: true }, explanation: "用户确认的装备者本人魔导资格" }
+      ] },
       condition: { kind: "hexerei_secret_rite" },
       exclusivity: { group: "gest-of-the-mighty-wolf-howl-magic-secret", variant: `${stackCount}-stack` },
       id: `weapon.gest-of-the-mighty-wolf.magic-secret.${stackCount}-stack.crit-damage`,

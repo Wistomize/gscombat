@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect, prepareWeaponSpecialReaction } from "../../combat/weapon-preparation.js"
 
 export const ASTRAL_VULTURES_CRIMSON_PLUMAGE_AFTER_SWIRL_ATTACK_PERCENT = [0.24, 0.3, 0.36, 0.42, 0.48] as const
 export const ASTRAL_VULTURES_CRIMSON_PLUMAGE_ONE_DIFFERENT_CHARGED_DAMAGE_BONUS = [0.2, 0.25, 0.3, 0.35, 0.4] as const
@@ -71,7 +72,11 @@ function createDifferentElementTeammateTierEffects(
 /** Typed selected post-Swirl self attack contribution of Astral Vulture's Crimson Plumage. */
 export const astralVulturesCrimsonPlumageCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "any_of", alternatives: [
+      prepareWeaponEffect({ kind: "reaction_trigger", reactionFamily: "swirl", provider: "source", recipient: "source" }, "本人触发扩散"),
+      prepareWeaponSpecialReaction(["stellar_swirl"])
+    ] },
     id: "weapon.astral-vultures-crimson-plumage.after-swirl.attack-percent",
     label: "星鹫赤羽 · 触发扩散反应后的攻击力",
     source: { kind: "weapon", weaponId: "AstralVulturesCrimsonPlumage" },

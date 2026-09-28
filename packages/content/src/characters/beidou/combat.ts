@@ -5,6 +5,8 @@ import { beidouDefinition } from "./definition.js"
 
 export const beidouCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "beidou.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "beidou.kit.self-aura", label: "捉浪期间自身雷附着", kind: "self_aura", elements: ["electro"], recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("beidou", 4),
     { id: "beidou.kit.retained-shield", label: "祸潮护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true, minimumSourceConstellation: 1 },
     ...declareWeaponHitCapabilities(beidouDefinition),

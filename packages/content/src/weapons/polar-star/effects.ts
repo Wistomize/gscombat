@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const POLAR_STAR_SKILL_BURST_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 export const POLAR_STAR_ONE_STACK_ATTACK_PERCENT = [0.1, 0.125, 0.15, 0.175, 0.2] as const
@@ -16,7 +17,10 @@ const stackEffects = [
 
 function createStackEffect(stack: (typeof stackEffects)[number]): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: stack.stackCount === 4
+      ? prepareWeaponEffect({ kind: "damage_hit", provider: "source", recipient: "source" }, "有本人命中能力时按已确认口径默认四层")
+      : { kind: "excluded", reason: "改为有命中能力自动四层" },
     exclusivity: { group: "polar-star-ashen-nightstar", variant: `${stack.stackCount}-stack` },
     id: `weapon.polar-star.ashen-nightstar.${stack.stackCount}-stack.attack-percent`,
     label: `冬极白星 · ${stack.stackCount}层白夜极星攻击力`,

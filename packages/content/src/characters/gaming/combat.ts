@@ -5,6 +5,7 @@ import { gamingDefinition } from "./definition.js"
 
 export const gamingCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "gaming.kit.weapon-healing-qualification", label: "灿焰金猊舞及瑞兽登高楼自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("gaming", 2),
     { id: "gaming.kit.plunge-access", label: "战技腾跃后进行下落攻击", kind: "plunge_access", recipient: "self", sourceFieldPresence: "on_field", sustained: true },
     ...declareWeaponHitCapabilities(gamingDefinition),

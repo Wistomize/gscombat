@@ -5,13 +5,14 @@ export const equipmentCoverage = {
   clauses: [
     {
       effectIds: [
+        "weapon.lost-prayer-to-the-sacred-winds.movement.0-stack.all-element-damage-bonus",
         "weapon.lost-prayer-to-the-sacred-winds.movement.1-stack.all-element-damage-bonus",
         "weapon.lost-prayer-to-the-sacred-winds.movement.2-stack.all-element-damage-bonus",
         "weapon.lost-prayer-to-the-sacred-winds.movement.3-stack.all-element-damage-bonus",
         "weapon.lost-prayer-to-the-sacred-winds.movement.4-stack.all-element-damage-bonus"
       ],
       id: "weapon.lost-prayer-to-the-sacred-winds.movement.all-element-damage-bonus",
-      label: "四风原典 · 登场后层数对应的所有元素伤害",
+      label: "四风原典 · 前台0～4层默认2层，后台无增伤",
       source: weaponSource("LostPrayerToTheSacredWinds"),
       status: "implemented"
     },

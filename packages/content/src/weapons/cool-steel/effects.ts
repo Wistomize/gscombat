@@ -1,9 +1,10 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const COOL_STEEL_HYDRO_OR_CRYO_AURA_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 
 /** Typed selected Hydro-or-Cryo-aura target damage contribution of Cool Steel. */
-export const coolSteelCombatActionEffects: readonly CombatActionEffect[] = [
+const authoredEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     selectionMode: "optional",
@@ -14,3 +15,9 @@ export const coolSteelCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: COOL_STEEL_HYDRO_OR_CRYO_AURA_DAMAGE_BONUS }
   }
 ]
+
+export const coolSteelCombatActionEffects: readonly CombatActionEffect[] = authoredEffects.flatMap((effect) =>
+  withWeaponToggle(effect, "cool-steel-target-aura", "目标水／冰附着", true).map((choice) => ({ ...choice,
+    weaponChoice: { ...choice.weaponChoice!, targetAuraElements: ["hydro","cryo"] }
+  }))
+)

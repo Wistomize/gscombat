@@ -24,6 +24,12 @@ export function resolveCombatEffectLifecycle(input: {
   const deny = (reason: string) => ({ eligible: false, reason, capabilitySourceIds: [] })
   const capabilitySourceIds = new Set<string>()
   const lifecycle = input.lifecycle
+  if (lifecycle?.kind === "all_of") {
+    const outcomes = lifecycle.alternatives.map((alternative) => resolveCombatEffectLifecycle({ ...input, lifecycle: alternative }))
+    const failure = outcomes.find((outcome) => !outcome.eligible)
+    return failure ?? { eligible: true, reason: outcomes.map((outcome) => outcome.reason).join("；"),
+      capabilitySourceIds: [...new Set(outcomes.flatMap((outcome) => outcome.capabilitySourceIds))] }
+  }
   if (lifecycle?.kind === "any_of") {
     const outcomes = lifecycle.alternatives.map((alternative) => resolveCombatEffectLifecycle({ ...input, lifecycle: alternative }))
     return outcomes.find((outcome) => outcome.eligible) ?? deny(outcomes.map((outcome) => outcome.reason).join("；"))
@@ -41,6 +47,8 @@ export function resolveCombatEffectLifecycle(input: {
       !(includeOnField && foreground && resolveBuildElement(foreground, input.gameData) === element)) return deny("元素不属于装备者或实际前台")
   }
   if (applicability?.targetFrozen && input.targetFrozen !== true) return deny("目标冻结状态未开启")
+  if (applicability?.targetIsSlime && !input.fieldContext.targetIsSlime) return deny("目标不是史莱姆")
+  if (applicability?.arrowHitsWeakPoint && !input.fieldContext.arrowHitsWeakPoint) return deny("本次箭未命中要害")
   if (applicability?.energyResource) {
     const capacity = getCharacterBurstEnergyCost(input.source)
     if (capacity === undefined || (applicability.energyResource === "elemental" ? capacity < 15 : capacity !== 0)) {
@@ -58,8 +66,12 @@ export function resolveCombatEffectLifecycle(input: {
   }
   const sourcePresence = input.requiresSourceOnField ? "on_field" : applicability?.sourceFieldPresence
   const recipientPresence = input.requiresRecipientOnField ? "on_field" : applicability?.recipientFieldPresence
+  const actualSourcePresence = applicability?.sourceFieldPresenceAt === "stat_capture" &&
+    input.source.buildId === input.fieldContext.actionOwnerBuildId
+    ? input.fieldContext.actionOwnerStatCaptureFieldPresence ?? getBuildFieldPresence(input.fieldContext, input.source.buildId)
+    : getBuildFieldPresence(input.fieldContext, input.source.buildId)
   if (sourcePresence && sourcePresence !== "any" &&
-    getBuildFieldPresence(input.fieldContext, input.source.buildId) !== sourcePresence) return deny("来源站位不满足条件")
+    actualSourcePresence !== sourcePresence) return deny("来源前后台状态不满足条件")
   if (recipientPresence && recipientPresence !== "any" &&
     getBuildFieldPresence(input.fieldContext, input.recipient.buildId) !== recipientPresence) return deny("受益者站位不满足条件")
   if (!lifecycle || lifecycle.kind === "constant") return { eligible: true, reason: "常驻或兼容条件", capabilitySourceIds: [] }

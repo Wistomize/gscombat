@@ -13,6 +13,7 @@ export const frostbearerCombatActionEffects: readonly CombatActionEffect[] = [
     label: "忍冬之果 · 本次触发霜葬物理伤害（敌人未处于冰元素影响下）",
     source: { kind: "weapon", weaponId: "Frostbearer" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"] },
     value: {
       canCrit: true,
@@ -31,6 +32,7 @@ export const frostbearerCombatActionEffects: readonly CombatActionEffect[] = [
     label: "忍冬之果 · 本次触发霜葬物理伤害（敌人处于冰元素影响下）",
     source: { kind: "weapon", weaponId: "Frostbearer" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"] },
     value: {
       canCrit: true,

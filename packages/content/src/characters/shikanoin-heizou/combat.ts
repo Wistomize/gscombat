@@ -5,6 +5,7 @@ import { shikanoinHeizouDefinition } from "./definition.js"
 
 export const shikanoinHeizouCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "shikanoin-heizou.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("shikanoin-heizou", 3),
     ...declareWeaponHitCapabilities(shikanoinHeizouDefinition),
     declareHitCapability("shikanoin-heizou.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),

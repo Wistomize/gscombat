@@ -5,6 +5,7 @@ import { lynetteDefinition } from "./definition.js"
 
 export const lynetteCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "lynette.kit.healing", label: "元素战技命中后自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("lynette", 5),
     { ...declareSkillCastCapability("lynette", 5, {"initialUses":2}), id: "lynette.kit.extra-skill-charge", minimumSourceConstellation: 4 },
     ...declareWeaponHitCapabilities(lynetteDefinition),

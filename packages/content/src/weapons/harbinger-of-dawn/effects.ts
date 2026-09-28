@@ -1,9 +1,10 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const HARBINGER_OF_DAWN_HP_ABOVE_90_CRIT_RATE = [0.14, 0.175, 0.21, 0.245, 0.28] as const
 
 /** Typed selected high-health critical-rate contribution of Harbinger of Dawn. */
-export const harbingerOfDawnCombatActionEffects: readonly CombatActionEffect[] = [
+export const harbingerOfDawnCombatActionEffects: readonly CombatActionEffect[] = withWeaponToggle(
   {
     activation: "active",
     selectionMode: "optional",
@@ -13,4 +14,4 @@ export const harbingerOfDawnCombatActionEffects: readonly CombatActionEffect[] =
     target: "critRate",
     value: { kind: "refinement_table", values: HARBINGER_OF_DAWN_HP_ABOVE_90_CRIT_RATE }
   }
-]
+, "harbinger-high-hp", "生命值高于90%", true)

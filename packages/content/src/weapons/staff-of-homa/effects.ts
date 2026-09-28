@@ -25,10 +25,22 @@ export const staffOfHomaCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     selectionMode: "optional",
+    weaponChoice: { group: "homa-low-hp", label: "生命值低于50%", variant: "on", variantLabel: "开启", defaultVariant: "off" },
+    exclusivity: { group: "homa-low-hp", variant: "on" },
     id: "weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack",
     label: "护摩之杖 · 当前生命值低于50%时的额外固定攻击力",
     source: { holder: "primary", kind: "weapon", weaponId: "StaffOfHoma" },
     target: "finalHpToFlatAttack",
     value: { kind: "refinement_table", values: STAFF_OF_HOMA_LOW_HP_FINAL_HP_TO_FLAT_ATTACK }
+  },
+  {
+    activation: "active", selectionMode: "optional",
+    weaponChoice: { group: "homa-low-hp", label: "生命值低于50%", variant: "off", variantLabel: "关闭", defaultVariant: "off" },
+    exclusivity: { group: "homa-low-hp", variant: "off" },
+    id: "weapon.staff-of-homa.hp-below-50.disabled",
+    label: "护摩之杖 · 未开启半血加成",
+    source: { holder: "primary", kind: "weapon", weaponId: "StaffOfHoma" },
+    target: "finalHpToFlatAttack",
+    value: { kind: "refinement_table", values: [0, 0, 0, 0, 0] }
   }
 ]

@@ -19,6 +19,7 @@ export const skywardBladeCombatActionEffects: readonly CombatActionEffect[] = [
     label: "天空之刃 · 施放元素爆发后的普通攻击或重击额外物理伤害",
     source: { kind: "weapon", weaponId: "SkywardBlade" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"], talentSlots: ["normal"] },
     value: {
       canCrit: true,

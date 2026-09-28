@@ -20,6 +20,7 @@ export const luxuriousSeaLordCombatActionEffects: readonly CombatActionEffect[] 
     label: "衔珠海皇 · 大鲔冲击（本次元素爆发命中且15秒冷却已就绪）",
     source: { kind: "weapon", weaponId: "LuxuriousSeaLord" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { talentSlots: ["burst"] },
     value: {
       canCrit: true,

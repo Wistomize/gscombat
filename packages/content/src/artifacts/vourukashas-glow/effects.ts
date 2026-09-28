@@ -17,7 +17,7 @@ function createDamageTakenEffect(stackCount: (typeof damageTakenStackCounts)[num
       defaultCapability: { kind: "damage_taken", recipient: "source", provider: "source", sustained: true },
       manualAlternatives: stackEffectIds,
       retention: "while_applicable", trigger: { event: "none", sourceFieldPresence: "any" },
-      explanation: "自身持续承伤机制默认五层；其他默认零层，显式层数优先，前后台均保留"
+      explanation: "自身持续承伤机制默认五层；其他默认零层，前后台均保留"
     },
     exclusivity: { group: "vourukashas-glow-taking-damage", variant: `${stackCount}-stack` },
     id: `artifact.vourukashas-glow.4pc.taking-damage.${stackCount}-stack.skill-burst-damage-bonus`,

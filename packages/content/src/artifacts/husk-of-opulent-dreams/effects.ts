@@ -14,7 +14,7 @@ function createCuriosityStackEffects(
   const source = { kind: "artifact_set" as const, minimumPieces: 4 as const, setId: "HuskOfOpulentDreams" }
   const exclusivity = { group: "husk-of-opulent-dreams-curiosity", variant: `${stackCount}-stack` }
   const lifecycle: CombatEffectLifecycle = stackCount !== 4
-    ? { kind: "excluded", reason: "华馆按站位与岩元素攻击能力自动取零层或四层，旧中间层不再计入" }
+    ? { kind: "excluded", reason: "华馆按前后台设定与岩元素攻击能力自动取零层或四层，旧中间层不再计入" }
     : { kind: "any_of", alternatives: [
       {
         kind: "conditional", preparation: "qualified", retention: "while_applicable",

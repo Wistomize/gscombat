@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const MAPPA_MARE_ALL_ELEMENT_DAMAGE_BONUS_PER_STACK = [0.08, 0.1, 0.12, 0.14, 0.16] as const
 
@@ -11,9 +12,8 @@ function getDamageBonusValues(stackCount: number): readonly number[] {
 
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
-    selectionMode: "optional",
-    ...(stackCount === 2 ? { weaponComparisonDefault: { recipientCharacterIds: "all" as const, requiresReactionAction: true } } : {}),
+    activation: "automatic",
+    lifecycle: prepareMaximumWeaponStacks(stackCount, 2, { kind: "reaction_trigger", reactionFamily: "any", provider: "source", recipient: "source" }),
     exclusivity: { group: "mappa-mare-infusion-scroll", variant: `${stackCount}-stack` },
     id: `weapon.mappa-mare.infusion-scroll.${stackCount}-stack.all-element-damage-bonus`,
     label: `万国诸海图谱 · 触发元素反应后的${stackCount}层所有元素伤害`,

@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const LIGHTBEARING_MOONSHARD_DEFENSE_PERCENT = [0.2, 0.25, 0.3, 0.35, 0.4] as const
 export const LIGHTBEARING_MOONSHARD_AFTER_SKILL_LUNAR_CRYSTALLIZE_DAMAGE_BONUS = [
@@ -20,7 +21,8 @@ export const lightbearingMoonshardCombatActionEffects: readonly CombatActionEffe
     value: { kind: "refinement_table", values: LIGHTBEARING_MOONSHARD_DEFENSE_PERCENT }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "skill_cast", provider: "source", recipient: "source" }, "本人施放战技后自动准备，退场保留"),
     id: "weapon.lightbearing-moonshard.after-skill.lunar-crystallize.reaction-damage-bonus",
     label: "朏魄含光 · 元素战技后的月结晶伤害",
     source: { kind: "weapon", weaponId: "LightbearingMoonshard" },

@@ -7,6 +7,7 @@ import {
   type CombatActionStatEffect
 } from "@gscombat/content"
 import type { CharacterBuild } from "@gscombat/contracts"
+import { findCapabilityProviders } from "../scenario/capabilities.js"
 
 import type {
   AppliedCombatActionEffect,
@@ -24,6 +25,25 @@ export function resolveEffectValue(
 ): number {
   if (effect.value.kind === "fixed" || effect.value.kind === "refinement_table") {
     return resolveEffectScalar(effect.value, source)
+  }
+  if (effect.value.kind === "prepared_stack_refinement_table") {
+    const value = effect.value
+    const snapshot = source.buildId === (input.actionOwnerBuildId ?? input.primary.buildId)
+      ? input.action.preparationAtSnapshot : undefined
+    let count = value.includeBurstCast && snapshot?.burstCast !== false ? 1 : 0
+    if (value.includeEnergyNotFull && snapshot?.energyNotFull !== false &&
+      ((getCharacterBurstEnergyCost(source) ?? 0) > 0 ||
+        value.specialEnergyNotFullCharacterIds?.includes(source.characterId))) count += 1
+    if (value.capability && snapshot?.elementalNormalHit !== false && findCapabilityProviders({
+      builds: [input.primary, ...input.teammates],
+      fieldContext: { actionOwnerBuildId: source.buildId, onFieldBuildId: source.buildId },
+      activeEffectIds: input.activeEffectIds, requirement: value.capability,
+      sourceBuildId: source.buildId, recipientBuildId: source.buildId,
+      ...(input.gameData ? { gameData: input.gameData } : {})
+    }).length > 0) count += 1
+    const row = value.valuesByStack[count]
+    if (!row) throw new Error(`Prepared effect ${effect.id} has no value for ${count} stacks`)
+    return resolveEffectScalar({ kind: "refinement_table", values: row }, source)
   }
   if (effect.value.kind === "talent_parameter") {
     if (effect.source.kind !== "character") {
@@ -310,13 +330,10 @@ function resolveTeamBurstEnergyCost(
   effectId: string
 ): number {
   const party = [primary, ...teammates]
-  if (party.length !== 4) {
-    throw new Error(`Effect ${effectId} requires a fully configured four-character party`)
-  }
   return party.reduce((total, build) => {
     const burstEnergyCost = getCharacterBurstEnergyCost(build)
     if (burstEnergyCost === undefined) {
-      throw new Error(`Burst energy cost for ${build.characterId} is not maintained`)
+      throw new Error(`Burst energy cost for ${build.characterId} is not maintained (${effectId})`)
     }
     return total + burstEnergyCost
   }, 0)

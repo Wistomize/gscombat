@@ -5,6 +5,8 @@ import { kukiShinobuDefinition } from "./definition.js"
 
 export const kukiShinobuCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "kuki-shinobu.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "kuki-shinobu.kit.healing", label: "越祓草轮治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("kuki-shinobu", 6),
     ...declareWeaponHitCapabilities(kukiShinobuDefinition),
     declareHitCapability("kuki-shinobu.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),

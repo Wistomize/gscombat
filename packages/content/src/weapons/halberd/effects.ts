@@ -11,6 +11,7 @@ export const halberdCombatActionEffects: readonly CombatActionEffect[] = [
     label: "钺矛 · 本次普攻触发沉重物理伤害（冷却已就绪）",
     source: { kind: "weapon", weaponId: "Halberd" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal"] },
     value: {
       canCrit: true,

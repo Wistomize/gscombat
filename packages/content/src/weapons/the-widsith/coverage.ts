@@ -4,7 +4,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: [
+      effectIds: ["weapon.the-widsith.recitative.attack-percent.zero",
         "weapon.the-widsith.recitative.attack-percent",
         "weapon.the-widsith.aria.all-element-damage-bonus",
         "weapon.the-widsith.interlude.elemental-mastery"

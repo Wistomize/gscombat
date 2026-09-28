@@ -5,6 +5,7 @@ import { dilucDefinition } from "./definition.js"
 
 export const dilucCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "diluc.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("diluc", 3, {"castsPerUse":3}),
     ...declareWeaponHitCapabilities(dilucDefinition),
     declareHitCapability("diluc.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),

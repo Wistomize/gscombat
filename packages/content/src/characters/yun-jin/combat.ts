@@ -5,6 +5,7 @@ import { yunJinDefinition } from "./definition.js"
 
 export const yunJinCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "yun-jin.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("yun-jin", 5),
     ...declareWeaponHitCapabilities(yunJinDefinition),
     declareHitCapability("yun-jin.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),

@@ -1,14 +1,17 @@
-import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-coverage.js"
+import type { EquipmentCoverageEntry } from "../../equipment-coverage.js"
 
-/** Maintainer-reviewed single-core-action coverage for this equipment item. */
+/** Reviewed executable effects; excluded legacy states and independent weapon procs are not coverage claims. */
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: ["weapon.messenger.weak-point-guaranteed-crit.additional-damage"],
       id: "weapon.messenger.weak-point-guaranteed-crit.additional-damage",
       label: "信使 · 瞄准射击命中要害且冷却就绪时的必定暴击物理附加伤害",
-      source: weaponSource("Messenger"),
-      status: "implemented"
+      source: {
+        kind: "weapon",
+        weaponId: "Messenger"
+      },
+      status: "not_applicable",
+      reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性"
     }
   ],
   equipmentId: "Messenger",

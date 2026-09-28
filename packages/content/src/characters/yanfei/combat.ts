@@ -5,6 +5,7 @@ import { yanfeiDefinition } from "./definition.js"
 
 export const yanfeiCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "yanfei.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("yanfei", 1),
     { id: "yanfei.kit.retained-shield", label: "丹书金铁护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true, minimumSourceConstellation: 4 },
     ...declareWeaponHitCapabilities(yanfeiDefinition),

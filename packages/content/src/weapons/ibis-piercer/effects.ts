@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const IBIS_PIERCER_ELEMENTAL_MASTERY_PER_STACK = [40, 50, 60, 70, 80] as const
 
@@ -10,7 +11,8 @@ function getElementalMasteryValues(stackCount: number): readonly number[] {
 
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareMaximumWeaponStacks(stackCount, 2, { kind: "damage_hit", hitKinds: ["charged"], provider: "source", recipient: "source" }, true),
     exclusivity: { group: "ibis-piercer-precision", variant: `${stackCount}-stack` },
     id: `weapon.ibis-piercer.precision.${stackCount}-stack.elemental-mastery`,
     label: `鹮穿之喙 · 重击命中后的${stackCount}层元素精通`,

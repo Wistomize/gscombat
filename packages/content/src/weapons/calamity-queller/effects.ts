@@ -17,8 +17,12 @@ function createConsumptionStackEffect(
   const multiplier = state === "on-field" ? stackCount : stackCount * 2
   const stateLabel = state === "on-field" ? "前台" : "后台"
   return {
-    activation: "active",
-    selectionMode: "optional",
+    activation: "automatic",
+    lifecycle: stackCount === 6 ? { kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
+      trigger: { event: "skill_cast", sourceFieldPresence: "on_field" },
+      applicability: { sourceFieldPresence: state === "on-field" ? "on_field" : "off_field", sourceFieldPresenceAt: "stat_capture" },
+      explanation: "提前战技准备六层；只按当前指标实际取面板时的前后台决定是否翻倍" }
+      : { kind: "excluded", reason: "提前战技自动准备六层；旧层数不再手选" },
     exclusivity: { group: "calamity-queller-consumption", variant: `${state}-${stackCount}-stack` },
     id: `weapon.calamity-queller.consumption.${state}.${stackCount}-stack.attack-percent`,
     label: `息灾 · 圆顿${stateLabel}${stackCount}层攻击力`,

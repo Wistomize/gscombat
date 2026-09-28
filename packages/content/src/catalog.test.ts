@@ -291,6 +291,7 @@ describe("supported weapon catalog", () => {
       BloodsoakedRuins: "血染荒城",
       CalamityOfEshu: "厄水之祸",
       CalamityQueller: "息灾",
+      CinnabarSpindle: "辰砂之纺锤",
       CashflowSupervision: "金流监督",
       ChainBreaker: "碎链",
       Cloudforged: "筑云",

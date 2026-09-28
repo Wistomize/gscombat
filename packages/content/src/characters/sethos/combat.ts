@@ -5,6 +5,10 @@ import { sethosDefinition } from "./definition.js"
 
 export const sethosCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "sethos.kit.aimed-shot-energy-spend", label: "黑鸢的谜喻 · 瞄准加速可分别支付元素能量", kind: "energy_spend",
+      energySpend: { withinSeconds: 18, count: 2 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false, minimumSourceAscension: 1 },
+    { id: "sethos.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 2 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("sethos", 2),
     ...declareWeaponHitCapabilities(sethosDefinition),
     declareHitCapability("sethos.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["electro"]),
@@ -70,6 +74,7 @@ export const sethosCombatCoverage: CharacterCombatCoverage = {
       element: sethosDefinition.element,
       evaluator: "declared_direct",
       id: "sethos.normal.royal_reed_archery.shadowpiercing_shot",
+      aimedArrowDamagePartIds: ["shadowpiercing-shot"],
       kind: "damage",
       parameterReferences: [
         {

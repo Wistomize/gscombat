@@ -7,7 +7,7 @@ export const ULTIMATE_OVERLORDS_MEGA_MAGIC_SWORD_ATTACK_PERCENT_PER_MELUSINE = [
   0.01, 0.0125, 0.015, 0.0175, 0.02
 ] as const
 
-const melusineCounts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const
+const melusineCounts = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const
 
 function getMelusineAttackPercentValues(melusineCount: number): readonly number[] {
   return ULTIMATE_OVERLORDS_MEGA_MAGIC_SWORD_ATTACK_PERCENT_PER_MELUSINE.map(
@@ -18,6 +18,7 @@ function getMelusineAttackPercentValues(melusineCount: number): readonly number[
 function createMelusineEffect(melusineCount: (typeof melusineCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    weaponChoice: { group: "ultimate-overlords-mega-magic-sword-melusine", label: "梅露辛帮助数", variant: `${melusineCount}-melusine`, variantLabel: `${melusineCount}`, defaultVariant: "12-melusine" },
     exclusivity: {
       group: "ultimate-overlords-mega-magic-sword-melusine",
       variant: melusineCount + "-melusine"

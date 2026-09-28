@@ -83,6 +83,18 @@ Agent 的强制触发规则见根目录 [`AGENTS.md`](../AGENTS.md)，完整决�
 
 ## 本地开发
 
+### 武器规则维护
+
+武器默认准备和必要选项属于 `packages/content/src/weapons/<weapon>/`，不要在 Web 或比较器增加武器 ID 分支。
+`combat/weapon-choices.ts` 校验声明，Analyzer 的 `effects/weapon-state.ts` 将同一声明投影为选项；
+实际装备、完整比较和单行比较共用资格解析。附魔后的有效元素与角色本体元素不可混为一谈。
+能力只声明可核验来源及对象；治疗能力不等于直接输出治疗数值，独立追加伤害不计也不能删除合法能力。
+
+确认规则与逐项实现证据见[本轮审计](../openspec/changes/implement-reviewed-weapon-default-rules/audit.md)。
+新增规则先维护实体、必要能力和 coverage，再运行 `pnpm --filter @gscombat/content registries:generate`。
+回归优先证明同武器同配置零收益、完整/单候选一致及来源隔离，不只断言总伤害增加。
+只有明确命中时间才能判断短窗口消耗/重触发；无间隔信息的聚合多击按仅首击享受消耗效果处理，不虚构帧数。
+
 首次安装并构建：
 
 ```bash
@@ -147,6 +159,19 @@ Content 的 `build`、`test` 和 `typecheck` 都会先验证生成注册表的�
 [ADR 0014](adr/0014-use-one-authoritative-scenario-metric-evaluation-path.md)。
 
 ## 验证
+
+### 性能复用边界
+
+固定效果声明可建立模块级只读索引；用户 Build 的裸属性只在单次分析内按对象身份和元素复用，
+绑定当前 GameData 实例。HP/ATK/DEF/EM 可以共用同一场景变体的来源准备，不能把上一把候选武器的
+最终队友面板沿用到下一把。具体边界见 [ADR 0021](adr/0021-use-stateless-incremental-weapon-comparison.md)。
+
+性能重构必须对当前工作树而非过时 HEAD 做完整输出差分。使用公开内置场景和相同 SQLite 快照，
+预热后交替计时；Profiler/调用计数与耗时测量分开，不与测试或构建并行。不能通过删除轨迹、减少候选或
+修改期望值换取性能。可复现探针和本次证据见
+[准备复用变更](../openspec/changes/optimize-scenario-preparation-reuse/)。
+
+### 仓库门禁
 
 提交前至少运行：
 

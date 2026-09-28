@@ -5,6 +5,8 @@ import { barbaraDefinition } from "./definition.js"
 
 export const barbaraCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "barbara.kit.self-aura", label: "演唱开始音符之环为前台施加水附着", kind: "self_aura", elements: ["hydro"], recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    { id: "barbara.kit.healing", label: "元素爆发治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("barbara", 6),
     ...declareWeaponHitCapabilities(barbaraDefinition),
     declareHitCapability("barbara.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["hydro"]),

@@ -16,6 +16,14 @@ function sortedIds(entries: readonly { readonly equipmentId: string }[]): string
 }
 
 describe("full equipment coverage ledger", () => {
+  it("keeps all five Royal weapons available for saved builds but excludes them from comparison", () => {
+    for (const weaponId of ["RoyalLongsword", "RoyalGreatsword", "RoyalSpear", "RoyalBow", "RoyalGrimoire"]) {
+      expect(supportedWeapons.find((weapon) => weapon.weaponId === weaponId), weaponId).toMatchObject({
+        weaponId, comparison: { excluded: true }
+      })
+    }
+  })
+
   it("classifies every maintained four-piece clause across damage and recipient pipelines", () => {
     const effects = [...listCombatActionEffects(), ...listRecipientEquipmentEffects()]
     for (const effect of effects) {
@@ -162,9 +170,8 @@ describe("full equipment coverage ledger", () => {
     expect(swordOfDescension?.clauses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          effectIds: ["weapon.sword-of-descension.descension.physical-hit"],
           id: "weapon.sword-of-descension.descension.physical-hit",
-          status: "implemented"
+          status: "not_applicable"
         }),
         expect.objectContaining({
           effectIds: ["weapon.sword-of-descension.playstation.traveler.flat-attack"],
@@ -173,7 +180,6 @@ describe("full equipment coverage ledger", () => {
         }),
         expect.objectContaining({
           effectIds: [
-            "weapon.sword-of-descension.descension.physical-hit",
             "weapon.sword-of-descension.playstation.traveler.flat-attack"
           ],
           id: "weapon.sword-of-descension.platform-eligibility",
@@ -191,9 +197,8 @@ describe("full equipment coverage ledger", () => {
 
     expect(messenger?.clauses).toEqual([
       expect.objectContaining({
-        effectIds: ["weapon.messenger.weak-point-guaranteed-crit.additional-damage"],
         id: "weapon.messenger.weak-point-guaranteed-crit.additional-damage",
-        status: "implemented"
+        status: "not_applicable"
       })
     ])
     expect(listPublishedWeapons().map((weapon) => weapon.weaponId)).toContain("Messenger")
@@ -210,13 +215,7 @@ describe("full equipment coverage ledger", () => {
         }),
         expect.objectContaining({
           effectIds: [
-            "weapon.flowing-purity.bond-of-life-cleared.full-clear.all-element-damage-bonus",
-            "weapon.flowing-purity.bond-of-life-cleared.1-thousand-points.all-element-damage-bonus",
-            "weapon.flowing-purity.bond-of-life-cleared.2-thousand-points.all-element-damage-bonus",
-            "weapon.flowing-purity.bond-of-life-cleared.3-thousand-points.all-element-damage-bonus",
-            "weapon.flowing-purity.bond-of-life-cleared.4-thousand-points.all-element-damage-bonus",
-            "weapon.flowing-purity.bond-of-life-cleared.5-thousand-points.all-element-damage-bonus",
-            "weapon.flowing-purity.bond-of-life-cleared.6-thousand-points.all-element-damage-bonus"
+            "weapon.flowing-purity.bond-of-life-cleared.full-clear.all-element-damage-bonus"
           ],
           status: "implemented"
         })
@@ -434,7 +433,7 @@ describe("full equipment coverage ledger", () => {
     expect(listPublishedArtifactSets().map((artifactSet) => artifactSet.setId)).toContain("NightOfTheSkysUnveiling")
   })
 
-  it("keeps Cinnabar Spindle unpublished while only Albedo's single-hit slice is resolved", () => {
+  it("publishes Cinnabar Spindle with its reviewed per-hit consumption policy", () => {
     const cinnabarSpindle = equipmentCoverageLedger.find((entry) => entry.equipmentId === "CinnabarSpindle")
 
     expect(cinnabarSpindle?.clauses).toEqual(
@@ -446,11 +445,11 @@ describe("full equipment coverage ledger", () => {
         }),
         expect.objectContaining({
           id: "weapon.cinnabar-spindle.other-skill-hits.per-trigger-cooldown",
-          status: "unsupported"
+          status: "implemented"
         })
       ])
     )
-    expect(listPublishedWeapons().map((weapon) => weapon.weaponId)).not.toContain("CinnabarSpindle")
+    expect(listPublishedWeapons().map((weapon) => weapon.weaponId)).toContain("CinnabarSpindle")
   })
 
   it("records Golden Frostbound Oath's self and nearby-teammate Lunar-Crystallize branches separately", () => {
@@ -541,7 +540,7 @@ describe("full equipment coverage ledger", () => {
         status: "implemented"
       }),
       expect.objectContaining({
-        effectIds: ["weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack"],
+        effectIds: ["weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack", "weapon.staff-of-homa.hp-below-50.disabled"],
         source: { holder: "primary", kind: "weapon", weaponId: "StaffOfHoma" },
         status: "implemented"
       })
@@ -561,8 +560,6 @@ describe("full equipment coverage ledger", () => {
       }),
       expect.objectContaining({
         effectIds: [
-          "weapon.absolution.bond-of-life-increase.1-stack.damage-bonus",
-          "weapon.absolution.bond-of-life-increase.2-stack.damage-bonus",
           "weapon.absolution.bond-of-life-increase.3-stack.damage-bonus"
         ],
         id: "weapon.absolution.bond-of-life-increase.damage-bonus",
@@ -601,6 +598,7 @@ describe("full equipment coverage ledger", () => {
     expect(blackcliffAgate?.clauses).toEqual([
       expect.objectContaining({
         effectIds: [
+          "weapon.blackcliff-agate.defeated-enemy.1-stack.attack-percent.zero",
           "weapon.blackcliff-agate.defeated-enemy.1-stack.attack-percent",
           "weapon.blackcliff-agate.defeated-enemy.2-stack.attack-percent",
           "weapon.blackcliff-agate.defeated-enemy.3-stack.attack-percent"
@@ -619,10 +617,6 @@ describe("full equipment coverage ledger", () => {
     expect(ballad?.clauses).toEqual([
       expect.objectContaining({
         effectIds: [
-          "weapon.ballad-of-the-boundless-blue.azure-skies.1-stack.normal-damage-bonus",
-          "weapon.ballad-of-the-boundless-blue.azure-skies.1-stack.charged-damage-bonus",
-          "weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.normal-damage-bonus",
-          "weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.charged-damage-bonus",
           "weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.normal-damage-bonus",
           "weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.charged-damage-bonus"
         ],

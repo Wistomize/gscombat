@@ -112,6 +112,7 @@ function createMavuikaC6DamageMetric(actionId: string, label: string): CombatDam
 
 export const mavuikaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "mavuika.kit.nightsoul-state", label: "本人夜魂加持状态", kind: "nightsoul_state", recipient: "self", sourceFieldPresence: "any", sustained: true },
     declareSkillCastCapability("mavuika", 13),
     ...declareWeaponHitCapabilities(mavuikaDefinition),
     declareHitCapability("mavuika.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),

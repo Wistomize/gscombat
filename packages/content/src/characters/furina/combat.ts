@@ -77,10 +77,13 @@ function createCenterOfAttentionNormalAction(arkhe: keyof typeof furinaC6NormalA
 
 export const furinaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "furina.kit.normal-infusion", label: "六命万众瞩目水附魔", kind: "normal_attack_infusion", elements: ["hydro"], recipient: "self", sourceFieldPresence: "on_field", sustained: true, minimumSourceConstellation: 6 },
+    { id: "furina.kit.healing", label: "众水的歌者治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("furina", 10),
     ...declareWeaponHitCapabilities(furinaDefinition),
     declareHitCapability("furina.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),
     { ...declareHitCapability("furina.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["hydro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+    { ...declareHitCapability("furina.kit.long_window_skill_hits", "沙龙成员持续攻击可在二十秒内准备三次战技命中", ["skill"], ["hydro"], true), skillHitOpportunities: { withinSeconds: 20, count: 3, minimumSeparationSeconds: 0.3 } },
   {
     id: "furina.skill.salon_solitaire.ousia.party_hp_loss", label: "孤心沙龙 · 荒性沙龙成员消耗队伍生命值",
     kind: "hp_loss", recipient: "party", sourceFieldPresence: "any", sustained: true

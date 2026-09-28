@@ -10,6 +10,7 @@ export const endOfTheLineCombatActionEffects: readonly CombatActionEffect[] = [
     label: "竭泽 · 本次攻击触发沿洄物理伤害（状态有效且可触发）",
     source: { kind: "weapon", weaponId: "EndOfTheLine" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged", "plunge"] },
     value: {
       canCrit: true,

@@ -1,11 +1,13 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const SONG_OF_THE_VIGIL_ATTACK_PERCENT = [0.2, 0.25, 0.3, 0.35, 0.4] as const
 
 /** Typed post-Stellar-reaction attack contribution of Song of the Vigil. */
 export const songOfTheVigilCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "reaction_trigger", reactionFamily: "stellar", provider: "source", recipient: "source" }, "仅由装备者本人在当前队伍的合法准备能力触发，退场保留"),
     id: "weapon.song-of-the-vigil.after-stellar-reaction.attack-percent",
     label: "戍望谣歌 · 触发星烁反应后的攻击力（12秒内）",
     source: { kind: "weapon", weaponId: "SongOfTheVigil" },

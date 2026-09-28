@@ -26,7 +26,7 @@ it("preserves the explicitly selected active teammate across a full report and i
     body: { scenario, weaponId: "FavoniusSword", refinement: 2 } })
   expect(full.statusCode, full.body).toBe(200)
   expect(single.statusCode, single.body).toBe(200)
-  expect(single.json()).toEqual({ baselineExpectedDamage: full.json().analysis.baselineExpectedDamage,
+  expect(single.json()).toEqual({ engineVersion: full.json().engineVersion, baselineExpectedDamage: full.json().analysis.baselineExpectedDamage,
     weapon: full.json().analysis.weapons.find((weapon: { weaponId: string }) => weapon.weaponId === "FavoniusSword") })
   const ids = full.json().evaluation.appliedEffects.map((effect: { id: string }) => effect.id)
   expect(ids).toContain("yumemizuki_mizuki.locked_passive.revelation.dreamdrifter.party_elemental_mastery")
@@ -36,7 +36,8 @@ it("preserves the explicitly selected active teammate across a full report and i
 it("returns only a candidate and authoritative baseline", async () => {
   const response = await app.inject({ method: "POST", url: "/v1/analysis/weapon-comparison", body })
   expect(response.statusCode).toBe(200)
-  expect(Object.keys(response.json()).sort()).toEqual(["baselineExpectedDamage", "weapon"])
+  expect(Object.keys(response.json()).sort()).toEqual(["baselineExpectedDamage", "engineVersion", "weapon"])
+  expect(response.json().engineVersion).toBe("scenario-3-reviewed-weapon-rules")
   expect(response.json().weapon).toMatchObject({ weaponId: "TheCatch", refinement: 2 })
   expect(response.json().weapon.expectedDamage).toBeGreaterThan(0)
 })
@@ -56,15 +57,15 @@ it("uses the same Jade default for the full report and single-weapon refinement 
     body: { scenario, weaponId: "SacrificialJade", refinement: 2 } })
   expect(full.statusCode, full.body).toBe(200)
   expect(single.statusCode, single.body).toBe(200)
-  expect(single.json()).toEqual({ baselineExpectedDamage: full.json().analysis.baselineExpectedDamage,
+  expect(single.json()).toEqual({ engineVersion: full.json().engineVersion, baselineExpectedDamage: full.json().analysis.baselineExpectedDamage,
     weapon: full.json().analysis.weapons.find((weapon: { weaponId: string }) => weapon.weaponId === "SacrificialJade") })
 })
 
 it("rejects invalid refinements, incompatible or unavailable candidates, and unowned metrics", async () => {
   const cases = [
     ...[0, 6, 1.5].map((refinement) => ({ ...body, refinement })),
-    ...["missing", "DullBlade"].map((weaponId) => ({ ...body, weaponId })),
-    { ...body, weaponId: "WavebreakersFin", scenario: { ...body.scenario, teammates: [] } },
+    ...["missing", "DullBlade", "RoyalSpear"].map((weaponId) => ({ ...body, weaponId })),
+    { ...body, weaponId: "TheCatch", choices: { "invented-buff": "999" } },
     { ...body, scenario: { ...body.scenario, primary: { ...body.scenario.primary, constellation: 0 },
       targetActionId: "sandrone.constellation.6.narcissus_awaking.condensed_cluster_beam.stellar_superconduct" } }
   ]

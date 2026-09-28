@@ -10,6 +10,7 @@ export const prototypeArchaicCombatActionEffects: readonly CombatActionEffect[] 
     label: "试作古华 · 本次普通攻击或重击命中（15秒冷却已就绪）",
     source: { kind: "weapon", weaponId: "PrototypeArchaic" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"], talentSlots: ["normal"] },
     value: {
       canCrit: true,

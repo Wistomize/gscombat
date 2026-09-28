@@ -5,6 +5,7 @@ import { kleeDefinition } from "./definition.js"
 
 export const kleeCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "klee.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("klee", 5, {"initialUses":2}),
     ...declareWeaponHitCapabilities(kleeDefinition),
     declareHitCapability("klee.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),

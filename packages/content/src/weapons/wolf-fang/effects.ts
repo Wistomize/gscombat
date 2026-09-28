@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const WOLF_FANG_SKILL_BURST_DAMAGE_BONUS = [0.16, 0.2, 0.24, 0.28, 0.32] as const
 export const WOLF_FANG_CRIT_RATE_PER_STACK = [0.02, 0.025, 0.03, 0.035, 0.04] as const
@@ -16,8 +17,10 @@ function createCritRateStackEffect(
   stackCount: (typeof stackCounts)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
-    exclusivity: { group: `wolf-fang-${talentSlot}-crit-rate`, variant: `${stackCount}-stack` },
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "damage_hit", hitKinds: [talentSlot], provider: "source", recipient: "source",
+      opportunityWindow: { seconds: 10, minimum: stackCount, measure: "hits", minimumSeparationSeconds: 0.1 } }, "按对应技能的合法命中次数准备，前台生效，后台默认零层", true),
+    exclusivity: { group: `wolf-fang-${talentSlot}-crit-rate`, variant: `${stackCount}-stack`, automaticPriority: stackCount },
     id: `weapon.wolf-fang.${talentSlot}-hit.${stackCount}-stack.crit-rate`,
     label: `狼牙 · 此前${talentLabels[talentSlot]}命中后${stackCount}层暴击率`,
     source: { kind: "weapon", weaponId: "WolfFang" },

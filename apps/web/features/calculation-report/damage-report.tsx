@@ -122,7 +122,7 @@ export function OrderedDamageReport({
   readonly weaponStates?: Readonly<Record<string, WeaponRequestState>> | undefined
   readonly build: CharacterBuild
   readonly catalog: CatalogResponse
-  readonly onWeaponRefinementChange: (weaponId: string, refinement: number) => void
+  readonly onWeaponRefinementChange: (weaponId: string, refinement: number, choices?: Record<string, string>) => void
   readonly targetAction: CatalogPrimaryAction | undefined
 }) {
   const rotationTraceEvents = analysis.evaluation.rotation.events.filter((event) => event.trace.length > 0)
@@ -197,6 +197,9 @@ export function OrderedDamageReport({
         <div className="traceSteps">
           {usesRotationTrace
             ? displayedRotationTraceEvents.map((event, eventIndex) => {
+                const eventAnalysis = event.statContributions ? { ...analysis, evaluation: {
+                  ...analysis.evaluation, stats: { ...analysis.evaluation.stats, statContributions: event.statContributions }
+                } } : analysis
                 const entries = event.trace.map((entry, entryIndex) => ({ entry, entryIndex }))
                 const displayedEntries = !hasMasteryTrace && eventIndex === 0
                   ? insertNeutralReactionStep(entries, ({ entry }) => getRotationTraceStage(entry))
@@ -215,7 +218,7 @@ export function OrderedDamageReport({
                     const showCritSources =
                       firstRotationCritEntry?.eventIndex === eventIndex && firstRotationCritEntry.entryIndex === index
                     const stepNumber = stepIndex + 1
-                    return <div aria-label={`${event.id} ${traceStageMeta[stage].label}结算公式`} className="traceStep" data-stage={stage} key={`${event.id}-${index}-${entry.kind}`}><div className="traceStage"><span>{String(stepNumber).padStart(2, "0")}</span><div><strong>{traceStageMeta[stage].label}</strong><small>{traceStageMeta[stage].hint}</small></div></div><RotationTraceFormula analysis={analysis} entry={entry} previousStage={previousStage} showCritSources={showCritSources} showMasterySources={showMasterySources} targetAction={targetAction} /></div>
+                    return <div aria-label={`${event.id} ${traceStageMeta[stage].label}结算公式`} className="traceStep" data-stage={stage} key={`${event.id}-${index}-${entry.kind}`}><div className="traceStage"><span>{String(stepNumber).padStart(2, "0")}</span><div><strong>{traceStageMeta[stage].label}</strong><small>{traceStageMeta[stage].hint}</small></div></div><RotationTraceFormula analysis={eventAnalysis} entry={entry} previousStage={previousStage} showCritSources={showCritSources} showMasterySources={showMasterySources} targetAction={targetAction} /></div>
                   })}
                 </section>
                 )
@@ -253,11 +256,17 @@ export function OrderedDamageReport({
           return <div className="weaponRow" key={weapon.weaponId} aria-busy={state?.pending !== undefined}>
             <span className="rankNumber">{String(index + 1).padStart(2, "0")}</span>
             <WeaponIcon label={weapon.label} weaponId={weapon.weaponId} />
-            <div><strong>{weapon.label}</strong><small>{weapon.rarity}★ · R{weapon.refinement}</small>
+            <div><strong>{weapon.label}</strong><small>{weapon.rarity}★ · R{weapon.refinement}{weapon.level && weapon.level !== 90 ? ` · ${weapon.level}级` : ""}</small>
               {state?.pending !== undefined ? <small role="status">正在计算 R{state.pending}，当前数值为 R{weapon.refinement}</small> : null}
-              {state?.error ? <small role="alert">{state.error} <button type="button" onClick={() => onWeaponRefinementChange(weapon.weaponId, state.retryRefinement ?? weapon.refinement)}>重试</button></small> : null}
+              {state?.error ? <small role="alert">{state.error} <button type="button" onClick={() => onWeaponRefinementChange(weapon.weaponId, state.retryRefinement ?? weapon.refinement, state.retryChoices)}>重试</button></small> : null}
+              {weapon.choiceGroups?.map((group) => <label key={group.id} className="weaponChoice"><span>{group.label}</span>
+                <select aria-label={`${weapon.label}：${group.label}`} value={state?.pendingChoices?.[group.id] ?? weapon.choices?.[group.id] ?? group.defaultVariant}
+                  onChange={(event) => onWeaponRefinementChange(weapon.weaponId, state?.pending ?? weapon.refinement,
+                    { ...weapon.choices, ...state?.pendingChoices, [group.id]: event.target.value })}>
+                  {group.options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                </select></label>)}
             </div>
-            <label className="weaponRefinement"><span>精炼</span><select aria-label={`${weapon.label}精炼等级`} value={state?.pending ?? weapon.refinement} onChange={(event) => onWeaponRefinementChange(weapon.weaponId, numberValue(event.target.value, 1))}>{[1, 2, 3, 4, 5].map((refinement) => <option key={refinement} value={refinement}>R{refinement}</option>)}</select></label>
+            <label className="weaponRefinement"><span>精炼</span><select aria-label={`${weapon.label}精炼等级`} disabled={weapon.legalRefinements?.length === 1} value={state?.pending ?? weapon.refinement} onChange={(event) => onWeaponRefinementChange(weapon.weaponId, numberValue(event.target.value, 1), state?.pendingChoices ?? weapon.choices)}>{(weapon.legalRefinements ?? [1, 2, 3, 4, 5]).map((refinement) => <option key={refinement} value={refinement}>R{refinement}</option>)}</select></label>
             <span>{formatDamage(weapon.expectedDamage)}</span><b className={weapon.gainRatio >= 0 ? "positive" : "negative"}>{formatPercent(weapon.gainRatio)}</b>
           </div>
         })}</div>

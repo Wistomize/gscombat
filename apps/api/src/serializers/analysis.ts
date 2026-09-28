@@ -11,6 +11,8 @@ import type {
   SupportMetricResult
 } from "@gscombat/contracts"
 
+export const ANALYSIS_ENGINE_VERSION = "scenario-3-reviewed-weapon-rules"
+
 function serializeRotationTraceEntry(trace: RotationTraceEntry) {
   if (trace.kind === "scaling_terms") return { ...trace, terms: trace.terms.map((term) => ({ ...term })) }
   if (trace.kind === "stellar_swirl_participant_aggregation") {
@@ -130,7 +132,7 @@ export function serializeAnalysisResponse(
       progressionGains: [...analysis.progressionGains],
       weapons: [...analysis.weapons]
     },
-    engineVersion: "scenario-2-artifact-lifecycle",
+    engineVersion: ANALYSIS_ENGINE_VERSION,
     evaluation: {
       appliedEffects: [...evaluation.appliedEffects],
       appliedBuffs: [...evaluation.appliedBuffs],
@@ -140,7 +142,12 @@ export function serializeAnalysisResponse(
         dpr: evaluation.rotation.dpr,
         dps: evaluation.rotation.dps,
         duration: evaluation.rotation.duration,
-        events: evaluation.rotation.events.map(serializeRotationEvent)
+        events: evaluation.rotation.events.map((event) => ({
+          ...serializeRotationEvent(event),
+          ...(evaluation.eventStatContributions?.[event.id] ? {
+            statContributions: [...evaluation.eventStatContributions[event.id]!]
+          } : {})
+        }))
       },
       teamState: {
         activeResonanceIds: [...evaluation.teamState.activeResonanceIds],

@@ -236,6 +236,7 @@ export function RotationTraceFormula({
     )
   }
   if (entry.kind === "expected_crit") {
+    const effectiveCritOverride = Math.abs(entry.critRate - Math.min(1, Math.max(0, analysis.evaluation.stats.critRate))) > 1e-9
     const usesTransformativeReactionCrit = analysis.evaluation.appliedEffects.some(
       (effect) =>
         effect.target === "transformativeReactionCritRate" ||
@@ -255,7 +256,8 @@ export function RotationTraceFormula({
               targets={["transformativeReactionCritRate", "transformativeReactionCritDamage"]}
             />
           : showCritSources
-            ? <CritSourceBreakdown stats={analysis.evaluation.stats} />
+            ? <><CritSourceBreakdown stats={analysis.evaluation.stats} />{effectiveCritOverride ?
+                <p className="formulaAuxiliary">本段按命中条件覆盖暴击结算：有效暴击率 {formatFormulaPercent(entry.critRate)}；不作为普通面板词条，也不传递给后续伤害段。</p> : null}</>
             : null}
       </div>
     )

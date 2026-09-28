@@ -8,6 +8,7 @@ const skirkC1CrystalBladeActionId = "skirk.constellation.1.far_to_fall.void_rift
 
 export const skirkCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "skirk.kit.normal-infusion", label: "七相一闪冰元素普攻重击", kind: "normal_attack_infusion", elements: ["cryo"], recipient: "self", sourceFieldPresence: "on_field", sustained: true },
     declareSkillCastCapability("skirk", 14),
     ...declareWeaponHitCapabilities(skirkDefinition),
     declareHitCapability("skirk.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["cryo"]),
@@ -116,6 +117,7 @@ export const skirkCombatCoverage: CharacterCombatCoverage = {
       element: skirkDefinition.element,
       evaluator: "declared_direct",
       id: "skirk.burst.havoc_ruin.slash",
+      preparationAtSnapshot: { elementalNormalHit: false },
       kind: "damage",
       parameterReferences: [
         {

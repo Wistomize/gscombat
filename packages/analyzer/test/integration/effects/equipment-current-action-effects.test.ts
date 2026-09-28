@@ -3,6 +3,7 @@ import { afterAll, describe, expect, it } from "vitest"
 import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 
 import { resolveCombatActionEffects, resolveFinalHpToFlatAttack } from "../../../src/effects/action-effects.js"
+import { resolveFinalHpToDamageBonus } from "../../../src/effects/stat-conversions.js"
 
 const gameData = new GameDataRepository(DEFAULT_GAME_DATA_PATH)
 afterAll(() => gameData.close())
@@ -39,6 +40,10 @@ function withHexereiSecretRite(teammates: readonly typeof xianglingNationalBuilt
   ]
 }
 
+function withCharacter(characterId: string, weaponId = "TestNoWeapon") {
+  return { ...withWeapon(weaponId), characterId, constellation: 0, buildId: `qualified.${characterId}.${weaponId}` }
+}
+
 function resolveEffects(actionId: string, setId: string, activeEffectIds: readonly string[] = []) {
   return resolveCombatActionEffects({
     gameData,
@@ -52,6 +57,7 @@ function resolveEffects(actionId: string, setId: string, activeEffectIds: readon
   })
 }
 
+/** Legacy synthetic clause fixtures: these do not establish legal character/weapon qualification. */
 function resolveWeaponEffects(
   actionId: string,
   weaponId: string,
@@ -62,17 +68,133 @@ function resolveWeaponEffects(
     ? withHexereiSecretRite(teammates)
     : teammates
   return resolveCombatActionEffects({
+    gameData,
     action: requireAction(actionId),
     activeEffectIds,
     baseEnergyRecharge: 1,
     enemyCount: 1,
     moonsignLevel: "ascendant_gleam",
-    primary: withWeapon(weaponId),
+    primary: { ...withWeapon(weaponId), characterId: requireAction(actionId).characterId },
+    sourceFinalDefenseByBuildId: new Map([[`test.equipment.${weaponId}`, 1000]]),
+    sourceFinalHpByBuildId: new Map([[`test.equipment.${weaponId}`, 20_000]]),
     teammates: resolvedTeammates
   })
 }
 
+/** Uses a real action owner and enforces the equipment class for qualification regressions. */
+function resolveQualifiedWeaponEffects(actionId: string, weaponId: string, activeEffectIds: readonly string[] = []) {
+  const characterId = requireAction(actionId).characterId
+  expect(gameData.getWeapon(weaponId)?.weaponType).toBe(gameData.getCharacter(characterId)?.weaponType)
+  return resolveWeaponEffects(actionId, weaponId, activeEffectIds)
+}
+
 describe("current-action equipment effects", () => {
+  it.each([
+    ["TidalShadow", "diluc.skill.searing_onslaught.first_hit", ["Barbara"], "attackPercent", 0.24],
+    ["SongOfStillness", "amber.skill.explosive_puppet.baron_bunny.explosion", ["Barbara"], "damageBonus", 0.16],
+    ["RangeGauge", "amber.skill.explosive_puppet.baron_bunny.explosion", ["Barbara"], "attackPercent", 0.09],
+    ["RangeGauge", "amber.skill.explosive_puppet.baron_bunny.explosion", ["Barbara"], "damageBonus", 0.21],
+    ["PortablePowerSaw", "diluc.skill.searing_onslaught.first_hit", ["Barbara"], "elementalMastery", 120],
+    ["TheDockhandsAssistant", "keqing.skill.stellar_restoration.stiletto_damage", ["Barbara"], "elementalMastery", 120],
+    ["ProspectorsDrill", "xiangling.skill.guoba.single_flame_breath", ["Barbara"], "attackPercent", 0.09],
+    ["ProspectorsDrill", "xiangling.skill.guoba.single_flame_breath", ["Barbara"], "damageBonus", 0.21],
+    ["CalamityOfEshu", "kaeya.normal.auto.first_hit", ["Diona"], "damageBonus", 0.2],
+    ["CalamityOfEshu", "kaeya.normal.auto.first_hit", ["Diona"], "critRate", 0.08],
+    ["EarthShaker", "diluc.skill.searing_onslaught.first_hit", ["Barbara"], "damageBonus", 0.16],
+    ["MappaMare", "lisa.skill.violet_arc.point_press", ["Barbara"], "damageBonus", 0.16],
+    ["MissiveWindspear", "xiangling.skill.guoba.single_flame_breath", ["Barbara"], "attackPercent", 0.12],
+    ["MissiveWindspear", "xiangling.skill.guoba.single_flame_breath", ["Barbara"], "elementalMastery", 48],
+    ["ForestRegalia", "diluc.skill.searing_onslaught.first_hit", ["Collei"], "elementalMastery", 60],
+    ["Moonpiercer", "xiangling.skill.guoba.single_flame_breath", ["Collei"], "attackPercent", 0.16],
+    ["UrakuMisugiri", "kaeya.skill.frostgnaw", ["Ningguang"], "damageBonus", 0.48],
+    ["Verdict", "diluc.skill.searing_onslaught.first_hit", ["Ningguang"], "damageBonus", 0.36],
+    ["HaranGeppakuFutsu", "kaeya.normal.auto.first_hit", ["Barbara", "Amber"], "damageBonus", 0.4],
+    ["MitternachtsWaltz", "fischl.skill.nightrider.oz.level_one_bolt", [], "damageBonus", 0.2]
+  ] as const)("automatically qualifies %s's %s with actual providers %j (%s)", (weaponId, actionId, providers, stat, value) => {
+    const action = requireAction(actionId)
+    const primary = withCharacter(action.characterId, weaponId)
+    expect(gameData.getWeapon(weaponId)?.weaponType).toBe(gameData.getCharacter(primary.characterId)?.weaponType)
+    const result = resolveCombatActionEffects({ gameData, action, primary,
+      teammates: providers.map((characterId) => withCharacter(characterId)), activeEffectIds: [],
+      baseEnergyRecharge: 1, enemyCount: 1 })
+    expect(result[stat]).toBeCloseTo(value, 10)
+  })
+
+  it("converts Flowing Purity's fully cleared 24%-HP bond only with applicable healing", () => {
+    const action = requireAction("lisa.skill.violet_arc.point_press")
+    const primary = withCharacter("Lisa", "FlowingPurity")
+    const resolve = (teammates: readonly typeof primary[]) => resolveCombatActionEffects({
+      gameData, action, primary, teammates, activeEffectIds: [], baseEnergyRecharge: 1, enemyCount: 1
+    })
+    const absent = resolve([])
+    const selfOnlyTeammate = resolve([withCharacter("Kaeya")])
+    const healed = resolve([withCharacter("Barbara")])
+    expect(absent.damageBonus).toBeCloseTo(0.08)
+    expect(resolveFinalHpToDamageBonus(20_000, absent)).toBe(0)
+    expect(resolveFinalHpToDamageBonus(20_000, selfOnlyTeammate)).toBe(0)
+    expect(resolveFinalHpToDamageBonus(20_000, healed)).toBeCloseTo(20_000 * 0.24 * 0.02 / 1000)
+    expect(resolveFinalHpToDamageBonus(30_000, healed)).toBeCloseTo(0.12)
+  })
+
+  it("requires personal Hexerei qualification in addition to the team's rite for Athame", () => {
+    const primary = withCharacter("Xiangling")
+    const resolve = (characterId: string) => resolveCombatActionEffects({
+      gameData, action: requireAction("xiangling.normal.auto.first_hit"), primary,
+      teammates: withHexereiSecretRite([withCharacter(characterId, "AthameArtis")]),
+      activeEffectIds: [], baseEnergyRecharge: 1, enemyCount: 1
+    })
+    expect(resolve("Keqing").attackPercent).toBeCloseTo(0.16)
+    expect(resolve("Albedo").attackPercent).toBeCloseTo(0.28)
+    expect(resolve("Durin").attackPercent).toBeCloseTo(0.28)
+  })
+
+  it("takes the highest eligible Millennial refinement while preserving distinct stat buffs", () => {
+    const primary = withCharacter("Xiangling")
+    const elegy = withCharacter("Amber", "ElegyForTheEnd")
+    const pines = { ...withCharacter("Diluc", "SongOfBrokenPines"), weapon: withWeapon("SongOfBrokenPines", 3).weapon }
+    const freedom = { ...withCharacter("KaedeharaKazuha", "FreedomSworn"), weapon: withWeapon("FreedomSworn", 5).weapon }
+    const resolve = (source: typeof freedom) => resolveCombatActionEffects({
+      gameData, action: requireAction("xiangling.normal.auto.first_hit"), primary,
+      teammates: [elegy, pines, source], activeEffectIds: [], baseEnergyRecharge: 1, enemyCount: 1
+    })
+    const qualified = resolve(freedom)
+    expect(qualified.attackPercent).toBeCloseTo(0.4)
+    expect(qualified.elementalMastery).toBeCloseTo(100)
+    expect(qualified.damageBonus).toBeCloseTo(0.32)
+    expect(qualified.appliedEffects.filter((effect) => effect.id.includes("full-sigil.party-attack-percent")))
+      .toEqual([expect.objectContaining({ sourceId: freedom.buildId })])
+    // The R5 sword is still equipped, but this all-Pyro team cannot prepare its reaction sigils.
+    const ineligible = resolve({ ...freedom, characterId: "Bennett" })
+    expect(ineligible.attackPercent).toBeCloseTo(0.3)
+    expect(ineligible.elementalMastery).toBeCloseTo(100)
+    expect(ineligible.damageBonus).toBe(0)
+  })
+
+  it("shares Golden Frostbound's R5 Mooncage tier only with other members of a qualified Hydro/Geo team", () => {
+    const holder = { ...withCharacter("Gorou", "GoldenFrostboundOath"),
+      weapon: withWeapon("GoldenFrostboundOath", 5).weapon }
+    const geoRecipient = withCharacter("Ningguang")
+    const conversion = withCharacter("Linnea")
+    const hydro = withCharacter("Barbara")
+    const partyEffectId = "weapon.golden-frostbound-oath.frost-fairys-mischief.active.mooncage-nearby-other-party-geo-damage-bonus"
+    const teammateResult = resolveCombatActionEffects({
+      gameData, action: requireAction("ningguang.normal.charged_attack.with_star_jades"), primary: geoRecipient,
+      teammates: [holder, conversion, hydro], activeEffectIds: [], baseEnergyRecharge: 1, enemyCount: 1
+    })
+    expect(gameData.getWeapon(holder.weapon.weaponId)?.weaponType).toBe(gameData.getCharacter("Gorou")?.weaponType)
+    expect(teammateResult.damageBonus).toBeCloseTo(0.4)
+    expect(teammateResult.specialReactionDamageBonus).toBe(0)
+    expect(teammateResult.appliedEffects).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: partyEffectId, sourceId: holder.buildId, value: 0.4 })
+    ]))
+    const holderResult = resolveCombatActionEffects({
+      gameData, action: requireAction("gorou.skill.inuzaka_all_round_defense"), primary: holder,
+      teammates: [geoRecipient, conversion, hydro], activeEffectIds: [], baseEnergyRecharge: 1, enemyCount: 1
+    })
+    expect(holderResult.damageBonus).toBeCloseTo(0.8)
+    expect(holderResult.appliedEffects.some((effect) => effect.id === partyEffectId)).toBe(false)
+  })
+
   it("limits Azurelight's zero-energy bonuses to a holder without Elemental Energy", () => {
     const effectIds = [
       "weapon.azurelight.after-skill.attack-percent",
@@ -80,6 +202,7 @@ describe("current-action equipment effects", () => {
       "weapon.azurelight.after-skill.zero-energy.crit-damage"
     ]
     const kaeya = resolveCombatActionEffects({
+      gameData,
       action: requireAction("kaeya.skill.frostgnaw"),
       activeEffectIds: effectIds,
       baseEnergyRecharge: 1,
@@ -88,6 +211,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const skirk = resolveCombatActionEffects({
+      gameData,
       action: requireAction("skirk.skill.seven_phase_flash.normal.fifth_hit"),
       activeEffectIds: effectIds,
       baseEnergyRecharge: 1,
@@ -840,18 +964,18 @@ describe("current-action equipment effects", () => {
     ).not.toThrow()
   })
 
-  it("resolves reviewed weapon passives and one explicit current-hit proc without a rotation simulator", () => {
-    const festering = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "FesteringDesire")
-    const blackSword = resolveWeaponEffects("ningguang.normal.charged_attack.with_star_jades", "TheBlackSword")
-    const katsuragikiri = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "KatsuragikiriNagamasa")
-    const whiteTassel = resolveWeaponEffects("xiangling.normal.auto.first_hit", "WhiteTassel")
-    const skywardPride = resolveWeaponEffects("xiangling.normal.auto.first_hit", "SkywardPride", [
+  it("retains weapon passives while excluding retired independent weapon procs", () => {
+    const festering = resolveQualifiedWeaponEffects("kaeya.skill.frostgnaw", "FesteringDesire")
+    const blackSword = resolveQualifiedWeaponEffects("kaeya.normal.auto.first_hit", "TheBlackSword")
+    const katsuragikiri = resolveQualifiedWeaponEffects("diluc.skill.searing_onslaught.first_hit", "KatsuragikiriNagamasa")
+    const whiteTassel = resolveQualifiedWeaponEffects("xiangling.normal.auto.first_hit", "WhiteTassel")
+    const skywardPride = resolveQualifiedWeaponEffects("diluc.normal.auto.first_hit", "SkywardPride", [
       "weapon.skyward-pride.vacuum-blade"
     ])
-    const seaLord = resolveWeaponEffects("xiangling.burst.pyronado.reverse_vaporize", "LuxuriousSeaLord", [
+    const seaLord = resolveQualifiedWeaponEffects("diluc.burst.dawn.initial_slash", "LuxuriousSeaLord", [
       "weapon.luxurious-sea-lord.tuna-impact"
     ])
-    const kitain = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "KitainCrossSpear")
+    const kitain = resolveQualifiedWeaponEffects("xiangling.skill.guoba.single_flame_breath", "KitainCrossSpear")
 
     expect(festering.damageBonus).toBeCloseTo(0.16)
     expect(festering.critRate).toBeCloseTo(0.06)
@@ -859,13 +983,9 @@ describe("current-action equipment effects", () => {
     expect(katsuragikiri.damageBonus).toBeCloseTo(0.06)
     expect(whiteTassel.damageBonus).toBeCloseTo(0.24)
     expect(skywardPride.damageBonus).toBeCloseTo(0.08)
-    expect(skywardPride.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.8, element: "physical" })])
-    )
+    expect(skywardPride.additionalDamageEvents).toEqual([])
     expect(seaLord.damageBonus).toBeCloseTo(0.12)
-    expect(seaLord.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 1, element: "physical" })])
-    )
+    expect(seaLord.additionalDamageEvents).toEqual([])
     expect(kitain.damageBonus).toBeCloseTo(0.06)
   })
 
@@ -891,10 +1011,11 @@ describe("current-action equipment effects", () => {
     )
   })
 
-  it("resolves Cinnabar Spindle only for Albedo's selected cooldown-ready Transient Blossom", () => {
+  it("prepares Cinnabar automatically for skill hits, including Albedo's initial hit", () => {
     const effectId = "weapon.cinnabar-spindle.skill-hit-ready.albedo-transient-blossom.defense-additive-damage"
     const resolveCinnabar = (actionId: string, refinement: number, activeEffectIds: readonly string[]) =>
       resolveCombatActionEffects({
+        gameData,
         action: requireAction(actionId),
         activeEffectIds,
         baseEnergyRecharge: 1,
@@ -911,7 +1032,7 @@ describe("current-action equipment effects", () => {
     const r5 = resolveCinnabar("albedo.skill.transient_blossom", 5, [effectId])
     const wrongAction = resolveCinnabar("albedo.skill.abiogenesis_solar_isotoma.initial_hit", 1, [effectId])
 
-    expect(inactive.matchedActionAdditiveDamageTerms).toEqual([])
+    expect(inactive.matchedActionAdditiveDamageTerms).toEqual(r1.matchedActionAdditiveDamageTerms)
     expect(r1.additionalDamageEvents).toEqual([])
     expect(r1.matchedActionAdditiveDamageTerms).toEqual([
       expect.objectContaining({ coefficient: 0.4, id: effectId, scalingStat: "defense" })
@@ -919,7 +1040,7 @@ describe("current-action equipment effects", () => {
     expect(r5.matchedActionAdditiveDamageTerms).toEqual([
       expect.objectContaining({ coefficient: 0.8, id: effectId, scalingStat: "defense" })
     ])
-    expect(wrongAction.matchedActionAdditiveDamageTerms).toEqual([])
+    expect(wrongAction.matchedActionAdditiveDamageTerms).toEqual(r1.matchedActionAdditiveDamageTerms)
   })
 
   it("resolves refinement tables for unconditional and selected weapon snapshots", () => {
@@ -960,45 +1081,46 @@ describe("current-action equipment effects", () => {
     expect(rustCharged.damageBonus).toBeCloseTo(-0.1)
     expect(mouunsMoon.damageBonus).toBeCloseTo(0.384)
     expect(raven.damageBonus).toBeCloseTo(0.12)
-    expect(magicGuide.damageBonus).toBeCloseTo(0.12)
-    expect(emeraldOrb.attackPercent).toBeCloseTo(0.2)
+    // A solo Pyro holder cannot supply a Hydro/Electro aura or a Hydro reaction.
+    expect(magicGuide.damageBonus).toBe(0)
+    expect(emeraldOrb.attackPercent).toBe(0)
     expect(solarPearl.damageBonus).toBeCloseTo(0.2)
     expect(dodoco.damageBonus).toBeCloseTo(0.16)
     expect(oathswornEye.energyRecharge).toBeCloseTo(0.24)
   })
 
   it("resolves reviewed elemental-mastery weapon windows without inferring their trigger sequence", () => {
-    const starcallersWatch = resolveWeaponEffects("xiangling.burst.pyronado.reverse_vaporize", "StarcallersWatch", [
+    const starcallersWatch = resolveQualifiedWeaponEffects("lisa.skill.violet_arc.point_press", "StarcallersWatch", [
       "weapon.starcallers-watch.shielded.damage-bonus"
     ])
-    const elegy = resolveWeaponEffects("xiangling.burst.pyronado.reverse_vaporize", "ElegyForTheEnd")
-    const etherlight = resolveWeaponEffects("xiangling.burst.pyronado.reverse_vaporize", "EtherlightSpindlelute", [
+    const elegy = resolveQualifiedWeaponEffects("amber.skill.explosive_puppet.baron_bunny.explosion", "ElegyForTheEnd")
+    const etherlight = resolveQualifiedWeaponEffects("lisa.skill.violet_arc.point_press", "EtherlightSpindlelute", [
       "weapon.etherlight-spindlelute.after-skill.elemental-mastery"
     ])
-    const dawningFrost = resolveWeaponEffects("xiangling.burst.pyronado.reverse_vaporize", "DawningFrost", [
+    const dawningFrost = resolveQualifiedWeaponEffects("lisa.skill.violet_arc.point_press", "DawningFrost", [
       "weapon.dawning-frost.after-charged-hit.elemental-mastery",
       "weapon.dawning-frost.after-skill-hit.elemental-mastery"
     ])
-    const sunnyMorning = resolveWeaponEffects("xiangling.burst.pyronado.reverse_vaporize", "SunnyMorningSleepIn", [
+    const sunnyMorning = resolveQualifiedWeaponEffects("lisa.skill.violet_arc.point_press", "SunnyMorningSleepIn", [
       "weapon.sunny-morning-sleep-in.after-swirl.elemental-mastery",
       "weapon.sunny-morning-sleep-in.after-skill-hit.elemental-mastery",
       "weapon.sunny-morning-sleep-in.after-burst-hit.elemental-mastery"
     ])
-    const kingsSquire = resolveWeaponEffects("xiangling.burst.pyronado.reverse_vaporize", "KingsSquire", [
+    const kingsSquire = resolveQualifiedWeaponEffects("amber.skill.explosive_puppet.baron_bunny.explosion", "KingsSquire", [
       "weapon.kings-squire.after-skill-or-burst.elemental-mastery"
     ])
-    const flameForgedInsight = resolveWeaponEffects("xiangling.burst.pyronado.reverse_vaporize", "FlameForgedInsight", [
+    const flameForgedInsight = resolveQualifiedWeaponEffects("diluc.skill.searing_onslaught.first_hit", "FlameForgedInsight", [
       "weapon.flame-forged-insight.after-listed-reaction.elemental-mastery"
     ])
 
     expect(starcallersWatch.elementalMastery).toBeCloseTo(100)
-    expect(starcallersWatch.damageBonus).toBeCloseTo(0.28)
-    expect(elegy.elementalMastery).toBeCloseTo(60)
+    expect(starcallersWatch.damageBonus).toBe(0) // No shield provider.
+    expect(elegy.elementalMastery).toBeCloseTo(160) // 60 personal + automatic 100 party mastery.
     expect(etherlight.elementalMastery).toBeCloseTo(100)
     expect(dawningFrost.elementalMastery).toBeCloseTo(120)
-    expect(sunnyMorning.elementalMastery).toBeCloseTo(248)
+    expect(sunnyMorning.elementalMastery).toBeCloseTo(128) // Skill/burst qualify, Electro cannot Swirl.
     expect(kingsSquire.elementalMastery).toBeCloseTo(60)
-    expect(flameForgedInsight.elementalMastery).toBeCloseTo(60)
+    expect(flameForgedInsight.elementalMastery).toBe(0) // No reaction partner.
   })
 
   it("resolves reviewed shield, healing, reaction, and post-skill weapon windows", () => {
@@ -1031,11 +1153,11 @@ describe("current-action equipment effects", () => {
       "weapon.skyrider-sword.after-burst.attack-percent"
     ])
 
-    expect(calamityOfEshu.damageBonus).toBeCloseTo(0.2)
-    expect(calamityOfEshu.critRate).toBeCloseTo(0.08)
+    expect(calamityOfEshu.damageBonus).toBe(0) // No applicable shield, despite the legacy IDs.
+    expect(calamityOfEshu.critRate).toBe(0)
     expect(fluteOfEzpitzal.defensePercent).toBeCloseTo(0.16)
-    expect(tidalShadow.attackPercent).toBeCloseTo(0.24)
-    expect(earthShaker.damageBonus).toBeCloseTo(0.16)
+    expect(tidalShadow.attackPercent).toBe(0) // No healer.
+    expect(earthShaker.damageBonus).toBe(0) // No reaction partner.
     expect(tamayuratei.attackPercent).toBeCloseTo(0.2)
     expect(footprint.defensePercent).toBeCloseTo(0.16)
     expect(fleuve.critRate).toBeCloseTo(0.08)
@@ -1089,6 +1211,8 @@ describe("current-action equipment effects", () => {
       "weapon.toukabou-shigure.cursed-parasol-target.damage-bonus"
     ])
     const teammateWolfsGravestone = resolveCombatActionEffects({
+      gameData,
+      fieldContext: { actionOwnerBuildId: "test.equipment.TestNoWeapon", onFieldBuildId: "test.equipment.TestNoWeapon", weaponEffectChoices: { "test.wolfs-gravestone.r5-teammate": { "wolfs-gravestone-team-attack": "on" } } },
       action: requireAction("xiangling.skill.guoba.single_flame_breath"),
       activeEffectIds: ["weapon.wolfs-gravestone.after-low-health-target-hit.party-attack-percent"],
       baseEnergyRecharge: 1,
@@ -1101,13 +1225,13 @@ describe("current-action equipment effects", () => {
     expect(beacon.attackPercent).toBeCloseTo(0.4)
     expect(beacon.hpPercent).toBeCloseTo(0.32)
     expect(dragonsBane.damageBonus).toBeCloseTo(0.2)
-    expect(forestRegalia.elementalMastery).toBeCloseTo(60)
+    expect(forestRegalia.elementalMastery).toBe(0) // No Dendro reaction.
     expect(lionsRoar.damageBonus).toBeCloseTo(0.2)
-    expect(missiveWindspear.attackPercent).toBeCloseTo(0.12)
-    expect(missiveWindspear.elementalMastery).toBeCloseTo(48)
-    expect(moonpiercer.attackPercent).toBeCloseTo(0.16)
-    expect(rainslasher.damageBonus).toBeCloseTo(0.2)
-    expect(songOfStillness.damageBonus).toBeCloseTo(0.16)
+    expect(missiveWindspear.attackPercent).toBe(0)
+    expect(missiveWindspear.elementalMastery).toBe(0)
+    expect(moonpiercer.attackPercent).toBe(0)
+    expect(rainslasher.damageBonus).toBe(0) // No Hydro/Electro source.
+    expect(songOfStillness.damageBonus).toBe(0) // No healer.
     expect(alleyFlash.damageBonus).toBeCloseTo(0.12)
     expect(toukabouShigure.damageBonus).toBeCloseTo(0.16)
     expect(teammateWolfsGravestone.attackPercent).toBeCloseTo(0.8)
@@ -1116,8 +1240,9 @@ describe("current-action equipment effects", () => {
     )
   })
 
-  it("resolves the reviewed P3 weapon states, team holders, and matching Millennial Movement conflicts", () => {
+  it("resolves P3 qualified team holders and automatically arbitrates Millennial Movement", () => {
     const freedomSworn = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: [
         "weapon.freedom-sworn.full-sigil.party-attack-percent",
@@ -1126,15 +1251,16 @@ describe("current-action equipment effects", () => {
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: withWeapon("TestNoWeapon"),
-      teammates: [{ ...withWeapon("FreedomSworn", 5), buildId: "test.freedom-sworn.r5-teammate" }]
+      teammates: [{ ...withWeapon("FreedomSworn", 5), characterId: "KaedeharaKazuha", buildId: "test.freedom-sworn.r5-teammate" }]
     })
     const cranesEchoingCall = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiao.burst.bane_of_all_evil.high_plunge"),
       activeEffectIds: ["weapon.cranes-echoing-call.after-plunge-hit.party-plunge-damage-bonus"],
       baseEnergyRecharge: 1,
       enemyCount: 1,
-      primary: withWeapon("TestNoWeapon"),
-      teammates: [{ ...withWeapon("CranesEchoingCall", 5), buildId: "test.cranes-echoing-call.r5-teammate" }]
+      primary: { ...withWeapon("TestNoWeapon"), characterId: "Xiao" },
+      teammates: [{ ...withWeapon("CranesEchoingCall", 5), characterId: "Xianyun", buildId: "test.cranes-echoing-call.r5-teammate" }]
     })
     const crescentPike = resolveWeaponEffects("xiangling.normal.auto.first_hit", "CrescentPike", [
       "weapon.crescent-pike.after-particle.additional-physical-damage"
@@ -1160,14 +1286,17 @@ describe("current-action equipment effects", () => {
       "weapon.prototype-archaic.physical-hit"
     ])
     const sapwoodBlade = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.skill.guoba.single_flame_breath"),
       activeEffectIds: ["weapon.sapwood-blade.after-dendro-reaction.leaf-picked.elemental-mastery"],
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: withWeapon("TestNoWeapon"),
-      teammates: [{ ...withWeapon("SapwoodBlade", 5), buildId: "test.sapwood-blade.r5-teammate" }]
+      teammates: [{ ...withWeapon("SapwoodBlade", 5), characterId: "Kirara", buildId: "test.sapwood-blade.r5-teammate" }],
+      fieldContext: { actionOwnerBuildId: "test.equipment.TestNoWeapon", onFieldBuildId: "test.equipment.TestNoWeapon", weaponEffectChoices: { "test.sapwood-blade.r5-teammate": { "forest-leaf-recipient": "test.equipment.TestNoWeapon" } } }
     })
     const songOfBrokenPines = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: ["weapon.song-of-broken-pines.full-sigil.party-attack-percent"],
       baseEnergyRecharge: 1,
@@ -1185,23 +1314,15 @@ describe("current-action equipment effects", () => {
       expect.arrayContaining([expect.objectContaining({ sourceId: "test.freedom-sworn.r5-teammate" })])
     )
     expect(cranesEchoingCall.damageBonus).toBeCloseTo(0.8)
-    expect(crescentPike.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.2, element: "physical" })])
-    )
+    expect(crescentPike.additionalDamageEvents).toEqual([])
     expect(hamayumi.damageBonus).toBeCloseTo(0.32)
-    expect(mitternachtsWaltz.damageBonus).toBeCloseTo(0.2)
+    expect(mitternachtsWaltz.damageBonus).toBe(0) // The cross-talent preparation is qualified only for Fischl.
     expect(prototypeCrescent.attackPercent).toBeCloseTo(0.36)
     expect(kagotsurubeIsshin.attackPercent).toBeCloseTo(0.15)
-    expect(kagotsurubeIsshin.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 1.8, element: "physical" })])
-    )
+    expect(kagotsurubeIsshin.additionalDamageEvents).toEqual([])
     expect(mailedFlower.attackPercent).toBeCloseTo(0.12)
     expect(mailedFlower.elementalMastery).toBeCloseTo(48)
-    expect(prototypeArchaic.additionalDamageEvents).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ coefficient: 2.4, element: "physical", expectedTriggerProbability: 0.5 })
-      ])
-    )
+    expect(prototypeArchaic.additionalDamageEvents).toEqual([])
     expect(sapwoodBlade.elementalMastery).toBeCloseTo(120)
     expect(sapwoodBlade.appliedEffects).toEqual(
       expect.arrayContaining([expect.objectContaining({ sourceId: "test.sapwood-blade.r5-teammate" })])
@@ -1210,6 +1331,7 @@ describe("current-action equipment effects", () => {
     expect(wineAndSong.attackPercent).toBeCloseTo(0.2)
     expect(() =>
       resolveCombatActionEffects({
+        gameData,
         action: requireAction("xiangling.normal.auto.first_hit"),
         activeEffectIds: [
           "weapon.freedom-sworn.full-sigil.party-attack-percent",
@@ -1223,8 +1345,9 @@ describe("current-action equipment effects", () => {
           { ...withWeapon("SongOfBrokenPines"), buildId: "test.song-of-broken-pines.teammate" }
         ]
       })
-    ).toThrow("millennial-movement")
+    ).not.toThrow()
     const nonMatchingMillennialMovementEffects = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: [
         "weapon.freedom-sworn.full-sigil.party-normal-charged-plunge-damage-bonus",
@@ -1234,7 +1357,7 @@ describe("current-action equipment effects", () => {
       enemyCount: 1,
       primary: withWeapon("TestNoWeapon"),
       teammates: [
-        { ...withWeapon("FreedomSworn"), buildId: "test.freedom-sworn.damage-teammate" },
+          { ...withWeapon("FreedomSworn"), characterId: "KaedeharaKazuha", buildId: "test.freedom-sworn.damage-teammate" },
         { ...withWeapon("SongOfBrokenPines"), buildId: "test.song-of-broken-pines.damage-teammate" }
       ]
     })
@@ -1242,14 +1365,15 @@ describe("current-action equipment effects", () => {
     expect(nonMatchingMillennialMovementEffects.damageBonus).toBeCloseTo(0.16)
   })
 
-  it("resolves Elegy's selected full-sigil buffs and only excludes matching Millennial Movement stats", () => {
+  it("prepares Elegy automatically and arbitrates only matching Millennial Movement stats", () => {
     const elegyR5Teammate = { ...withWeapon("ElegyForTheEnd", 5), buildId: "test.elegy.r5-teammate" }
-    const freedomSwornR5Teammate = { ...withWeapon("FreedomSworn", 5), buildId: "test.freedom-sworn.r5-teammate" }
+    const freedomSwornR5Teammate = { ...withWeapon("FreedomSworn", 5), characterId: "KaedeharaKazuha", buildId: "test.freedom-sworn.r5-teammate" }
     const activeElegyEffectIds = [
       "weapon.elegy-for-the-end.full-sigil.party-attack-percent",
       "weapon.elegy-for-the-end.full-sigil.party-elemental-mastery"
     ]
     const teammateElegy = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: activeElegyEffectIds,
       baseEnergyRecharge: 1,
@@ -1258,6 +1382,7 @@ describe("current-action equipment effects", () => {
       teammates: [elegyR5Teammate]
     })
     const primaryElegy = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: activeElegyEffectIds,
       baseEnergyRecharge: 1,
@@ -1266,6 +1391,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const inactiveElegy = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: [],
       baseEnergyRecharge: 1,
@@ -1274,6 +1400,7 @@ describe("current-action equipment effects", () => {
       teammates: [elegyR5Teammate]
     })
     const compatibleMillennialMovementEffects = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: [
         "weapon.elegy-for-the-end.full-sigil.party-elemental-mastery",
@@ -1301,12 +1428,13 @@ describe("current-action equipment effects", () => {
     )
     expect(primaryElegy.attackPercent).toBeCloseTo(0.4)
     expect(primaryElegy.elementalMastery).toBeCloseTo(320)
-    expect(inactiveElegy.attackPercent).toBeCloseTo(0)
-    expect(inactiveElegy.elementalMastery).toBeCloseTo(0)
+    expect(inactiveElegy.attackPercent).toBeCloseTo(0.4)
+    expect(inactiveElegy.elementalMastery).toBeCloseTo(200)
     expect(compatibleMillennialMovementEffects.damageBonus).toBeCloseTo(0.32)
     expect(compatibleMillennialMovementEffects.elementalMastery).toBeCloseTo(200)
     expect(() =>
       resolveCombatActionEffects({
+        gameData,
         action: requireAction("xiangling.normal.auto.first_hit"),
         activeEffectIds: [
           "weapon.elegy-for-the-end.full-sigil.party-attack-percent",
@@ -1317,17 +1445,18 @@ describe("current-action equipment effects", () => {
         primary: withWeapon("TestNoWeapon"),
         teammates: [elegyR5Teammate, freedomSwornR5Teammate]
       })
-    ).toThrow("millennial-movement.party-attack-percent")
+    ).not.toThrow()
   })
 
-  it("resolves Athame Artis's selected other-current-character Daylight Blade snapshot", () => {
-    const athameR1Teammate = { ...withWeapon("AthameArtis", 1), buildId: "test.athame.r1-teammate" }
-    const athameR5Teammate = { ...withWeapon("AthameArtis", 5), buildId: "test.athame.r5-teammate" }
+  it("prepares Athame party buffs without granting Hexerei enhancement to an unqualified wearer", () => {
+    const athameR1Teammate = { ...withCharacter("Kaeya", "AthameArtis"), buildId: "test.athame.r1-teammate" }
+    const athameR5Teammate = { ...athameR1Teammate, weapon: { ...athameR1Teammate.weapon, refinement: 5 }, buildId: "test.athame.r5-teammate" }
     const activeDaylightBladeEffectIds = [
       "weapon.athame-artis.daylight-blade.other-current-character.attack-percent",
       "weapon.athame-artis.magic-secret.daylight-blade.other-current-character.extra-attack-percent"
     ]
     const r1TeammateAthame = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: activeDaylightBladeEffectIds,
       baseEnergyRecharge: 1,
@@ -1336,6 +1465,7 @@ describe("current-action equipment effects", () => {
       teammates: withHexereiSecretRite([athameR1Teammate])
     })
     const r5TeammateAthame = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: activeDaylightBladeEffectIds,
       baseEnergyRecharge: 1,
@@ -1344,6 +1474,7 @@ describe("current-action equipment effects", () => {
       teammates: withHexereiSecretRite([athameR5Teammate])
     })
     const inactiveTeammateAthame = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: [],
       baseEnergyRecharge: 1,
@@ -1352,36 +1483,35 @@ describe("current-action equipment effects", () => {
       teammates: [athameR5Teammate]
     })
     const holderAthame = resolveCombatActionEffects({
-      action: requireAction("xiangling.normal.auto.first_hit"),
+      gameData,
+      action: requireAction("kaeya.normal.auto.first_hit"),
       activeEffectIds: activeDaylightBladeEffectIds,
       baseEnergyRecharge: 1,
       enemyCount: 1,
-      primary: withWeapon("AthameArtis", 5),
+      primary: athameR5Teammate,
       teammates: []
     })
 
-    expect(r1TeammateAthame.attackPercent).toBeCloseTo(0.28)
-    expect(r5TeammateAthame.attackPercent).toBeCloseTo(0.56)
+    // The team has Hexerei, but Kaeya himself is not a Hexerei-qualified wearer.
+    expect(r1TeammateAthame.attackPercent).toBeCloseTo(0.16)
+    expect(r5TeammateAthame.attackPercent).toBeCloseTo(0.32)
     expect(r5TeammateAthame.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: "weapon.athame-artis.daylight-blade.other-current-character.attack-percent",
           sourceId: "test.athame.r5-teammate"
-        }),
-        expect.objectContaining({
-          id: "weapon.athame-artis.magic-secret.daylight-blade.other-current-character.extra-attack-percent",
-          sourceId: "test.athame.r5-teammate"
         })
       ])
     )
-    expect(inactiveTeammateAthame.attackPercent).toBeCloseTo(0)
-    expect(holderAthame.attackPercent).toBeCloseTo(0)
+    expect(inactiveTeammateAthame.attackPercent).toBeCloseTo(0.32) // Automatically prepared.
+    expect(holderAthame.attackPercent).toBeCloseTo(0.4) // Personal burst-hit attack, not its party buff.
   })
 
-  it("resolves Symphonist of Scents's selected Sweet Echoes for its holder or healed current character", () => {
-    const symphonistR1Teammate = { ...withWeapon("SymphonistOfScents", 1), buildId: "test.symphonist.r1-teammate" }
-    const symphonistR5Teammate = { ...withWeapon("SymphonistOfScents", 5), buildId: "test.symphonist.r5-teammate" }
+  it("prepares Symphonist's Sweet Echoes from a real healer for its holder and recipient", () => {
+    const symphonistR1Teammate = { ...withWeapon("SymphonistOfScents", 1), characterId: "Escoffier", buildId: "test.symphonist.r1-teammate" }
+    const symphonistR5Teammate = { ...withWeapon("SymphonistOfScents", 5), characterId: "Escoffier", buildId: "test.symphonist.r5-teammate" }
     const teammateSweetEchoes = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: ["weapon.symphonist-of-scents.sweet-echoes.healed-recipient.attack-percent"],
       baseEnergyRecharge: 1,
@@ -1390,6 +1520,7 @@ describe("current-action equipment effects", () => {
       teammates: [symphonistR1Teammate]
     })
     const r5TeammateSweetEchoes = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: ["weapon.symphonist-of-scents.sweet-echoes.healed-recipient.attack-percent"],
       baseEnergyRecharge: 1,
@@ -1398,14 +1529,16 @@ describe("current-action equipment effects", () => {
       teammates: [symphonistR5Teammate]
     })
     const holderSweetEchoes = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: ["weapon.symphonist-of-scents.sweet-echoes.self.attack-percent"],
       baseEnergyRecharge: 1,
       enemyCount: 1,
-      primary: withWeapon("SymphonistOfScents", 5),
+      primary: { ...withWeapon("SymphonistOfScents", 5), characterId: "Escoffier" },
       teammates: []
     })
     const inactiveTeammateSymphonist = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: [],
       baseEnergyRecharge: 1,
@@ -1425,13 +1558,14 @@ describe("current-action equipment effects", () => {
       ])
     )
     expect(holderSweetEchoes.attackPercent).toBeCloseTo(0.88)
-    expect(inactiveTeammateSymphonist.attackPercent).toBeCloseTo(0)
+    expect(inactiveTeammateSymphonist.attackPercent).toBeCloseTo(0.64) // Healing is automatic, not a selected state.
   })
 
   it("resolves Amos' Bow's selected projectile-flight stacks only on normal and charged attacks", () => {
     const amosR1 = { ...withWeapon("AmosBow", 1), buildId: "test.amos.r1", characterId: "Amber" }
     const amosR5 = { ...withWeapon("AmosBow", 5), buildId: "test.amos.r5", characterId: "Amber" }
     const r1OneStack = resolveCombatActionEffects({
+      gameData,
       action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
       activeEffectIds: ["weapon.amos-bow.projectile-flight-time.1-stack.damage-bonus"],
       baseEnergyRecharge: 1,
@@ -1440,6 +1574,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const r1FiveStacks = resolveCombatActionEffects({
+      gameData,
       action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
       activeEffectIds: ["weapon.amos-bow.projectile-flight-time.5-stack.damage-bonus"],
       baseEnergyRecharge: 1,
@@ -1448,6 +1583,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const r5FiveStacks = resolveCombatActionEffects({
+      gameData,
       action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
       activeEffectIds: ["weapon.amos-bow.projectile-flight-time.5-stack.damage-bonus"],
       baseEnergyRecharge: 1,
@@ -1456,6 +1592,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const skill = resolveCombatActionEffects({
+      gameData,
       action: requireAction("amber.skill.explosive_puppet.baron_bunny.explosion"),
       activeEffectIds: ["weapon.amos-bow.projectile-flight-time.5-stack.damage-bonus"],
       baseEnergyRecharge: 1,
@@ -1470,6 +1607,7 @@ describe("current-action equipment effects", () => {
     expect(skill.damageBonus).toBeCloseTo(0)
     expect(() =>
       resolveCombatActionEffects({
+        gameData,
         action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
         activeEffectIds: [
           "weapon.amos-bow.projectile-flight-time.1-stack.damage-bonus",
@@ -1483,77 +1621,42 @@ describe("current-action equipment effects", () => {
     ).toThrow("amos-bow-projectile-flight-time")
   })
 
-  it("resolves Alley Hunter's selected current damage-bonus stack without inferring its timer", () => {
-    const alleyHunterR1 = { ...withWeapon("AlleyHunter", 1), buildId: "test.alley-hunter.r1", characterId: "Amber" }
-    const alleyHunterR5 = { ...withWeapon("AlleyHunter", 5), buildId: "test.alley-hunter.r5", characterId: "Amber" }
-    const r1OneStack = resolveCombatActionEffects({
-      action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
-      activeEffectIds: ["weapon.alley-hunter.off-field.1-stack.damage-bonus"],
-      baseEnergyRecharge: 1,
-      enemyCount: 1,
-      primary: alleyHunterR1,
-      teammates: []
-    })
-    const r1TenStacks = resolveCombatActionEffects({
-      action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
-      activeEffectIds: ["weapon.alley-hunter.off-field.10-stack.damage-bonus"],
-      baseEnergyRecharge: 1,
-      enemyCount: 1,
-      primary: alleyHunterR1,
-      teammates: []
-    })
-    const r5TenStacks = resolveCombatActionEffects({
-      action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
-      activeEffectIds: ["weapon.alley-hunter.off-field.10-stack.damage-bonus"],
-      baseEnergyRecharge: 1,
-      enemyCount: 1,
-      primary: alleyHunterR5,
-      teammates: []
-    })
-    const inactive = resolveCombatActionEffects({
-      action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
-      activeEffectIds: [],
-      baseEnergyRecharge: 1,
-      enemyCount: 1,
-      primary: alleyHunterR5,
-      teammates: []
-    })
-
-    expect(r1OneStack.damageBonus).toBeCloseTo(0.02)
-    expect(r1TenStacks.damageBonus).toBeCloseTo(0.2)
-    expect(r5TenStacks.damageBonus).toBeCloseTo(0.4)
-    expect(inactive.damageBonus).toBeCloseTo(0)
-    expect(() =>
+  it("fixes Alley Hunter at zero foreground and ten background stacks regardless of retired IDs", () => {
+    const primary = { ...withWeapon("AlleyHunter"), characterId: "Fischl" }
+    const teammate = { ...withWeapon("TestNoWeapon"), buildId: "alley.front", characterId: "Amber" }
+    const resolve = (refinement: number, onFieldBuildId: string, activeEffectIds: readonly string[] = []) =>
       resolveCombatActionEffects({
-        action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
-        activeEffectIds: [
-          "weapon.alley-hunter.off-field.1-stack.damage-bonus",
-          "weapon.alley-hunter.off-field.10-stack.damage-bonus"
-        ],
-        baseEnergyRecharge: 1,
-        enemyCount: 1,
-        primary: alleyHunterR1,
-        teammates: []
+        gameData, action: requireAction("fischl.skill.nightrider.oz.level_one_bolt"), activeEffectIds,
+        baseEnergyRecharge: 1, enemyCount: 1, primary: { ...primary, weapon: { ...primary.weapon, refinement } },
+        teammates: [teammate], fieldContext: { actionOwnerBuildId: primary.buildId, onFieldBuildId }
       })
-    ).toThrow("alley-hunter-off-field")
+    const retired = ["weapon.alley-hunter.off-field.1-stack.damage-bonus",
+      "weapon.alley-hunter.off-field.10-stack.damage-bonus"]
+    expect(resolve(1, primary.buildId, retired).damageBonus).toBe(0)
+    expect(resolve(1, teammate.buildId).damageBonus).toBeCloseTo(0.2)
+    expect(resolve(5, teammate.buildId, retired).damageBonus).toBeCloseTo(0.4)
   })
 
-  it("resolves Golden Frostbound Oath's selected Mooncage Geo bonus only for other party members", () => {
+  it("rejects Golden Frostbound Oath's Mooncage party bonus without Lunar-Crystallize qualification", () => {
     const goldenFrostboundOathR5Teammate = {
       ...withWeapon("GoldenFrostboundOath", 5),
+      characterId: "Gorou",
+      constellation: 0,
       buildId: "test.golden-frostbound-oath.r5-teammate"
     }
     const effectId =
       "weapon.golden-frostbound-oath.frost-fairys-mischief.active.mooncage-nearby-other-party-geo-damage-bonus"
     const teammateGeoAction = resolveCombatActionEffects({
+      gameData,
       action: requireAction("ningguang.normal.charged_attack.with_star_jades"),
       activeEffectIds: [effectId],
       baseEnergyRecharge: 1,
       enemyCount: 1,
-      primary: withWeapon("TestNoWeapon"),
+      primary: withCharacter("Ningguang"),
       teammates: [goldenFrostboundOathR5Teammate]
     })
     const teammateNonGeoAction = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.skill.guoba.single_flame_breath"),
       activeEffectIds: [effectId],
       baseEnergyRecharge: 1,
@@ -1562,20 +1665,21 @@ describe("current-action equipment effects", () => {
       teammates: [goldenFrostboundOathR5Teammate]
     })
     const holderGeoAction = resolveCombatActionEffects({
-      action: requireAction("ningguang.normal.charged_attack.with_star_jades"),
+      gameData,
+      action: requireAction("gorou.skill.inuzaka_all_round_defense"),
       activeEffectIds: [effectId],
       baseEnergyRecharge: 1,
       enemyCount: 1,
-      primary: withWeapon("GoldenFrostboundOath", 5),
+      primary: goldenFrostboundOathR5Teammate,
       teammates: []
     })
 
-    expect(teammateGeoAction.damageBonus).toBeCloseTo(0.4)
-    expect(teammateGeoAction.appliedEffects).toEqual(
+    expect(teammateGeoAction.damageBonus).toBe(0) // No Lunar-Crystallize provider for Mooncage.
+    expect(teammateGeoAction.appliedEffects).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: effectId, sourceId: goldenFrostboundOathR5Teammate.buildId })])
     )
     expect(teammateNonGeoAction.damageBonus).toBeCloseTo(0)
-    expect(holderGeoAction.damageBonus).toBeCloseTo(0)
+    expect(holderGeoAction.damageBonus).toBeCloseTo(0.8) // Personal skill preparation still grants the R5 Geo bonus.
   })
 
   it("resolves the reviewed P4 weapon values without inventing duration or stack history", () => {
@@ -1583,6 +1687,7 @@ describe("current-action equipment effects", () => {
       "weapon.skyward-harp.physical-hit"
     ], [])
     const skywardHarpR5 = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: ["weapon.skyward-harp.physical-hit"],
       baseEnergyRecharge: 1,
@@ -1639,41 +1744,35 @@ describe("current-action equipment effects", () => {
     ])
 
     expect(skywardHarp.critDamage).toBeCloseTo(0.2)
-    expect(skywardHarp.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 1.25, expectedTriggerProbability: 0.6 })])
-    )
-    expect(skywardHarpR5.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ expectedTriggerProbability: 1 })])
-    )
+    expect(skywardHarp.additionalDamageEvents).toEqual([])
+    expect(skywardHarpR5.additionalDamageEvents).toEqual([])
     expect(skywardBlade.critRate).toBeCloseTo(0.04)
-    expect(skywardBlade.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.2, element: "physical" })])
-    )
+    expect(skywardBlade.additionalDamageEvents).toEqual([])
     expect(sacrificialJade.hpPercent).toBeCloseTo(0.32)
     expect(sacrificialJade.elementalMastery).toBeCloseTo(40)
     expect(talkingStickPyro.attackPercent).toBeCloseTo(0.16)
     expect(talkingStickOtherElement.damageBonus).toBeCloseTo(0.12)
     expect(urakuMisugiri.defensePercent).toBeCloseTo(0.2)
-    expect(urakuMisugiri.damageBonus).toBeCloseTo(0.48)
+    expect(urakuMisugiri.damageBonus).toBeCloseTo(0.24) // No Geo teammate to double the skill bonus.
     expect(blazingSuns.attackPercent).toBeCloseTo(0.28)
     expect(blazingSuns.critDamage).toBeCloseTo(0.2)
     expect(blazingSuns.appliedEffects.some((effect) => effect.id.includes(".nightsoul."))).toBe(false)
-    expect(mountainBracingBolt.damageBonus).toBeCloseTo(0.24)
+    expect(mountainBracingBolt.damageBonus).toBeCloseTo(0.12) // No teammate skill preparation.
     expect(fruitfulHook.critRate).toBeCloseTo(0.16)
     expect(fruitfulHook.damageBonus).toBeCloseTo(0.16)
     expect(azurelight.attackPercent).toBeCloseTo(0.24)
     expect(azurelight.critDamage).toBe(0)
-    expect(disasterAndRemorse.damageBonus).toBeCloseTo(0.7)
+    expect(disasterAndRemorse.damageBonus).toBeCloseTo(0.4) // A Hexerei team does not qualify its Pyro wearer.
     expect(crimsonMoonLowBond.damageBonus).toBeCloseTo(0.12)
-    expect(crimsonMoonHighBond.damageBonus).toBeCloseTo(0.36)
+    expect(crimsonMoonHighBond.damageBonus).toBeCloseTo(0.12) // A non-Arlecchino wearer cannot reach the high tier.
     expect(athameArtis.critDamage).toBeCloseTo(0.16)
-    expect(athameArtis.attackPercent).toBeCloseTo(0.35)
+    expect(athameArtis.attackPercent).toBeCloseTo(0.2)
     expect(() =>
       resolveWeaponEffects("xiangling.normal.auto.first_hit", "CrimsonMoonsSemblance", [
         "weapon.crimson-moons-semblance.bond-of-life.below-thirty-percent.damage-bonus",
         "weapon.crimson-moons-semblance.bond-of-life.at-least-thirty-percent.damage-bonus"
       ])
-    ).toThrow("crimson-moons-semblance-bond")
+    ).not.toThrow() // Both legacy IDs are subordinate to the wearer's fixed automatic tier.
   })
 
   it("resolves exact P5 clauses while their unsupported siblings stay out of the public calculation", () => {
@@ -1694,10 +1793,8 @@ describe("current-action equipment effects", () => {
     expect(absolution.critDamage).toBeCloseTo(0.2)
     expect(amosBow.damageBonus).toBeCloseTo(0.12)
     expect(angelosHeptades.attackPercent).toBeCloseTo(0.12)
-    expect(ashGravenDrinkingHorn.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.4, element: "physical", scalingStat: "hp" })])
-    )
-    expect(astralVulturesCrimsonPlumage.attackPercent).toBeCloseTo(0.24)
+    expect(ashGravenDrinkingHorn.additionalDamageEvents).toEqual([])
+    expect(astralVulturesCrimsonPlumage.attackPercent).toBe(0) // No Swirl preparation.
   })
 
   it("resolves Astral Vulture's Crimson Plumage from the highest nonmatching-element teammate tier", () => {
@@ -1709,6 +1806,7 @@ describe("current-action equipment effects", () => {
     }
     const resolveAtTier = (action: ReturnType<typeof requireAction>, count: number) =>
       resolveCombatActionEffects({
+        gameData,
         action,
         activeEffectIds: [],
         baseEnergyRecharge: 1,
@@ -1738,7 +1836,7 @@ describe("current-action equipment effects", () => {
     )
   })
 
-  it("resolves P6 explicit stack snapshots and rejects incompatible tier selections", () => {
+  it("combines P6 necessary choices with capability-derived automatic states", () => {
     const blackcliffPole = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "BlackcliffPole", [
       "weapon.blackcliff-pole.defeated-enemy.3-stack.attack-percent"
     ])
@@ -1763,7 +1861,7 @@ describe("current-action equipment effects", () => {
     const cashflowCharged = resolveWeaponEffects("ningguang.normal.charged_attack.with_star_jades", "CashflowSupervision", [
       "weapon.cashflow-supervision.hp-change.3-stack.charged-damage-bonus"
     ])
-    const cloudforged = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "Cloudforged", [
+    const cloudforged = resolveWeaponEffects("diona.skill.icy_paws.paw_damage", "Cloudforged", [
       "weapon.cloudforged.energy-reduced.2-stack.elemental-mastery"
     ])
     const compoundBow = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "CompoundBow", [
@@ -1771,14 +1869,14 @@ describe("current-action equipment effects", () => {
     ])
 
     expect(blackcliffPole.attackPercent).toBeCloseTo(0.36)
-    expect(bloodsoakedRuins.critDamage).toBeCloseTo(0.28)
+    expect(bloodsoakedRuins.critDamage).toBe(0) // No Lunar-Charged qualification.
     expect(calamityQuellerOnField.attackPercent).toBeCloseTo(0.192)
     expect(calamityQuellerOnField.damageBonus).toBeCloseTo(0.12)
-    expect(calamityQuellerOffField.attackPercent).toBeCloseTo(0.384)
+    expect(calamityQuellerOffField.attackPercent).toBeCloseTo(0.192) // Legacy off-field ID cannot alter capture presence.
     expect(cashflowNormal.attackPercent).toBeCloseTo(0.16)
     expect(cashflowNormal.damageBonus).toBeCloseTo(0.48)
     expect(cashflowCharged.damageBonus).toBeCloseTo(0.42)
-    expect(cloudforged.elementalMastery).toBeCloseTo(80)
+    expect(cloudforged.elementalMastery).toBe(40) // Diona can pay once, but her 20-second burst cannot pay twice in 18 seconds.
     expect(compoundBow.attackPercent).toBeCloseTo(0.16)
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "BlackcliffPole", [
@@ -1788,7 +1886,7 @@ describe("current-action equipment effects", () => {
     ).toThrow("blackcliff-pole-defeated-enemy")
   })
 
-  it("resolves P7 current-action snapshots without inferring their trigger histories", () => {
+  it("keeps P7 independent events excluded and gates full-clear bonuses on healing", () => {
     const dragonspineSpear = resolveWeaponEffects("xiangling.normal.auto.first_hit", "DragonspineSpear", [
       "weapon.dragonspine-spear.frost-icicle.without-cryo-aura.physical-hit"
     ])
@@ -1811,7 +1909,7 @@ describe("current-action equipment effects", () => {
       "weapon.finale-of-the-deep.after-skill.attack-percent"
     ])
     const flowerWreathedFeathers = resolveWeaponEffects(
-      "ningguang.normal.charged_attack.with_star_jades",
+      "amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize",
       "FlowerWreathedFeathers",
       ["weapon.flower-wreathed-feathers.aimed-shot.6-stack.charged-damage-bonus"]
     )
@@ -1830,28 +1928,18 @@ describe("current-action equipment effects", () => {
       "weapon.frostbearer.frost-icicle.with-cryo-aura.physical-hit"
     ])
 
-    expect(dragonspineSpear.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.8, expectedTriggerProbability: 0.6 })])
-    )
-    expect(dragonspineSpearCryoAura.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 2, expectedTriggerProbability: 0.6 })])
-    )
-    expect(endOfTheLine.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.8, element: "physical" })])
-    )
-    expect(eyeOfPerception.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 2.4, expectedTriggerProbability: 0.5 })])
-    )
+    expect(dragonspineSpear.additionalDamageEvents).toEqual([])
+    expect(dragonspineSpearCryoAura.additionalDamageEvents).toEqual([])
+    expect(endOfTheLine.additionalDamageEvents).toEqual([])
+    expect(eyeOfPerception.additionalDamageEvents).toEqual([])
     expect(fadingTwilight.damageBonus).toBeCloseTo(0.14)
-    expect(mountainKing.damageBonus).toBeCloseTo(0.6)
+    expect(mountainKing.damageBonus).toBeCloseTo(0.1) // One qualifying skill hit, no Burning/Burgeon teammates.
     expect(finaleOfTheDeep.attackPercent).toBeCloseTo(0.12)
     expect(flowerWreathedFeathers.damageBonus).toBeCloseTo(0.36)
-    expect(flowingPurity.damageBonus).toBeCloseTo(0.2)
+    expect(flowingPurity.damageBonus).toBeCloseTo(0.08) // Skill bonus remains; no healer can clear the bond.
     expect(flowingPurityPhysical.damageBonus).toBeCloseTo(0)
     expect(fracturedHalo.attackPercent).toBeCloseTo(0.24)
-    expect(frostbearer.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 2, expectedTriggerProbability: 0.6 })])
-    )
+    expect(frostbearer.additionalDamageEvents).toEqual([])
     expect(() =>
       resolveWeaponEffects("xiangling.normal.auto.first_hit", "DragonspineSpear", [
         "weapon.dragonspine-spear.frost-icicle.without-cryo-aura.physical-hit",
@@ -1872,7 +1960,7 @@ describe("current-action equipment effects", () => {
     ).toThrow("fading-twilight-glow")
   })
 
-  it("resolves P8 exact effects while preserving holder and snapshot boundaries", () => {
+  it("keeps P8 reaction and Hexerei preparations bound to qualified holders", () => {
     const fruitOfFulfillment = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "FruitOfFulfillment", [
       "weapon.fruit-of-fulfillment.wax-and-wane.5-stack.elemental-mastery",
       "weapon.fruit-of-fulfillment.wax-and-wane.5-stack.attack-percent"
@@ -1891,12 +1979,13 @@ describe("current-action equipment effects", () => {
       ["weapon.golden-frostbound-oath.frost-fairys-requital.geo-damage-bonus"]
     )
     const hakushinRing = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.skill.guoba.single_flame_breath"),
       activeEffectIds: ["weapon.hakushin-ring.overloaded-related-element-damage-bonus"],
       baseEnergyRecharge: 1,
       enemyCount: 1,
       primary: withWeapon("TestNoWeapon"),
-      teammates: [{ ...withWeapon("HakushinRing", 5), buildId: "test.hakushin-ring.r5-teammate" }]
+      teammates: [{ ...withWeapon("HakushinRing", 5), characterId: "Lisa", buildId: "test.hakushin-ring.r5-teammate" }]
     })
     const haranNormal = resolveWeaponEffects("xiangling.normal.auto.first_hit", "HaranGeppakuFutsu", [
       "weapon.haran-geppaku-futsu.wavespike.2-stack.normal-damage-bonus"
@@ -1919,17 +2008,17 @@ describe("current-action equipment effects", () => {
       "LightOfFoliarIncision"
     )
 
-    expect(fruitOfFulfillment.elementalMastery).toBeCloseTo(120)
-    expect(fruitOfFulfillment.attackPercent).toBeCloseTo(-0.25)
+    expect(fruitOfFulfillment.elementalMastery).toBe(0) // No actual reaction partner.
+    expect(fruitOfFulfillment.attackPercent).toBe(0)
     expect(gestOfTheMightyWolf.damageBonus).toBeCloseTo(0.3)
-    expect(gestOfTheMightyWolf.critDamage).toBeCloseTo(0.3)
+    expect(gestOfTheMightyWolf.critDamage).toBe(0) // The wearer lacks Hexerei qualification.
     expect(goldenFrostboundOath.defensePercent).toBeCloseTo(0.16)
     expect(goldenFrostboundOath.damageBonus).toBeCloseTo(0.4)
     expect(hakushinRing.damageBonus).toBeCloseTo(0.2)
     expect(hakushinRing.appliedEffects).toEqual(
       expect.arrayContaining([expect.objectContaining({ sourceId: "test.hakushin-ring.r5-teammate" })])
     )
-    expect(haranNormal.damageBonus).toBeCloseTo(0.4)
+    expect(haranNormal.damageBonus).toBe(0) // No teammate skill suppliers.
     expect(haranElemental.damageBonus).toBeCloseTo(0.12)
     expect(huntersPath.damageBonus).toBeCloseTo(0.12)
     expect(ibisPiercer.elementalMastery).toBeCloseTo(80)
@@ -1942,25 +2031,25 @@ describe("current-action equipment effects", () => {
         "weapon.fruit-of-fulfillment.wax-and-wane.1-stack.elemental-mastery",
         "weapon.fruit-of-fulfillment.wax-and-wane.2-stack.elemental-mastery"
       ])
-    ).toThrow("fruit-of-fulfillment-wax-and-wane")
+    ).not.toThrow()
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "GestOfTheMightyWolf", [
         "weapon.gest-of-the-mighty-wolf.howl.3-stack.damage-bonus",
         "weapon.gest-of-the-mighty-wolf.howl.4-stack.damage-bonus"
       ])
-    ).toThrow("gest-of-the-mighty-wolf-howl-damage")
+    ).not.toThrow()
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "GestOfTheMightyWolf", [
         "weapon.gest-of-the-mighty-wolf.magic-secret.3-stack.crit-damage",
         "weapon.gest-of-the-mighty-wolf.magic-secret.4-stack.crit-damage"
       ])
-    ).toThrow("gest-of-the-mighty-wolf-howl-magic-secret")
+    ).not.toThrow()
     expect(() =>
       resolveWeaponEffects("raiden.burst.initial_slash", "HakushinRing", [
         "weapon.hakushin-ring.overloaded-related-element-damage-bonus",
         "weapon.hakushin-ring.aggravate-related-element-damage-bonus"
       ])
-    ).toThrow("hakushin-ring-reaction")
+    ).not.toThrow()
   })
 
   it("resolves P9 element- and recipient-scoped snapshots without flattening their boundaries", () => {
@@ -1983,11 +2072,11 @@ describe("current-action equipment effects", () => {
     const memoryOfDust = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "MemoryOfDust", [
       "weapon.memory-of-dust.golden-majesty.shielded.5-stack.attack-percent"
     ])
-    const mistsplitter = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "MistsplitterReforged", [
+    const mistsplitter = resolveWeaponEffects("kaeya.skill.frostgnaw", "MistsplitterReforged", [
       "weapon.mistsplitter-reforged.emblem.pyro.3-stack.damage-bonus"
     ])
     const mistsplitterWrongElement = resolveWeaponEffects(
-      "xiangling.skill.guoba.single_flame_breath",
+      "kaeya.skill.frostgnaw",
       "MistsplitterReforged",
       ["weapon.mistsplitter-reforged.emblem.hydro.3-stack.damage-bonus"]
     )
@@ -2004,20 +2093,22 @@ describe("current-action equipment effects", () => {
     expect(lightbearingMoonshard.defensePercent).toBeCloseTo(0.2)
     expect(lostPrayer.damageBonus).toBeCloseTo(0.32)
     expect(lumidouceElegy.attackPercent).toBeCloseTo(0.15)
-    expect(lumidouceElegy.damageBonus).toBeCloseTo(0.36)
-    expect(mappaMare.damageBonus).toBeCloseTo(0.16)
-    expect(masterKey.elementalMastery).toBeCloseTo(120)
-    expect(memoryOfDust.attackPercent).toBeCloseTo(0.4)
-    expect(mistsplitter.damageBonus).toBeCloseTo(0.4)
-    expect(mistsplitterWrongElement.damageBonus).toBeCloseTo(0.12)
+    expect(lumidouceElegy.damageBonus).toBe(0) // Solo Pyro has no Burning partner.
+    expect(mappaMare.damageBonus).toBe(0)
+    expect(masterKey.elementalMastery).toBe(0)
+    expect(memoryOfDust.attackPercent).toBeCloseTo(0.2) // Five unshielded stacks.
+    // Kaeya can prepare a burst and spend energy, but cannot infuse his normal attacks.
+    // Retired element/stack IDs cannot replace this two-stack, native-Cryo preparation.
+    expect(mistsplitter.damageBonus).toBeCloseTo(0.28)
+    expect(mistsplitterWrongElement.damageBonus).toBeCloseTo(0.28)
     expect(moonweaversDawn.damageBonus).toBeCloseTo(0.2)
-    expect(nightweaversLookingGlass.elementalMastery).toBeCloseTo(120)
+    expect(nightweaversLookingGlass.elementalMastery).toBe(0) // Neither Hydro/Dendro skill nor Lunar-Bloom provider.
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "MasterKey", [
         "weapon.master-key.after-reaction.elemental-mastery",
         "weapon.master-key.after-reaction.full-moon.elemental-mastery"
       ])
-    ).toThrow("master-key-reaction")
+    ).not.toThrow()
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "MistsplitterReforged", [
         "weapon.mistsplitter-reforged.emblem.pyro.1-stack.damage-bonus",
@@ -2026,7 +2117,7 @@ describe("current-action equipment effects", () => {
     ).toThrow("mistsplitter-reforged-emblem")
   })
 
-  it("resolves P10 stack values and keeps the official Polar Star correction", () => {
+  it("derives P10 stacks from capability and accounts for automatic source-panel conversions", () => {
     const nocturnesCurtainCall = resolveWeaponEffects(
       "xiangling.skill.guoba.single_flame_breath",
       "NocturnesCurtainCall",
@@ -2037,6 +2128,7 @@ describe("current-action equipment effects", () => {
       "weapon.peak-patrol-song.ode-to-flowers.2-stack.all-element-damage-bonus"
     ])
     const polarStarR4 = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.skill.guoba.single_flame_breath"),
       activeEffectIds: ["weapon.polar-star.ashen-nightstar.3-stack.attack-percent"],
       baseEnergyRecharge: 1,
@@ -2052,6 +2144,7 @@ describe("current-action equipment effects", () => {
     ])
     const primordialJadeCutter = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "PrimordialJadeCutter")
     const teammatePrimordialJadeCutter = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.skill.guoba.single_flame_breath"),
       activeEffectIds: [],
       baseEnergyRecharge: 1,
@@ -2079,12 +2172,12 @@ describe("current-action equipment effects", () => {
       "weapon.prototype-starglitter.magic-affinity.2-stack.normal-charged-damage-bonus"
     ])
 
-    expect(nocturnesCurtainCall.hpPercent).toBeCloseTo(0.24)
+    expect(nocturnesCurtainCall.hpPercent).toBeCloseTo(0.1) // Static HP only without a Lunar reaction.
     expect(peakPatrolSong.defensePercent).toBeCloseTo(0.16)
-    expect(peakPatrolSong.damageBonus).toBeCloseTo(0.2)
+    expect(peakPatrolSong.damageBonus).toBeCloseTo(0.28) // 20% personal + 1000 DEF * 0.008% team.
     expect(polarStarR4.damageBonus).toBeCloseTo(0.21)
-    expect(polarStarR4.attackPercent).toBeCloseTo(0.525)
-    expect(portablePowerSaw.elementalMastery).toBeCloseTo(120)
+    expect(polarStarR4.attackPercent).toBeCloseTo(0.84) // All four personal hit categories, R4 full-stack table.
+    expect(portablePowerSaw.elementalMastery).toBe(0) // No healing provider.
     expect(predator.damageBonus).toBeCloseTo(0.2)
     expect(primordialJadeCutter.hpPercent).toBeCloseTo(0.2)
     expect(primordialJadeCutter.finalHpToFlatAttack).toBeCloseTo(0.012)
@@ -2103,26 +2196,26 @@ describe("current-action equipment effects", () => {
     )
     expect(primordialJadeWingedSpear.attackPercent).toBeCloseTo(0.224)
     expect(primordialJadeWingedSpear.damageBonus).toBeCloseTo(0.12)
-    expect(prospectorsDrill.attackPercent).toBeCloseTo(0.09)
-    expect(prospectorsDrill.damageBonus).toBeCloseTo(0.21)
+    expect(prospectorsDrill.attackPercent).toBe(0)
+    expect(prospectorsDrill.damageBonus).toBe(0)
     expect(prototypeRancour.attackPercent).toBeCloseTo(0.16)
     expect(prototypeRancour.defensePercent).toBeCloseTo(0.16)
-    expect(prototypeStarglitter.damageBonus).toBeCloseTo(0.16)
+    expect(prototypeStarglitter.damageBonus).toBeCloseTo(0.08) // Guoba's cooldown supports one prepared cast.
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "PeakPatrolSong", [
         "weapon.peak-patrol-song.ode-to-flowers.1-stack.defense-percent",
         "weapon.peak-patrol-song.ode-to-flowers.2-stack.defense-percent"
       ])
-    ).toThrow("peak-patrol-song-ode-to-flowers")
+    ).not.toThrow()
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "PolarStar", [
         "weapon.polar-star.ashen-nightstar.2-stack.attack-percent",
         "weapon.polar-star.ashen-nightstar.4-stack.attack-percent"
       ])
-    ).toThrow("polar-star-ashen-nightstar")
+    ).not.toThrow()
   })
 
-  it("resolves P11 published snapshots and rejects untrusted or mutually exclusive states", () => {
+  it("gates P11 automatic states while retaining legacy Royal explicit choices", () => {
     const rainbowSerpentsRainBow = resolveWeaponEffects(
       "xiangling.skill.guoba.single_flame_breath",
       "RainbowSerpentsRainBow",
@@ -2139,13 +2232,13 @@ describe("current-action equipment effects", () => {
     ])
     const royalWeaponIds = ["RoyalBow", "RoyalGreatsword", "RoyalGrimoire", "RoyalLongsword", "RoyalSpear"] as const
 
-    expect(rainbowSerpentsRainBow.attackPercent).toBeCloseTo(0.28)
-    expect(rangeGauge.attackPercent).toBeCloseTo(0.09)
-    expect(rangeGauge.damageBonus).toBeCloseTo(0.21)
+    expect(rainbowSerpentsRainBow.attackPercent).toBe(0) // Foreground action; legacy ID cannot move the wearer.
+    expect(rangeGauge.attackPercent).toBe(0) // No healing provider.
+    expect(rangeGauge.damageBonus).toBe(0)
     expect(redhornStonethresher.defensePercent).toBeCloseTo(0.28)
     expect(reliquaryOfTruth.critRate).toBeCloseTo(0.08)
-    expect(reliquaryOfTruth.elementalMastery).toBeCloseTo(120)
-    expect(reliquaryOfTruth.critDamage).toBeCloseTo(0.36)
+    expect(reliquaryOfTruth.elementalMastery).toBeCloseTo(80) // Skill state only, no Lunar-Bloom.
+    expect(reliquaryOfTruth.critDamage).toBe(0)
     for (const weaponId of royalWeaponIds) {
       const effects = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", weaponId, [
         `weapon.${weaponId.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()}.focus.5-stack.crit-rate`
@@ -2158,7 +2251,7 @@ describe("current-action equipment effects", () => {
         "weapon.reliquary-of-truth.after-skill.elemental-mastery",
         "weapon.reliquary-of-truth.both-states.elemental-mastery"
       ])
-    ).toThrow("reliquary-of-truth-both-states")
+    ).not.toThrow()
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "RoyalBow", [
         "weapon.royal-bow.focus.1-stack.crit-rate",
@@ -2167,7 +2260,7 @@ describe("current-action equipment effects", () => {
     ).toThrow("royal-bow-focus")
   })
 
-  it("resolves P12 current-hit events and independent snapshot groups", () => {
+  it("excludes P12 independent events and derives team, healing, and reaction states", () => {
     const sacrificersStaff = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "SacrificersStaff", [
       "weapon.sacrificers-staff.sacrificial-rite.3-stack.attack-percent",
       "weapon.sacrificers-staff.sacrificial-rite.3-stack.energy-recharge"
@@ -2218,42 +2311,32 @@ describe("current-action equipment effects", () => {
     )
     const staffOfHoma = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "StaffOfHoma")
 
-    expect(sacrificersStaff.attackPercent).toBeCloseTo(0.24)
-    expect(sacrificersStaff.energyRecharge).toBeCloseTo(0.18)
-    expect(scionOfTheBlazingSun.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.6, element: "physical" })])
-    )
+    expect(sacrificersStaff.attackPercent).toBeCloseTo(0.08) // Solo team has one elemental type.
+    expect(sacrificersStaff.energyRecharge).toBeCloseTo(0.06)
+    expect(scionOfTheBlazingSun.additionalDamageEvents).toEqual([])
     expect(scionOfTheBlazingSun.damageBonus).toBeCloseTo(0.28)
-    expect(sequenceOfSolitude.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.4, scalingStat: "hp" })])
-    )
-    expect(sequenceOfSolitudeSkill.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.4, element: "physical", scalingStat: "hp" })])
-    )
-    expect(sequenceOfSolitudeBurst.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.4, element: "physical", scalingStat: "hp" })])
-    )
-    expect(serenitysCall.hpPercent).toBeCloseTo(0.32)
+    expect(sequenceOfSolitude.additionalDamageEvents).toEqual([])
+    expect(sequenceOfSolitudeSkill.additionalDamageEvents).toEqual([])
+    expect(sequenceOfSolitudeBurst.additionalDamageEvents).toEqual([])
+    expect(serenitysCall.hpPercent).toBe(0) // No applicable reaction.
     expect(serpentSpine.damageBonus).toBeCloseTo(0.3)
-    expect(silvershowerHeartstrings.hpPercent).toBeCloseTo(0.4)
-    expect(silvershowerHeartstrings.critRate).toBeCloseTo(0.28)
+    expect(silvershowerHeartstrings.hpPercent).toBeCloseTo(0.12) // Skill cast, but no healing or Bond of Life.
+    expect(silvershowerHeartstrings.critRate).toBe(0)
     expect(skywardAtlas.damageBonus).toBeCloseTo(0.12)
-    expect(snareHook.elementalMastery).toBeCloseTo(120)
-    expect(snowTombedStarsilver.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 2, expectedTriggerProbability: 0.6 })])
-    )
+    expect(snareHook.elementalMastery).toBe(0)
+    expect(snowTombedStarsilver.additionalDamageEvents).toEqual([])
     expect(splendorOfTranquilWaters.damageBonus).toBeCloseTo(0.24)
-    expect(splendorOfTranquilWaters.hpPercent).toBeCloseTo(0.28)
+    expect(splendorOfTranquilWaters.hpPercent).toBe(0) // No teammate HP-change source.
     expect(staffOfHoma.hpPercent).toBeCloseTo(0.2)
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "SerenitysCall", [
         "weapon.serenitys-call.after-reaction.hp-percent",
         "weapon.serenitys-call.after-reaction.full-moon.hp-percent"
       ])
-    ).toThrow("serenitys-call-reaction")
+    ).not.toThrow()
   })
 
-  it("resolves P13 current-action weapon snapshots and uses the official Flute refinement table", () => {
+  it("excludes P13 independent procs and enforces shield, healing, and foreground gates", () => {
     const summitShaper = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "SummitShaper", [
       "weapon.summit-shaper.golden-majesty.shielded.5-stack.attack-percent"
     ])
@@ -2284,6 +2367,7 @@ describe("current-action equipment effects", () => {
       "TheFirstGreatMagic"
     )
     const theFluteR4 = resolveCombatActionEffects({
+      gameData,
       action: requireAction("xiangling.normal.auto.first_hit"),
       activeEffectIds: ["weapon.the-flute.five-harmonic.physical-hit"],
       baseEnergyRecharge: 1,
@@ -2295,28 +2379,24 @@ describe("current-action equipment effects", () => {
       "weapon.the-unforged.golden-majesty.shielded.5-stack.attack-percent"
     ])
 
-    expect(summitShaper.attackPercent).toBeCloseTo(0.4)
+    expect(summitShaper.attackPercent).toBeCloseTo(0.2) // Unshielded despite the retired manual state.
     expect(surfsUp.hpPercent).toBeCloseTo(0.2)
     expect(surfsUp.damageBonus).toBeCloseTo(0.48)
-    expect(swordOfDescension.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 2, expectedTriggerProbability: 0.5 })])
-    )
-    expect(symphonistOfScents.attackPercent).toBeCloseTo(0.24)
+    expect(swordOfDescension.additionalDamageEvents).toEqual([])
+    expect(symphonistOfScents.attackPercent).toBeCloseTo(0.12) // Foreground holder.
     expect(theBell.damageBonus).toBeCloseTo(0.12)
-    expect(theDaybreakChronicles.damageBonus).toBeCloseTo(0.6)
-    expect(theDockhandsAssistant.elementalMastery).toBeCloseTo(120)
+    expect(theDaybreakChronicles.damageBonus).toBe(0) // Holder is not off field.
+    expect(theDockhandsAssistant.elementalMastery).toBe(0) // No healing provider.
     expect(theFirstGreatMagic.attackPercent).toBe(0)
     expect(theFirstGreatMagic.damageBonus).toBeCloseTo(0.16)
-    expect(theFluteR4.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 1.75, element: "physical" })])
-    )
-    expect(theUnforged.attackPercent).toBeCloseTo(0.4)
+    expect(theFluteR4.additionalDamageEvents).toEqual([])
+    expect(theUnforged.attackPercent).toBeCloseTo(0.2)
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "SummitShaper", [
         "weapon.summit-shaper.golden-majesty.unshielded.1-stack.attack-percent",
         "weapon.summit-shaper.golden-majesty.shielded.5-stack.attack-percent"
       ])
-    ).toThrow("summit-shaper-golden-majesty")
+    ).not.toThrow()
   })
 
   it("resolves PlayStation fixed-attack snapshots only for their named weapon holders", () => {
@@ -2332,6 +2412,7 @@ describe("current-action equipment effects", () => {
     }
     const bennett = { ...withWeapon("SwordOfDescension"), buildId: "test.bennett.sword-of-descension", characterId: "Bennett" }
     const aloyResult = resolveCombatActionEffects({
+      gameData,
       action: requireAction("aloy.burst.prophecies_of_dawn.explosion"),
       activeEffectIds: [predatorEffectId],
       baseEnergyRecharge: 1,
@@ -2340,6 +2421,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const ganyuResult = resolveCombatActionEffects({
+      gameData,
       action: requireAction("ganyu.skill.trail_of_the_qilin.skill_damage"),
       activeEffectIds: [predatorEffectId],
       baseEnergyRecharge: 1,
@@ -2348,6 +2430,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const travelerResult = resolveCombatActionEffects({
+      gameData,
       action: requireAction("traveler.anemo.skill.palm_vortex.initial_gust"),
       activeEffectIds: [swordEffectId],
       baseEnergyRecharge: 1,
@@ -2356,6 +2439,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const bennettResult = resolveCombatActionEffects({
+      gameData,
       action: requireAction("bennett.skill.passion_overload.press"),
       activeEffectIds: [swordEffectId],
       baseEnergyRecharge: 1,
@@ -2421,10 +2505,10 @@ describe("current-action equipment effects", () => {
     expect(tulaytullahsRemembrance.damageBonus).toBeCloseTo(0.48)
     expect(ultimateOverlordsMegaMagicSword.attackPercent).toBeCloseTo(0.24)
     expect(verdict.attackPercent).toBeCloseTo(0.2)
-    expect(verdict.damageBonus).toBeCloseTo(0.36)
+    expect(verdict.damageBonus).toBe(0) // No Geo/Crystallize provider.
     expect(vividNotions.attackPercent).toBeCloseTo(0.28)
     expect(vividNotions.critDamage).toBeCloseTo(0.68)
-    expect(vortexVanquisher.attackPercent).toBeCloseTo(0.4)
+    expect(vortexVanquisher.attackPercent).toBeCloseTo(0.2)
     expect(whiteblind.attackPercent).toBeCloseTo(0.24)
     expect(whiteblind.defensePercent).toBeCloseTo(0.24)
     expect(() =>
@@ -2435,7 +2519,7 @@ describe("current-action equipment effects", () => {
     ).toThrow("the-widsith-theme")
   })
 
-  it("resolves P15 low-rarity and skill-state effects as explicit current snapshots", () => {
+  it("derives P15 skill-hit states and rejects missing target or reaction facts", () => {
     const windblumeOde = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "WindblumeOde", [
       "weapon.windblume-ode.after-skill.attack-percent"
     ])
@@ -2468,23 +2552,21 @@ describe("current-action equipment effects", () => {
 
     expect(windblumeOde.attackPercent).toBeCloseTo(0.16)
     expect(wolfFangSkill.damageBonus).toBeCloseTo(0.16)
-    expect(wolfFangSkill.critRate).toBeCloseTo(0.08)
+    expect(wolfFangSkill.critRate).toBeCloseTo(0.04) // One hit opportunity per 0.1-second gate, not manual full stacks.
     expect(wolfFangBurst.damageBonus).toBeCloseTo(0.16)
-    expect(wolfFangBurst.critRate).toBeCloseTo(0.08)
-    expect(blackTassel.damageBonus).toBeCloseTo(0.4)
+    expect(wolfFangBurst.critRate).toBeCloseTo(0.02) // Raiden's initial slash contributes one burst opportunity.
+    expect(blackTassel.damageBonus).toBe(0) // Slime is an explicit shared target fact, not a legacy effect ID.
     expect(bloodtaintedGreatsword.damageBonus).toBeCloseTo(0.12)
-    expect(coolSteel.damageBonus).toBeCloseTo(0.12)
-    expect(darkIronSword.attackPercent).toBeCloseTo(0.2)
-    expect(debateClub.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 0.6, element: "physical" })])
-    )
+    expect(coolSteel.damageBonus).toBe(0) // No Hydro/Cryo provider.
+    expect(darkIronSword.attackPercent).toBe(0) // No Electro reaction partner.
+    expect(debateClub.additionalDamageEvents).toEqual([])
     expect(ferrousShadow.damageBonus).toBeCloseTo(0.3)
     expect(() =>
       resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "WolfFang", [
         "weapon.wolf-fang.skill-hit.1-stack.crit-rate",
         "weapon.wolf-fang.skill-hit.4-stack.crit-rate"
       ])
-    ).toThrow("wolf-fang-skill-crit-rate")
+    ).not.toThrow()
   })
 
   it("resolves P16b stack, arrow-flight, teammate-switch, and weak-point snapshots", () => {
@@ -2498,6 +2580,8 @@ describe("current-action equipment effects", () => {
       "weapon.slingshot.flight-time.after-0.3-seconds.damage-penalty"
     ])
     const thrillingTales = resolveCombatActionEffects({
+      gameData,
+      fieldContext: { actionOwnerBuildId: "test.equipment.TestNoWeapon", onFieldBuildId: "test.equipment.TestNoWeapon", weaponEffectChoices: { "test.equipment.ThrillingTalesOfDragonSlayers": { "thrilling-tales-recipient": "test.equipment.TestNoWeapon" } } },
       action: requireAction("xiangling.skill.guoba.single_flame_breath"),
       activeEffectIds: ["weapon.thrilling-tales-of-dragon-slayers.after-switch.party-attack-percent"],
       baseEnergyRecharge: 1,
@@ -2520,7 +2604,7 @@ describe("current-action equipment effects", () => {
       expect.arrayContaining([expect.objectContaining({ sourceId: "test.equipment.ThrillingTalesOfDragonSlayers" })])
     )
     expect(twinNephrite.attackPercent).toBeCloseTo(0.12)
-    expect(sharpshootersOath.damageBonus).toBeCloseTo(0.24)
+    expect(sharpshootersOath.damageBonus).toBe(0) // Guoba is not an aimed arrow hitting a weak point.
     expect(() =>
       resolveWeaponEffects("xiangling.normal.auto.first_hit", "Slingshot", [
         "weapon.slingshot.flight-time.within-0.3-seconds.damage-bonus",
@@ -2529,45 +2613,28 @@ describe("current-action equipment effects", () => {
     ).toThrow("slingshot-flight-time")
   })
 
-  it("keeps party weapon effects off their holder and requires a selected source for duplicate holders", () => {
+  it("keeps Thrilling Tales on its explicitly shared recipient and selects the strongest duplicate", () => {
     const effectId = "weapon.thrilling-tales-of-dragon-slayers.after-switch.party-attack-percent"
-    const selfHolder = { ...withWeapon("ThrillingTalesOfDragonSlayers", 5), buildId: "test.ttds.self" }
-    const singleHolder = { ...withWeapon("ThrillingTalesOfDragonSlayers", 5), buildId: "test.ttds.single" }
-    const firstHolder = { ...withWeapon("ThrillingTalesOfDragonSlayers", 1), buildId: "test.ttds.r1" }
-    const fifthHolder = { ...withWeapon("ThrillingTalesOfDragonSlayers", 5), buildId: "test.ttds.r5" }
-    const baseInput = {
-      action: requireAction("xiangling.skill.guoba.single_flame_breath"),
-      activeEffectIds: [effectId],
-      baseEnergyRecharge: 1,
-      enemyCount: 1,
-      primary: withWeapon("TestNoWeapon")
-    }
-    const self = resolveCombatActionEffects({ ...baseInput, primary: selfHolder, teammates: [] })
-    const single = resolveCombatActionEffects({ ...baseInput, teammates: [singleHolder] })
-
-    expect(self.attackPercent).toBeCloseTo(0)
-    expect(self.appliedEffects).not.toEqual(expect.arrayContaining([expect.objectContaining({ id: effectId })]))
-    expect(single.attackPercent).toBeCloseTo(0.48)
-    expect(single.appliedEffects).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: effectId, sourceId: singleHolder.buildId })])
-    )
-    expect(() =>
-      resolveCombatActionEffects({ ...baseInput, teammates: [firstHolder, fifthHolder] })
-    ).toThrow("multiple eligible source builds")
-
-    const selected = resolveCombatActionEffects({
-      ...baseInput,
-      activeEffectSourceBuildIds: { [effectId]: fifthHolder.buildId },
-      teammates: [firstHolder, fifthHolder]
-    })
-
+    const primary = withWeapon("TestNoWeapon")
+    const firstHolder = { ...withWeapon("ThrillingTalesOfDragonSlayers", 1), characterId: "Barbara", buildId: "test.ttds.r1" }
+    const fifthHolder = { ...withWeapon("ThrillingTalesOfDragonSlayers", 5), characterId: "Lisa", buildId: "test.ttds.r5" }
+    const baseInput = { gameData, action: requireAction("xiangling.skill.guoba.single_flame_breath"),
+      activeEffectIds: [effectId], baseEnergyRecharge: 1, enemyCount: 1, primary }
+    const choices = Object.fromEntries([firstHolder, fifthHolder].map((holder) =>
+      [holder.buildId, { "thrilling-tales-recipient": primary.buildId }]))
+    expect(resolveCombatActionEffects({ ...baseInput, teammates: [fifthHolder] }).attackPercent).toBe(0)
+    const selected = resolveCombatActionEffects({ ...baseInput, teammates: [firstHolder, fifthHolder],
+      fieldContext: { actionOwnerBuildId: "test.equipment.TestNoWeapon", onFieldBuildId: "test.equipment.TestNoWeapon", weaponEffectChoices: choices } })
     expect(selected.attackPercent).toBeCloseTo(0.48)
-    expect(selected.appliedEffects).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: effectId, sourceId: fifthHolder.buildId })])
-    )
+    expect(selected.appliedEffects.filter((effect) => effect.id === effectId)).toEqual([
+      expect.objectContaining({ sourceId: fifthHolder.buildId })
+    ])
+    const self = resolveCombatActionEffects({ ...baseInput, primary: fifthHolder, teammates: [primary],
+      fieldContext: { actionOwnerBuildId: "test.equipment.TestNoWeapon", onFieldBuildId: "test.equipment.TestNoWeapon", weaponEffectChoices: { [fifthHolder.buildId]: { "thrilling-tales-recipient": fifthHolder.buildId } } } })
+    expect(self.attackPercent).toBe(0)
   })
 
-  it("resolves P16b cooldown-ready physical events without imitating guaranteed weak-point crits", () => {
+  it("excludes Fillet Blade and Halberd independent damage even when legacy proc IDs are selected", () => {
     const filletBlade = resolveWeaponEffects("xiangling.skill.guoba.single_flame_breath", "FilletBlade", [
       "weapon.fillet-blade.cooldown-ready.expected-physical-hit"
     ])
@@ -2575,55 +2642,40 @@ describe("current-action equipment effects", () => {
       "weapon.halberd.cooldown-ready.physical-hit"
     ])
 
-    expect(filletBlade.additionalDamageEvents).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ coefficient: 2.4, element: "physical", expectedTriggerProbability: 0.5 })
-      ])
-    )
-    expect(halberd.additionalDamageEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ coefficient: 1.6, element: "physical" })])
-    )
+    expect(filletBlade.additionalDamageEvents).toEqual([])
+    expect(halberd.additionalDamageEvents).toEqual([])
   })
 
-  it("resolves Finale of the Deep's full Bond-of-Life clear from final HP with its refinement cap", () => {
+  it("requires real healing for Finale's automatic full 25%-HP bond clear and refinement cap", () => {
     const afterSkillEffectId = "weapon.finale-of-the-deep.after-skill.attack-percent"
     const fullClearEffectId = "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack"
-    const resolveFinale = (refinement: number, finalHp: number, activeEffectIds = [afterSkillEffectId, fullClearEffectId]) => {
-      const primary = {
-        ...withWeapon("FinaleOfTheDeep", refinement),
-        buildId: `test.finale-of-the-deep.r${refinement}.${finalHp}`
-      }
-      return resolveCombatActionEffects({
-        action: requireAction("xingqiu.skill.fatal_rainscreen"),
-        activeEffectIds,
-        baseEnergyRecharge: 1,
-        enemyCount: 1,
-        primary,
-        teammates: []
+    const resolveFinale = (refinement: number, healer: boolean, activeEffectIds: readonly string[] = []) =>
+      resolveCombatActionEffects({
+        gameData, action: requireAction("keqing.skill.stellar_restoration.stiletto_damage"), activeEffectIds,
+        baseEnergyRecharge: 1, enemyCount: 1,
+        primary: { ...withWeapon("FinaleOfTheDeep", refinement), characterId: "Keqing" },
+        teammates: healer ? [{ ...withWeapon("TestNoWeapon"), characterId: "Barbara", buildId: "finale.healer" }] : []
       })
-    }
-    const r1BelowCap = resolveFinale(1, 20_000)
-    const r1AtCap = resolveFinale(1, 30_000)
-    const r5BelowCap = resolveFinale(5, 20_000)
-    const inactive = resolveFinale(5, 20_000, [])
-
-    expect(r1BelowCap.attackPercent).toBeCloseTo(0.12)
-    expect(resolveFinalHpToFlatAttack(20_000, r1BelowCap)).toBeCloseTo(120)
-    expect(resolveFinalHpToFlatAttack(30_000, r1AtCap)).toBeCloseTo(150)
-    expect(resolveFinalHpToFlatAttack(20_000, r5BelowCap)).toBeCloseTo(240)
-    expect(resolveFinalHpToFlatAttack(20_000, inactive)).toBeCloseTo(0)
-    expect(r1BelowCap.appliedEffects).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ finalHpMaximumValue: 150, id: fullClearEffectId, value: 0.006 })
-      ])
-    )
+    const r1 = resolveFinale(1, true)
+    const r5 = resolveFinale(5, true)
+    const unavailable = resolveFinale(5, false, [afterSkillEffectId, fullClearEffectId])
+    expect(r1.attackPercent).toBeCloseTo(0.12)
+    expect(resolveFinalHpToFlatAttack(20_000, r1)).toBeCloseTo(120)
+    expect(resolveFinalHpToFlatAttack(30_000, r1)).toBeCloseTo(150)
+    expect(resolveFinalHpToFlatAttack(20_000, r5)).toBeCloseTo(240)
+    expect(resolveFinalHpToFlatAttack(30_000, r5)).toBeCloseTo(300)
+    expect(resolveFinalHpToFlatAttack(20_000, unavailable)).toBe(0)
+    expect(r1.appliedEffects).toEqual(expect.arrayContaining([
+      expect.objectContaining({ finalHpMaximumValue: 150, id: fullClearEffectId, value: 0.25 * 0.024 })
+    ]))
   })
 
-  it("resolves Messenger's selected weak-point physical event with a guaranteed crit policy", () => {
+  it("excludes Messenger's independent weak-point event at every refinement", () => {
     const effectId = "weapon.messenger.weak-point-guaranteed-crit.additional-damage"
     const messengerR1 = { ...withWeapon("Messenger", 1), buildId: "test.messenger.r1", characterId: "Amber" }
     const messengerR5 = { ...withWeapon("Messenger", 5), buildId: "test.messenger.r5", characterId: "Amber" }
     const r1 = resolveCombatActionEffects({
+      gameData,
       action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
       activeEffectIds: [effectId],
       baseEnergyRecharge: 1,
@@ -2632,6 +2684,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const r5 = resolveCombatActionEffects({
+      gameData,
       action: requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize"),
       activeEffectIds: [effectId],
       baseEnergyRecharge: 1,
@@ -2640,6 +2693,7 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
     const normal = resolveCombatActionEffects({
+      gameData,
       action: requireAction("amber.normal.auto.first_hit"),
       activeEffectIds: [effectId],
       baseEnergyRecharge: 1,
@@ -2648,19 +2702,8 @@ describe("current-action equipment effects", () => {
       teammates: []
     })
 
-    expect(r1.additionalDamageEvents).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          canCrit: true,
-          coefficient: 1,
-          critPolicy: "guaranteed",
-          element: "physical",
-          expectedTriggerProbability: 1,
-          id: effectId
-        })
-      ])
-    )
-    expect(r5.additionalDamageEvents).toEqual(expect.arrayContaining([expect.objectContaining({ coefficient: 2 })]))
+    expect(r1.additionalDamageEvents).toEqual([])
+    expect(r5.additionalDamageEvents).toEqual([])
     expect(normal.additionalDamageEvents).toEqual([])
   })
 })

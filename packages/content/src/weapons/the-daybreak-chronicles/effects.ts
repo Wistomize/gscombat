@@ -15,7 +15,8 @@ function createStackEffect(
   stackCount: (typeof stackCounts)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: stackCount === 6 ? { kind: "constant" } : { kind: "excluded", reason: "项目确认：温迪默认满额，其他角色不计" },
     exclusivity: { group: "the-daybreak-chronicles-radiance", variant: `${talentSlot}-${stackCount}-stack` },
     id: `weapon.the-daybreak-chronicles.radiance.${talentSlot}.${stackCount}-stack.damage-bonus`,
     label: `黎明破晓之史 · ${talentLabels[talentSlot]}${stackCount}层光辉伤害`,
@@ -23,8 +24,8 @@ function createStackEffect(
     target: "damageBonus",
     targetFilter:
       talentSlot === "normal"
-        ? { attackKinds: ["normal"] }
-        : { talentSlots: [talentSlot] },
+        ? { attackKinds: ["normal"], recipientCharacterIds: ["Venti"] }
+        : { talentSlots: [talentSlot], recipientCharacterIds: ["Venti"] },
     value: { kind: "refinement_table", values: getDamageBonusValues(stackCount) }
   }
 }

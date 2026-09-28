@@ -7,6 +7,10 @@ export const BENNETT_BURST_FIELD_EFFECT_ID = "bennett.burst.field"
 
 export const bennettCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "bennett.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "bennett.kit.normal-infusion", label: "美妙旅程六命近战火附魔", kind: "normal_attack_infusion", elements: ["pyro"], recipient: "on_field", sourceFieldPresence: "any", sustained: true, minimumSourceConstellation: 6 },
+    { id: "bennett.kit.self-aura", label: "美妙旅程领域为前台施加火附着", kind: "self_aura", elements: ["pyro"], recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    { id: "bennett.kit.healing", label: "领域治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("bennett", 6),
     { ...declareSkillCastCapability("bennett", 6, {"cooldownMultiplier":0.8}), id: "bennett.kit.passive-skill-cooldown", minimumSourceAscension: 1 },
     ...declareWeaponHitCapabilities(bennettDefinition),
@@ -29,6 +33,7 @@ export const bennettCombatCoverage: CharacterCombatCoverage = {
       element: bennettDefinition.element,
       evaluator: "declared_direct",
       id: "bennett.burst.initial_hit",
+      preparationAtSnapshot: { energyNotFull: false },
       kind: "damage",
       parameterReferences: [
         {

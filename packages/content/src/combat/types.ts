@@ -729,12 +729,16 @@ export type CombatActionEffectTarget =
 
 /** Narrows one action effect to the damage actions where its wording is applicable. */
 export interface CombatActionEffectTargetFilter {
+  /** Only a real arrow, not a bloom, split projectile, or unrelated charged-damage proc. */
+  readonly arrowHitsOnly?: true
   /** Narrows an effect to one or more declared core-action IDs. */
   readonly actionIds?: readonly string[]
   /** Narrows an effect to stable event IDs within the selected action timeline. */
   readonly eventIds?: readonly string[]
   /** Narrows an effect to actions owned by one or more current recipient characters. */
   readonly recipientCharacterIds?: readonly string[]
+  /** Intrinsic recipient element, distinct from the element of an infused damage hit. */
+  readonly recipientNativeElements?: readonly TravelerElement[]
   /** Requires the selected action's recipient to be a current Hexerei character. */
   readonly recipientHexereiRequired?: true
   /** Excludes declared actions that cannot receive an otherwise matching current-action effect. */
@@ -872,7 +876,7 @@ export interface CombatActionEffectExclusivity {
   readonly group: string
   readonly variant: string
   /** Reviewed automatic variants select the highest eligible priority instead of stacking across wearers. */
-  readonly automaticPriority?: number
+  readonly automaticPriority?: number | "refinement"
 }
 
 /** A current-action state that content can establish without inferring a rotation, timing window, or trigger history. */
@@ -913,6 +917,8 @@ export type CombatActionEffectSource =
       readonly kind: "weapon"
       /** Resolves one contribution per matching party holder when same-name effects are designed to stack. */
       readonly resolveAllMatchingPartySources?: true
+      /** Qualify every holder, then retain the strongest refinement without stacking the same passive. */
+      readonly resolveOneMatchingPartySource?: true
       readonly weaponId: string
     }
 
@@ -943,6 +949,16 @@ export interface CombatActionEffectFinalElementalMasteryScalar {
 /** Provides a fixed, refinement-indexed, or scenario-derived action effect value. */
 export type CombatActionEffectValue =
   | CombatActionEffectScalar
+  | {
+      /** Counts independent, content-declared preparation sources before choosing a refinement row. */
+      readonly kind: "prepared_stack_refinement_table"
+      readonly valuesByStack: readonly (readonly number[])[]
+      readonly includeBurstCast: boolean
+      readonly includeEnergyNotFull: boolean
+      /** Special-energy interaction must be evidenced per weapon, never inferred from zero capacity. */
+      readonly specialEnergyNotFullCharacterIds?: readonly string[]
+      readonly capability?: import("./capabilities.js").CombatCapabilityRequirement
+    }
   | (CombatActionEffectTalentScalar & {
       /** Reads one source-character talent value at its configured level and multiplies it by a bounded scalar. */
       readonly constellationMultiplierBonuses?: readonly {
@@ -1003,7 +1019,6 @@ export type CombatActionEffectValue =
       readonly kind: "team_burst_energy_cost"
       readonly maximumValue?: CombatActionEffectScalar
       readonly multiplier: CombatActionEffectScalar
-      readonly requiresFullParty: true
     }
 
 /** A standalone equipment or character trigger that is evaluated as an additional direct damage event. */
@@ -1046,6 +1061,8 @@ export interface CombatActionMatchedAdditiveDamageTerm {
 
 /** Shared activation metadata for a typed current-action effect. */
 interface CombatActionEffectActivation {
+  /** Ready before the core action; consumption follows only authored event times, never an invented rotation. */
+  readonly hitConsumption?: { readonly clearAfterSeconds: number; readonly retriggerAfterSeconds?: number }
   /** Reviewed trigger, retention and current-presence rules; legacy flags remain compatibility constraints. */
   readonly lifecycle?: CombatEffectLifecycle
   /** This state expires when its source leaves the field; incompatible with another required on-field action. */
@@ -1055,12 +1072,31 @@ interface CombatActionEffectActivation {
   readonly activation: "active" | "automatic" | "maximum_reachable"
   /** Keeps a reachable active effect out of automatic maximum selection and exposes it as an explicit UI choice. */
   readonly selectionMode?: "optional" | "required"
-  /** Selects an authored pre-existing state only for eligible weapon-comparison recipients and actions. */
-  readonly weaponComparisonDefault?: {
-    readonly recipientCharacterIds: readonly string[] | "all"
-    readonly requiresReactionAction?: boolean
-    readonly requiresOffFieldAction?: boolean
-    readonly requiresTeammate?: boolean
+  /** A single team-stable recipient for a relay/pickup; never reselected for each reaction contributor. */
+  readonly weaponRecipientChoice?: {
+    readonly group: string
+    readonly label: string
+    readonly defaultRecipient: "source" | "none"
+    readonly excludeSource?: boolean
+  }
+  /** One source-owned user choice; shared by equipped and comparison evaluation, including explicit zero states. */
+  readonly weaponChoice?: {
+    readonly group: string
+    readonly label: string
+    readonly labelByRefinement?: readonly string[]
+    readonly variant: string
+    readonly variantLabel: string
+    readonly defaultVariant: string
+    /** Known reaction aura wins; otherwise only matching party application permits a visible on/off choice. */
+    readonly targetAuraElements?: readonly TravelerElement[]
+    readonly defaultVariantByCharacter?: Readonly<Record<string, string>>
+    readonly fixedVariantByCharacter?: Readonly<Record<string, string>>
+    readonly automaticVariant?: {
+      readonly variant: string
+      readonly capability: import("./capabilities.js").CombatCapabilityRequirement
+      /** Only the trigger qualification may use an earlier foreground preparation. */
+      readonly prepareSourceOnField?: true
+    }
   }
   /**
    * Active snapshot IDs that must be selected before this effect can apply. Scenario evaluation derives the effect
@@ -1178,6 +1214,15 @@ export interface CombatCharacterScenarioEffectOption {
 
 /** Metadata for one prospective rotation action, independent from its numeric calculation. */
 export interface CombatActionMetadata {
+  /** Reviewed exceptions to the default pre-action preparation, without simulating a rotation. */
+  readonly preparationAtSnapshot?: {
+    readonly burstCast?: boolean
+    readonly energyNotFull?: boolean
+    readonly elementalNormalHit?: boolean
+  }
+  readonly aimedArrowDamagePartIds?: readonly string[]
+  /** Reviewed stat-capture presence; distinct from the character's presence when the damage lands. */
+  readonly statCaptureFieldPresence?: "on_field" | "off_field"
   /** The metric owner's required presence. Actual active party identity is resolved once in the scenario. */
   readonly fieldPresence?: "on_field" | "off_field"
   /** Canonical explicitly maintained no-reaction counterpart; legacy generated IDs resolve to it. */
@@ -1225,6 +1270,8 @@ export interface CombatActionMetadata {
 
 /** Content-level declaration for one character's combat coverage. */
 export interface CharacterCombatCoverage {
+  /** Combat-only healing restrictions apply to both character and equipment providers. */
+  readonly healingReception?: "own_kit_only"
   /** Kit-owned capabilities; the analyzer resolves their providers against the actual party and field identity. */
   readonly capabilities?: readonly CombatCapability[]
   readonly actions: readonly CombatActionMetadata[]

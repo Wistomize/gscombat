@@ -5,6 +5,7 @@ import { flinsDefinition } from "./definition.js"
 
 export const flinsCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "flins.kit.lunar_charged-damage", label: "已维护的本人月曜伤害动作", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "on_field", sustained: true, specialReactions: ["lunar_charged"] },
     declareSkillCastCapability("flins", 9),
     { ...declareSkillCastCapability("flins.spearstorm", 7, { initialUses: 2, nonDamagingInitialUses: 1 }), sourceFieldPresence: "on_field" },
     { ...declareSkillCastCapability("flins.c1.spearstorm", 7, { initialUses: 2, nonDamagingInitialUses: 1, cooldownMultiplier: 2 / 3 }),

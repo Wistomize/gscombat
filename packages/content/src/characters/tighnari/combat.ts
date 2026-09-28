@@ -5,6 +5,9 @@ import { tighnariDefinition } from "./definition.js"
 
 export const tighnariCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "tighnari.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "tighnari.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 2 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("tighnari", 3),
     ...declareWeaponHitCapabilities(tighnariDefinition),
     declareHitCapability("tighnari.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["dendro"]),
@@ -114,6 +117,7 @@ export const tighnariCombatCoverage: CharacterCombatCoverage = {
       element: tighnariDefinition.element,
       evaluator: "declared_direct",
       id: "tighnari.normal.wreath_arrow.single_hit.spread",
+      aimedArrowDamagePartIds: ["wreath-arrow"],
       intrinsicEffects: [
         {
           coefficientParameterId: "a4-damage-bonus-per-elemental-mastery",

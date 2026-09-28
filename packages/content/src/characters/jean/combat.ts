@@ -5,6 +5,8 @@ import { jeanDefinition } from "./definition.js"
 
 export const jeanCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "jean.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "jean.kit.healing", label: "元素爆发初段治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("jean", 3),
     ...declareWeaponHitCapabilities(jeanDefinition),
     declareHitCapability("jean.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),

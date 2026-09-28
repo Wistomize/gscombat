@@ -1,3 +1,4 @@
+import { getCombatActionEffectDefinition } from "@gscombat/content"
 import {
   canEnterNightsoulBlessing,
   getCharacterBurstEnergyCost,
@@ -168,7 +169,6 @@ function addMaximumReachableEquipmentEffects(
     ) {
       return []
     }
-    if (effect.value.kind === "team_burst_energy_cost" && scenario.teammates.length !== 3) return []
     return [{ declarationIndex, effect }]
   })
 
@@ -204,10 +204,9 @@ function selectAutomaticEffectSources(
   effectIds: readonly string[],
   scenario: EvaluationScenario
 ): Record<string, string> {
-  const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
   const selectedSources = { ...(scenario.conditions.activeEffectSourceBuildIds ?? {}) }
   for (const effectId of effectIds) {
-    const effect = effectsById.get(effectId)
+    const effect = getCombatActionEffectDefinition(effectId)
     if (
       !effect ||
       (effect.source.kind === "artifact_set" && effect.source.resolveOneMatchingPartySource === true) ||

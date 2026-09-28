@@ -2,7 +2,8 @@ import Type from "typebox"
 
 import { CharacterBuildSchema } from "./builds.js"
 import { CombatActionIntegerScenarioParameterSchema } from "./combat-coverage.js"
-import { ExternalBuffSchema } from "./scenarios.js"
+import { ExternalBuffSchema, ScenarioConditionsSchema } from "./scenarios.js"
+import { WeaponChoiceGroupSchema, WeaponChoicesSchema } from "./analysis.js"
 
 const WeaponTypeSchema = Type.Union([
   Type.Literal("bow"),
@@ -47,7 +48,9 @@ export const ActiveScenarioEffectOptionSchema = Type.Object({
 export type ActiveScenarioEffectOption = Type.Static<typeof ActiveScenarioEffectOptionSchema>
 
 export const ActionEffectOptionsRequestSchema = Type.Object({
+  conditions: Type.Optional(ScenarioConditionsSchema),
   actionId: Type.String({ minLength: 1, maxLength: 120 }),
+  supportMetricId: Type.Optional(Type.String({ minLength: 1, maxLength: 180 })),
   primary: Type.Optional(CharacterBuildSchema),
   teammates: Type.Optional(Type.Array(CharacterBuildSchema, { maxItems: 3 }))
 })
@@ -55,6 +58,10 @@ export const ActionEffectOptionsRequestSchema = Type.Object({
 export type ActionEffectOptionsRequest = Type.Static<typeof ActionEffectOptionsRequestSchema>
 
 export const ActionEffectOptionsResponseSchema = Type.Object({
+  weaponChoices: Type.Optional(Type.Array(Type.Object({
+    sourceBuildId: Type.String(), weaponId: Type.String(), choices: WeaponChoicesSchema,
+    choiceGroups: Type.Array(WeaponChoiceGroupSchema)
+  }))),
   options: Type.Array(ActiveScenarioEffectOptionSchema, { maxItems: 1000 })
 })
 
@@ -138,6 +145,7 @@ export const CatalogResponseSchema = Type.Object({
       primaryActions: Type.Array(
         Type.Object({
           fieldPresence: Type.Optional(Type.Union([Type.Literal("on_field"), Type.Literal("off_field")])),
+          supportsArrowWeakPoint: Type.Optional(Type.Boolean()),
           id: Type.String(),
           label: Type.String(),
           minimumSourceConstellation: Type.Optional(Type.Integer({ maximum: 6, minimum: 0 })),
@@ -158,6 +166,12 @@ export const CatalogResponseSchema = Type.Object({
   ),
   weapons: Type.Array(
     Type.Object({
+      comparison: Type.Optional(Type.Object({
+        excluded: Type.Optional(Type.Boolean()),
+        level: Type.Optional(Type.Integer({ minimum: 1, maximum: 90 })),
+        ascension: Type.Optional(Type.Integer({ minimum: 0, maximum: 6 })),
+        refinements: Type.Optional(Type.Array(Type.Integer({ minimum: 1, maximum: 5 }), { minItems: 1, maxItems: 5 }))
+      })),
       label: Type.String(),
       rarity: Type.Integer(),
       weaponId: Type.String(),

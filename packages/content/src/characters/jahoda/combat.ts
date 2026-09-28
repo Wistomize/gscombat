@@ -6,6 +6,9 @@ import { jahodaDefinition } from "./definition.js"
 
 export const jahodaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "jahoda.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 7 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "jahoda.kit.weapon-healing-qualification", label: "爆发猫型协调器治疗前台", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("jahoda", 5),
     ...declareWeaponHitCapabilities(jahodaDefinition),
     declareHitCapability("jahoda.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill","burst"], ["anemo"]),

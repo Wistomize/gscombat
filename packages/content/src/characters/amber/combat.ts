@@ -5,6 +5,9 @@ import { amberDefinition } from "./definition.js"
 
 export const amberCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "amber.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "amber.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 1 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("amber", 3),
     { ...declareSkillCastCapability("amber", 3, {"initialUses":2}), id: "amber.kit.extra-skill-charge", minimumSourceConstellation: 4 },
     ...declareWeaponHitCapabilities(amberDefinition),
@@ -89,6 +92,7 @@ export const amberCombatCoverage: CharacterCombatCoverage = {
       element: amberDefinition.element,
       evaluator: "declared_direct",
       id: "amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize",
+      aimedArrowDamagePartIds: ["fully-charged-aimed-shot"],
       kind: "damage",
       parameterReferences: [
         {
@@ -121,6 +125,7 @@ export const amberCombatCoverage: CharacterCombatCoverage = {
       element: amberDefinition.element,
       evaluator: "declared_direct",
       id: "amber.normal.sharpshooter.fully_charged.cryo_aura_melt",
+      aimedArrowDamagePartIds: ["fully-charged-aimed-shot"],
       kind: "damage",
       parameterReferences: [
         {

@@ -5,6 +5,7 @@ import { ifaDefinition } from "./definition.js"
 
 export const ifaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "ifa.kit.weapon-healing-qualification", label: "伊法前台救援射击治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("ifa", 4),
     ...declareWeaponHitCapabilities(ifaDefinition),
     declareHitCapability("ifa.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["anemo"]),

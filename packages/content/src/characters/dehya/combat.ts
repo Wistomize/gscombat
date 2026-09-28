@@ -5,6 +5,7 @@ import { dehyaDefinition } from "./definition.js"
 
 export const dehyaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "dehya.kit.weapon-healing-qualification", label: "崇诚之真生命过低时自疗", kind: "healing", recipient: "self", sourceFieldPresence: "any", sustained: false, minimumSourceAscension: 4 },
     declareSkillCastCapability("dehya", 7, {"castsPerUse":2}),
     ...declareWeaponHitCapabilities(dehyaDefinition),
     declareHitCapability("dehya.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),

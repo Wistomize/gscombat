@@ -5,6 +5,8 @@ import { razorDefinition } from "./definition.js"
 
 export const razorCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "razor.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "razor.kit.self-aura", label: "雷牙期间自身雷附着", kind: "self_aura", elements: ["electro"], recipient: "self", sourceFieldPresence: "on_field", sustained: true },
     declareSkillCastCapability("razor", 5),
     { ...declareSkillCastCapability("razor", 5, {"cooldownMultiplier":0.8}), id: "razor.kit.passive-skill-cooldown", minimumSourceAscension: 1 },
     ...declareWeaponHitCapabilities(razorDefinition),

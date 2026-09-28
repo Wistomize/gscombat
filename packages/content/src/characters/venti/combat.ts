@@ -5,6 +5,9 @@ import { ventiDefinition } from "./definition.js"
 
 export const ventiCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "venti.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "venti.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 3 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("venti", 1),
     { id: "venti.kit.plunge-access", label: "拥抱之风创造上升气流", kind: "plunge_access", recipient: "on_field", sourceFieldPresence: "any", sustained: true, minimumSourceAscension: 1 },
     ...declareWeaponHitCapabilities(ventiDefinition),

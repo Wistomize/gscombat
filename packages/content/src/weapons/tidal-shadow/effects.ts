@@ -1,12 +1,13 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponHealing } from "../../combat/weapon-preparation.js"
 
 export const TIDAL_SHADOW_AFTER_HEAL_ATTACK_PERCENT = [0.24, 0.3, 0.36, 0.42, 0.48] as const
 
 /** Typed selected post-healing attack contribution of Tidal Shadow. */
 export const tidalShadowCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "maximum_reachable",
-    weaponComparisonDefault: { recipientCharacterIds: "all" },
+    activation: "automatic",
+    lifecycle: prepareWeaponHealing(),
     id: "weapon.tidal-shadow.after-heal.attack-percent",
     label: "浪影阔剑 · 默认治疗充分，受到治疗后8秒内",
     source: { kind: "weapon", weaponId: "TidalShadow" },

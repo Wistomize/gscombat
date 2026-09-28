@@ -60,7 +60,7 @@ describe("Bennett C6 field API", () => {
     expect(evaluation.result.expectedDamage).toBeGreaterThan(0)
   }, 20_000)
 
-  it("does not retain a client-supplied deterministic post-Burst state for Xiangling Guoba", async () => {
+  it("prepares Engulfing's post-Burst recharge for Guoba without duplicating a legacy flag", async () => {
     const xiangling = {
       ...requireTeammate("Xiangling"),
       buildId: "api.xiangling.engulfing-lightning-guoba",
@@ -95,9 +95,10 @@ describe("Bennett C6 field API", () => {
     }
     const injectedEvaluation = injectedResponse.json().evaluation as typeof baselineEvaluation
 
-    expect(injectedEvaluation.appliedEffects).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: "weapon.engulfing-lightning.post-burst-energy-recharge" })])
+    expect(baselineEvaluation.appliedEffects).toContainEqual(
+      expect.objectContaining({ id: "weapon.engulfing-lightning.post-burst-energy-recharge", value: 0.3 })
     )
+    expect(injectedEvaluation.appliedEffects).toEqual(baselineEvaluation.appliedEffects)
     expect(injectedEvaluation.stats.energyRecharge).toBeCloseTo(baselineEvaluation.stats.energyRecharge)
     expect(injectedEvaluation.result.expectedDamage).toBeCloseTo(baselineEvaluation.result.expectedDamage)
   }, 20_000)

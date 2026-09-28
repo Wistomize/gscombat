@@ -14,7 +14,7 @@ export const aquaSimulacraCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: AQUA_SIMULACRA_HP_PERCENT_BY_REFINEMENT }
   },
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.aqua-simulacra.nearby-enemy-damage-bonus",
     label: "若水 · 附近存在敌人（当前动作前已生效）",
     source: { kind: "weapon", weaponId: "AquaSimulacra" },

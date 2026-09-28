@@ -1,3 +1,4 @@
+import { AnalysisPreparation } from "../core/analysis-preparation.js"
 import { resolveFieldContext } from "../core/field-presence.js"
 import {
   type ExpectedDamageResult,
@@ -20,18 +21,18 @@ import {
 } from "../effects/action-effects.js"
 import { resolveActiveElementOverrideWindows } from "../effects/active-element-overrides.js"
 import { normalizeScenarioEffectSelections } from "../effects/effect-selection.js"
-import {
-  evaluateDeclaredDirectScenarioAction,
-  evaluateDeclaredSpecialReactionScenarioAction,
-  evaluateDeclaredTransformativeScenarioAction,
-  type ResolvedDeclaredScenarioStats
-} from "../evaluators/declared-scenario.js"
+import { validateWeaponChoices } from "../effects/weapon-state.js"
+import { evaluateDeclaredDirectScenarioAction } from "../evaluators/direct.js"
+import { evaluateDeclaredSpecialReactionScenarioAction } from "../evaluators/special-reaction.js"
+import { evaluateDeclaredTransformativeScenarioAction } from "../evaluators/transformative.js"
+import type { ResolvedDeclaredScenarioStats } from "../evaluators/types.js"
 import { resolveTeamBuffs, type AppliedScenarioBuff } from "./buffs.js"
 import { resolveTeamState, type ResolvedTeamState } from "./team-state.js"
 
 export type { AppliedScenarioBuff } from "./buffs.js"
 
 export interface ScenarioTargetEvaluation {
+  readonly eventStatContributions?: Readonly<Record<string, ResolvedDeclaredScenarioStats["statContributions"]>>
   readonly appliedEffects: readonly AppliedCombatActionEffect[]
   /** Legacy aggregate formula trace retained for one-hit compatibility. */
   readonly result: ExpectedDamageResult
@@ -86,10 +87,14 @@ function evaluateVerifiedTargetAction(
   scenario: EvaluationScenario,
   gameData: GameDataRepository,
   appliedBuffs: readonly AppliedScenarioBuff[],
-  intervention: ScenarioIntervention
+  intervention: ScenarioIntervention,
+  preparation: AnalysisPreparation
 ): ScenarioTargetEvaluation {
   const action = getVerifiedDamageAction(scenario)
-  const fieldContext = resolveFieldContext(action, scenario.primary, scenario.teammates, scenario.conditions.onFieldBuildId)
+  const fieldContext = { ...resolveFieldContext(action, scenario.primary, scenario.teammates, scenario.conditions.onFieldBuildId),
+    targetIsSlime: scenario.conditions.targetIsSlime ?? false,
+    arrowHitsWeakPoint: scenario.conditions.arrowHitsWeakPoint ?? false,
+    ...(scenario.conditions.weaponEffectChoices ? { weaponEffectChoices: scenario.conditions.weaponEffectChoices } : {}) }
   const moonsignLevel = resolveTeamState(scenario.primary, scenario.teammates, gameData).moonsign.level
   if (action.evaluator === "declared_direct") {
     const artifactStatDeltas = intervention.artifactStatDeltas
@@ -101,6 +106,7 @@ function evaluateVerifiedTargetAction(
       teammates: scenario.teammates
     })
     return evaluateDeclaredDirectScenarioAction({
+      preparation,
       activeEffectIds: scenario.conditions.activeEffectIds,
       ...(scenario.conditions.activeEffectSourceBuildIds === undefined
         ? {}
@@ -124,6 +130,7 @@ function evaluateVerifiedTargetAction(
   if (action.evaluator === "declared_transformative") {
     const artifactStatDeltas = intervention.artifactStatDeltas
     return evaluateDeclaredTransformativeScenarioAction({
+      preparation,
       activeEffectIds: scenario.conditions.activeEffectIds,
       ...(scenario.conditions.activeEffectSourceBuildIds === undefined
         ? {}
@@ -145,6 +152,7 @@ function evaluateVerifiedTargetAction(
   if (action.evaluator === "declared_special_reaction") {
     const artifactStatDeltas = intervention.artifactStatDeltas
     return evaluateDeclaredSpecialReactionScenarioAction({
+      preparation,
       activeEffectIds: scenario.conditions.activeEffectIds,
       ...(scenario.conditions.activeEffectSourceBuildIds === undefined
         ? {}
@@ -167,20 +175,22 @@ function evaluateVerifiedTargetAction(
 }
 
 /** Evaluates a normalized team scenario through the supported target-action implementation. */
-export function evaluateScenario(
+export function evaluatePreparedScenario(
   scenario: EvaluationScenario,
   gameData: GameDataRepository,
-  intervention: ScenarioIntervention = {}
+  intervention: ScenarioIntervention = {},
+  preparation = new AnalysisPreparation(gameData)
 ): ScenarioEvaluation {
   if (scenario.gameDataVersion !== gameData.getManifest().gameVersion) {
     throw new Error(`Game-data version mismatch: scenario ${scenario.gameDataVersion}`)
   }
   assertScenarioBuildsAreValid(scenario)
   const teamState = resolveTeamState(scenario.primary, scenario.teammates, gameData)
+  validateWeaponChoices(scenario)
   const normalizedScenario = normalizeScenarioEffectSelections(scenario, gameData, teamState)
   const action = getVerifiedDamageAction(normalizedScenario)
   const appliedBuffs = resolveTeamBuffs(normalizedScenario, gameData, teamState, action)
-  const targetEvaluation = evaluateVerifiedTargetAction(normalizedScenario, gameData, appliedBuffs, intervention)
+  const targetEvaluation = evaluateVerifiedTargetAction(normalizedScenario, gameData, appliedBuffs, intervention, preparation)
   return {
     ...targetEvaluation,
     actionExpectedDamage: targetEvaluation.rotation.dpr,
@@ -188,6 +198,12 @@ export function evaluateScenario(
     appliedEffects: targetEvaluation.appliedEffects,
     teamState
   }
+}
+
+/** Public isolated evaluation creates its own preparation lifetime. */
+export function evaluateScenario(scenario: EvaluationScenario, gameData: GameDataRepository,
+  intervention: ScenarioIntervention = {}): ScenarioEvaluation {
+  return evaluatePreparedScenario(scenario, gameData, intervention)
 }
 
 export const raidenNationalBuiltinScenario: EvaluationScenario = contentRaidenNationalBuiltinScenario

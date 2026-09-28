@@ -1,0 +1,147 @@
+{
+  "before": {
+    "fullAnalyses": 3,
+    "calls": {
+      "resolveBaseCombatStats": 6480,
+      "listCombatActionEffects": 30858,
+      "resolveSelfAutomaticEquipmentEffects": 2592,
+      "assertSelectedActiveEffectExclusivity": 7290
+    },
+    "selfSamples": [
+      [
+        "(anonymous)",
+        1694
+      ],
+      [
+        "resolveCombatActionEffectsForCandidates",
+        1127
+      ],
+      [
+        "assertSelectedActiveEffectExclusivity",
+        789
+      ],
+      [
+        "resolveEligibleActionEffect",
+        411
+      ],
+      [
+        "listCombatActionEffects",
+        395
+      ],
+      [
+        "validateCharacterBuild",
+        270
+      ],
+      [
+        "listSelectedSourceStatSnapshotEffectIds",
+        240
+      ],
+      [
+        "isCombatActionEffectApplicable",
+        217
+      ],
+      [
+        "(garbage collector)",
+        184
+      ],
+      [
+        "isSelfAutomaticEquipmentEffect",
+        182
+      ],
+      [
+        "selectAutomaticEffectSources",
+        166
+      ],
+      [
+        "hasQualifiedDependencies",
+        152
+      ],
+      [
+        "listSnapshotActivationEffectIds",
+        140
+      ],
+      [
+        "resolveEffectSources",
+        139
+      ],
+      [
+        "resolveSelfAutomaticEquipmentEffects",
+        128
+      ]
+    ]
+  },
+  "after": {
+    "fullAnalyses": 3,
+    "calls": {
+      "resolveBaseCombatStats": 2568,
+      "listCombatActionEffects": 3684,
+      "getCombatActionEffectDefinition": 15792,
+      "baseStats": 810,
+      "resolveSelfAutomaticEquipmentEffects": 648,
+      "assertSelectedActiveEffectExclusivity": 5346,
+      "prepareSources": 162
+    },
+    "selfSamples": [
+      [
+        "(anonymous)",
+        223
+      ],
+      [
+        "listCombatActions",
+        64
+      ],
+      [
+        "addMaximumReachableEquipmentEffects",
+        64
+      ],
+      [
+        "listCombatActionEffectsForSources",
+        48
+      ],
+      [
+        "validateCharacterBuild",
+        41
+      ],
+      [
+        "isCombatActionEffectApplicable",
+        39
+      ],
+      [
+        "listSelectedSourceStatSnapshotEffectIds",
+        39
+      ],
+      [
+        "listCombatMetrics",
+        29
+      ],
+      [
+        "get",
+        23
+      ],
+      [
+        "getCombatActionDefinition",
+        21
+      ],
+      [
+        "getNoReactionActionId",
+        21
+      ],
+      [
+        "resolveCombatActionEffectsForCandidates",
+        21
+      ],
+      [
+        "#cached",
+        19
+      ],
+      [
+        "aggregateArtifactStats",
+        18
+      ],
+      [
+        "resolveDependentActiveEffectIds",
+        17
+      ]
+    ]
+  }
+}

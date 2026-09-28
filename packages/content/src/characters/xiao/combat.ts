@@ -5,6 +5,7 @@ import { xiaoDefinition } from "./definition.js"
 
 export const xiaoCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "xiao.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("xiao", 1, {"initialUses":2}),
     { ...declareSkillCastCapability("xiao", 1, {"initialUses":3}), id: "xiao.kit.extra-skill-charge", minimumSourceConstellation: 1 },
     { id: "xiao.kit.plunge-access", label: "靖妖傩舞提高自身跳跃能力", kind: "plunge_access", recipient: "self", sourceFieldPresence: "on_field", sustained: true },

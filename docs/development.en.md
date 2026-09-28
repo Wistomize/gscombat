@@ -87,6 +87,19 @@ every existing ADR.
 
 ## Local development
 
+### Maintaining weapon rules
+
+Keep automatic preparation, necessary choices, and comparison eligibility in the weapon's Content directory.
+`combat/weapon-choices.ts` validates declarations; Analyzer `effects/weapon-state.ts` projects the same rules for
+equipped builds, full comparisons, and single-row updates. Effective infused elements and the character's native
+element are distinct. Capability evidence must identify both source and recipient: excluding a weapon's healing
+amount or independent proc damage does not remove its legitimate trigger capability.
+
+The [review ledger](../openspec/changes/implement-reviewed-weapon-default-rules/audit.md) links decisions and evidence.
+Regenerate registries after declaration changes. Prioritize same-configuration zero-gain, full/incremental equivalence,
+and source isolation. Consumable hit effects require authored timing for resets; grouped hits without spacing evidence
+receive the prepared effect on the first hit only, without inventing frame timing.
+
 Install and build the workspace:
 
 ```bash

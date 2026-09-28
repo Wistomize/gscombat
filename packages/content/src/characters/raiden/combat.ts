@@ -8,6 +8,7 @@ const RAIDEN_BURST_INITIAL_SLASH_ACTION_ID = "raiden.burst.initial_slash"
 
 export const raidenCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "raiden.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("raiden", 4),
     ...declareWeaponHitCapabilities(raidenDefinition),
     declareHitCapability("raiden.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),

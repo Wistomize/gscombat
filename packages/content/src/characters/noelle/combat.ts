@@ -5,6 +5,7 @@ import { noelleDefinition } from "./definition.js"
 
 export const noelleCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "noelle.kit.healing", label: "护心铠期间前台攻击治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("noelle", 4),
     { id: "noelle.kit.retained-shield", label: "护心铠护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     ...declareWeaponHitCapabilities(noelleDefinition),

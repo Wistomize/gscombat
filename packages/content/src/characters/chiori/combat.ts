@@ -5,6 +5,7 @@ import { chioriDefinition } from "./definition.js"
 
 export const chioriCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "chiori.kit.normal-infusion", label: "量体裁衣 · 岩附魔", kind: "normal_attack_infusion", elements: ["geo"], recipient: "self", sourceFieldPresence: "on_field", sustained: true, minimumSourceAscension: 1 },
     declareSkillCastCapability("chiori", 6),
     ...declareWeaponHitCapabilities(chioriDefinition),
     declareHitCapability("chiori.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),

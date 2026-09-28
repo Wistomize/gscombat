@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponHealingMarks } from "../../combat/weapon-preparation.js"
 
 export const RANGE_GAUGE_ATTACK_PERCENT_PER_CONSUMED_MARK = [0.03, 0.04, 0.05, 0.06, 0.07] as const
 export const RANGE_GAUGE_ALL_ELEMENT_DAMAGE_BONUS_PER_CONSUMED_MARK = [0.07, 0.085, 0.1, 0.115, 0.13] as const
@@ -14,7 +15,8 @@ function createConsumedMarkEffects(consumedMarkCount: (typeof consumedMarkCounts
   const exclusivity = { group: "range-gauge-unity", variant: `${consumedMarkCount}-mark` }
   return [
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: consumedMarkCount === 3 ? prepareWeaponHealingMarks() : { kind: "excluded", reason: "按适用治疗来源自动准备三枚标记" },
       exclusivity,
       id: `weapon.range-gauge.unity.${consumedMarkCount}-mark.attack-percent`,
       label: `测距规 · 消耗${consumedMarkCount}枚团结标记后的攻击力`,
@@ -23,7 +25,8 @@ function createConsumedMarkEffects(consumedMarkCount: (typeof consumedMarkCounts
       value: { kind: "refinement_table", values: getValues(RANGE_GAUGE_ATTACK_PERCENT_PER_CONSUMED_MARK, consumedMarkCount) }
     },
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: consumedMarkCount === 3 ? prepareWeaponHealingMarks() : { kind: "excluded", reason: "按适用治疗来源自动准备三枚标记" },
       exclusivity,
       id: `weapon.range-gauge.unity.${consumedMarkCount}-mark.all-element-damage-bonus`,
       label: `测距规 · 消耗${consumedMarkCount}枚团结标记后的所有元素伤害`,

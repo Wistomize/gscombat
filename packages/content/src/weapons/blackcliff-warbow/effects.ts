@@ -1,11 +1,12 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponChoice } from "../../combat/weapon-preparation.js"
 
 export const BLACKCLIFF_WARBOW_ONE_STACK_ATTACK_PERCENT = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 export const BLACKCLIFF_WARBOW_TWO_STACK_ATTACK_PERCENT = [0.24, 0.3, 0.36, 0.42, 0.48] as const
 export const BLACKCLIFF_WARBOW_THREE_STACK_ATTACK_PERCENT = [0.36, 0.45, 0.54, 0.63, 0.72] as const
 
 /** Typed selected defeated-enemy stack contributions of Blackcliff Warbow. */
-export const blackcliffWarbowCombatActionEffects: readonly CombatActionEffect[] = [
+const authoredEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     selectionMode: "optional",
@@ -37,3 +38,7 @@ export const blackcliffWarbowCombatActionEffects: readonly CombatActionEffect[] 
     value: { kind: "refinement_table", values: BLACKCLIFF_WARBOW_THREE_STACK_ATTACK_PERCENT }
   }
 ]
+
+/** Reviewed necessary choice, shared by equipped and comparison evaluation. */
+export const blackcliffWarbowCombatActionEffects: readonly CombatActionEffect[] = withWeaponChoice(authoredEffects,
+  "blackcliff-warbow-defeated-enemy", "击败敌人层数", "none", "none")

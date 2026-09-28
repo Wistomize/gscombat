@@ -5,7 +5,10 @@ export const BLACK_TASSEL_SLIME_DAMAGE_BONUS = [0.4, 0.5, 0.6, 0.7, 0.8] as cons
 /** Typed selected current-slime-target damage contribution of Black Tassel. */
 export const blackTasselCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "conditional", preparation: "qualified", retention: "while_applicable",
+      trigger: { event: "none", sourceFieldPresence: "any" }, applicability: { targetIsSlime: true },
+      explanation: "仅由全场景明确的史莱姆目标条件生效，不按元素或抗性猜测物种" },
     id: "weapon.black-tassel.slime-target.damage-bonus",
     label: "黑缨枪 · 当前目标为史莱姆类敌人时的伤害",
     source: { kind: "weapon", weaponId: "BlackTassel" },

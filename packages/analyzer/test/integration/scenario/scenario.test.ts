@@ -572,7 +572,7 @@ describe("team scenario", () => {
     )
   })
 
-  it("adds Skyward Spine's cooldown-ready Vacuum Blade as a separate physical normal-attack event", () => {
+  it("ignores Skyward Spine's excluded Vacuum Blade even when a legacy normal-attack scene selects it", () => {
     const baseScenario: EvaluationScenario = {
       ...raidenNationalBuiltinScenario,
       conditions: {
@@ -603,25 +603,16 @@ describe("team scenario", () => {
       expect.arrayContaining([expect.objectContaining({ id: "weapon.skyward-spine.vacuum-blade" })])
     )
     expect(withoutCooldownReady.rotation.events).toHaveLength(1)
-    expect(withCooldownReady.appliedEffects).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.skyward-spine.vacuum-blade",
-          target: "additionalDamageEvent",
-          value: 0.2
-        })
-      ])
-    )
+    expect(withCooldownReady.appliedEffects).toEqual(withoutCooldownReady.appliedEffects)
+    expect(withCooldownReady.rotation.dpr).toBe(withoutCooldownReady.rotation.dpr)
     const vacuumBlade = withCooldownReady.rotation.events.find(
       (event) => event.id === "xiangling.normal.auto.first_hit.weapon.skyward-spine.vacuum-blade"
     )
-    expect(vacuumBlade).toMatchObject({ element: "physical", hitCount: 1 })
-    expect(vacuumBlade?.elementalApplication).toBeUndefined()
-    expect(vacuumBlade?.trace[0]).toMatchObject({ coefficient: 0.4, kind: "scaling", stat: "attack" })
-    expect(vacuumBlade?.trace.at(-1)).toMatchObject({ kind: "trigger_probability", probability: 0.5 })
+    expect(vacuumBlade).toBeUndefined()
+    expect(withCooldownReady.rotation.events).toHaveLength(1)
   })
 
-  it("weights Skyward Spine's full R5 Vacuum Blade hit on an explicitly charged attack", () => {
+  it("keeps Skyward Spine's R5 CRIT passive but excludes its separate charged-attack proc", () => {
     const chargedAction = getCombatActionDefinition(
       "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize"
     )
@@ -650,19 +641,18 @@ describe("team scenario", () => {
     expect(evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: "weapon.skyward-spine.vacuum-blade",
-          target: "additionalDamageEvent",
-          value: 0.5
+          id: "weapon.skyward-spine.crit-rate",
+          target: "critRate",
+          value: 0.16
         })
       ])
     )
     const vacuumBlade = evaluation.rotation.events.find(
       (event) => event.id.endsWith("weapon.skyward-spine.vacuum-blade")
     )
-    expect(vacuumBlade?.trace[0]).toMatchObject({ coefficient: 1, kind: "scaling", stat: "attack" })
-    expect(vacuumBlade?.trace.at(-1)).toMatchObject({ kind: "trigger_probability", probability: 0.5 })
-    expect(vacuumBlade?.trace.some((entry) => entry.kind === "amplifying_reaction")).toBe(false)
-    expect(vacuumBlade?.trace.find((entry) => entry.kind === "damage_bonus")).toMatchObject({ bonus: 0 })
+    expect(vacuumBlade).toBeUndefined()
+    expect(evaluation.rotation.events).toHaveLength(1)
+    expect(evaluation.rotation.events[0]!.trace.some((entry) => entry.kind === "amplifying_reaction")).toBe(true)
   })
 
   it("does not add Skyward Spine's Vacuum Blade to plunge, Skill, or Burst actions", () => {
@@ -887,7 +877,7 @@ describe("team scenario", () => {
     expect(attackConversion?.value).toBeCloseTo((automaticallyResolved.stats.energyRecharge - 1) * 0.28)
   })
 
-  it("does not retain a manually supplied deterministic post-Burst state for an action without that state", () => {
+  it("prepares Engulfing's post-Burst state for a Skill metric without duplicating the legacy selection", () => {
     const baseScenario: EvaluationScenario = {
       ...raidenNationalBuiltinScenario,
       conditions: { ...withoutActionParameters(raidenNationalBuiltinScenario.conditions), activeEffectIds: [] },
@@ -911,9 +901,8 @@ describe("team scenario", () => {
       gameData
     )
 
-    expect(withInjectedState.appliedEffects).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: "weapon.engulfing-lightning.post-burst-energy-recharge" })])
-    )
+    expect(withInjectedState.appliedEffects.filter((effect) => effect.id === "weapon.engulfing-lightning.post-burst-energy-recharge"))
+      .toEqual([expect.objectContaining({ target: "energyRecharge", value: 0.3 })])
     expect(withInjectedState.stats.energyRecharge).toBeCloseTo(withoutInjectedState.stats.energyRecharge)
     expect(withInjectedState.actionExpectedDamage).toBeCloseTo(withoutInjectedState.actionExpectedDamage)
   })
@@ -1082,7 +1071,7 @@ describe("team scenario", () => {
     expect(c6.rotation.dpr).toBeGreaterThan(uninfusedC6.rotation.dpr)
   })
 
-  it("applies element-filtered resistance reduction to an owned physical proc without buffing the Pyro trigger", () => {
+  it("does not leak physical resistance reduction into a Pyro trigger when the weapon proc is excluded", () => {
     const klee: CharacterBuild = {
       ...raidenNationalBuiltinBuild,
       buildId: "test.klee.eye-of-perception",
@@ -1129,17 +1118,15 @@ describe("team scenario", () => {
     const baselineProc = baseline.rotation.events.find((event) => event.id.includes(procId))
     const debuffedProc = debuffed.rotation.events.find((event) => event.id.includes(procId))
 
-    expect(debuffed.appliedEffects).toEqual(
+    expect(debuffed.appliedEffects).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: "venti.skyward_sonnet.c2.physical_resistance_shred" })])
     )
     expect(debuffedPrimary?.appliedEffectIds).not.toContain("venti.skyward_sonnet.c2.physical_resistance_shred")
-    expect(debuffedProc?.appliedEffectIds).toContain("venti.skyward_sonnet.c2.physical_resistance_shred")
     expect(baselinePrimary?.expectedDamage).toBeCloseTo(debuffedPrimary?.expectedDamage ?? 0)
-    expect(baselineProc).toMatchObject({ element: "physical" })
-    expect(debuffedProc?.expectedDamage).toBeGreaterThan(baselineProc?.expectedDamage ?? 0)
-    expect(debuffedProc?.trace).toEqual(
-      expect.arrayContaining([expect.objectContaining({ kind: "resistance", resistanceReduction: 0.12 })])
-    )
+    expect(baselineProc).toBeUndefined()
+    expect(debuffedProc).toBeUndefined()
+    expect(baseline.rotation.events).toHaveLength(1)
+    expect(debuffed.rotation.events).toHaveLength(1)
   })
 
   it("resolves Navia's actual Crystalshot shard hits within the selected Crystal Shrapnel limit", () => {

@@ -11,7 +11,7 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: [
+      effectIds: ["weapon.tome-of-the-eternal-flow.raging-tides.0-stack.charged-damage-bonus",
         "weapon.tome-of-the-eternal-flow.raging-tides.1-stack.charged-damage-bonus",
         "weapon.tome-of-the-eternal-flow.raging-tides.2-stack.charged-damage-bonus",
         "weapon.tome-of-the-eternal-flow.raging-tides.3-stack.charged-damage-bonus"

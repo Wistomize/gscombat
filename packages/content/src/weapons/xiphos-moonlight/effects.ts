@@ -13,7 +13,7 @@ export const XIPHOS_MOONLIGHT_OTHER_PARTY_ENERGY_RECHARGE_FROM_ELEMENTAL_MASTERY
 /** Typed selected current-action snapshots for Xiphos' Moonlight's Jinni's Whisper. */
 export const xiphosMoonlightCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.xiphos-moonlight.after-10s.self.source-em-to-energy-recharge",
     label: "西福斯的月光 · 每10秒触发后的自身元素充能效率",
     source: { holder: "primary", kind: "weapon", weaponId: "XiphosMoonlight" },
@@ -27,7 +27,7 @@ export const xiphosMoonlightCombatActionEffects: readonly CombatActionEffect[] =
     }
   },
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.xiphos-moonlight.after-10s.other-party.source-em-to-energy-recharge",
     label: "西福斯的月光 · 每10秒触发后的其他队友元素充能效率",
     source: {

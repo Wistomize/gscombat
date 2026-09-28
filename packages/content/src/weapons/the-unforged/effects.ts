@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareShieldedWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const THE_UNFORGED_ATTACK_PERCENT_PER_STACK = [0.04, 0.05, 0.06, 0.07, 0.08] as const
 
@@ -16,8 +17,8 @@ function createStackEffect(
   const state = shielded ? "shielded" : "unshielded"
   const stateLabel = shielded ? "受护盾庇护时" : "未受护盾庇护时"
   return {
-    activation: "active",
-    selectionMode: "optional",
+    activation: "automatic",
+    lifecycle: prepareShieldedWeaponStacks(stackCount, shielded),
     exclusivity: { group: "the-unforged-golden-majesty", variant: `${state}-${stackCount}-stack` },
     id: `weapon.the-unforged.golden-majesty.${state}.${stackCount}-stack.attack-percent`,
     label: `无工之剑 · ${stateLabel}${stackCount}层攻击力`,

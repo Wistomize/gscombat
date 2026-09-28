@@ -5,6 +5,7 @@ import { rosariaDefinition } from "./definition.js"
 
 export const rosariaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "rosaria.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("rosaria", 2),
     ...declareWeaponHitCapabilities(rosariaDefinition),
     declareHitCapability("rosaria.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),

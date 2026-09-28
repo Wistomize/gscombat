@@ -1,10 +1,11 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const HAMAYUMI_NORMAL_DAMAGE_BONUS = [0.16, 0.2, 0.24, 0.28, 0.32] as const
 export const HAMAYUMI_CHARGED_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 
 /** Typed automatic and selected full-energy contributions of Hamayumi. */
-export const hamayumiCombatActionEffects: readonly CombatActionEffect[] = [
+const authoredEffects: readonly CombatActionEffect[] = [
   {
     activation: "automatic",
     id: "weapon.hamayumi.normal-damage-bonus",
@@ -42,3 +43,11 @@ export const hamayumiCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: HAMAYUMI_CHARGED_DAMAGE_BONUS }
   }
 ]
+
+export const hamayumiCombatActionEffects: readonly CombatActionEffect[] = authoredEffects.flatMap((effect) =>
+  effect.activation === "active" ? withWeaponToggle({ ...effect,
+    lifecycle: { kind: "conditional", preparation: "qualified", retention: "while_applicable",
+      trigger: { event: "none", sourceFieldPresence: "any" }, applicability: { energyResource: "elemental" },
+      explanation: "仅普通元素能量可选择满能量；不把特殊资源的 0/0 当成满能量" }
+  }, "hamayumi-full-energy", "元素能量已满", false) : [effect]
+)

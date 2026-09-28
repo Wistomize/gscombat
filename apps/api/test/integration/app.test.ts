@@ -13,7 +13,7 @@ const app = buildApp()
 
 function countSelectableWeapons(weaponType: (typeof supportedWeapons)[number]["weaponType"]): number {
   return supportedWeapons.filter(
-    (weapon) => weapon.weaponType === weaponType && (weapon.rarity === 4 || weapon.rarity === 5)
+    (weapon) => weapon.weaponType === weaponType && [3, 4, 5].includes(weapon.rarity) && !weapon.comparison?.excluded
   ).length
 }
 
@@ -257,10 +257,21 @@ describe("API", () => {
     const options = response.json().options as readonly { id: string }[]
     expect(options.map((option) => option.id)).toEqual(
       expect.arrayContaining([
-        "bennett.burst.field",
-        "weapon.the-widsith.aria.all-element-damage-bonus"
+        "bennett.burst.field"
       ])
     )
+    expect(response.json().weaponChoices).toEqual([expect.objectContaining({
+      sourceBuildId: primary.buildId,
+      weaponId: "TheWidsith",
+      choices: { "the-widsith-theme": "none" },
+      choiceGroups: [expect.objectContaining({
+        id: "the-widsith-theme",
+        options: expect.arrayContaining([expect.objectContaining({ id: "aria" })])
+      })]
+    })])
+    expect(options).not.toContainEqual(expect.objectContaining({
+      id: "weapon.the-widsith.aria.all-element-damage-bonus"
+    }))
     expect(options.map((option) => option.id)).not.toEqual(
       expect.arrayContaining([
         "weapon.wolfs-gravestone.after-low-health-target-hit.party-attack-percent",
@@ -310,14 +321,24 @@ describe("API", () => {
       id: string
       selectionMode?: string
     }[]).filter((option) => option.exclusiveGroup === "slingshot-flight-time")
-    expect(options.map((option) => option.id)).toEqual([
-      "weapon.slingshot.flight-time.within-0.3-seconds.damage-bonus",
-      "weapon.slingshot.flight-time.after-0.3-seconds.damage-penalty"
-    ])
-    expect(options.every((option) => option.selectionMode === "required")).toBe(true)
+    expect(options).toEqual([])
+    expect(response.json().weaponChoices).toEqual([{
+      sourceBuildId: primary.buildId,
+      weaponId: "Slingshot",
+      choices: { "slingshot-flight-time": "within-0.3-seconds" },
+      choiceGroups: [{
+        id: "slingshot-flight-time",
+        label: expect.any(String),
+        defaultVariant: "within-0.3-seconds",
+        options: [
+          { id: "within-0.3-seconds", label: expect.any(String) },
+          { id: "after-0.3-seconds", label: expect.any(String) }
+        ]
+      }]
+    }])
   })
 
-  it("exposes Ultimate Overlord's Mega Magic Sword Melusine progress as an optional Buff choice", async () => {
+  it("exposes Ultimate Overlord's Melusine progress as a necessary choice defaulting to full progress", async () => {
     const primary = {
       ...raidenNationalBuiltinScenario.primary,
       buildId: "test.noelle.ultimate-overlord",
@@ -344,11 +365,21 @@ describe("API", () => {
       id: string
       selectionMode?: string
     }[]).filter((option) => option.exclusiveGroup === "ultimate-overlords-mega-magic-sword-melusine")
-    expect(options).toHaveLength(12)
-    expect(options.every((option) => option.selectionMode === "optional")).toBe(true)
+    expect(options).toEqual([])
+    expect(response.json().weaponChoices).toEqual([{
+      sourceBuildId: primary.buildId,
+      weaponId: "UltimateOverlordsMegaMagicSword",
+      choices: { "ultimate-overlords-mega-magic-sword-melusine": "12-melusine" },
+      choiceGroups: [{
+        id: "ultimate-overlords-mega-magic-sword-melusine",
+        label: expect.any(String),
+        defaultVariant: "12-melusine",
+        options: Array.from({ length: 13 }, (_, count) => ({ id: `${count}-melusine`, label: String(count) }))
+      }]
+    }])
   })
 
-  it("projects mutually exclusive weapon Buff variants through the action-effect API", async () => {
+  it("hides Cashflow's stack choice for Neuvillette's automatic HP-change preparation", async () => {
     const primary = {
       ...raidenNationalBuiltinScenario.primary,
       buildId: "test.neuvillette.cashflow-buff",
@@ -375,8 +406,8 @@ describe("API", () => {
       exclusiveVariant?: string
       selectionMode?: string
     }[]).filter((option) => option.exclusiveGroup === "cashflow-supervision-hp-change")
-    expect(options.map((option) => option.exclusiveVariant)).toEqual(["1-stack", "2-stack", "3-stack"])
-    expect(options.every((option) => option.selectionMode === "optional")).toBe(true)
+    expect(options).toEqual([])
+    expect(response.json().weaponChoices).toEqual([])
   })
 
   it("exposes the complete combat coverage graph without relying on a character-by-character fixture list", async () => {
@@ -599,15 +630,6 @@ describe("API", () => {
     expect(scenarioEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: "weapon.wolfs-gravestone.after-low-health-target-hit.party-attack-percent",
-          source: { holder: "party_member", kind: "weapon", weaponId: "WolfsGravestone" }
-        }),
-        expect.objectContaining({
-          id: "weapon.thrilling-tales-of-dragon-slayers.after-switch.party-attack-percent",
-          recipientSourceRelation: "not_source",
-          source: { holder: "party_member", kind: "weapon", weaponId: "ThrillingTalesOfDragonSlayers" }
-        }),
-        expect.objectContaining({
           id: "artifact.archaic-petra.4pc.crystallize.pyro-damage-bonus",
           source: {
             holder: "party_member",
@@ -625,6 +647,9 @@ describe("API", () => {
     )
     expect(scenarioEffects.some((effect) => effect.id === "artifact.noblesse-oblige.4pc-attack"))
       .toBe(false)
+    expect(scenarioEffects.some((effect) => typeof effect.id === "string" &&
+      (effect.id.startsWith("weapon.wolfs-gravestone.") ||
+        effect.id.startsWith("weapon.thrilling-tales-of-dragon-slayers.")))).toBe(false)
   })
 
   it("exposes fully reviewed three-star weapons for character configuration", async () => {
@@ -643,20 +668,12 @@ describe("API", () => {
     )
   })
 
-  it("projects Skyward Spine's cooldown-ready Vacuum Blade only for eligible normal or charged targets", async () => {
+  it("does not offer Skyward Spine's excluded independent Vacuum Blade", async () => {
     const scenarioEffects = await getProjectedActionEffects(
       "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize"
     )
 
-    expect(scenarioEffects).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.skyward-spine.vacuum-blade",
-          label: "天空之脊 · 真空刃（2秒冷却已就绪）",
-          source: { kind: "weapon", weaponId: "SkywardSpine" }
-        })
-      ])
-    )
+    expect(scenarioEffects).not.toContainEqual(expect.objectContaining({ id: "weapon.skyward-spine.vacuum-blade" }))
   })
 
   it("keeps browser catalog weapon types aligned with the pinned game-data snapshot", async () => {
@@ -758,7 +775,7 @@ describe("API", () => {
 
     expect(response.statusCode, response.body).toBe(200)
     expect(response.json()).toMatchObject({
-      engineVersion: "support-metric-2-artifact-lifecycle",
+      engineVersion: "support-metric-3-weapon-rules",
       metric: {
         conditions: expect.arrayContaining([
           expect.objectContaining({ kind: "recipient_in_source_area", satisfied: true }),
@@ -800,7 +817,7 @@ describe("API", () => {
 
     expect(response.statusCode, response.body).toBe(200)
     expect(response.json()).toMatchObject({
-      engineVersion: "support-metric-2-artifact-lifecycle",
+      engineVersion: "support-metric-3-weapon-rules",
       metric: {
         affectedStat: "attack_flat",
         conditions: expect.arrayContaining([
@@ -824,7 +841,7 @@ describe("API", () => {
     const response = await app.inject({ method: "POST", payload: scenario, url: "/v1/analysis" })
 
     expect(response.statusCode).toBe(200)
-    expect(response.json().engineVersion).toBe("scenario-2-artifact-lifecycle")
+    expect(response.json().engineVersion).toBe("scenario-3-reviewed-weapon-rules")
     expect(response.json().artifactPreparations).toEqual(expect.arrayContaining([
       expect.objectContaining({ effectId: "artifact.noblesse-oblige.4pc-attack", qualified: true, applied: true,
         sourcePresence: "off_field", reason: expect.any(String), capabilitySourceIds: expect.any(Array) })
@@ -1063,31 +1080,34 @@ describe("API", () => {
     )
   })
 
-  it("keeps a partial-party Xiangling Burst analysis available while excluding full-party-energy weapon candidates", async () => {
+  it("includes Wavebreaker's Fin for a partial party using actual configured energy capacity", async () => {
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
     const xiangling = presetScenario.teammates.find((build: { characterId: string }) => build.characterId === "Xiangling")
-    const response = await app.inject({
-      method: "POST",
-      payload: {
-        ...presetScenario,
-        conditions: {
-          activeEffectIds: [],
-          enemyCount: 1
-        },
-        externalBuffs: [],
-        primary: xiangling,
-        targetActionId: "xiangling.burst.pyronado.reverse_vaporize",
-        teammates: []
-      },
-      url: "/v1/analysis"
-    })
+    const scenario = {
+      ...presetScenario,
+      conditions: { activeEffectIds: [], enemyCount: 1 },
+      externalBuffs: [],
+      primary: { ...xiangling, weapon: { ascension: 6, level: 90, refinement: 5, weaponId: "WavebreakersFin" } },
+      targetActionId: "xiangling.burst.pyronado.reverse_vaporize",
+      teammates: []
+    }
+    const response = await app.inject({ method: "POST", payload: scenario, url: "/v1/analysis" })
+    const single = await app.inject({ method: "POST", url: "/v1/analysis/weapon-comparison",
+      payload: { scenario, weaponId: "WavebreakersFin", refinement: 5 } })
 
     expect(response.statusCode).toBe(200)
     expect(response.json().analysis.baselineExpectedDamage).toBeGreaterThan(0)
-    expect(response.json().analysis.weapons.some((weapon: { weaponId: string }) => weapon.weaponId === "WavebreakersFin")).toBe(
-      false
-    )
+    expect(single.statusCode, single.body).toBe(200)
+    expect(response.json().evaluation.appliedEffects).toContainEqual(expect.objectContaining({
+      id: "weapon.wavebreakers-fin.burst-damage-bonus", sourceId: xiangling.buildId, target: "damageBonus", value: 80 * 0.0024
+    }))
+    const candidate = response.json().analysis.weapons.find((weapon: { weaponId: string }) =>
+      weapon.weaponId === "WavebreakersFin")
+    expect(candidate).toMatchObject({ refinement: 5, gainRatio: 0 })
+    expect(candidate.expectedDamage).toBeCloseTo(response.json().analysis.baselineExpectedDamage)
+    expect(single.json()).toEqual({ baselineExpectedDamage: response.json().analysis.baselineExpectedDamage,
+      engineVersion: response.json().engineVersion, weapon: candidate })
   })
 
   it("applies Ballad of the Fjords only when the public scenario configures three team elements", async () => {
@@ -1349,7 +1369,7 @@ describe("API", () => {
     })
   })
 
-  it("returns Cinnabar Spindle's selected Albedo single-hit term without publishing a new rotation event", async () => {
+  it("automatically applies Cinnabar's same-hit defense term without duplicating legacy selections", async () => {
     const effectId = "weapon.cinnabar-spindle.skill-hit-ready.albedo-transient-blossom.defense-additive-damage"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
@@ -1362,7 +1382,7 @@ describe("API", () => {
           externalBuffs: [],
           primary: {
             ...presetScenario.primary,
-            buildId: `test.albedo.cinnabar-spindle.${activeEffectIds.length > 0 ? "active" : "inactive"}-api`,
+            buildId: "test.albedo.cinnabar-spindle-api",
             characterId: "Albedo",
             constellation: 0,
             label: "阿贝多 辰砂之纺锤 API 测试",
@@ -1399,7 +1419,8 @@ describe("API", () => {
       kind: "scaling_terms",
       terms: expect.arrayContaining([expect.objectContaining({ coefficient: 0.4, stat: "defense" })])
     })
-    expect(evaluation.rotation.dpr).toBeGreaterThan(inactiveResponse.json().evaluation.rotation.dpr)
+    expect(evaluation.rotation.dpr).toBeCloseTo(inactiveResponse.json().evaluation.rotation.dpr)
+    expect(inactiveResponse.json().evaluation.appliedEffects).toEqual(evaluation.appliedEffects)
   })
 
   it("returns Staff of Homa's automatic and selected low-HP conversions through the public analysis endpoint", async () => {
@@ -1465,7 +1486,7 @@ describe("API", () => {
     expect(lowHpEvaluation.stats.flatAttack - noLowHpEvaluation.stats.flatAttack).toBeCloseTo(selectedConversion?.value as number)
   })
 
-  it("materializes Key of Khaj-Nisut's selected final-HP elemental mastery through the public analysis endpoint", async () => {
+  it("automatically materializes Key's final-HP mastery without duplicating a legacy selection", async () => {
     const effectId = "weapon.key-of-khaj-nisut.grand-hymn.3-stack.final-hp-to-elemental-mastery"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
@@ -1506,12 +1527,12 @@ describe("API", () => {
 
     expect(effect).toMatchObject({ id: effectId, target: "elementalMastery", value: expect.any(Number) })
     expect(effect?.value).toBeGreaterThan(0)
-    expect(stackedEvaluation.stats.elementalMastery - baselineEvaluation.stats.elementalMastery).toBeCloseTo(
-      effect?.value as number
-    )
+    expect(effect?.value).toBeCloseTo(stackedResponse.json().evaluation.stats.effectiveHp * 0.0036)
+    expect(stackedEvaluation.stats.elementalMastery).toBeCloseTo(baselineEvaluation.stats.elementalMastery)
+    expect(baselineResponse.json().evaluation.appliedEffects).toEqual(stackedEvaluation.appliedEffects)
   })
 
-  it("uses a teammate Key of Khaj-Nisut holder's final HP for the selected party elemental mastery through the API", async () => {
+  it("automatically preserves a teammate Key holder's own final-HP mastery contribution", async () => {
     const effectId = "weapon.key-of-khaj-nisut.grand-hymn.3-stack.party-source-final-hp-to-elemental-mastery"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
@@ -1561,12 +1582,11 @@ describe("API", () => {
 
     expect(effect).toMatchObject({ sourceId: keyHolder.buildId, target: "elementalMastery", value: expect.any(Number) })
     expect(effect?.value).toBeGreaterThan(0)
-    expect(snapshotEvaluation.stats.elementalMastery - baselineEvaluation.stats.elementalMastery).toBeCloseTo(
-      effect?.value as number
-    )
+    expect(snapshotEvaluation.stats.elementalMastery).toBeCloseTo(baselineEvaluation.stats.elementalMastery)
+    expect(baselineResponse.json().evaluation.appliedEffects).toEqual(snapshotEvaluation.appliedEffects)
   })
 
-  it("materializes Jadefall's Splendor's selected final-HP own-element damage bonus through the public analysis endpoint", async () => {
+  it("automatically materializes Jadefall's capped final-HP own-element damage bonus", async () => {
     const effectId = "weapon.jadefalls-splendor.after-burst-or-shield.final-hp-to-own-element-damage-bonus"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
@@ -1607,10 +1627,12 @@ describe("API", () => {
 
     expect(effect).toMatchObject({ id: effectId, target: "damageBonus", value: expect.any(Number) })
     expect(effect?.value).toBeGreaterThan(0)
-    expect(snapshotEvaluation.stats.damageBonus - baselineEvaluation.stats.damageBonus).toBeCloseTo(effect?.value as number)
+    expect(effect?.value).toBeCloseTo(Math.min(snapshotResponse.json().evaluation.stats.effectiveHp * 0.000003, 0.12))
+    expect(snapshotEvaluation.stats.damageBonus).toBeCloseTo(baselineEvaluation.stats.damageBonus)
+    expect(baselineResponse.json().evaluation.appliedEffects).toEqual(snapshotEvaluation.appliedEffects)
   })
 
-  it("materializes Ring of Yaxche's selected final-HP normal-attack damage bonus through the public analysis endpoint", async () => {
+  it("automatically materializes Ring of Yaxche's capped final-HP normal-attack damage bonus", async () => {
     const effectId = "weapon.ring-of-yaxche.after-skill.final-hp-to-normal-damage-bonus"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
@@ -1651,10 +1673,12 @@ describe("API", () => {
 
     expect(effect).toMatchObject({ id: effectId, target: "damageBonus", value: expect.any(Number) })
     expect(effect?.value).toBeGreaterThan(0)
-    expect(snapshotEvaluation.stats.damageBonus - baselineEvaluation.stats.damageBonus).toBeCloseTo(effect?.value as number)
+    expect(effect?.value).toBeCloseTo(Math.min(snapshotResponse.json().evaluation.stats.effectiveHp * 0.000006, 0.16))
+    expect(snapshotEvaluation.stats.damageBonus).toBeCloseTo(baselineEvaluation.stats.damageBonus)
+    expect(baselineResponse.json().evaluation.appliedEffects).toEqual(snapshotEvaluation.appliedEffects)
   })
 
-  it("materializes Staff of the Scarlet Sands' automatic and selected elemental-mastery attack conversions through the API", async () => {
+  it("derives Scarlet Sands' reachable Guoba stacks instead of forcing a legacy three-stack selection", async () => {
     const automaticEffectId = "weapon.staff-of-the-scarlet-sands.elemental-mastery-to-flat-attack"
     const threeStackEffectId = "weapon.staff-of-the-scarlet-sands.red-sands-dream.3-stack.elemental-mastery-to-flat-attack"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
@@ -1673,7 +1697,8 @@ describe("API", () => {
         method: "POST",
         payload: {
           ...presetScenario,
-          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds, equipmentEffectMode: undefined, enemyCount: 1 },
+          conditions: { ...presetScenario.conditions, actionParameters: undefined, activeEffectIds,
+            equipmentEffectMode: undefined, enemyCount: 1 },
           externalBuffs: [],
           primary,
           targetActionId: "xiangling.skill.guoba.single_flame_breath",
@@ -1685,8 +1710,8 @@ describe("API", () => {
     const baselineResponse = await requestAnalysis([])
     const snapshotResponse = await requestAnalysis([threeStackEffectId])
 
-    expect(baselineResponse.statusCode).toBe(200)
-    expect(snapshotResponse.statusCode).toBe(200)
+    expect(baselineResponse.statusCode, baselineResponse.body).toBe(200)
+    expect(snapshotResponse.statusCode, snapshotResponse.body).toBe(200)
     const baselineEvaluation = baselineResponse.json().evaluation as {
       readonly appliedEffects: readonly { readonly id: string; readonly target: string; readonly value: number }[]
       readonly stats: { readonly flatAttack: number }
@@ -1700,11 +1725,15 @@ describe("API", () => {
 
     expect(automaticEffect).toMatchObject({ id: automaticEffectId, target: "flatAttack", value: expect.any(Number) })
     expect(automaticEffect?.value).toBeGreaterThan(0)
-    expect(threeStackEffect).toMatchObject({ id: threeStackEffectId, target: "flatAttack", value: expect.any(Number) })
-    expect(threeStackEffect?.value).toBeGreaterThan(0)
-    expect(snapshotEvaluation.stats.flatAttack - baselineEvaluation.stats.flatAttack).toBeCloseTo(
-      threeStackEffect?.value as number
-    )
+    expect(threeStackEffect).toBeUndefined()
+    const stacks = snapshotEvaluation.appliedEffects.filter((effect) => effect.id.includes("red-sands-dream"))
+    expect(stacks).toEqual([expect.objectContaining({
+      id: "weapon.staff-of-the-scarlet-sands.red-sands-dream.2-stack.elemental-mastery-to-flat-attack",
+      target: "flatAttack"
+    })])
+    expect(stacks[0]?.value).toBeCloseTo(snapshotResponse.json().evaluation.stats.elementalMastery * 0.28 * 2)
+    expect(snapshotEvaluation.appliedEffects).toEqual(baselineEvaluation.appliedEffects)
+    expect(snapshotEvaluation.stats.flatAttack).toBeCloseTo(baselineEvaluation.stats.flatAttack)
   })
 
   it("materializes a teammate Xiphos' Moonlight holder's elemental-mastery energy recharge snapshot through the API", async () => {
@@ -1749,7 +1778,8 @@ describe("API", () => {
 
     expect(effect).toMatchObject({ id: effectId, sourceId: xiphosHolder.buildId, target: "energyRecharge" })
     expect(effect?.value).toBeGreaterThan(0)
-    expect(snapshotEvaluation.stats.energyRecharge - baselineEvaluation.stats.energyRecharge).toBeCloseTo(effect?.value as number)
+    expect(snapshotEvaluation.stats.energyRecharge).toBeCloseTo(baselineEvaluation.stats.energyRecharge)
+    expect(baselineResponse.json().evaluation.appliedEffects).toEqual(snapshotEvaluation.appliedEffects)
   })
 
   it("materializes a teammate Peak Patrol Song holder's full-stack defense party snapshot through the API", async () => {
@@ -1798,11 +1828,12 @@ describe("API", () => {
 
     expect(effect).toMatchObject({ id: effectId, sourceId: peakPatrolHolder.buildId, target: "damageBonus" })
     expect(effect?.value).toBeGreaterThan(0)
-    expect(snapshotEvaluation.stats.damageBonus - baselineEvaluation.stats.damageBonus).toBeCloseTo(effect?.value as number)
-    expect(snapshotEvaluation.result.expectedDamage).toBeGreaterThan(baselineEvaluation.result.expectedDamage)
+    expect(snapshotEvaluation.stats.damageBonus).toBeCloseTo(baselineEvaluation.stats.damageBonus)
+    expect(snapshotEvaluation.result.expectedDamage).toBeCloseTo(baselineEvaluation.result.expectedDamage)
+    expect(baselineResponse.json().evaluation.appliedEffects).toEqual(snapshotEvaluation.appliedEffects)
   })
 
-  it("materializes a teammate Angelos Heptades holder's source-attack current-on-field snapshot through the API", async () => {
+  it("does not let a legacy Angelos selection bypass the holder's own shielding capability", async () => {
     const effectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
@@ -1846,10 +1877,9 @@ describe("API", () => {
     }
     const effect = snapshotEvaluation.appliedEffects.find((candidate) => candidate.id === effectId)
 
-    expect(effect).toMatchObject({ id: effectId, sourceId: angelosHolder.buildId, target: "damageBonus" })
-    expect(effect?.value).toBeGreaterThan(0)
-    expect(snapshotEvaluation.stats.damageBonus - baselineEvaluation.stats.damageBonus).toBeCloseTo(effect?.value as number)
-    expect(snapshotEvaluation.result.expectedDamage).toBeGreaterThan(baselineEvaluation.result.expectedDamage)
+    expect(effect).toBeUndefined()
+    expect(snapshotEvaluation.stats.damageBonus).toBeCloseTo(baselineEvaluation.stats.damageBonus)
+    expect(snapshotEvaluation.result.expectedDamage).toBeCloseTo(baselineEvaluation.result.expectedDamage)
   })
 
   it("materializes Predator's selected PlayStation Aloy fixed-attack snapshot through the public analysis endpoint", async () => {
@@ -1934,7 +1964,7 @@ describe("API", () => {
     )
   })
 
-  it("serializes automatic and selected elemental-mastery equipment effects through the public endpoint", async () => {
+  it("retains automatic mastery while rejecting Starcaller's legacy shield flag without a qualifying source", async () => {
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
     const response = await app.inject({
@@ -1971,11 +2001,52 @@ describe("API", () => {
     expect(response.json().evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: "artifact.instructor.2pc.elemental-mastery", target: "elementalMastery", value: 80 }),
-        expect.objectContaining({ id: "weapon.starcallers-watch.elemental-mastery", target: "elementalMastery", value: 100 }),
-        expect.objectContaining({ id: "weapon.starcallers-watch.shielded.damage-bonus", target: "damageBonus", value: 0.28 })
+        expect.objectContaining({ id: "weapon.starcallers-watch.elemental-mastery", target: "elementalMastery", value: 100 })
       ])
     )
     expect(response.json().evaluation.stats.elementalMastery).toBeGreaterThanOrEqual(180)
+    expect(response.json().evaluation.appliedEffects).not.toContainEqual(
+      expect.objectContaining({ id: "weapon.starcallers-watch.shielded.damage-bonus" })
+    )
+  })
+
+  it("routes Starcaller's own-shield bonus only to the actual foreground and cannot borrow a teammate's shield", async () => {
+    const effectId = "weapon.starcallers-watch.shielded.damage-bonus"
+    const build = (characterId: string, weaponId: string) => ({
+      ...raidenNationalBuiltinScenario.primary,
+      artifacts: [],
+      buildId: `api.starcaller.${characterId}`,
+      characterId,
+      constellation: 0,
+      weapon: { weaponId, ascension: 6, level: 90, refinement: 1 }
+    })
+    const fischl = build("Fischl", "FavoniusWarbow")
+    const lanYan = build("LanYan", "StarcallersWatch")
+    const cases = [
+      { actionId: "fischl.normal.auto.first_hit", foreground: fischl.buildId, teammates: [lanYan], bonus: 0.28 },
+      { actionId: "fischl.skill.nightrider.oz.level_one_bolt", foreground: lanYan.buildId, teammates: [lanYan], bonus: 0 },
+      { actionId: "fischl.normal.auto.first_hit", foreground: fischl.buildId,
+        teammates: [build("LanYan", "FavoniusCodex"), build("Klee", "StarcallersWatch")], bonus: 0 }
+    ]
+    for (const { actionId, foreground, teammates, bonus } of cases) {
+      const response = await app.inject({ method: "POST", url: "/v1/analysis", payload: {
+        ...raidenNationalBuiltinScenario,
+        primary: fischl,
+        teammates,
+        externalBuffs: [],
+        targetActionId: actionId,
+        conditions: { activeEffectIds: [effectId], enemyCount: 1, onFieldBuildId: foreground }
+      } })
+      expect(response.statusCode, response.body).toBe(200)
+      const evaluation = response.json().evaluation
+      const effects = evaluation.appliedEffects.filter((effect: { id: string }) => effect.id === effectId)
+      expect(effects).toEqual(bonus > 0 ? [expect.objectContaining({
+        id: effectId, sourceId: lanYan.buildId, target: "damageBonus", value: bonus
+      })] : [])
+      expect(evaluation.rotation.events[0].trace).toContainEqual(expect.objectContaining({
+        kind: "damage_bonus", bonus, multiplier: 1 + bonus
+      }))
+    }
   })
 
   it("serializes reviewed fixed-health and fixed-defense set bonuses through the public endpoint", async () => {
@@ -2111,7 +2182,7 @@ describe("API", () => {
     )
   })
 
-  it("returns Skyward Spine's selected Vacuum Blade as an independent physical event", async () => {
+  it("ignores a legacy Skyward Spine Vacuum Blade selection but retains its permanent CRIT bonus", async () => {
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
     const xiangling = presetScenario.teammates.find((build: { characterId: string }) => build.characterId === "Xiangling")
@@ -2139,23 +2210,23 @@ describe("API", () => {
     expect(response.json().evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: "weapon.skyward-spine.vacuum-blade",
-          target: "additionalDamageEvent",
-          value: 0.2
+          id: "weapon.skyward-spine.crit-rate",
+          target: "critRate",
+          value: 0.08
         })
       ])
     )
     const vacuumBlade = response.json().evaluation.rotation.events.find(
       (event: { id: string }) => event.id.endsWith("weapon.skyward-spine.vacuum-blade")
     )
-    expect(vacuumBlade).toMatchObject({ element: "physical", hitCount: 1 })
-    expect(vacuumBlade.elementalApplication).toBeUndefined()
-    expect(vacuumBlade.trace[0]).toMatchObject({ coefficient: 0.4, kind: "scaling", stat: "attack" })
-    expect(vacuumBlade.trace.at(-1)).toMatchObject({ kind: "trigger_probability", probability: 0.5 })
-    expect(vacuumBlade.trace.some((entry: { kind: string }) => entry.kind === "amplifying_reaction")).toBe(false)
+    expect(vacuumBlade).toBeUndefined()
+    expect(response.json().evaluation.rotation.events).toHaveLength(1)
+    expect(response.json().evaluation.appliedEffects).not.toContainEqual(
+      expect.objectContaining({ target: "additionalDamageEvent" })
+    )
   })
 
-  it("returns Messenger's selected weak-point extra hit as a guaranteed critical event", async () => {
+  it("excludes Messenger's independent extra hit even when its legacy flag is supplied", async () => {
     const effectId = "weapon.messenger.weak-point-guaranteed-crit.additional-damage"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
@@ -2184,31 +2255,24 @@ describe("API", () => {
     })
 
     expect(response.statusCode).toBe(200)
-    expect(response.json().evaluation.appliedEffects).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: effectId, target: "additionalDamageEvent", value: 1 })
-      ])
-    )
+    expect(response.json().evaluation.appliedEffects).not.toContainEqual(expect.objectContaining({ id: effectId }))
     const messengerEvent = response.json().evaluation.rotation.events.find(
       (event: { id: string }) => event.id.endsWith(effectId)
     )
 
-    expect(messengerEvent).toMatchObject({ element: "physical", hitCount: 1 })
-    expect(messengerEvent.expectedDamage).toBeCloseTo(messengerEvent.critDamage)
-    expect(messengerEvent.trace).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ critRate: 1, kind: "expected_crit", multiplier: expect.any(Number) })
-      ])
-    )
-    expect(messengerEvent.trace.some((entry: { kind: string }) => entry.kind === "amplifying_reaction")).toBe(false)
+    expect(messengerEvent).toBeUndefined()
+    expect(response.json().evaluation.rotation.events).toHaveLength(1)
+    expect(response.json().evaluation.rotation.events[0]).toMatchObject({ element: "pyro" })
   })
 
-  it("applies Flowing Purity's explicit post-skill and complete Bond-of-Life-clear snapshots", async () => {
+  it("requires applicable healing for Flowing Purity's automatic actual-HP Bond clear", async () => {
     const afterSkillEffectId = "weapon.flowing-purity.after-skill.all-element-damage-bonus"
-    const clearEffectId = "weapon.flowing-purity.bond-of-life-cleared.6-thousand-points.all-element-damage-bonus"
+    const legacyClearEffectId = "weapon.flowing-purity.bond-of-life-cleared.6-thousand-points.all-element-damage-bonus"
+    const clearEffectId = "weapon.flowing-purity.bond-of-life-cleared.full-clear.all-element-damage-bonus"
     const presetResponse = await app.inject({ method: "GET", url: "/v1/presets" })
     const presetScenario = presetResponse.json().presets[0].scenario
-    const requestAnalysis = (refinement: number, activeEffectIds: readonly string[]) =>
+    const healer = presetScenario.teammates.find((build: { characterId: string }) => build.characterId === "Bennett")
+    const requestAnalysis = (refinement: number, activeEffectIds: readonly string[], withHealer = false) =>
       app.inject({
         method: "POST",
         payload: {
@@ -2225,27 +2289,37 @@ describe("API", () => {
             weapon: { ascension: 6, level: 90, refinement, weaponId: "FlowingPurity" }
           },
           targetActionId: "yae_miko.skill.yakan_evocation.sesshou_sakura.level_three_bolt",
-          teammates: []
+          teammates: withHealer ? [healer] : []
         },
         url: "/v1/analysis"
       })
     const baselineResponse = await requestAnalysis(1, [])
-    const r1Response = await requestAnalysis(1, [afterSkillEffectId, clearEffectId])
-    const r5Response = await requestAnalysis(5, [afterSkillEffectId, clearEffectId])
+    const legacyResponse = await requestAnalysis(1, [afterSkillEffectId, legacyClearEffectId])
+    const r1Response = await requestAnalysis(1, [], true)
+    const r5Response = await requestAnalysis(5, [], true)
 
     expect(baselineResponse.statusCode).toBe(200)
+    expect(legacyResponse.statusCode).toBe(200)
     expect(r1Response.statusCode).toBe(200)
     expect(r5Response.statusCode).toBe(200)
+    expect(baselineResponse.json().evaluation.appliedEffects).toContainEqual(
+      expect.objectContaining({ id: afterSkillEffectId, target: "damageBonus", value: 0.08 })
+    )
+    expect(legacyResponse.json().evaluation.appliedEffects).toEqual(baselineResponse.json().evaluation.appliedEffects)
+    expect(legacyResponse.json().evaluation.appliedEffects.some((effect: { id: string }) =>
+      effect.id.startsWith("weapon.flowing-purity.bond-of-life-cleared."))).toBe(false)
     expect(r1Response.json().evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: afterSkillEffectId, target: "damageBonus", value: 0.08 }),
-        expect.objectContaining({ id: clearEffectId, target: "damageBonus", value: 0.12 })
+        expect.objectContaining({ id: clearEffectId, target: "damageBonus",
+          value: Math.min(r1Response.json().evaluation.stats.effectiveHp * 0.24 / 1000 * 0.02, 0.12) })
       ])
     )
     expect(r5Response.json().evaluation.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: afterSkillEffectId, target: "damageBonus", value: 0.16 }),
-        expect.objectContaining({ id: clearEffectId, target: "damageBonus", value: 0.24 })
+        expect.objectContaining({ id: clearEffectId, target: "damageBonus",
+          value: Math.min(r5Response.json().evaluation.stats.effectiveHp * 0.24 / 1000 * 0.04, 0.24) })
       ])
     )
     expect(r1Response.json().evaluation.rotation.dpr).toBeGreaterThan(baselineResponse.json().evaluation.rotation.dpr)

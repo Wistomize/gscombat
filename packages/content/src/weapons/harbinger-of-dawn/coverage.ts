@@ -4,7 +4,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: ["weapon.harbinger-of-dawn.hp-above-90.crit-rate"],
+      effectIds: ["weapon.harbinger-of-dawn.hp-above-90.crit-rate", "weapon.harbinger-of-dawn.hp-above-90.crit-rate.disabled"],
       id: "weapon.harbinger-of-dawn.hp-above-90.crit-rate",
       label: "黎明神剑 · 当前生命值高于90%",
       source: weaponSource("HarbingerOfDawn"),

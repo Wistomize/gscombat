@@ -1,4 +1,8 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect, prepareWeaponSpecialReaction } from "../../combat/weapon-preparation.js"
+
+const skillPreparation = prepareWeaponEffect({ kind: "damage_hit", hitKinds: ["skill"], elements: ["hydro", "dendro"], provider: "source", recipient: "source" }, "本人水或草战技命中")
+const bloomPreparation = prepareWeaponSpecialReaction(["lunar_bloom"], "party")
 
 export const NIGHTWEAVERS_LOOKING_GLASS_AFTER_HYDRO_OR_DENDRO_SKILL_ELEMENTAL_MASTERY = [60, 75, 90, 105, 120] as const
 export const NIGHTWEAVERS_LOOKING_GLASS_AFTER_LUNAR_BLOOM_ELEMENTAL_MASTERY = [60, 75, 90, 105, 120] as const
@@ -9,7 +13,8 @@ export const NIGHTWEAVERS_LOOKING_GLASS_LUNAR_BLOOM_DAMAGE_BONUS = [0.4, 0.5, 0.
 /** Typed independent self elemental-mastery states of Nightweaver's Looking Glass. */
 export const nightweaversLookingGlassCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: skillPreparation,
     id: "weapon.nightweavers-looking-glass.after-hydro-or-dendro-skill.elemental-mastery",
     label: "纺夜天镜 · 水或草元素战技命中后的元素精通",
     source: { kind: "weapon", weaponId: "NightweaversLookingGlass" },
@@ -17,7 +22,8 @@ export const nightweaversLookingGlassCombatActionEffects: readonly CombatActionE
     value: { kind: "refinement_table", values: NIGHTWEAVERS_LOOKING_GLASS_AFTER_HYDRO_OR_DENDRO_SKILL_ELEMENTAL_MASTERY }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: bloomPreparation,
     id: "weapon.nightweavers-looking-glass.after-lunar-bloom.elemental-mastery",
     label: "纺夜天镜 · 触发月绽放后的元素精通",
     source: { kind: "weapon", weaponId: "NightweaversLookingGlass" },
@@ -25,19 +31,21 @@ export const nightweaversLookingGlassCombatActionEffects: readonly CombatActionE
     value: { kind: "refinement_table", values: NIGHTWEAVERS_LOOKING_GLASS_AFTER_LUNAR_BLOOM_ELEMENTAL_MASTERY }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "all_of", alternatives: [skillPreparation, bloomPreparation] },
     id: "weapon.nightweavers-looking-glass.both-states.party-bloom.reaction-damage-bonus",
     label: "纺夜天镜 · 终北圣言与朔月诗篇同时存在时，队伍绽放反应伤害",
-    source: { holder: "party_member", kind: "weapon", weaponId: "NightweaversLookingGlass" },
+    source: { holder: "party_member", kind: "weapon", weaponId: "NightweaversLookingGlass", resolveOneMatchingPartySource: true },
     target: "reactionDamageBonus",
     targetFilter: { reactionKinds: ["bloom"] },
     value: { kind: "refinement_table", values: NIGHTWEAVERS_LOOKING_GLASS_BLOOM_REACTION_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "all_of", alternatives: [skillPreparation, bloomPreparation] },
     id: "weapon.nightweavers-looking-glass.both-states.party-hyperbloom-burgeon.reaction-damage-bonus",
     label: "纺夜天镜 · 终北圣言与朔月诗篇同时存在时，队伍超绽放、烈绽放反应伤害",
-    source: { holder: "party_member", kind: "weapon", weaponId: "NightweaversLookingGlass" },
+    source: { holder: "party_member", kind: "weapon", weaponId: "NightweaversLookingGlass", resolveOneMatchingPartySource: true },
     target: "reactionDamageBonus",
     targetFilter: { reactionKinds: ["hyperbloom", "burgeon"] },
     value: {
@@ -46,10 +54,11 @@ export const nightweaversLookingGlassCombatActionEffects: readonly CombatActionE
     }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "all_of", alternatives: [skillPreparation, bloomPreparation] },
     id: "weapon.nightweavers-looking-glass.both-states.party-lunar-bloom.reaction-damage-bonus",
     label: "纺夜天镜 · 两种状态共存时队伍的月绽放伤害",
-    source: { holder: "party_member", kind: "weapon", weaponId: "NightweaversLookingGlass" },
+    source: { holder: "party_member", kind: "weapon", weaponId: "NightweaversLookingGlass", resolveOneMatchingPartySource: true },
     target: "specialReactionDamageBonus",
     targetFilter: { specialReactionKinds: ["lunar_bloom"] },
     value: { kind: "refinement_table", values: NIGHTWEAVERS_LOOKING_GLASS_LUNAR_BLOOM_DAMAGE_BONUS }

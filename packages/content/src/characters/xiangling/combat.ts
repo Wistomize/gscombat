@@ -5,6 +5,7 @@ import { xianglingDefinition } from "./definition.js"
 
 export const xianglingCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "xiangling.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("xiangling", 1),
     ...declareWeaponHitCapabilities(xianglingDefinition),
     declareHitCapability("xiangling.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
@@ -29,6 +30,7 @@ export const xianglingCombatCoverage: CharacterCombatCoverage = {
       element: xianglingDefinition.element,
       evaluator: "declared_direct",
       id: "xiangling.burst.pyronado.reverse_vaporize",
+      statCaptureFieldPresence: "on_field",
       kind: "damage",
       parameterReferences: [
         {
@@ -59,6 +61,7 @@ export const xianglingCombatCoverage: CharacterCombatCoverage = {
       element: xianglingDefinition.element,
       evaluator: "declared_direct",
       id: "xiangling.skill.guoba.single_flame_breath",
+      statCaptureFieldPresence: "on_field",
       kind: "damage",
       parameterReferences: [
         {

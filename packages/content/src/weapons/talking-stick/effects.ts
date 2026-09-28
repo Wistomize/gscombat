@@ -1,10 +1,11 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const TALKING_STICK_PYRO_ATTACHMENT_ATTACK_PERCENT = [0.16, 0.2, 0.24, 0.28, 0.32] as const
 export const TALKING_STICK_OTHER_ATTACHMENT_ELEMENTAL_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 
 /** Typed selected elemental-attachment contributions of Talking Stick. */
-export const talkingStickCombatActionEffects: readonly CombatActionEffect[] = [
+const effects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     selectionMode: "optional",
@@ -27,3 +28,11 @@ export const talkingStickCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: TALKING_STICK_OTHER_ATTACHMENT_ELEMENTAL_DAMAGE_BONUS }
   }
 ]
+
+/** Two independently prepared auras may coexist; neither is inferred from enemy aura or weapon infusion. */
+export const talkingStickCombatActionEffects: readonly CombatActionEffect[] = effects.flatMap((effect, index) =>
+  withWeaponToggle(effect, index === 0 ? "talking-stick-pyro" : "talking-stick-other",
+    index === 0 ? "已触发火附着加攻" : "已触发水／冰／雷／草附着增伤", false).map((choice) => ({
+      ...choice, weaponChoice: { ...choice.weaponChoice!, automaticVariant: { variant: "on", prepareSourceOnField: true,
+        capability: { kind: "self_aura", provider: "party", recipient: "source", elements: index === 0 ? ["pyro"] : ["hydro", "cryo", "electro", "dendro"] } } }
+    })))

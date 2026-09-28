@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const WHITEBLIND_ATTACK_AND_DEFENSE_PERCENT_PER_STACK = [0.06, 0.075, 0.09, 0.105, 0.12] as const
 
@@ -13,7 +14,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
   const values = getStackValues(stackCount)
   return [
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 4, { kind: "damage_hit", hitKinds: ["normal", "charged"], provider: "source", recipient: "source" }, true),
       exclusivity,
       id: "weapon.whiteblind.infusion-blade." + stackCount + "-stack.attack-percent",
       label: "白影剑 · 注能之锋" + stackCount + "层攻击力",
@@ -22,7 +24,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
       value: { kind: "refinement_table", values }
     },
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 4, { kind: "damage_hit", hitKinds: ["normal", "charged"], provider: "source", recipient: "source" }, true),
       exclusivity,
       id: "weapon.whiteblind.infusion-blade." + stackCount + "-stack.defense-percent",
       label: "白影剑 · 注能之锋" + stackCount + "层防御力",

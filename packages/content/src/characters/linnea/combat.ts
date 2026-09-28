@@ -17,6 +17,10 @@ const linneaConstellation4DefenseSnapshotEffectIds = Object.values(linneaConstel
 
 export const linneaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "linnea.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 5 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "linnea.kit.weapon-healing-qualification", label: "绝境生存指南初始治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "linnea.kit.lunar_crystallize-damage", label: "已维护的本人月曜伤害动作", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_crystallize"] },
     declareSkillCastCapability("linnea", 4),
     { id: "linnea.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_crystallize"] },
     ...declareWeaponHitCapabilities(linneaDefinition),

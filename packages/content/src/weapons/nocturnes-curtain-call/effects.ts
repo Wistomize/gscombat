@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponSpecialReaction } from "../../combat/weapon-preparation.js"
 
 export const NOCTURNES_CURTAIN_CALL_HP_PERCENT = [0.1, 0.12, 0.14, 0.16, 0.18] as const
 export const NOCTURNES_CURTAIN_CALL_AFTER_LUNAR_REACTION_HP_PERCENT = [0.14, 0.16, 0.18, 0.2, 0.22] as const
@@ -15,7 +16,8 @@ export const nocturnesCurtainCallCombatActionEffects: readonly CombatActionEffec
     value: { kind: "refinement_table", values: NOCTURNES_CURTAIN_CALL_HP_PERCENT }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponSpecialReaction(["lunar_bloom", "lunar_charged", "lunar_crystallize"], "source", true),
     id: "weapon.nocturnes-curtain-call.after-lunar-reaction.extra-hp-percent",
     label: "帷间夜曲 · 丰饶海的神酒状态下的额外生命值",
     source: { kind: "weapon", weaponId: "NocturnesCurtainCall" },
@@ -23,7 +25,8 @@ export const nocturnesCurtainCallCombatActionEffects: readonly CombatActionEffec
     value: { kind: "refinement_table", values: NOCTURNES_CURTAIN_CALL_AFTER_LUNAR_REACTION_HP_PERCENT }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponSpecialReaction(["lunar_bloom", "lunar_charged", "lunar_crystallize"], "source", true),
     id: "weapon.nocturnes-curtain-call.after-lunar-reaction.lunar-crit-damage",
     label: "帷间夜曲 · 丰饶海的神酒状态下的月曜暴击伤害",
     source: { kind: "weapon", weaponId: "NocturnesCurtainCall" },

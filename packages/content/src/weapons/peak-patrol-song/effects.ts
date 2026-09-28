@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks, prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const PEAK_PATROL_SONG_DEFENSE_PERCENT_PER_STACK = [0.08, 0.1, 0.12, 0.14, 0.16] as const
 export const PEAK_PATROL_SONG_ALL_ELEMENT_DAMAGE_BONUS_PER_STACK = [0.1, 0.125, 0.15, 0.175, 0.2] as const
@@ -18,7 +19,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
   const exclusivity = { group: "peak-patrol-song-ode-to-flowers", variant: `${stackCount}-stack` }
   return [
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 2, { kind: "damage_hit", hitKinds: ["normal", "plunge"], provider: "source", recipient: "source" }),
       exclusivity,
       id: `weapon.peak-patrol-song.ode-to-flowers.${stackCount}-stack.defense-percent`,
       label: `岩峰巡歌 · ${stackCount}层花之颂防御力`,
@@ -28,7 +30,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
       value: { kind: "refinement_table", values: getValues(PEAK_PATROL_SONG_DEFENSE_PERCENT_PER_STACK, stackCount) }
     },
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 2, { kind: "damage_hit", hitKinds: ["normal", "plunge"], provider: "source", recipient: "source" }),
       exclusivity,
       id: `weapon.peak-patrol-song.ode-to-flowers.${stackCount}-stack.all-element-damage-bonus`,
       label: `岩峰巡歌 · ${stackCount}层花之颂所有元素伤害`,
@@ -44,10 +47,11 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
 export const peakPatrolSongCombatActionEffects: readonly CombatActionEffect[] = [
   ...stackCounts.flatMap(createStackEffects),
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "damage_hit", hitKinds: ["normal", "plunge"], provider: "source", recipient: "source" }, "本人提前两层，先计两层防御再按来源防御计算团队增伤"),
     id: "weapon.peak-patrol-song.2-stack.source-final-defense-to-party-all-element-damage-bonus",
     label: "岩峰巡歌 · 2层荣花之歌触发的队伍所有元素伤害",
-    source: { holder: "party_member", kind: "weapon", weaponId: "PeakPatrolSong" },
+    source: { holder: "party_member", kind: "weapon", weaponId: "PeakPatrolSong", resolveOneMatchingPartySource: true },
     target: "sourceFinalDefenseToDamageBonus",
     targetFilter: { elements: elementalDamageElements },
     value: {

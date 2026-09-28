@@ -11,7 +11,7 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: [
+      effectIds: ["weapon.amos-bow.projectile-flight-time.0-stack.damage-bonus",
         "weapon.amos-bow.projectile-flight-time.1-stack.damage-bonus",
         "weapon.amos-bow.projectile-flight-time.2-stack.damage-bonus",
         "weapon.amos-bow.projectile-flight-time.3-stack.damage-bonus",

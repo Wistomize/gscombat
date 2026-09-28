@@ -14,6 +14,9 @@ const lunarReactionKinds = ["lunar_bloom", "lunar_charged", "lunar_crystallize"]
 
 export const columbinaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "columbina.kit.lunar_bloom-damage", label: "已维护的本人月曜伤害动作", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_bloom"], requiredTeamReaction: "lunar", requiredTeamSpecialReactions: ["lunar_bloom"] },
+    { id: "columbina.kit.lunar_charged-damage", label: "已维护的本人月曜伤害动作", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_charged"], requiredTeamReaction: "lunar", requiredTeamSpecialReactions: ["lunar_charged"] },
+    { id: "columbina.kit.lunar_crystallize-damage", label: "已维护的本人月曜伤害动作", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_crystallize"], requiredTeamReaction: "lunar", requiredTeamSpecialReactions: ["lunar_crystallize"] },
     declareSkillCastCapability("columbina", 9),
     { id: "columbina.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_charged","lunar_bloom","lunar_crystallize"] },
     ...declareWeaponHitCapabilities(columbinaDefinition),

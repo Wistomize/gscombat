@@ -15,7 +15,7 @@ function createBondOfLifeDamageBonusEffect(stackCount: (typeof stackCounts)[numb
       defaultCapability: { kind: "bond_of_life_change", provider: "source", recipient: "source", sustained: true },
       manualAlternatives: stackEffectIds,
       retention: "clear_on_exit", trigger: { event: "none", sourceFieldPresence: "on_field" },
-      explanation: "前台装备者自身生命之契可持续变化时默认三层；其他情形默认零层，可手选准备层数；后台不计"
+      explanation: "前台装备者自身生命之契可持续变化时默认三层；其他情形默认零层；后台不计"
     },
     exclusivity: { group: "fragment-of-harmonic-whimsy-bond-of-life-change", variant: `${stackCount}-stack` },
     id: `artifact.fragment-of-harmonic-whimsy.4pc.bond-of-life-change.${stackCount}-stack.damage-bonus`,

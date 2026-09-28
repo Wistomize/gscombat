@@ -5,6 +5,8 @@ import { sayuDefinition } from "./definition.js"
 
 export const sayuCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "sayu.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "sayu.kit.healing", label: "元素爆发初段治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("sayu", 6),
     ...declareWeaponHitCapabilities(sayuDefinition),
     declareHitCapability("sayu.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["anemo"]),

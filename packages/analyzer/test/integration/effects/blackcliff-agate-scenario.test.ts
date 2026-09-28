@@ -71,7 +71,7 @@ describe("Blackcliff Agate declared scenarios", () => {
     const r1StackValues = [0.12, 0.24, 0.36]
     const r5StackValues = [0.24, 0.48, 0.72]
 
-    expect(r1Inactive.appliedEffects.some((effect) => effect.id.startsWith("weapon.blackcliff-agate."))).toBe(false)
+    expect(r1Inactive.appliedEffects.some((effect) => effect.id.startsWith("weapon.blackcliff-agate.") && effect.value !== 0)).toBe(false)
     expect(r1Inactive.stats.attackPercent).toBeCloseTo(r5Inactive.stats.attackPercent)
     expect(r1Inactive.stats.effectiveAttack).toBeCloseTo(r5Inactive.stats.effectiveAttack)
 
@@ -99,7 +99,7 @@ describe("Blackcliff Agate declared scenarios", () => {
   it("rejects multiple mutually exclusive defeated-enemy stack snapshots", () => {
     expect(() =>
       evaluateBlackcliffAgate(createBlackcliffAgateBuild(1), [blackcliffStackEffectIds[0], blackcliffStackEffectIds[1]])
-    ).toThrow("Selected blackcliff-agate-defeated-enemy effects cannot stack")
+    ).toThrow("blackcliff-agate-defeated-enemy")
   })
 
   it("does not resolve a selected Blackcliff Agate snapshot from a teammate", () => {

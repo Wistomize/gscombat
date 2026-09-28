@@ -1,9 +1,10 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const DRAGONS_BANE_HYDRO_OR_PYRO_AURA_DAMAGE_BONUS = [0.2, 0.24, 0.28, 0.32, 0.36] as const
 
 /** Typed selected target-aura contribution of Dragon's Bane to maintained core actions. */
-export const dragonsBaneCombatActionEffects: readonly CombatActionEffect[] = [
+const authoredEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     selectionMode: "optional",
@@ -14,3 +15,9 @@ export const dragonsBaneCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: DRAGONS_BANE_HYDRO_OR_PYRO_AURA_DAMAGE_BONUS }
   }
 ]
+
+export const dragonsBaneCombatActionEffects: readonly CombatActionEffect[] = authoredEffects.flatMap((effect) =>
+  withWeaponToggle(effect, "dragons-bane-target-aura", "目标水／火附着", true).map((choice) => ({ ...choice,
+    weaponChoice: { ...choice.weaponChoice!, targetAuraElements: ["hydro","pyro"] }
+  }))
+)

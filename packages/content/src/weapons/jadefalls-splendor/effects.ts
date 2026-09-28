@@ -12,7 +12,8 @@ export const JADEFALLS_SPLENDOR_OWN_ELEMENT_DAMAGE_BONUS_MAXIMUM_BY_REFINEMENT =
 /** Typed selected current-action snapshot for Jadefall's Splendor's Primordial Jade Regalia. */
 export const jadefallsSplendorCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "conditional", preparation: "qualified", retention: "retain_on_exit", trigger: { event: "burst_cast", sourceFieldPresence: "on_field" }, explanation: "本人提前施放爆发，原石定土有效期内保留" },
     id: "weapon.jadefalls-splendor.after-burst-or-shield.final-hp-to-own-element-damage-bonus",
     label: "碧落之珑 · 施放元素爆发或创造护盾后3秒内的对应元素伤害",
     source: { holder: "primary", kind: "weapon", weaponId: "JadefallsSplendor" },

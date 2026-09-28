@@ -1,14 +1,17 @@
-import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-coverage.js"
+import type { EquipmentCoverageEntry } from "../../equipment-coverage.js"
 
-/** Maintainer-reviewed single-core-action coverage for this equipment item. */
+/** Reviewed executable effects; excluded legacy states and independent weapon procs are not coverage claims. */
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: ["weapon.halberd.cooldown-ready.physical-hit"],
       id: "weapon.halberd.cooldown-ready.physical-hit",
       label: "钺矛 · 冷却就绪时本次普攻触发沉重物理伤害",
-      source: weaponSource("Halberd"),
-      status: "implemented"
+      source: {
+        kind: "weapon",
+        weaponId: "Halberd"
+      },
+      status: "not_applicable",
+      reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性"
     }
   ],
   equipmentId: "Halberd",

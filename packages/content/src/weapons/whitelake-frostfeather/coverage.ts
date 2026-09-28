@@ -4,7 +4,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: ["weapon.whitelake-frostfeather.lake-hued-lament.3-stack.attack-percent"],
+      effectIds: ["weapon.whitelake-frostfeather.lake-hued-lament.2-stack.attack-percent", "weapon.whitelake-frostfeather.lake-hued-lament.1-stack.attack-percent", "weapon.whitelake-frostfeather.lake-hued-lament.3-stack.attack-percent"],
       id: "weapon.whitelake-frostfeather.lake-hued-lament.attack-percent",
       label: "白湖冬羽 · 湖色的哀告攻击力（按最高三层）",
       source: weaponSource("WhitelakeFrostfeather"),

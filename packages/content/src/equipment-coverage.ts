@@ -4,7 +4,7 @@ import type { ArtifactSetInventoryEntry, WeaponInventoryEntry } from "./equipmen
 export type EquipmentCoverageStatus = "implemented" | "not_applicable" | "unsupported" | "unreviewed"
 
 export type EquipmentCoverageEffectSource =
-  | { readonly kind: "weapon"; readonly weaponId: string }
+  | { readonly kind: "weapon"; readonly weaponId: string; readonly holder?: "party_member" | "primary" }
   | {
       readonly holder?: "party_member" | "primary"
       readonly kind: "artifact_set"
@@ -56,13 +56,23 @@ export type PublishedEquipmentCoverageClause =
 
 /** One full-inventory equipment record and its independently auditable passive clauses. */
 export interface EquipmentCoverageEntry {
+  /** Entity-owned catalog constraints, separate from whether the weapon can be equipped. */
+  readonly comparison?: WeaponComparisonPolicy
   readonly clauses: readonly [EquipmentCoverageClause, ...EquipmentCoverageClause[]]
   readonly equipmentId: string
   readonly kind: "artifact_set" | "weapon"
 }
 
+export interface WeaponComparisonPolicy {
+  readonly excluded?: boolean
+  readonly level?: number
+  readonly ascension?: number
+  readonly refinements?: readonly number[]
+}
+
 /** One released weapon that is fully reviewed and available for character configuration. */
 export interface PublishedWeapon {
+  readonly comparison?: WeaponComparisonPolicy
   readonly label: string
   readonly rarity: 3 | 4 | 5
   readonly weaponId: string

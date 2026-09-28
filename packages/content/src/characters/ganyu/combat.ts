@@ -5,6 +5,9 @@ import { ganyuDefinition } from "./definition.js"
 
 export const ganyuCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "ganyu.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "ganyu.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 2 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("ganyu", 3),
     { ...declareSkillCastCapability("ganyu", 3, {"initialUses":2}), id: "ganyu.kit.extra-skill-charge", minimumSourceConstellation: 2 },
     ...declareWeaponHitCapabilities(ganyuDefinition),
@@ -66,6 +69,7 @@ export const ganyuCombatCoverage: CharacterCombatCoverage = {
       element: ganyuDefinition.element,
       evaluator: "declared_direct",
       id: "ganyu.normal.frostflake_arrow.level_two.hit_and_bloom",
+      aimedArrowDamagePartIds: ["frostflake-arrow-hit"],
       intrinsicEffects: [
         {
           coefficientParameterId: "a1-undivided-heart-crit-rate-bonus",

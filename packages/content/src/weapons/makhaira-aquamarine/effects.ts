@@ -7,7 +7,7 @@ export const MAKHAIRA_AQUAMARINE_OTHER_PARTY_ATTACK_FROM_ELEMENTAL_MASTERY_BY_RE
 /** Typed selected current-action snapshots for Makhaira Aquamarine's Desert Pavilion. */
 export const makhairaAquamarineCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.makhaira-aquamarine.after-10s.self.source-em-to-flat-attack",
     label: "玛海菈的水色 · 每10秒触发后的自身攻击力",
     source: { holder: "primary", kind: "weapon", weaponId: "MakhairaAquamarine" },
@@ -21,7 +21,7 @@ export const makhairaAquamarineCombatActionEffects: readonly CombatActionEffect[
     }
   },
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.makhaira-aquamarine.after-10s.other-party.source-em-to-flat-attack",
     label: "玛海菈的水色 · 每10秒触发后的其他队友攻击力",
     source: {

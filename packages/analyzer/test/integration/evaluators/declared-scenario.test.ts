@@ -15,7 +15,8 @@ import {
   evaluateDeclaredDirectScenarioAction,
   type DeclaredDirectScenarioInput
 } from "../../../src/evaluators/declared-scenario.js"
-import { resolveCoreCombatStats } from "../../../src/core/base-stats.js"
+import { resolveBaseCombatStats, resolveCoreCombatStats } from "../../../src/core/base-stats.js"
+import { evaluateScenario } from "../../../src/scenario/evaluate.js"
 
 const gameData = new GameDataRepository(DEFAULT_GAME_DATA_PATH)
 const enemy = { defenseReduction: 0, level: 100, name: "训练木桩", resistance: 0.1 } as const
@@ -206,7 +207,7 @@ describe("declared direct scenario actions", () => {
     )
   })
 
-  it("applies Key of Khaj-Nisut's selected Grand Hymn stack from final maximum HP", () => {
+  it("derives Key's three reachable Grand Hymn stacks and party share despite a legacy one-stack selection", () => {
     const action = requireAction("nilou.skill.dance_of_haftkarsvar.initial_hit")
     const build: CharacterBuild = {
       ...xianglingNationalBuiltinBuild,
@@ -240,9 +241,10 @@ describe("declared direct scenario actions", () => {
       (effect) => effect.id === "weapon.key-of-khaj-nisut.grand-hymn.3-stack.final-hp-to-elemental-mastery"
     )
 
-    expect(oneStack.stats.elementalMastery).toBeCloseTo(coreStats.elementalMastery + expectedFinalHp * 0.0012)
-    expect(threeStacks.stats.elementalMastery).toBeCloseTo(coreStats.elementalMastery + expectedFinalHp * 0.0036)
-    expect(oneStackEffect).toMatchObject({ target: "elementalMastery", value: expectedFinalHp * 0.0012 })
+    expect(oneStack.stats.elementalMastery).toBeCloseTo(coreStats.elementalMastery + expectedFinalHp * 0.0056)
+    expect(threeStacks.stats.elementalMastery).toBeCloseTo(coreStats.elementalMastery + expectedFinalHp * 0.0056)
+    expect(oneStackEffect).toBeUndefined()
+    expect(oneStack.appliedEffects).toEqual(threeStacks.appliedEffects)
     expect(threeStackEffect).toMatchObject({ target: "elementalMastery", value: expectedFinalHp * 0.0036 })
   })
 
@@ -279,7 +281,11 @@ describe("declared direct scenario actions", () => {
 
     expect(effect).toMatchObject({ id: effectId, sourceId: keyHolder.buildId, target: "elementalMastery" })
     expect(effect?.value).toBeCloseTo(expectedSourceFinalHp * 0.002)
-    expect(partySnapshot.stats.elementalMastery - baseline.stats.elementalMastery).toBeCloseTo(effect?.value as number)
+    expect(baseline.appliedEffects).toContainEqual(effect)
+    expect(partySnapshot.stats.elementalMastery).toBeCloseTo(baseline.stats.elementalMastery)
+    expect(baseline.stats.elementalMastery).toBeCloseTo(
+      resolveCoreCombatStats(xianglingNationalBuiltinBuild, gameData).elementalMastery + expectedSourceFinalHp * 0.002
+    )
   })
 
   it("includes the primary Key holder's target-side HP inputs in its selected party elemental mastery", () => {
@@ -367,8 +373,9 @@ describe("declared direct scenario actions", () => {
     const cappedEffect = cappedSnapshot.appliedEffects.find((candidate) => candidate.id === effectId)
 
     expect(effect).toMatchObject({ id: effectId, target: "damageBonus", value: expect.any(Number) })
-    expect(effect?.value).toBeGreaterThan(0)
-    expect(dendroSnapshot.stats.damageBonus - dendroBaseline.stats.damageBonus).toBeCloseTo(effect?.value as number)
+    expect(effect?.value).toBeCloseTo(Math.min(resolveCoreCombatStats(build, gameData).hp * 0.000003, 0.12))
+    expect(dendroBaseline.appliedEffects).toContainEqual(effect)
+    expect(dendroSnapshot.stats.damageBonus).toBeCloseTo(dendroBaseline.stats.damageBonus)
     expect(cappedEffect).toMatchObject({ target: "damageBonus", value: 0.12 })
     expect(nonOwnElementSnapshot.appliedEffects).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: effectId })])
@@ -430,19 +437,23 @@ describe("declared direct scenario actions", () => {
     const cappedNormalEffect = cappedNormalSnapshot.appliedEffects.find((candidate) => candidate.id === effectId)
 
     expect(normalEffect).toMatchObject({ id: effectId, target: "damageBonus", value: expect.any(Number) })
-    expect(normalEffect?.value).toBeGreaterThan(0)
-    expect(normalSnapshot.stats.damageBonus - normalBaseline.stats.damageBonus).toBeCloseTo(normalEffect?.value as number)
+    expect(normalEffect?.value).toBeCloseTo(Math.min(resolveCoreCombatStats(build, gameData).hp * 0.000006, 0.16))
+    expect(normalBaseline.appliedEffects).toContainEqual(normalEffect)
+    expect(normalSnapshot.stats.damageBonus).toBeCloseTo(normalBaseline.stats.damageBonus)
     expect(cappedNormalEffect).toMatchObject({ target: "damageBonus", value: 0.16 })
     expect(burstSnapshot.appliedEffects).not.toEqual(expect.arrayContaining([expect.objectContaining({ id: effectId })]))
     expect(burstSnapshot.stats.damageBonus).toBeCloseTo(burstBaseline.stats.damageBonus)
   })
 
   it("applies Staff of the Scarlet Sands' elemental-mastery attack conversions from the resolved mastery stage", () => {
-    const action = requireAction("xiangling.skill.guoba.single_flame_breath")
+    // One on-field E hitting three configured enemies can prepare all three stacks.
+    const action = requireAction("cyno.skill.secret_rite_chasmic_soulfarer.ordinary")
     const createBuild = (refinement: number): CharacterBuild => ({
       ...xianglingNationalBuiltinBuild,
-      buildId: `test.xiangling.staff-of-the-scarlet-sands.r${refinement}`,
-      label: `香菱赤沙之杖 R${refinement} 测试配置`,
+      buildId: `test.cyno.staff-of-the-scarlet-sands.r${refinement}`,
+      characterId: "Cyno",
+      constellation: 0,
+      label: `赛诺赤沙之杖 R${refinement} 测试配置`,
       weapon: { ascension: 6, level: 90, refinement, weaponId: "StaffOfTheScarletSands" }
     })
     const r1Build = createBuild(1)
@@ -453,6 +464,7 @@ describe("declared direct scenario actions", () => {
     const r5FinalElementalMastery = resolveCoreCombatStats(r5Build, gameData).elementalMastery + 100
     const r1Automatic = evaluateDeclaredDirectScenarioAction({
       action,
+      enemyCount: 3,
       artifactStatDeltas: { elemental_mastery: 100 },
       build: r1Build,
       buffs: [],
@@ -461,6 +473,7 @@ describe("declared direct scenario actions", () => {
     })
     const r1ThreeStacks = evaluateDeclaredDirectScenarioAction({
       action,
+      enemyCount: 3,
       activeEffectIds: [threeStackEffectId],
       artifactStatDeltas: { elemental_mastery: 100 },
       build: r1Build,
@@ -470,6 +483,7 @@ describe("declared direct scenario actions", () => {
     })
     const r5Automatic = evaluateDeclaredDirectScenarioAction({
       action,
+      enemyCount: 3,
       artifactStatDeltas: { elemental_mastery: 100 },
       build: r5Build,
       buffs: [],
@@ -478,6 +492,7 @@ describe("declared direct scenario actions", () => {
     })
     const r5ThreeStacks = evaluateDeclaredDirectScenarioAction({
       action,
+      enemyCount: 3,
       activeEffectIds: [threeStackEffectId],
       artifactStatDeltas: { elemental_mastery: 100 },
       build: r5Build,
@@ -495,8 +510,23 @@ describe("declared direct scenario actions", () => {
     expect(automaticEffect?.value).toBeCloseTo(r1FinalElementalMastery * 0.52)
     expect(r1ThreeStackEffect?.value).toBeCloseTo(r1FinalElementalMastery * 0.84)
     expect(r5ThreeStackEffect?.value).toBeCloseTo(r5FinalElementalMastery * 1.68)
-    expect(r1ThreeStacks.stats.flatAttack - r1Automatic.stats.flatAttack).toBeCloseTo(r1FinalElementalMastery * 0.84)
-    expect(r5ThreeStacks.stats.flatAttack - r5Automatic.stats.flatAttack).toBeCloseTo(r5FinalElementalMastery * 1.68)
+    expect(r1Automatic.appliedEffects).toContainEqual(r1ThreeStackEffect)
+    expect(r5Automatic.appliedEffects).toContainEqual(r5ThreeStackEffect)
+    expect(r1ThreeStacks.stats.flatAttack).toBeCloseTo(r1Automatic.stats.flatAttack)
+    expect(r5ThreeStacks.stats.flatAttack).toBeCloseTo(r5Automatic.stats.flatAttack)
+    const offFieldBuild = { ...xianglingNationalBuiltinBuild, weapon: r1Build.weapon }
+    const offField = evaluateDeclaredDirectScenarioAction({
+      action: requireAction("xiangling.skill.guoba.single_flame_breath"),
+      fieldContext: { actionOwnerBuildId: offFieldBuild.buildId, onFieldBuildId: null },
+      activeEffectIds: [threeStackEffectId],
+      artifactStatDeltas: { elemental_mastery: 100 },
+      build: offFieldBuild, buffs: [], enemy, gameData
+    })
+    expect(offField.appliedEffects.find((effect) => effect.id === threeStackEffectId)).toBeUndefined()
+    expect(offField.appliedEffects.some((effect) => effect.id.includes("red-sands-dream"))).toBe(false)
+    expect(offField.appliedEffects.find((effect) => effect.id === automaticEffectId)?.value).toBeCloseTo(
+      (resolveCoreCombatStats(offFieldBuild, gameData).elementalMastery + 100) * 0.52
+    )
   })
 
   it("uses each party holder's final elemental mastery for selected Makhaira Aquamarine and Wandering Evenstar snapshots", () => {
@@ -552,7 +582,8 @@ describe("declared direct scenario actions", () => {
     expect(wanderingEvenstarEffect).toMatchObject({ sourceId: wanderingEvenstarHolder.buildId, target: "flatAttack" })
     expect(makhairaEffect?.value).toBeCloseTo(makhairaFinalElementalMastery * 0.24 * 0.3)
     expect(wanderingEvenstarEffect?.value).toBeCloseTo(wanderingEvenstarFinalElementalMastery * 0.48 * 0.3)
-    expect(snapshot.stats.flatAttack - baseline.stats.flatAttack).toBeCloseTo(
+    expect(snapshot.stats.flatAttack).toBeCloseTo(baseline.stats.flatAttack)
+    expect(snapshot.stats.flatAttack - resolveCoreCombatStats(xianglingNationalBuiltinBuild, gameData).flatAttack).toBeCloseTo(
       makhairaFinalElementalMastery * 0.24 * 0.3 + wanderingEvenstarFinalElementalMastery * 0.48 * 0.3
     )
   })
@@ -608,7 +639,8 @@ describe("declared direct scenario actions", () => {
         expect.objectContaining({ sourceId: r5Holder.buildId, target: "flatAttack" })
       ])
     )
-    expect(snapshot.stats.flatAttack - baseline.stats.flatAttack).toBeCloseTo(
+    expect(snapshot.stats.flatAttack).toBeCloseTo(baseline.stats.flatAttack)
+    expect(snapshot.stats.flatAttack - resolveCoreCombatStats(xianglingNationalBuiltinBuild, gameData).flatAttack).toBeCloseTo(
       r1FinalElementalMastery * 0.24 * 0.3 + r5FinalElementalMastery * 0.48 * 0.3
     )
   })
@@ -780,7 +812,8 @@ describe("declared direct scenario actions", () => {
     )
     expect(r1.appliedEffects).toEqual(expect.arrayContaining([expect.objectContaining({ id: effectId, value: 0.4 })]))
     expect(r5.appliedEffects).toEqual(expect.arrayContaining([expect.objectContaining({ id: effectId, value: 0.8 })]))
-    expect(r1.rotation.dpr).toBeGreaterThan(inactive.rotation.dpr)
+    expect(inactive.appliedEffects).toContainEqual(expect.objectContaining({ id: effectId, value: 0.4 }))
+    expect(r1.rotation.dpr).toBeCloseTo(inactive.rotation.dpr)
     expect(r5.rotation.dpr).toBeGreaterThan(r1.rotation.dpr)
   })
 
@@ -2154,7 +2187,9 @@ describe("declared direct scenario actions", () => {
       { snapshot: 0, time: 0 },
       { snapshot: 0.35, time: 0.35 }
     ])
-    expect(evaluation.rotation.events.map((event) => event.appliedEffectIds)).toEqual([[], ["test.late-damage-bonus"]])
+    // Events now expose permanent stat sources as well as temporal windows.
+    expect(evaluation.rotation.events.map((event) => event.appliedEffectIds.filter((id) => id.startsWith("test."))))
+      .toEqual([[], ["test.late-damage-bonus"]])
     expect(evaluation.rotation.events[0]?.expectedDamage).toBeCloseTo(baseline.rotation.events[0]?.expectedDamage ?? 0)
     expect(evaluation.rotation.events[1]?.expectedDamage).toBeGreaterThan(baseline.rotation.events[1]?.expectedDamage ?? 0)
     expect(evaluation.rotation.dps).toBeCloseTo(evaluation.rotation.dpr / 0.7)
@@ -2201,7 +2236,8 @@ describe("declared direct scenario actions", () => {
     })
 
     expect(evaluation.rotation.events[0]).toMatchObject({ statSnapshotTime: 0.4, time: 0.7 })
-    expect(evaluation.rotation.events[0]?.appliedEffectIds).toEqual(["test.precise-snapshot-damage-bonus"])
+    expect(evaluation.rotation.events[0]?.appliedEffectIds.filter((id) => id.startsWith("test.")))
+      .toEqual(["test.precise-snapshot-damage-bonus"])
     expect(evaluation.rotation.events[0]?.expectedDamage).toBeGreaterThan(baseline.rotation.events[0]?.expectedDamage ?? 0)
   })
 
@@ -2364,13 +2400,13 @@ describe("declared direct scenario actions", () => {
     const event = evaluation.rotation.events[0]
 
     expect(event).toMatchObject({
-      appliedEffectIds: ["test.snapshot-attack"],
       element: "pyro",
       elementOverride: { baseElement: "physical", element: "pyro", id: "test.pyro-infusion" },
       elementalApplication: { applied: true, reaction: "vaporize_reverse" },
       statSnapshotTime: 0.4,
       time: 0.7
     })
+    expect(event?.appliedEffectIds.filter((id) => id.startsWith("test."))).toEqual(["test.snapshot-attack"])
   })
 
   it("resolves bounded action parameters into declared event hit counts and coefficient multipliers", () => {
@@ -2450,7 +2486,7 @@ describe("declared direct scenario actions", () => {
     ).toThrow("hit-count")
   })
 
-  it("does not apply a normal-attack-only team bonus to Crescent Pike's independent physical hit", () => {
+  it("excludes Crescent Pike's independent proc while retaining its physical stat and automatic normal team bonus", () => {
     const action = requireAction("xiangling.normal.auto.first_hit")
     const build = {
       ...xianglingNationalBuiltinBuild,
@@ -2458,7 +2494,7 @@ describe("declared direct scenario actions", () => {
       weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "CrescentPike" }
     }
     const freedomSwornTeammate = {
-      ...xianglingNationalBuiltinBuild,
+      ...xingqiuNationalBuiltinBuild,
       buildId: "test.freedom-sworn.teammate",
       weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "FreedomSworn" }
     }
@@ -2493,12 +2529,15 @@ describe("declared direct scenario actions", () => {
     const baselineNormalHit = baseline.rotation.events.find((event) => event.id !== crescentPikeEventId)
     const fullSigilNormalHit = fullSigil.rotation.events.find((event) => event.id !== crescentPikeEventId)
 
-    expect(fullSigilCrescentPike?.element).toBe("physical")
-    expect(fullSigilCrescentPike?.expectedDamage).toBeCloseTo(baselineCrescentPike?.expectedDamage ?? 0)
-    expect(fullSigilCrescentPike?.trace.find((entry) => entry.kind === "damage_bonus")).toEqual(
-      baselineCrescentPike?.trace.find((entry) => entry.kind === "damage_bonus")
-    )
-    expect(fullSigilNormalHit?.expectedDamage).toBeGreaterThan(baselineNormalHit?.expectedDamage ?? 0)
+    expect(baselineCrescentPike).toBeUndefined()
+    expect(fullSigilCrescentPike).toBeUndefined()
+    expect(fullSigil.rotation.events).toHaveLength(1)
+    expect(fullSigilNormalHit?.element).toBe("physical")
+    expect(fullSigil.appliedEffects).toContainEqual(expect.objectContaining({
+      id: "weapon.freedom-sworn.full-sigil.party-normal-charged-plunge-damage-bonus", value: 0.16
+    }))
+    expect(fullSigil.stats.damageBonus).toBeCloseTo(resolveBaseCombatStats(build, gameData, "physical").damageBonus + 0.16)
+    expect(fullSigilNormalHit?.expectedDamage).toBeCloseTo(baselineNormalHit?.expectedDamage ?? 0)
   })
 
   it("evaluates Alhaitham's Chisel-Light Mirror Projection Attack as one attack and elemental-mastery Spread hit", () => {
@@ -2568,10 +2607,11 @@ describe("declared direct scenario actions", () => {
 
     expect(effect).toMatchObject({ sourceId: peakPatrolHolder.buildId, target: "damageBonus" })
     expect(effect?.value).toBeCloseTo(expectedDamageBonus)
-    expect(snapshot.stats.damageBonus - baseline.stats.damageBonus).toBeCloseTo(expectedDamageBonus)
+    expect(baseline.appliedEffects).toContainEqual(effect)
+    expect(snapshot.stats.damageBonus).toBeCloseTo(baseline.stats.damageBonus)
   })
 
-  it("caps Peak Patrol Song's selected source snapshot, requires one source, and excludes physical actions", () => {
+  it("caps Peak Patrol Song, automatically takes the strongest source, and excludes physical actions", () => {
     const elementalAction = requireAction("xiangling.skill.guoba.single_flame_breath")
     const physicalAction = requireAction("xiangling.normal.auto.first_hit")
     const partyEffectId = "weapon.peak-patrol-song.2-stack.source-final-defense-to-party-all-element-damage-bonus"
@@ -2615,17 +2655,18 @@ describe("declared direct scenario actions", () => {
 
     expect(cappedEffect?.value).toBeCloseTo(0.512)
     expect(physicalSnapshot.appliedEffects.find((effect) => effect.id === partyEffectId)).toBeUndefined()
-    expect(() =>
-      evaluateDeclaredDirectScenarioAction({
-        action: elementalAction,
-        activeEffectIds: [partyEffectId],
-        build: xianglingNationalBuiltinBuild,
-        buffs: [],
-        enemy,
-        gameData,
-        teammates: [r5Xilonen, r1Chiori]
-      })
-    ).toThrow(`Active effect ${partyEffectId} has multiple eligible source builds; select one explicitly`)
+    const automaticSnapshot = evaluateDeclaredDirectScenarioAction({
+      action: elementalAction,
+      activeEffectIds: [partyEffectId],
+      build: xianglingNationalBuiltinBuild,
+      buffs: [],
+      enemy,
+      gameData,
+      teammates: [r5Xilonen, r1Chiori]
+    })
+    expect(automaticSnapshot.appliedEffects.filter((effect) => effect.id === partyEffectId)).toEqual([
+      expect.objectContaining({ sourceId: r5Xilonen.buildId, value: 0.512 })
+    ])
 
     const selectedSnapshot = evaluateDeclaredDirectScenarioAction({
       action: elementalAction,
@@ -2673,16 +2714,20 @@ describe("declared direct scenario actions", () => {
         expect.objectContaining({ id: partyEffectId, sourceId: xilonen.buildId, target: "damageBonus" })
       ])
     )
-    expect(snapshot.stats.damageBonus - baseline.stats.damageBonus).toBeCloseTo(0.2 + (partyEffect?.value ?? 0))
+    const coreStats = resolveCoreCombatStats(xilonen, gameData)
+    expect(partyEffect?.value).toBeCloseTo(Math.min((coreStats.defense + coreStats.baseDefense * 0.16) * 0.00008, 0.256))
+    expect(baseline.appliedEffects).toEqual(snapshot.appliedEffects)
+    expect(snapshot.stats.damageBonus).toBeCloseTo(baseline.stats.damageBonus)
   })
 
-  it("uses an Angelos Heptades holder's final attack for its selected current-on-field damage snapshot", () => {
-    const action = requireAction("xiangling.skill.guoba.single_flame_breath")
+  it("uses a shield-capable Angelos holder's final attack for its automatic current-on-field damage snapshot", () => {
+    const action = requireAction("xiangling.normal.auto.first_hit")
     const angelosHolder: CharacterBuild = {
       ...xianglingNationalBuiltinBuild,
-      buildId: "test.mona.angelos-heptades.r1",
-      characterId: "Mona",
-      label: "莫娜 尘光七谕 R1 测试配置",
+      buildId: "test.nicole.angelos-heptades.r1",
+      characterId: "Nicole",
+      constellation: 0,
+      label: "妮可 尘光七谕 R1 测试配置",
       weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "AngelosHeptades" }
     }
     const effectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
@@ -2710,17 +2755,51 @@ describe("declared direct scenario actions", () => {
 
     expect(effect).toMatchObject({ sourceId: angelosHolder.buildId, target: "damageBonus" })
     expect(effect?.value).toBeCloseTo(expectedDamageBonus)
-    expect(snapshot.stats.damageBonus - baseline.stats.damageBonus).toBeCloseTo(expectedDamageBonus)
-    expect(snapshot.result.expectedDamage).toBeGreaterThan(baseline.result.expectedDamage)
+    expect(baseline.appliedEffects).toContainEqual(effect)
+    expect(snapshot.stats.damageBonus).toBeCloseTo(baseline.stats.damageBonus)
+    expect(snapshot.result.expectedDamage).toBeCloseTo(baseline.result.expectedDamage)
+  })
+
+  it("does not grant Angelos' damage conversion to a holder without its own shield even with a shield teammate", () => {
+    const effectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
+    const holder: CharacterBuild = {
+      ...xingqiuNationalBuiltinBuild,
+      buildId: "test.mona.angelos.no-own-shield",
+      characterId: "Mona",
+      constellation: 0,
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "AngelosHeptades" }
+    }
+    const shieldTeammate: CharacterBuild = {
+      ...xianglingNationalBuiltinBuild,
+      buildId: "test.lanyan.angelos.shield-teammate",
+      characterId: "LanYan",
+      constellation: 0,
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "FavoniusCodex" }
+    }
+    const evaluation = evaluateDeclaredDirectScenarioAction({
+      action: requireAction("mona.normal.auto.first_hit"),
+      activeEffectIds: [effectId],
+      build: holder,
+      buffs: [],
+      enemy,
+      gameData,
+      teammates: [shieldTeammate]
+    })
+
+    expect(evaluation.appliedEffects.find((effect) => effect.id === effectId)).toBeUndefined()
+    expect(evaluation.appliedEffects).toContainEqual(expect.objectContaining({
+      id: "weapon.angelos-heptades.attack-percent", sourceId: holder.buildId, value: 0.12
+    }))
   })
 
   it("uses half of Angelos Heptades' source-attack bonus for a selected Magic Secret off-field snapshot", () => {
-    const action = requireAction("venti.skill.skyward_sonnet.press")
+    const action = requireAction("venti.burst.winds_grand_ode.stormeye.single_tick")
     const angelosHolder: CharacterBuild = {
       ...xianglingNationalBuiltinBuild,
-      buildId: "test.mona.angelos-heptades.magic-secret.r1",
-      characterId: "Mona",
-      label: "莫娜 尘光七谕魔导·秘仪 R1 测试配置",
+      buildId: "test.nicole.angelos-heptades.magic-secret.r1",
+      characterId: "Nicole",
+      constellation: 0,
+      label: "妮可 尘光七谕魔导·秘仪 R1 测试配置",
       weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "AngelosHeptades" }
     }
     const currentOnFieldEffectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
@@ -2729,20 +2808,23 @@ describe("declared direct scenario actions", () => {
     const magicRecipient = {
       ...xianglingNationalBuiltinBuild,
       buildId: "test.venti.angelos-heptades.magic-secret.recipient",
-      characterId: "Venti"
+      characterId: "Venti",
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "FavoniusWarbow" }
     }
-    const baseline = evaluateDeclaredDirectScenarioAction({
-      action,
-      build: magicRecipient,
-      buffs: [],
+    const baseline = evaluateScenario({
+      conditions: { activeEffectIds: [], enemyCount: 1, onFieldBuildId: angelosHolder.buildId },
+      gameDataVersion: gameData.getManifest().gameVersion,
+      targetActionId: action.id,
+      primary: magicRecipient,
+      externalBuffs: [],
       enemy,
-      gameData,
       teammates: [angelosHolder]
-    })
+    }, gameData)
     const snapshot = evaluateDeclaredDirectScenarioAction({
       action,
       activeEffectIds: [magicSecretOffFieldEffectId],
       build: magicRecipient,
+      fieldContext: { actionOwnerBuildId: magicRecipient.buildId, onFieldBuildId: angelosHolder.buildId },
       buffs: [],
       enemy,
       gameData,
@@ -2755,59 +2837,63 @@ describe("declared direct scenario actions", () => {
 
     expect(effect).toMatchObject({ sourceId: angelosHolder.buildId, target: "damageBonus" })
     expect(effect?.value).toBeCloseTo(expectedDamageBonus)
-    expect(snapshot.stats.damageBonus - baseline.stats.damageBonus).toBeCloseTo(expectedDamageBonus)
-    expect(snapshot.result.expectedDamage).toBeGreaterThan(baseline.result.expectedDamage)
-    expect(() =>
-      evaluateDeclaredDirectScenarioAction({
-        action,
-        activeEffectIds: [currentOnFieldEffectId, magicSecretOffFieldEffectId],
-        build: magicRecipient,
-        buffs: [],
-        enemy,
-        gameData,
-        teammates: [angelosHolder]
-      })
-    ).toThrow("Selected angelos-heptades-guiding-light-recipient-position effects cannot stack")
+    expect(baseline.appliedEffects).toContainEqual(effect)
+    expect(snapshot.stats.damageBonus).toBeCloseTo(baseline.stats.damageBonus)
+    expect(snapshot.result.expectedDamage).toBeCloseTo(baseline.result.expectedDamage)
+    const bothLegacyPositions = evaluateDeclaredDirectScenarioAction({
+      action,
+      activeEffectIds: [currentOnFieldEffectId, magicSecretOffFieldEffectId],
+      build: magicRecipient,
+      fieldContext: { actionOwnerBuildId: magicRecipient.buildId, onFieldBuildId: angelosHolder.buildId },
+      buffs: [],
+      enemy,
+      gameData,
+      teammates: [angelosHolder]
+    })
+    expect(bothLegacyPositions.appliedEffects.find((candidate) => candidate.id === currentOnFieldEffectId)).toBeUndefined()
+    expect(bothLegacyPositions.appliedEffects).toContainEqual(effect)
   })
 
   it("lets an on-field Angelos Heptades holder receive its own selected current-on-field snapshot", () => {
-    const action = requireAction("mona.normal.auto.first_hit")
-    const mona: CharacterBuild = {
+    const action = requireAction("nicole.normal.auto.first_hit")
+    const nicole: CharacterBuild = {
       ...xianglingNationalBuiltinBuild,
-      buildId: "test.mona.angelos-heptades.self-r1",
-      characterId: "Mona",
-      label: "莫娜 尘光七谕自身 R1 测试配置",
+      buildId: "test.nicole.angelos-heptades.self-r1",
+      characterId: "Nicole",
+      constellation: 0,
+      label: "妮可 尘光七谕自身 R1 测试配置",
       talents: { burst: 10, normal: 10, skill: 10 },
       weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "AngelosHeptades" }
     }
     const effectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
-    const baseline = evaluateDeclaredDirectScenarioAction({ action, build: mona, buffs: [], enemy, gameData })
+    const baseline = evaluateDeclaredDirectScenarioAction({ action, build: nicole, buffs: [], enemy, gameData })
     const snapshot = evaluateDeclaredDirectScenarioAction({
       action,
       activeEffectIds: [effectId],
-      build: mona,
+      build: nicole,
       buffs: [],
       enemy,
       gameData
     })
-    const coreStats = resolveCoreCombatStats(mona, gameData)
+    const coreStats = resolveCoreCombatStats(nicole, gameData)
     const expectedDamageBonus = Math.min((coreStats.attack + coreStats.baseAttack * 0.12) * 0.0001, 0.26)
 
     expect(snapshot.appliedEffects).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: effectId, sourceId: mona.buildId, target: "damageBonus", value: expectedDamageBonus })
+        expect.objectContaining({ id: effectId, sourceId: nicole.buildId, target: "damageBonus", value: expectedDamageBonus })
       ])
     )
-    expect(snapshot.stats.damageBonus - baseline.stats.damageBonus).toBeCloseTo(expectedDamageBonus)
+    expect(baseline.appliedEffects).toEqual(snapshot.appliedEffects)
+    expect(snapshot.stats.damageBonus).toBeCloseTo(baseline.stats.damageBonus)
   })
 
-  it("caps Angelos Heptades' source attack snapshot and requires one selected holder", () => {
+  it("caps Angelos Heptades' automatic snapshot and takes the strongest eligible shield source", () => {
     const elementalAction = requireAction("xiangling.skill.guoba.single_flame_breath")
     const physicalAction = requireAction("xiangling.normal.auto.first_hit")
     const effectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
     const magicSecretOffFieldEffectId =
       "weapon.angelos-heptades.magic-secret.after-shield.source-final-attack-to-off-field-magic-recipient-damage-bonus"
-    const createAngelosHolder = (characterId: "Lisa" | "Mona", refinement: number): CharacterBuild => ({
+    const createAngelosHolder = (characterId: "LanYan" | "Nicole", refinement: number): CharacterBuild => ({
       ...xianglingNationalBuiltinBuild,
       artifacts: xianglingNationalBuiltinBuild.artifacts.map((artifact) => ({
         ...artifact,
@@ -2819,30 +2905,34 @@ describe("declared direct scenario actions", () => {
       })),
       buildId: `test.${characterId.toLowerCase()}.angelos-heptades.r${refinement}`,
       characterId,
+      constellation: 0,
       label: `${characterId} 尘光七谕 R${refinement} 测试配置`,
       talents: { burst: 10, normal: 10, skill: 10 },
       weapon: { ascension: 6, level: 90, refinement, weaponId: "AngelosHeptades" }
     })
-    const r5Mona = createAngelosHolder("Mona", 5)
-    const r1Lisa = createAngelosHolder("Lisa", 1)
+    const r5Nicole = createAngelosHolder("Nicole", 5)
+    const r1LanYan = createAngelosHolder("LanYan", 1)
     const hexereiTeammate = {
       ...xianglingNationalBuiltinBuild,
       buildId: "test.venti.angelos-heptades.cap",
-      characterId: "Venti"
+      characterId: "Venti",
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "FavoniusWarbow" }
     }
     const magicRecipient = {
       ...xianglingNationalBuiltinBuild,
       buildId: "test.venti.angelos-heptades.cap.recipient",
-      characterId: "Venti"
+      characterId: "Venti",
+      weapon: { ascension: 6, level: 90, refinement: 1, weaponId: "FavoniusWarbow" }
     }
     const cappedSnapshot = evaluateDeclaredDirectScenarioAction({
       action: elementalAction,
       activeEffectIds: [effectId],
       build: xianglingNationalBuiltinBuild,
+      fieldContext: { actionOwnerBuildId: xianglingNationalBuiltinBuild.buildId, onFieldBuildId: xianglingNationalBuiltinBuild.buildId },
       buffs: [],
       enemy,
       gameData,
-      teammates: [r5Mona, hexereiTeammate]
+      teammates: [r5Nicole, hexereiTeammate]
     })
     const physicalSnapshot = evaluateDeclaredDirectScenarioAction({
       action: physicalAction,
@@ -2851,16 +2941,17 @@ describe("declared direct scenario actions", () => {
       buffs: [],
       enemy,
       gameData,
-      teammates: [r5Mona]
+      teammates: [r5Nicole]
     })
     const magicSecretSnapshot = evaluateDeclaredDirectScenarioAction({
-      action: requireAction("venti.skill.skyward_sonnet.press"),
+      action: requireAction("venti.burst.winds_grand_ode.stormeye.single_tick"),
       activeEffectIds: [magicSecretOffFieldEffectId],
       build: magicRecipient,
+      fieldContext: { actionOwnerBuildId: magicRecipient.buildId, onFieldBuildId: r5Nicole.buildId },
       buffs: [],
       enemy,
       gameData,
-      teammates: [r5Mona]
+      teammates: [r5Nicole]
     })
 
     expect(cappedSnapshot.appliedEffects.find((effect) => effect.id === effectId)?.value).toBeCloseTo(0.58)
@@ -2868,31 +2959,37 @@ describe("declared direct scenario actions", () => {
     expect(magicSecretSnapshot.appliedEffects.find((effect) => effect.id === magicSecretOffFieldEffectId)?.value).toBeCloseTo(
       0.29
     )
-    expect(() =>
-      evaluateDeclaredDirectScenarioAction({
-        action: elementalAction,
-        activeEffectIds: [effectId],
-        build: xianglingNationalBuiltinBuild,
-        buffs: [],
-        enemy,
-        gameData,
-        teammates: [r5Mona, r1Lisa]
-      })
-    ).toThrow(`Active effect ${effectId} has multiple eligible source builds; select one explicitly`)
+    const automaticSnapshot = evaluateDeclaredDirectScenarioAction({
+      action: elementalAction,
+      activeEffectIds: [effectId],
+      build: xianglingNationalBuiltinBuild,
+      fieldContext: {
+        actionOwnerBuildId: xianglingNationalBuiltinBuild.buildId,
+        onFieldBuildId: xianglingNationalBuiltinBuild.buildId
+      },
+      buffs: [],
+      enemy,
+      gameData,
+      teammates: [r5Nicole, r1LanYan]
+    })
+    expect(automaticSnapshot.appliedEffects.filter((effect) => effect.id === effectId)).toEqual([
+      expect.objectContaining({ sourceId: r5Nicole.buildId, value: 0.58 })
+    ])
 
     const selectedSnapshot = evaluateDeclaredDirectScenarioAction({
       action: elementalAction,
       activeEffectIds: [effectId],
-      activeEffectSourceBuildIds: { [effectId]: r5Mona.buildId },
+      activeEffectSourceBuildIds: { [effectId]: r5Nicole.buildId },
       build: xianglingNationalBuiltinBuild,
+      fieldContext: { actionOwnerBuildId: xianglingNationalBuiltinBuild.buildId, onFieldBuildId: xianglingNationalBuiltinBuild.buildId },
       buffs: [],
       enemy,
       gameData,
-      teammates: [r5Mona, r1Lisa]
+      teammates: [r5Nicole, r1LanYan]
     })
 
     expect(selectedSnapshot.appliedEffects.filter((effect) => effect.id === effectId)).toEqual([
-      expect.objectContaining({ sourceId: r5Mona.buildId, value: 0.58 })
+      expect.objectContaining({ sourceId: r5Nicole.buildId, value: 0.58 })
     ])
   })
 })

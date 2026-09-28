@@ -5,6 +5,7 @@ import { yumemizukiMizukiDefinition } from "./definition.js"
 
 export const yumemizukiMizukiCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "yumemizuki-mizuki.kit.weapon-healing-qualification", label: "貉灵小食治疗拾取的前台", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("yumemizuki-mizuki", 2),
     { id: "yumemizuki-mizuki.kit.stellar-damage", label: "辉映状态下自身造成星烁反应伤害", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "on_field", sustained: true, specialReactions: ["stellar_swirl"], requiredTeamReaction: "stellar_swirl" },
     ...declareWeaponHitCapabilities(yumemizukiMizukiDefinition),

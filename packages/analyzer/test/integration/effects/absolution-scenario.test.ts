@@ -119,60 +119,34 @@ describe("Absolution declared scenarios", () => {
     }
   })
 
-  it("applies each selected pre-existing Bond-of-Life increase stack as a general R1/R5 damage bonus", () => {
-    const r1Build = createAbsolutionBuild(1)
-    const r5Build = createAbsolutionBuild(5)
-
-    for (const targetActionId of targetActionIds) {
-      const r1Inactive = evaluateAbsolutionScenario(targetActionId, r1Build)
-      const r5Inactive = evaluateAbsolutionScenario(targetActionId, r5Build)
-
+it("prepares Clorinde's three stacks at the exact R1/R5 values and ignores obsolete lower-stack IDs", () => {
+    for (const refinement of [1, 5]) for (const targetActionId of targetActionIds) {
+      const build = createAbsolutionBuild(refinement)
+      const baseline = evaluateAbsolutionScenario(targetActionId, build)
+      const fullId = createBondOfLifeEffectId(3)
+      expect(requireAppliedEffect(baseline, fullId)).toMatchObject({ sourceId: build.buildId,
+        target: "damageBonus", value: refinement === 1 ? 0.48 : 0.96 })
       for (const stackCount of stackCounts) {
-        const effectId = createBondOfLifeEffectId(stackCount)
-        const r1 = evaluateAbsolutionScenario(targetActionId, r1Build, [effectId])
-        const r5 = evaluateAbsolutionScenario(targetActionId, r5Build, [effectId])
-        const r1Value = 0.16 * stackCount
-        const r5Value = 0.32 * stackCount
-
-        expect(requireAppliedEffect(r1, effectId)).toMatchObject({
-          sourceId: r1Build.buildId,
-          target: "damageBonus",
-          value: r1Value
-        })
-        expect(requireAppliedEffect(r5, effectId)).toMatchObject({
-          sourceId: r5Build.buildId,
-          target: "damageBonus",
-          value: r5Value
-        })
-        expect(getBondOfLifeAppliedEffectIds(r1)).toEqual([effectId])
-        expect(getBondOfLifeAppliedEffectIds(r5)).toEqual([effectId])
-        expect(r1.stats.damageBonus - r1Inactive.stats.damageBonus).toBeCloseTo(r1Value)
-        expect(r5.stats.damageBonus - r5Inactive.stats.damageBonus).toBeCloseTo(r5Value)
-        expect(r5.stats.damageBonus - r5Inactive.stats.damageBonus).toBeCloseTo(r1Value * 2)
-        expect(r1.result.expectedDamage).toBeGreaterThan(r1Inactive.result.expectedDamage)
-        expect(r5.result.expectedDamage).toBeGreaterThan(r5Inactive.result.expectedDamage)
+        const selected = evaluateAbsolutionScenario(targetActionId, build, [createBondOfLifeEffectId(stackCount)])
+        expect(getBondOfLifeAppliedEffectIds(selected)).toEqual([fullId])
+        expect(selected.result.expectedDamage).toBe(baseline.result.expectedDamage)
       }
     }
   })
 
-  it("does not infer a current-hit Bond-of-Life increase when no pre-existing snapshot is selected", () => {
-    const build = createAbsolutionBuild(1)
-
-    for (const targetActionId of targetActionIds) {
-      const evaluation = evaluateAbsolutionScenario(targetActionId, build)
-
+it("does not grant Clorinde's automatic stacks to another sword character, even through a legacy ID", () => {
+    const build = { ...createAbsolutionBuild(1), characterId: "Kaeya" }
+    for (const active of [[], [createBondOfLifeEffectId(3)]]) {
+      const evaluation = evaluateAbsolutionScenario("kaeya.skill.frostgnaw", build, active)
       expect(getBondOfLifeAppliedEffectIds(evaluation)).toEqual([])
-      expect(evaluation.appliedEffects.map((effect) => effect.id)).toContain("weapon.absolution.crit-damage")
+      expect(requireAppliedEffect(evaluation, "weapon.absolution.crit-damage").value).toBe(0.2)
     }
   })
 
-  it("rejects incompatible selected Bond-of-Life stack snapshots", () => {
-    expect(() =>
-      evaluateAbsolutionScenario("clorinde.normal.auto.first_hit", createAbsolutionBuild(1), [
-        createBondOfLifeEffectId(1),
-        createBondOfLifeEffectId(2)
-      ])
-    ).toThrow("absolution-bond-of-life-increase")
+it("does not let obsolete simultaneous stack IDs bypass the automatic three-stack rule", () => {
+    const evaluation = evaluateAbsolutionScenario(targetActionIds[0], createAbsolutionBuild(1),
+      [createBondOfLifeEffectId(1), createBondOfLifeEffectId(2)])
+    expect(getBondOfLifeAppliedEffectIds(evaluation)).toEqual([createBondOfLifeEffectId(3)])
   })
 
   it("does not source either Absolution effect from a teammate when the primary build has another sword", () => {
@@ -181,8 +155,8 @@ describe("Absolution declared scenarios", () => {
     const baseline = evaluateAbsolutionScenario("clorinde.normal.auto.first_hit", primaryBuild, [], [teammateBuild])
 
     expect(baseline.appliedEffects.some((effect) => effect.id.startsWith("weapon.absolution."))).toBe(false)
-    expect(() =>
-      evaluateAbsolutionScenario("clorinde.normal.auto.first_hit", primaryBuild, [createBondOfLifeEffectId(1)], [teammateBuild])
-    ).toThrow("requires its source build in the configured team")
+    const legacy = evaluateAbsolutionScenario("clorinde.normal.auto.first_hit", primaryBuild,
+      [createBondOfLifeEffectId(1)], [teammateBuild])
+    expect(legacy.appliedEffects.some((effect) => effect.id.startsWith("weapon.absolution."))).toBe(false)
   })
 })

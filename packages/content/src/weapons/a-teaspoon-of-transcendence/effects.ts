@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const A_TEASPOON_OF_TRANSCENDENCE_ATTACK_PERCENT = [0.28, 0.35, 0.42, 0.49, 0.56] as const
 export const A_TEASPOON_OF_TRANSCENDENCE_STELLAR_SUPERCONDUCT_DAMAGE_BONUS_PER_STACK = [
@@ -21,13 +22,14 @@ function createTranscendenceStackEffect(
   stackCount: (typeof transcendenceStackCounts)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareMaximumWeaponStacks(stackCount, 3, { kind: "damage_hit", hitKinds: ["charged"], provider: "source", recipient: "source" }, true),
     exclusivity: { group: "a-teaspoon-of-transcendence-transcendence", variant: `${stackCount}-stack` },
     id: `weapon.a-teaspoon-of-transcendence.charged-hit.${stackCount}-stack.star-superconduct-damage-bonus`,
-    label: `超越之匙 · 重击命中后的${stackCount}层超越（星超导伤害）`,
+    label: `超越之匙 · 重击命中后的${stackCount}层超越（星超导／星扩散伤害）`,
     source: { kind: "weapon", weaponId: "ATeaspoonOfTranscendence" },
     target: "specialReactionDamageBonus",
-    targetFilter: { specialReactionKinds: ["stellar_superconduct"] },
+    targetFilter: { specialReactionKinds: ["stellar_superconduct", "stellar_swirl"] },
     value: { kind: "refinement_table", values: getTranscendenceStackValues(stackCount) }
   }
 }

@@ -14,7 +14,7 @@ interface CalculationResultsProps {
   readonly supportMetricResponse: SupportMetricEvaluationResponse | null
   readonly targetAction: CatalogPrimaryAction | undefined
   readonly targetBuild: CharacterBuild | undefined
-  readonly onWeaponRefinementChange: (weaponId: string, refinement: number) => void
+  readonly onWeaponRefinementChange: (weaponId: string, refinement: number, choices?: Record<string, string>) => void
 }
 
 /** Selects the authoritative support or damage report for the latest completed calculation. */

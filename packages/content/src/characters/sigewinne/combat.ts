@@ -5,6 +5,10 @@ import { sigewinneDefinition } from "./definition.js"
 
 export const sigewinneCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "sigewinne.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 1 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "sigewinne.kit.bond-of-life-gain", label: "拾取自身源水之滴获得生命之契", kind: "bond_of_life_gain", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "sigewinne.kit.healing", label: "弹跳水疗法治疗队友并在结束时自疗", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("sigewinne", 7),
     ...declareWeaponHitCapabilities(sigewinneDefinition),
     declareHitCapability("sigewinne.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),

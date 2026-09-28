@@ -68,7 +68,7 @@ function requireAppliedEffect(evaluation: ReturnType<typeof evaluateScenario>, e
 }
 
 describe("Ballad of the Boundless Blue declared scenarios", () => {
-  it("allows an explicit lower stack while defaulting the empty snapshot to the maximum reachable stack", () => {
+  it("uses the approved automatic three stacks even when an obsolete lower-stack ID is supplied", () => {
     const r1Build = createBalladBuild(1)
     const r5Build = createBalladBuild(5)
     const r1ChargedInactive = evaluateBalladScenario(chargedActionId, r1Build)
@@ -80,14 +80,14 @@ describe("Ballad of the Boundless Blue declared scenarios", () => {
       const chargedEffectId = createAzureSkiesEffectId(stackCount, "charged")
       const r1Charged = evaluateBalladScenario(chargedActionId, r1Build, [chargedEffectId])
       const r5Charged = evaluateBalladScenario(chargedActionId, r5Build, [chargedEffectId])
-      const r1ChargedValue = 0.06 * stackCount
-      const r5ChargedValue = 0.12 * stackCount
+      const r1ChargedValue = 0.18
+      const r5ChargedValue = 0.36
 
-      expect(requireAppliedEffect(r1Charged, chargedEffectId)).toMatchObject({ target: "damageBonus", value: r1ChargedValue })
-      expect(requireAppliedEffect(r5Charged, chargedEffectId)).toMatchObject({ target: "damageBonus", value: r5ChargedValue })
-      expect(r1Charged.stats.damageBonus).toBeLessThanOrEqual(r1ChargedInactive.stats.damageBonus)
-      expect(r5Charged.stats.damageBonus).toBeLessThanOrEqual(r5ChargedInactive.stats.damageBonus)
-      expect(r1Charged.actionExpectedDamage).toBeLessThanOrEqual(r1ChargedInactive.actionExpectedDamage)
+      expect(requireAppliedEffect(r1Charged, createAzureSkiesEffectId(3, "charged"))).toMatchObject({ target: "damageBonus", value: r1ChargedValue })
+      expect(requireAppliedEffect(r5Charged, createAzureSkiesEffectId(3, "charged"))).toMatchObject({ target: "damageBonus", value: r5ChargedValue })
+      expect(r1Charged.stats.damageBonus).toBe(r1ChargedInactive.stats.damageBonus)
+      expect(r5Charged.stats.damageBonus).toBe(r5ChargedInactive.stats.damageBonus)
+      expect(r1Charged.actionExpectedDamage).toBe(r1ChargedInactive.actionExpectedDamage)
       expect(r5Charged.actionExpectedDamage).toBeGreaterThan(r1Charged.actionExpectedDamage)
     }
   })
@@ -113,12 +113,11 @@ describe("Ballad of the Boundless Blue declared scenarios", () => {
     expect(normalSnapshot.actionExpectedDamage).toBeCloseTo(baseline.actionExpectedDamage)
   })
 
-  it("rejects incompatible normal and charged Azure Skies stack counts before action filtering", () => {
-    expect(() =>
-      evaluateBalladScenario(chargedActionId, createBalladBuild(1), [
+  it("ignores obsolete manual Azure Skies stack conflicts after automatic preparation takes ownership", () => {
+    const result = evaluateBalladScenario(chargedActionId, createBalladBuild(1), [
         createAzureSkiesEffectId(1, "normal"),
         createAzureSkiesEffectId(2, "charged")
       ])
-    ).toThrow("Selected ballad-of-the-boundless-blue-azure-skies effects cannot stack")
+    expect(requireAppliedEffect(result, createAzureSkiesEffectId(3, "charged")).value).toBeCloseTo(0.18)
   })
 })

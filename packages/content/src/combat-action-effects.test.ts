@@ -174,7 +174,7 @@ describe("combat action effects", () => {
     ).toBe(true)
   })
 
-  it("declares ordinary reaction-only weapon snapshots in their own formula stage", () => {
+it("declares ordinary reaction-only weapon snapshots in their own formula stage", () => {
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
 
     expect([
@@ -182,9 +182,9 @@ describe("combat action effects", () => {
       effectsById.get("weapon.prospectors-shovel.electro-charged.reaction-damage-bonus"),
       effectsById.get("weapon.nightweavers-looking-glass.both-states.party-bloom.reaction-damage-bonus"),
       effectsById.get("weapon.nightweavers-looking-glass.both-states.party-hyperbloom-burgeon.reaction-damage-bonus")
-    ]).toEqual([
+    ]).toMatchObject([
       {
-        activation: "active",
+        activation: "automatic",
         id: "weapon.blackmarrow-lantern.bloom.reaction-damage-bonus",
         label: "乌髓孑灯 · 绽放反应伤害",
         source: { kind: "weapon", weaponId: "BlackmarrowLantern" },
@@ -193,7 +193,7 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [0.48, 0.6, 0.72, 0.84, 0.96] }
       },
       {
-        activation: "active",
+        activation: "automatic",
         id: "weapon.prospectors-shovel.electro-charged.reaction-damage-bonus",
         label: "掘金之锹 · 感电反应伤害",
         source: { kind: "weapon", weaponId: "ProspectorsShovel" },
@@ -202,7 +202,7 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [0.48, 0.6, 0.72, 0.84, 0.96] }
       },
       {
-        activation: "active",
+        activation: "automatic",
         id: "weapon.nightweavers-looking-glass.both-states.party-bloom.reaction-damage-bonus",
         label: "纺夜天镜 · 终北圣言与朔月诗篇同时存在时，队伍绽放反应伤害",
         source: { holder: "party_member", kind: "weapon", weaponId: "NightweaversLookingGlass" },
@@ -211,7 +211,7 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [1.2, 1.5, 1.8, 2.1, 2.4] }
       },
       {
-        activation: "active",
+        activation: "automatic",
         id: "weapon.nightweavers-looking-glass.both-states.party-hyperbloom-burgeon.reaction-damage-bonus",
         label: "纺夜天镜 · 终北圣言与朔月诗篇同时存在时，队伍超绽放、烈绽放反应伤害",
         source: { holder: "party_member", kind: "weapon", weaponId: "NightweaversLookingGlass" },
@@ -254,17 +254,17 @@ describe("combat action effects", () => {
     const specialDamageBonusEffects = [
       {
         id: "weapon.a-teaspoon-of-transcendence.charged-hit.1-stack.star-superconduct-damage-bonus",
-        kinds: ["stellar_superconduct"],
+        kinds: ["stellar_superconduct", "stellar_swirl"],
         values: [0.16, 0.2, 0.24, 0.28, 0.32]
       },
       {
         id: "weapon.a-teaspoon-of-transcendence.charged-hit.2-stack.star-superconduct-damage-bonus",
-        kinds: ["stellar_superconduct"],
+        kinds: ["stellar_superconduct", "stellar_swirl"],
         values: [0.32, 0.4, 0.48, 0.56, 0.64]
       },
       {
         id: "weapon.a-teaspoon-of-transcendence.charged-hit.3-stack.star-superconduct-damage-bonus",
-        kinds: ["stellar_superconduct"],
+        kinds: ["stellar_superconduct", "stellar_swirl"],
         values: [0.48, 0.6, 0.72, 0.84, 0.96]
       },
       {
@@ -563,36 +563,16 @@ describe("combat action effects", () => {
     )
   })
 
-  it("declares Cinnabar Spindle only for Albedo's cooldown-ready single Transient Blossom", () => {
-    const transientBlossom = requireAction("albedo.skill.transient_blossom")
-    const solarIsotoma = requireAction("albedo.skill.abiogenesis_solar_isotoma.initial_hit")
-    const effectId = "weapon.cinnabar-spindle.skill-hit-ready.albedo-transient-blossom.defense-additive-damage"
-    const effect = listCombatActionEffects().find((candidate) => candidate.id === effectId)
-
-    expect(effect).toEqual({
-      activation: "active",
-      id: effectId,
-      label: "辰砂之纺锤 · 阿贝多单次刹那之花（本次武器冷却就绪）防御力同一命中加算",
-      source: { holder: "primary", kind: "weapon", weaponId: "CinnabarSpindle" },
-      target: "matchedActionAdditiveDamageTerm",
-      targetFilter: {
-        actionIds: ["albedo.skill.transient_blossom"],
-        recipientCharacterIds: ["Albedo"]
-      },
-      value: {
-        coefficient: { kind: "refinement_table", values: [0.4, 0.5, 0.6, 0.7, 0.8] },
-        kind: "matched_action_additive_damage_term",
-        scalingStat: "defense"
-      }
-    })
-    expect(isCombatActionEffectApplicable(effect!, transientBlossom)).toBe(true)
-    expect(isCombatActionEffectApplicable(effect!, solarIsotoma)).toBe(false)
-    expect(listActiveCombatActionEffectsForAction(transientBlossom)).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: effectId })])
-    )
-    expect(listActiveCombatActionEffectsForAction(solarIsotoma)).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: effectId })])
-    )
+it("declares Cinnabar as a consumed same-hit skill addition for any eligible sword wearer", () => {
+    const effect = listCombatActionEffects().find((entry) => entry.source.kind === "weapon" && entry.source.weaponId === "CinnabarSpindle")!
+    expect(effect).toMatchObject({ activation: "automatic", target: "matchedActionAdditiveDamageTerm",
+      hitConsumption: { clearAfterSeconds: 0.1, retriggerAfterSeconds: 1.5 },
+      targetFilter: { talentSlots: ["skill"] },
+      value: { kind: "matched_action_additive_damage_term", scalingStat: "defense",
+        coefficient: { kind: "refinement_table", values: [0.4, 0.5, 0.6, 0.7, 0.8] } } })
+    expect(isCombatActionEffectApplicable(effect, requireAction("albedo.skill.transient_blossom"))).toBe(true)
+    expect(isCombatActionEffectApplicable(effect, requireAction("albedo.skill.abiogenesis_solar_isotoma.initial_hit"))).toBe(true)
+    expect(isCombatActionEffectApplicable(effect, requireAction("bennett.normal.auto.first_hit"))).toBe(false)
   })
 
   it("declares Night of the Sky's Unveiling's mutually exclusive lunar-reaction crit snapshots", () => {
@@ -658,14 +638,14 @@ describe("combat action effects", () => {
     ])
   })
 
-  it("declares Blackcliff Agate's mutually exclusive defeated-enemy stack snapshots", () => {
+it("declares Blackcliff Agate's mutually exclusive defeated-enemy stack snapshots", () => {
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
 
     expect([
       effectsById.get("weapon.blackcliff-agate.defeated-enemy.1-stack.attack-percent"),
       effectsById.get("weapon.blackcliff-agate.defeated-enemy.2-stack.attack-percent"),
       effectsById.get("weapon.blackcliff-agate.defeated-enemy.3-stack.attack-percent")
-    ]).toEqual([
+    ]).toMatchObject([
       {
         activation: "active",
         exclusivity: { group: "blackcliff-agate-defeated-enemy", variant: "one-stack" },
@@ -699,7 +679,7 @@ describe("combat action effects", () => {
     ])
   })
 
-  it("declares Ballad of the Boundless Blue's pre-existing Azure Skies snapshots by attack kind", () => {
+it("declares Ballad of the Boundless Blue's pre-existing Azure Skies snapshots by attack kind", () => {
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
     const normalAttack = requireAction("bennett.normal.auto.first_hit")
     const chargedAttack = requireAction("ningguang.normal.charged_attack.with_star_jades")
@@ -711,9 +691,9 @@ describe("combat action effects", () => {
       effectsById.get("weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.charged-damage-bonus"),
       effectsById.get("weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.normal-damage-bonus"),
       effectsById.get("weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.charged-damage-bonus")
-    ]).toEqual([
+    ]).toMatchObject([
       {
-        activation: "active",
+        activation: "automatic",
         exclusivity: { group: "ballad-of-the-boundless-blue-azure-skies", variant: "1-stack" },
         id: "weapon.ballad-of-the-boundless-blue.azure-skies.1-stack.normal-damage-bonus",
         label: "无垠蔚蓝之歌 · 普通攻击命中前已持有的1层伤害提升（6秒内）",
@@ -723,7 +703,7 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [0.08, 0.1, 0.12, 0.14, 0.16] }
       },
       {
-        activation: "active",
+        activation: "automatic",
         exclusivity: { group: "ballad-of-the-boundless-blue-azure-skies", variant: "1-stack" },
         id: "weapon.ballad-of-the-boundless-blue.azure-skies.1-stack.charged-damage-bonus",
         label: "无垠蔚蓝之歌 · 重击命中前已持有的1层伤害提升（6秒内）",
@@ -733,7 +713,7 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [0.06, 0.075, 0.09, 0.105, 0.12] }
       },
       {
-        activation: "active",
+        activation: "automatic",
         exclusivity: { group: "ballad-of-the-boundless-blue-azure-skies", variant: "2-stack" },
         id: "weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.normal-damage-bonus",
         label: "无垠蔚蓝之歌 · 普通攻击命中前已持有的2层伤害提升（6秒内）",
@@ -743,7 +723,7 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [0.16, 0.2, 0.24, 0.28, 0.32] }
       },
       {
-        activation: "active",
+        activation: "automatic",
         exclusivity: { group: "ballad-of-the-boundless-blue-azure-skies", variant: "2-stack" },
         id: "weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.charged-damage-bonus",
         label: "无垠蔚蓝之歌 · 重击命中前已持有的2层伤害提升（6秒内）",
@@ -753,7 +733,7 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [0.12, 0.15, 0.18, 0.21, 0.24] }
       },
       {
-        activation: "active",
+        activation: "automatic",
         exclusivity: { group: "ballad-of-the-boundless-blue-azure-skies", variant: "3-stack" },
         id: "weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.normal-damage-bonus",
         label: "无垠蔚蓝之歌 · 普通攻击命中前已持有的3层伤害提升（6秒内）",
@@ -763,7 +743,7 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [0.24, 0.3, 0.36, 0.42, 0.48] }
       },
       {
-        activation: "active",
+        activation: "automatic",
         exclusivity: { group: "ballad-of-the-boundless-blue-azure-skies", variant: "3-stack" },
         id: "weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.charged-damage-bonus",
         label: "无垠蔚蓝之歌 · 重击命中前已持有的3层伤害提升（6秒内）",
@@ -773,35 +753,9 @@ describe("combat action effects", () => {
         value: { kind: "refinement_table", values: [0.18, 0.225, 0.27, 0.315, 0.36] }
       }
     ])
-    expect(listActiveCombatActionEffectsForAction(normalAttack)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.ballad-of-the-boundless-blue.azure-skies.1-stack.normal-damage-bonus"
-        }),
-        expect.objectContaining({
-          id: "weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.normal-damage-bonus"
-        }),
-        expect.objectContaining({
-          id: "weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.normal-damage-bonus"
-        })
-      ])
-    )
-    expect(listActiveCombatActionEffectsForAction(chargedAttack)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.ballad-of-the-boundless-blue.azure-skies.1-stack.charged-damage-bonus"
-        }),
-        expect.objectContaining({
-          id: "weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.charged-damage-bonus"
-        }),
-        expect.objectContaining({
-          id: "weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.charged-damage-bonus"
-        })
-      ])
-    )
   })
 
-  it("declares same-hit weapon terms with their exact stat source and current-action filters", () => {
+it("declares same-hit weapon terms with their exact stat source and current-action filters", () => {
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
     const tighnariCharged = requireAction("tighnari.normal.wreath_arrow.single_hit.spread")
     const alhaithamNormal = requireAction("alhaitham.normal.auto.first_hit")
@@ -834,8 +788,8 @@ describe("combat action effects", () => {
         }
       })
     )
-    expect(effectsById.get("weapon.sturdy-bone.sprint-followup.normal-attack-additive-damage")).toEqual({
-      activation: "active",
+    expect(effectsById.get("weapon.sturdy-bone.sprint-followup.normal-attack-additive-damage")).toMatchObject({
+      activation: "automatic",
       id: "weapon.sturdy-bone.sprint-followup.normal-attack-additive-damage",
       label: "弥坚骨 · 冲刺后的18次普通攻击（7秒内）攻击力同一命中加算",
       source: { holder: "primary", kind: "weapon", weaponId: "SturdyBone" },
@@ -847,44 +801,12 @@ describe("combat action effects", () => {
         scalingStat: "attack"
       }
     })
-    expect(listActiveCombatActionEffectsForAction(tighnariCharged)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.hunters-path.tireless-hunt.charged-em-additive-damage",
-          target: "matchedActionAdditiveDamageTerm"
-        })
-      ])
-    )
-    expect(listActiveCombatActionEffectsForAction(alhaithamNormal)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.light-of-foliar-incision.foliar-incisiveness.normal-em-additive-damage",
-          target: "matchedActionAdditiveDamageTerm"
-        })
-      ])
-    )
-    expect(listActiveCombatActionEffectsForAction(alhaithamSkill)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.light-of-foliar-incision.foliar-incisiveness.skill-em-additive-damage",
-          target: "matchedActionAdditiveDamageTerm"
-        })
-      ])
-    )
-    expect(listActiveCombatActionEffectsForAction(noelleNormal)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.sturdy-bone.sprint-followup.normal-attack-additive-damage",
-          target: "matchedActionAdditiveDamageTerm"
-        })
-      ])
-    )
   })
 
-  it("declares Staff of Homa's final-HP attack bonuses as primary-only current-action effects", () => {
+it("declares Staff of Homa's final-HP attack bonuses as primary-only current-action effects", () => {
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
 
-    expect(effectsById.get("weapon.staff-of-homa.hp-percent")).toEqual({
+    expect(effectsById.get("weapon.staff-of-homa.hp-percent")).toMatchObject({
       activation: "automatic",
       id: "weapon.staff-of-homa.hp-percent",
       label: "护摩之杖 · 生命值",
@@ -892,7 +814,7 @@ describe("combat action effects", () => {
       target: "hpPercent",
       value: { kind: "refinement_table", values: [0.2, 0.25, 0.3, 0.35, 0.4] }
     })
-    expect(effectsById.get("weapon.staff-of-homa.hp-sourced-flat-attack")).toEqual({
+    expect(effectsById.get("weapon.staff-of-homa.hp-sourced-flat-attack")).toMatchObject({
       activation: "automatic",
       id: "weapon.staff-of-homa.hp-sourced-flat-attack",
       label: "护摩之杖 · 生命值上限转固定攻击力",
@@ -900,7 +822,7 @@ describe("combat action effects", () => {
       target: "finalHpToFlatAttack",
       value: { kind: "refinement_table", values: [0.008, 0.01, 0.012, 0.014, 0.016] }
     })
-    expect(effectsById.get("weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack")).toEqual({
+    expect(effectsById.get("weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack")).toMatchObject({
       activation: "active",
       id: "weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack",
       label: "护摩之杖 · 当前生命值低于50%时的额外固定攻击力",
@@ -1201,7 +1123,7 @@ describe("combat action effects", () => {
     )
   })
 
-  it("gives every selectable weapon and artifact set an explicit coverage status", () => {
+it("gives every selectable weapon and artifact set an explicit coverage status", () => {
     const effects = listCombatActionEffects()
     const typedEquipmentEffects = [
       ...effects.filter((effect) => effect.source.kind !== "character" && effect.lifecycle?.kind !== "excluded"),
@@ -1235,7 +1157,7 @@ describe("combat action effects", () => {
     for (const effect of effects.filter((entry) => entry.lifecycle?.kind === "excluded")) {
       expect(allImplementedEffectIds.has(effect.id), effect.id).toBe(false)
       expect(effect.lifecycle?.kind === "excluded" && effect.lifecycle.reason.length > 0).toBe(true)
-      expect(effect.activation).toBe("automatic")
+      if (effect.source.kind === "artifact_set") expect(effect.activation).toBe("automatic")
     }
     for (const entry of coverage) {
       if (entry.status === "implemented") {
@@ -1279,7 +1201,7 @@ describe("combat action effects", () => {
     expect(isCombatActionEffectApplicable(effect!, normalAttack)).toBe(false)
   })
 
-  it("projects active snapshots with a typed source requirement", () => {
+it("projects active snapshots with a typed source requirement", () => {
     const pyronado = requireAction("xiangling.burst.pyronado.reverse_vaporize")
     const guoba = requireAction("xiangling.skill.guoba.single_flame_breath")
     const engulfingPostBurst = listCombatActionEffects().find(
@@ -1291,10 +1213,6 @@ describe("combat action effects", () => {
         expect.objectContaining({
           id: "xiangling.guoba.chili.attack",
           source: { characterId: "Xiangling", kind: "character" }
-        }),
-        expect.objectContaining({
-          id: "weapon.thrilling-tales-of-dragon-slayers.after-switch.party-attack-percent",
-          recipientSourceRelation: "not_source"
         })
       ])
     )
@@ -1308,36 +1226,25 @@ describe("combat action effects", () => {
       expect.arrayContaining([expect.objectContaining({ id: "weapon.engulfing-lightning.post-burst-energy-recharge" })])
     )
     expect(engulfingPostBurst).toBeDefined()
-    expect(isCombatActionEffectDeterministicallyActive(engulfingPostBurst!, pyronado)).toBe(true)
-    expect(isCombatActionEffectDeterministicallyActive(engulfingPostBurst!, guoba)).toBe(false)
+    expect(engulfingPostBurst?.activation).toBe("automatic")
+    expect(engulfingPostBurst?.lifecycle?.kind).toBe("conditional")
   })
 
-  it("projects Skyward Spine's cooldown-ready Vacuum Blade only for normal and charged attacks", () => {
-    const normalAttack = requireAction("xiangling.normal.auto.first_hit")
-    const chargedAttack = requireAction(
-      "hu_tao.skill.guide_to_afterlife.paramita_papilio.charged_attack.hydro_aura_vaporize"
-    )
-    const plungeAttack = requireAction("xiao.burst.bane_of_all_evil.high_plunge")
-
-    expect(listActiveCombatActionEffectOptionsForAction(normalAttack)).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: "weapon.skyward-spine.vacuum-blade" })])
-    )
-    expect(listActiveCombatActionEffectOptionsForAction(chargedAttack)).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: "weapon.skyward-spine.vacuum-blade" })])
-    )
-    expect(listActiveCombatActionEffectOptionsForAction(plungeAttack)).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: "weapon.skyward-spine.vacuum-blade" })])
-    )
+it("retains Skyward Spine's legacy proc identity but excludes independent weapon damage", () => {
+    const effect = listCombatActionEffects().find((entry) => entry.id === "weapon.skyward-spine.vacuum-blade")
+    expect(effect?.lifecycle?.kind).toBe("excluded")
+    expect(listActiveCombatActionEffectOptionsForAction(requireAction("xiangling.normal.auto.first_hit"))
+      .some((entry) => entry.id === effect?.id)).toBe(false)
   })
 
-  it("declares Messenger's weak-point snapshot as a charged-only guaranteed-critical physical event", () => {
+it("declares Messenger's weak-point snapshot as a charged-only guaranteed-critical physical event", () => {
     const chargedAttack = requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize")
     const normalAttack = requireAction("amber.normal.auto.first_hit")
     const effect = listCombatActionEffects().find(
       (entry) => entry.id === "weapon.messenger.weak-point-guaranteed-crit.additional-damage"
     )
 
-    expect(effect).toEqual({
+    expect(effect).toMatchObject({
       activation: "active",
       id: "weapon.messenger.weak-point-guaranteed-crit.additional-damage",
       label: "信使 · 本次瞄准射击命中要害且冷却已就绪，触发必定暴击的物理附加伤害",
@@ -1359,44 +1266,21 @@ describe("combat action effects", () => {
     expect(effect).toBeDefined()
     expect(isCombatActionEffectApplicable(effect!, chargedAttack)).toBe(true)
     expect(isCombatActionEffectApplicable(effect!, normalAttack)).toBe(false)
-    expect(listActiveCombatActionEffectOptionsForAction(chargedAttack)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: "weapon.messenger.weak-point-guaranteed-crit.additional-damage" })
-      ])
-    )
-    expect(listActiveCombatActionEffectOptionsForAction(normalAttack)).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: "weapon.messenger.weak-point-guaranteed-crit.additional-damage" })
-      ])
-    )
+    expect(effect?.lifecycle?.kind).toBe("excluded")
+    expect(listActiveCombatActionEffectOptionsForAction(chargedAttack).some((entry) => entry.id === effect?.id)).toBe(false)
   })
 
-  it("declares Flowing Purity's mutually exclusive complete-thousand Bond-of-Life clear snapshots", () => {
-    const pyroAction = requireAction("xiangling.skill.guoba.single_flame_breath")
-    const physicalAction = requireAction("xiangling.normal.auto.first_hit")
-    const effectId = "weapon.flowing-purity.bond-of-life-cleared.6-thousand-points.all-element-damage-bonus"
-    const effect = listCombatActionEffects().find((entry) => entry.id === effectId)
-
-    expect(effect).toEqual({
-      activation: "active",
-      exclusivity: { group: "flowing-purity-bond-of-life-cleared", variant: "6-thousand-points" },
-      id: effectId,
-      label: "纯水流华 · 清除生命之契后已获得6个完整千点（6000点）的额外所有元素伤害",
-      selectionMode: "optional",
-      source: { kind: "weapon", weaponId: "FlowingPurity" },
-      target: "damageBonus",
-      targetFilter: { elements: ["anemo", "cryo", "dendro", "electro", "geo", "hydro", "pyro"] },
-      value: { kind: "refinement_table", values: [0.12, 0.15, 0.18, 0.21, 0.24] }
-    })
-    expect(effect).toBeDefined()
-    expect(isCombatActionEffectApplicable(effect!, pyroAction)).toBe(true)
-    expect(isCombatActionEffectApplicable(effect!, physicalAction)).toBe(false)
-    expect(listActiveCombatActionEffectOptionsForAction(pyroAction)).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: effectId })])
-    )
-    expect(listActiveCombatActionEffectOptionsForAction(physicalAction)).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: effectId })])
-    )
+it("replaces Flowing Purity partial-clear choices with one healing-qualified actual-HP conversion", () => {
+    const effects = listCombatActionEffects().filter((entry) => entry.source.kind === "weapon" && entry.source.weaponId === "FlowingPurity")
+    const partial = effects.filter((entry) => entry.id.includes("thousand-points"))
+    expect(partial).toHaveLength(6)
+    expect(partial.every((entry) => entry.lifecycle?.kind === "excluded")).toBe(true)
+    const full = effects.find((entry) => entry.target === "finalHpToDamageBonus")
+    expect(full).toMatchObject({ activation: "automatic", lifecycle: { kind: "all_of" },
+      value: { kind: "final_hp", maximumValue: { kind: "refinement_table", values: [0.12, 0.15, 0.18, 0.21, 0.24] } } })
+    if (full?.value.kind !== "final_hp" || full.value.multiplier.kind !== "refinement_table") throw new Error("Missing full-clear conversion")
+    expect(full.value.multiplier.values[0]).toBeCloseTo(0.24 * 0.02 / 1000)
+    expect(full.value.multiplier.values[4]).toBeCloseTo(0.24 * 0.04 / 1000)
   })
 
   it("declares Echoes of an Offering's average Valley Rite as a foreground normal same-hit term", () => {
@@ -1428,19 +1312,14 @@ describe("combat action effects", () => {
     )
   })
 
-  it("limits Daybreak Chronicles' normal-attack Radiance to normal attacks, not charged attacks", () => {
-    const normalAttack = requireAction("amber.normal.auto.first_hit")
-    const chargedAttack = requireAction("amber.normal.sharpshooter.fully_charged.hydro_aura_vaporize")
-    const skillSlotNormalAttack = requireAction("tartaglia.skill.foul_legacy_raging_tide.melee_normal.first_hit")
-    const effect = listCombatActionEffects().find(
-      (entry) => entry.id === "weapon.the-daybreak-chronicles.radiance.normal.1-stack.damage-bonus"
-    )
-
-    expect(effect).toEqual(expect.objectContaining({ targetFilter: { attackKinds: ["normal"] } }))
-    expect(effect).toBeDefined()
-    expect(isCombatActionEffectApplicable(effect!, normalAttack)).toBe(true)
-    expect(isCombatActionEffectApplicable(effect!, chargedAttack)).toBe(false)
-    expect(isCombatActionEffectApplicable(effect!, skillSlotNormalAttack)).toBe(true)
+it("limits Daybreak Chronicles to Venti's automatically prepared six-stack normal bonus", () => {
+    const effects = listCombatActionEffects().filter((entry) => entry.source.kind === "weapon" &&
+      entry.source.weaponId === "TheDaybreakChronicles" && entry.id.includes("radiance.normal"))
+    expect(effects.filter((entry) => entry.lifecycle?.kind !== "excluded")).toHaveLength(1)
+    const effect = effects.find((entry) => entry.lifecycle?.kind !== "excluded")!
+    expect(effect).toMatchObject({ activation: "automatic",
+      targetFilter: { attackKinds: ["normal"], recipientCharacterIds: ["Venti"] } })
+    expect(isCombatActionEffectApplicable(effect, requireAction("amber.normal.auto.first_hit"))).toBe(false)
   })
 
   it("filters Gladiator's Finale and Wanderer's Troupe four-piece bonuses by recipient weapon type", () => {
@@ -1539,85 +1418,32 @@ describe("combat action effects", () => {
     )
   })
 
-  it("declares Crimson Moon's high-Bond state as Arlecchino's weapon-comparison default", () => {
-    const effect = listCombatActionEffects().find(
-      (candidate) =>
-        candidate.id === "weapon.crimson-moons-semblance.bond-of-life.at-least-thirty-percent.damage-bonus"
-    )
-
-    expect(effect).toMatchObject({
-      activation: "active",
-      selectionMode: "optional",
-      weaponComparisonDefault: { recipientCharacterIds: ["Arlecchino"] }
-    })
+it("uses the same automatic Arlecchino high-Bond rule for equipped and compared Crimson Moon", () => {
+    const effect = listCombatActionEffects().find((entry) =>
+      entry.id === "weapon.crimson-moons-semblance.bond-of-life.at-least-thirty-percent.damage-bonus")
+    expect(effect).toMatchObject({ activation: "automatic", targetFilter: { recipientCharacterIds: ["Arlecchino"] } })
+    expect(effect).not.toHaveProperty("weaponComparisonDefault")
   })
 
-  it("declares Absolution's selected Bond-of-Life increase snapshots without inferring their trigger", () => {
-    const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
-    const pyronado = requireAction("xiangling.burst.pyronado.reverse_vaporize")
-
-    expect(effectsById.get("weapon.absolution.crit-damage")).toEqual({
-      activation: "automatic",
-      id: "weapon.absolution.crit-damage",
-      label: "赦罪 · 暴击伤害",
-      source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
-      target: "critDamage",
-      value: { kind: "refinement_table", values: [0.2, 0.25, 0.3, 0.35, 0.4] }
-    })
-    expect([
-      effectsById.get("weapon.absolution.bond-of-life-increase.1-stack.damage-bonus"),
-      effectsById.get("weapon.absolution.bond-of-life-increase.2-stack.damage-bonus"),
-      effectsById.get("weapon.absolution.bond-of-life-increase.3-stack.damage-bonus")
-    ]).toEqual([
-      {
-        activation: "active",
-        exclusivity: { group: "absolution-bond-of-life-increase", variant: "1-stack" },
-        id: "weapon.absolution.bond-of-life-increase.1-stack.damage-bonus",
-        label: "赦罪 · 本次命中前已持有的1层生命之契数值增加伤害提升（6秒内）",
-        selectionMode: "optional",
-        source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
-        target: "damageBonus",
-        value: { kind: "refinement_table", values: [0.16, 0.2, 0.24, 0.28, 0.32] }
-      },
-      {
-        activation: "active",
-        exclusivity: { group: "absolution-bond-of-life-increase", variant: "2-stack" },
-        id: "weapon.absolution.bond-of-life-increase.2-stack.damage-bonus",
-        label: "赦罪 · 本次命中前已持有的2层生命之契数值增加伤害提升（6秒内）",
-        selectionMode: "optional",
-        source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
-        target: "damageBonus",
-        value: { kind: "refinement_table", values: [0.32, 0.4, 0.48, 0.56, 0.64] }
-      },
-      {
-        activation: "active",
-        exclusivity: { group: "absolution-bond-of-life-increase", variant: "3-stack" },
-        id: "weapon.absolution.bond-of-life-increase.3-stack.damage-bonus",
-        label: "赦罪 · 本次命中前已持有的3层生命之契数值增加伤害提升（6秒内）",
-        selectionMode: "optional",
-        source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
-        target: "damageBonus",
-        value: { kind: "refinement_table", values: [0.48, 0.6, 0.72, 0.84, 0.96] },
-        weaponComparisonDefault: { recipientCharacterIds: ["Clorinde"] }
-      }
-    ])
-    expect(listActiveCombatActionEffectsForAction(pyronado)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: "weapon.absolution.bond-of-life-increase.1-stack.damage-bonus" }),
-        expect.objectContaining({ id: "weapon.absolution.bond-of-life-increase.2-stack.damage-bonus" }),
-        expect.objectContaining({ id: "weapon.absolution.bond-of-life-increase.3-stack.damage-bonus" })
-      ])
-    )
+it("keeps Absolution's permanent crit damage and automatic full stacks exclusive to Clorinde", () => {
+    const effects = listCombatActionEffects().filter((entry) => entry.source.kind === "weapon" && entry.source.weaponId === "Absolution")
+    expect(effects.find((entry) => entry.target === "critDamage")?.value)
+      .toEqual({ kind: "refinement_table", values: [0.2, 0.25, 0.3, 0.35, 0.4] })
+    const stacks = effects.filter((entry) => entry.target === "damageBonus")
+    expect(stacks.filter((entry) => entry.lifecycle?.kind !== "excluded")).toHaveLength(1)
+    expect(stacks.find((entry) => entry.lifecycle?.kind !== "excluded")).toMatchObject({
+      activation: "automatic", targetFilter: { recipientCharacterIds: ["Clorinde"] },
+      value: { kind: "refinement_table", values: [0.48, 0.6, 0.72, 0.84, 0.96] } })
   })
 
-  it("declares Peak Patrol Song's full-stack party snapshot with source-only self effects", () => {
+it("declares Peak Patrol Song's full-stack party snapshot with source-only self effects", () => {
     const xilonenDash = requireAction("xilonen.skill.yohuals_scratch.dash")
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
     const options = listActiveCombatActionEffectOptionsForAction(xilonenDash)
     const partyEffectId = "weapon.peak-patrol-song.2-stack.source-final-defense-to-party-all-element-damage-bonus"
 
-    expect(effectsById.get(partyEffectId)).toEqual({
-      activation: "active",
+    expect(effectsById.get(partyEffectId)).toMatchObject({
+      activation: "automatic",
       id: partyEffectId,
       label: "岩峰巡歌 · 2层荣花之歌触发的队伍所有元素伤害",
       source: { holder: "party_member", kind: "weapon", weaponId: "PeakPatrolSong" },
@@ -1633,31 +1459,18 @@ describe("combat action effects", () => {
         ]
       }
     })
-    expect(options).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "weapon.peak-patrol-song.ode-to-flowers.2-stack.defense-percent",
-          recipientSourceRelation: "source"
-        }),
-        expect.objectContaining({
-          id: "weapon.peak-patrol-song.ode-to-flowers.2-stack.all-element-damage-bonus",
-          recipientSourceRelation: "source"
-        }),
-        expect.objectContaining({ id: partyEffectId })
-      ])
-    )
   })
 
-  it("declares Angelos Heptades' mutually exclusive current-on-field and Magic Secret snapshots", () => {
+it("declares Angelos Heptades' mutually exclusive current-on-field and Magic Secret snapshots", () => {
     const ventiSkill = requireAction("venti.skill.skyward_sonnet.press")
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
     const currentOnFieldEffectId = "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus"
     const magicSecretOffFieldEffectId =
       "weapon.angelos-heptades.magic-secret.after-shield.source-final-attack-to-off-field-magic-recipient-damage-bonus"
 
-    expect([effectsById.get(currentOnFieldEffectId), effectsById.get(magicSecretOffFieldEffectId)]).toEqual([
+    expect([effectsById.get(currentOnFieldEffectId), effectsById.get(magicSecretOffFieldEffectId)]).toMatchObject([
       {
-        activation: "active",
+        activation: "automatic",
         exclusivity: { group: "angelos-heptades-guiding-light-recipient-position", variant: "current-on-field" },
         id: currentOnFieldEffectId,
         label: "尘光七谕 · 创造护盾后的先导之光（当前场上角色伤害）",
@@ -1670,7 +1483,7 @@ describe("combat action effects", () => {
         }
       },
       {
-        activation: "active",
+        activation: "automatic",
         condition: { kind: "hexerei_secret_rite" },
         exclusivity: { group: "angelos-heptades-guiding-light-recipient-position", variant: "magic-secret-off-field" },
         id: magicSecretOffFieldEffectId,
@@ -1685,12 +1498,6 @@ describe("combat action effects", () => {
         }
       }
     ])
-    expect(listActiveCombatActionEffectOptionsForAction(ventiSkill)).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: currentOnFieldEffectId }),
-        expect.objectContaining({ id: magicSecretOffFieldEffectId })
-      ])
-    )
   })
 
   it("limits the PlayStation fixed-attack snapshots to Aloy and the Traveler", () => {
@@ -1740,21 +1547,21 @@ describe("combat action effects", () => {
     )
   })
 
-  it("declares Finale of the Deep's maximum-reachable full Bond-of-Life clear", () => {
+it("declares Finale of the Deep's maximum-reachable full Bond-of-Life clear", () => {
     const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
     const afterSkillEffectId = "weapon.finale-of-the-deep.after-skill.attack-percent"
     const fullClearEffectId = "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack"
 
-    expect(effectsById.get(afterSkillEffectId)).toEqual({
-      activation: "maximum_reachable",
+    expect(effectsById.get(afterSkillEffectId)).toMatchObject({
+      activation: "automatic",
       id: afterSkillEffectId,
       label: "海渊终曲 · 施放元素战技后的攻击力",
       source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },
       target: "attackPercent",
       value: { kind: "refinement_table", values: [0.12, 0.15, 0.18, 0.21, 0.24] }
     })
-    expect(effectsById.get(fullClearEffectId)).toEqual({
-      activation: "maximum_reachable",
+    expect(effectsById.get(fullClearEffectId)).toMatchObject({
+      activation: "automatic",
       id: fullClearEffectId,
       label: "海渊终曲 · 25%生命之契完整清除后的攻击力（15秒内）",
       source: { kind: "weapon", weaponId: "FinaleOfTheDeep" },

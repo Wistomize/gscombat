@@ -5,6 +5,7 @@ import { aratakiIttoDefinition } from "./definition.js"
 
 export const aratakiIttoCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "arataki-itto.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("arataki-itto", 4),
     ...declareWeaponHitCapabilities(aratakiIttoDefinition),
     declareHitCapability("arataki-itto.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),

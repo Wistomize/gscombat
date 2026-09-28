@@ -16,7 +16,6 @@ export const wavebreakersFinCombatActionEffects: readonly CombatActionEffect[] =
       kind: "team_burst_energy_cost",
       maximumValue: { kind: "refinement_table", values: damageCapByRefinement },
       multiplier: { kind: "refinement_table", values: damagePerEnergyByRefinement },
-      requiresFullParty: true
     }
   }
 ]

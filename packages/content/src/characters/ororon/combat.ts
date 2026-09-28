@@ -5,6 +5,8 @@ import { ororonDefinition } from "./definition.js"
 
 export const ororonCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "ororon.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 3 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("ororon", 1),
     ...declareWeaponHitCapabilities(ororonDefinition),
     declareHitCapability("ororon.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),

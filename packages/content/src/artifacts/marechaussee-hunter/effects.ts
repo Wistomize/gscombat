@@ -15,7 +15,7 @@ function createHpChangeCritRateEffect(stackCount: (typeof stackCounts)[number]):
       defaultCapability: { kind: "hp_loss", recipient: "source" },
       manualAlternatives: stackEffectIds,
       retention: "clear_on_exit", trigger: { event: "none", sourceFieldPresence: "on_field" },
-      explanation: "前台有有效扣血来源时默认三层；否则零层，允许显式选择层数；后台不计"
+      explanation: "前台有有效扣血来源时默认三层；否则零层；后台不计"
     },
     exclusivity: { group: "marechaussee-hunter-hp-change", variant: `${stackCount}-stack` },
     id: `artifact.marechaussee-hunter.4pc.hp-change.${stackCount}-stack.crit-rate`,

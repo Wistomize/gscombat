@@ -12,7 +12,7 @@ const stellarPreparation: CombatEffectLifecycle = { kind: "any_of", alternatives
     kind: "conditional", preparation: "qualified", retention: "retain_on_exit",
     trigger: { event: "capability", sourceFieldPresence: "any", capability: {
       kind: "special_reaction_damage", recipient: "source", provider: "source", specialReactions: ["stellar_swirl", "stellar_superconduct"]
-    } }, explanation: "装备者自身具有符合当前队伍与站位的星烁伤害能力，默认已造成伤害；不借队友的伤害能力"
+    } }, explanation: "装备者自身具有符合当前队伍与前后台设定的星烁伤害能力，默认已造成伤害；不借队友的伤害能力"
   }
 ] }
 

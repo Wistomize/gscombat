@@ -5,6 +5,11 @@ import { dionaDefinition } from "./definition.js"
 
 export const dionaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "diona.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "diona.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 4 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "diona.kit.self-aura", label: "猫爪护盾生成及切换时给当前角色短暂冰附着", kind: "self_aura", elements: ["cryo"], recipient: "on_field", sourceFieldPresence: "any", sustained: false },
+    { id: "diona.kit.healing", label: "元素爆发领域治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("diona", 3),
     { id: "diona.kit.retained-shield", label: "猫爪护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     ...declareWeaponHitCapabilities(dionaDefinition),

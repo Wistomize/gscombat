@@ -27,6 +27,7 @@ import {
   createSupportMetricEvaluationContext,
   getDefaultActionParameters,
   getMaximumReachableConditions,
+  getSelectableScenarioEffectOptions,
   reconcileScenarioEffectIds,
   removeUnavailableResonanceConditions,
   validateSupportMetricContext,
@@ -60,10 +61,12 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   const [buffs, setBuffs] = useState([...initialScenario.externalBuffs])
   const [selectedCharacterEffectIds, setSelectedCharacterEffectIds] = useState<string[]>([])
   const [scenarioEffectOptions, setScenarioEffectOptions] = useState<ScenarioEffectOption[]>([])
+  const [equippedWeaponChoices, setEquippedWeaponChoices] = useState<NonNullable<ActionEffectOptionsResponse["weaponChoices"]>>([])
   const [scenarioEffectOptionsStatus, setScenarioEffectOptionsStatus] = useState<"error" | "idle" | "loading" | "ready">("idle")
   const [scenarioEffectOptionsError, setScenarioEffectOptionsError] = useState("")
   const [scenarioEffectReloadVersion, setScenarioEffectReloadVersion] = useState(0)
   const [weaponComparisonRefinements, setWeaponComparisonRefinements] = useState<Record<string, number>>({})
+  const [weaponComparisonChoices, setWeaponComparisonChoices] = useState<Record<string, Record<string, string>>>({})
   const incremental = useIncrementalAnalysis()
   const { analysis, weaponStates } = incremental
   const [supportMetricResponse, setSupportMetricResponse] = useState<SupportMetricEvaluationResponse | null>(null)
@@ -143,7 +146,8 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
   }, [targetAction?.fieldPresence, selectedSupportMetric?.id, targetBuildId, partyBuildIds])
   const teammates = targetBuild ? partyBuilds.filter((build) => build.buildId !== targetBuild.buildId) : []
   const actionEffectRequest = useMemo<ActionEffectOptionsRequest | null>(() => {
-    if (!targetActionId || !targetBuildId) return null
+    const actionId = selectedSupportMetric?.sourceActionId ?? targetActionId
+    if (!actionId || !targetBuildId) return null
     const requestParty = partyBuildIds.flatMap((buildId) => {
       const build = builds.find((candidate) => candidate.buildId === buildId)
       return build ? [build] : []
@@ -151,18 +155,20 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
     const primary = requestParty.find((build) => build.buildId === targetBuildId)
     if (!primary) return null
     return {
-      actionId: targetActionId,
+      actionId,
+      ...(selectedSupportMetric ? { supportMetricId: selectedSupportMetric.id } : {}),
+      conditions: { ...conditions, activeEffectIds: selectedCharacterEffectIds },
       primary,
       teammates: requestParty.filter((build) => build.buildId !== primary.buildId)
     }
-  }, [builds, partyBuildIds, targetActionId, targetBuildId])
+  }, [builds, partyBuildIds, targetActionId, selectedSupportMetric, targetBuildId, conditions, selectedCharacterEffectIds.join("|")])
   const characterEffectOptions = targetBuild
     ? scenarioEffectOptions.filter(
         (effect) => effect.source.kind === "character" && effect.requiredActiveEffectIds === undefined
       )
     : []
   const selectableEffectGroups = targetBuild
-    ? [...scenarioEffectOptions
+    ? [...getSelectableScenarioEffectOptions(scenarioEffectOptions)
         .filter((effect) => effect.selectionMode !== undefined)
         .reduce((groups, effect) => {
           const group = effect.exclusiveGroup ?? effect.id
@@ -177,6 +183,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
 
   useEffect(() => {
     if (!actionEffectRequest) {
+      setEquippedWeaponChoices([])
       setScenarioEffectOptions([])
       setScenarioEffectOptionsError("")
       setScenarioEffectOptionsStatus("idle")
@@ -184,6 +191,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
     }
 
     const controller = new AbortController()
+    setEquippedWeaponChoices([])
     setScenarioEffectOptions([])
     setScenarioEffectOptionsError("")
     setScenarioEffectOptionsStatus("loading")
@@ -200,8 +208,10 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
           throw new Error(body.message ?? `动作效果接口返回 HTTP ${response.status}`)
         }
         const body = (await response.json()) as ActionEffectOptionsResponse
+        if (controller.signal.aborted) return
         if (!Array.isArray(body.options)) throw new Error("动作效果接口返回格式无效")
         setScenarioEffectOptions([...body.options])
+        setEquippedWeaponChoices(body.weaponChoices ?? [])
         setSelectedCharacterEffectIds((current) => reconcileScenarioEffectIds(current, body.options))
         setScenarioEffectOptionsStatus("ready")
       } catch (caught) {
@@ -291,7 +301,8 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         const response = await fetch("/api/backend/v1/support-metrics/evaluate", {
           body: JSON.stringify({
             build: targetBuild,
-            context: createSupportMetricEvaluationContext(supportMetricContext, teammates, conditions.onFieldBuildId),
+            context: { ...createSupportMetricEvaluationContext(supportMetricContext, teammates, conditions.onFieldBuildId),
+              ...(conditions.weaponEffectChoices ? { weaponEffectChoices: conditions.weaponEffectChoices } : {}) },
             metricId: selectedSupportMetric.id
           }),
           headers: { "Content-Type": "application/json" },
@@ -341,7 +352,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         targetActionId: targetAction.id
       })
       const response = await fetch("/api/backend/v1/analysis", {
-        body: JSON.stringify({ ...scenario, weaponComparisonRefinements }),
+        body: JSON.stringify({ ...scenario, weaponComparisonRefinements, weaponComparisonChoices }),
         headers: { "Content-Type": "application/json" },
         method: "POST"
       })
@@ -426,6 +437,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
             catalog={catalog}
             characterEffectOptions={characterEffectOptions}
             conditions={conditions}
+            weaponChoices={equippedWeaponChoices}
             enemy={enemy}
             hasFrozenCondition={hasFrozenCondition}
             hasGeoResonance={hasGeoResonance}
@@ -465,9 +477,10 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         targetAction={targetAction}
         targetBuild={targetBuild}
         weaponStates={weaponStates}
-        onWeaponRefinementChange={(weaponId, refinement) => {
-          void incremental.changeRefinement(weaponId, refinement).then((applied) => {
+        onWeaponRefinementChange={(weaponId, refinement, choices) => {
+          void incremental.changeRefinement(weaponId, refinement, choices).then((applied) => {
             if (applied) setWeaponComparisonRefinements((current) => ({ ...current, [weaponId]: refinement }))
+            if (applied && choices) setWeaponComparisonChoices((current) => ({ ...current, [weaponId]: choices }))
           })
         }}
       />

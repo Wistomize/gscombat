@@ -5,6 +5,8 @@ import { huTaoDefinition } from "./definition.js"
 
 export const huTaoCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "hu-tao.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "hu-tao.kit.healing", label: "元素爆发命中后自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("hu-tao", 5),
     ...declareWeaponHitCapabilities(huTaoDefinition),
     declareHitCapability("hu-tao.kit.skill_burst_hits", "血梅香与安神秘法命中准备", ["skill", "burst"], ["pyro"]),

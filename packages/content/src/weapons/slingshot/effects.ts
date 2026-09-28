@@ -7,24 +7,26 @@ export const SLINGSHOT_AFTER_POINT_THREE_SECONDS_DAMAGE_PENALTY = [-0.1, -0.1, -
 export const slingshotCombatActionEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
+    weaponChoice: { group: "slingshot-flight-time", label: "箭矢命中时机", variant: "within-0.3-seconds", variantLabel: "0.3秒内（增伤）", defaultVariant: "within-0.3-seconds" },
     exclusivity: { group: "slingshot-flight-time", variant: "within-0.3-seconds" },
     id: "weapon.slingshot.flight-time.within-0.3-seconds.damage-bonus",
     label: "弹弓 · 箭矢命中时机：发射后0.3秒内命中（伤害提高）",
     selectionMode: "required",
     source: { kind: "weapon", weaponId: "Slingshot" },
     target: "damageBonus",
-    targetFilter: { attackKinds: ["normal", "charged"] },
+    targetFilter: { attackKinds: ["normal", "charged"], arrowHitsOnly: true },
     value: { kind: "refinement_table", values: SLINGSHOT_WITHIN_POINT_THREE_SECONDS_DAMAGE_BONUS }
   },
   {
     activation: "active",
+    weaponChoice: { group: "slingshot-flight-time", label: "箭矢命中时机", variant: "after-0.3-seconds", variantLabel: "超过0.3秒（减伤）", defaultVariant: "within-0.3-seconds" },
     exclusivity: { group: "slingshot-flight-time", variant: "after-0.3-seconds" },
     id: "weapon.slingshot.flight-time.after-0.3-seconds.damage-penalty",
     label: "弹弓 · 箭矢命中时机：发射后超过0.3秒命中（伤害降低）",
     selectionMode: "required",
     source: { kind: "weapon", weaponId: "Slingshot" },
     target: "damageBonus",
-    targetFilter: { attackKinds: ["normal", "charged"] },
+    targetFilter: { attackKinds: ["normal", "charged"], arrowHitsOnly: true },
     value: { kind: "refinement_table", values: SLINGSHOT_AFTER_POINT_THREE_SECONDS_DAMAGE_PENALTY }
   }
 ]

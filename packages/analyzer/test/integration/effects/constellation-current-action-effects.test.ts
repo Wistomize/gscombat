@@ -604,7 +604,7 @@ describe("current-action constellation effects", () => {
     ).toThrow("venti-windriders-c6-absorbed-element")
 
     const freedomSwornSource = {
-      ...xianglingNationalBuiltinBuild,
+      ...xingqiuNationalBuiltinBuild,
       buildId: "test.freedom-sworn-source",
       weapon: { ...xianglingNationalBuiltinBuild.weapon, refinement: 1, weaponId: "FreedomSworn" }
     }

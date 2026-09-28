@@ -5,6 +5,8 @@ import { keqingDefinition } from "./definition.js"
 
 export const keqingCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "keqing.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "keqing.kit.normal-infusion", label: "星斗归位雷附魔普攻重击", kind: "normal_attack_infusion", elements: ["electro"], recipient: "self", sourceFieldPresence: "on_field", sustained: true, minimumSourceAscension: 1 },
     declareSkillCastCapability("keqing", 3, {"castsPerUse":2}),
     ...declareWeaponHitCapabilities(keqingDefinition),
     declareHitCapability("keqing.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),

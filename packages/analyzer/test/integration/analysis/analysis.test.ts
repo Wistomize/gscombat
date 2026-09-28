@@ -24,7 +24,7 @@ function withoutRaidenActionParameters() {
 
 function countSelectableWeapons(weaponType: (typeof supportedWeapons)[number]["weaponType"]): number {
   return supportedWeapons.filter(
-    (weapon) => weapon.weaponType === weaponType && (weapon.rarity === 4 || weapon.rarity === 5)
+    (weapon) => weapon.weaponType === weaponType && weapon.comparison?.excluded !== true && weapon.rarity >= 3
   ).length
 }
 
@@ -63,7 +63,7 @@ describe("counterfactual scenario analysis", () => {
     expect(analysis.weapons.find((weapon) => weapon.weaponId === "TheCatch")?.refinement).toBe(5)
     expect(analysis.weapons.some((weapon) => weapon.weaponId === "WavebreakersFin")).toBe(true)
     expect(analysis.weapons.find((weapon) => weapon.weaponId === "StaffOfHoma")?.label).toBe("护摩之杖")
-    expect(analysis.weapons.every((weapon) => weapon.rarity === 4 || weapon.rarity === 5)).toBe(true)
+    expect(analysis.weapons.every((weapon) => weapon.rarity >= 3 && weapon.rarity <= 5)).toBe(true)
     expect(analysis.weapons.every((weapon) => weapon.label !== weapon.weaponId)).toBe(true)
     expect(analysis.weapons.every((weapon) => Number.isFinite(weapon.gainRatio))).toBe(true)
   })
@@ -349,7 +349,7 @@ describe("counterfactual scenario analysis", () => {
     )
   })
 
-  it("uses Absolution's full three-stack passive only for Clorinde's weapon comparison", () => {
+  it("uses Absolution's full three-stack passive consistently for equipped and compared Clorinde", () => {
     const clorinde = {
       ...raidenNationalBuiltinBuild,
       buildId: "test.clorinde.absolution-comparison",
@@ -385,7 +385,7 @@ describe("counterfactual scenario analysis", () => {
       evaluateScenario(fullStackScenario, gameData).actionExpectedDamage,
       8
     )
-    expect(comparisonCandidate?.expectedDamage).toBeGreaterThan(
+    expect(comparisonCandidate?.expectedDamage).toBeCloseTo(
       evaluateScenario(automaticOnlyScenario, gameData).actionExpectedDamage
     )
 
@@ -444,7 +444,7 @@ describe("counterfactual scenario analysis", () => {
     const fullEvaluation = evaluateScenario(fullScenario, gameData)
 
     expect(comparisonCandidate?.expectedDamage).toBeCloseTo(fullEvaluation.actionExpectedDamage, 8)
-    expect(comparisonCandidate?.expectedDamage).toBeGreaterThan(
+    expect(comparisonCandidate?.expectedDamage).toBeCloseTo(
       evaluateScenario(automaticOnlyScenario, gameData).actionExpectedDamage
     )
     expect(fullEvaluation.appliedEffects).toEqual(
@@ -547,7 +547,8 @@ describe("counterfactual scenario analysis", () => {
       ...raidenNationalBuiltinScenario,
       conditions: {
         ...withoutRaidenActionParameters(),
-        activeEffectIds: [thrillingTalesEffectId, solarPearlEffectId]
+        activeEffectIds: [thrillingTalesEffectId, solarPearlEffectId],
+        weaponEffectChoices: { [thrillingTalesHolder.buildId]: { "thrilling-tales-recipient": primary.buildId } }
       },
       primary,
       targetActionId: "ningguang.burst.starshatter.full",
@@ -557,7 +558,7 @@ describe("counterfactual scenario analysis", () => {
     const analysis = analyzeScenario(scenario, gameData)
 
     expect(analysis.weapons.some((weapon) => weapon.weaponId === "SolarPearl")).toBe(true)
-    expect(analysis.weapons.some((weapon) => weapon.weaponId === "ThrillingTalesOfDragonSlayers")).toBe(false)
+    expect(analysis.weapons.some((weapon) => weapon.weaponId === "ThrillingTalesOfDragonSlayers")).toBe(true)
     for (const candidate of analysis.weapons) {
       const candidateScenario = {
         ...scenario,
@@ -574,7 +575,8 @@ describe("counterfactual scenario analysis", () => {
         },
         primary: {
           ...primary,
-          weapon: { ascension: 6, level: 90, refinement: candidate.refinement, weaponId: candidate.weaponId }
+          weapon: { ascension: supportedWeapons.find((weapon) => weapon.weaponId === candidate.weaponId)?.comparison?.ascension ?? 6,
+            level: candidate.level ?? 90, refinement: candidate.refinement, weaponId: candidate.weaponId }
         }
       }
 
@@ -629,7 +631,8 @@ describe("counterfactual scenario analysis", () => {
         },
         primary: {
           ...primary,
-          weapon: { ascension: 6, level: 90, refinement: candidate.refinement, weaponId: candidate.weaponId }
+          weapon: { ascension: supportedWeapons.find((weapon) => weapon.weaponId === candidate.weaponId)?.comparison?.ascension ?? 6,
+            level: candidate.level ?? 90, refinement: candidate.refinement, weaponId: candidate.weaponId }
         }
       }
 
@@ -637,7 +640,7 @@ describe("counterfactual scenario analysis", () => {
     }
   })
 
-  it("keeps a partial-party Xiangling Burst baseline while skipping weapon candidates that require full-party energy", () => {
+  it("compares energy-sum weapons using the actual configured party rather than requiring four members", () => {
     const scenario = {
       ...raidenNationalBuiltinScenario,
       conditions: {
@@ -654,10 +657,10 @@ describe("counterfactual scenario analysis", () => {
 
     expect(baseline.actionExpectedDamage).toBeGreaterThan(0)
     expect(analysis.baselineExpectedDamage).toBeCloseTo(baseline.actionExpectedDamage)
-    expect(analysis.weapons.some((weapon) => weapon.weaponId === "WavebreakersFin")).toBe(false)
+    expect(analysis.weapons.some((weapon) => weapon.weaponId === "WavebreakersFin")).toBe(true)
   })
 
-  it("does not suppress a selected full-party-energy weapon's incomplete-party baseline error", () => {
+  it("uses Xiangling's known 80 energy in a solo Wavebreaker's Fin scenario", () => {
     const scenario = {
       ...raidenNationalBuiltinScenario,
       conditions: {
@@ -672,11 +675,9 @@ describe("counterfactual scenario analysis", () => {
       teammates: []
     }
 
-    expect(() => evaluateScenario(scenario, gameData)).toThrow(
-      "Effect weapon.wavebreakers-fin.burst-damage-bonus requires a fully configured four-character party"
-    )
-    expect(() => analyzeScenario(scenario, gameData)).toThrow(
-      "Effect weapon.wavebreakers-fin.burst-damage-bonus requires a fully configured four-character party"
-    )
+    const evaluated = evaluateScenario(scenario, gameData)
+    expect(evaluated.appliedEffects.find((effect) => effect.id === "weapon.wavebreakers-fin.burst-damage-bonus")?.value)
+      .toBeCloseTo(80 * 0.0024)
+    expect(analyzeScenario(scenario, gameData).baselineExpectedDamage).toBe(evaluated.actionExpectedDamage)
   })
 })

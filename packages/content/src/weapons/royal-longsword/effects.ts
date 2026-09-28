@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponChoice } from "../../combat/weapon-preparation.js"
 
 export const ROYAL_LONGSWORD_CRIT_RATE_PER_STACK = [0.08, 0.1, 0.12, 0.14, 0.16] as const
 
@@ -21,4 +22,8 @@ function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActi
 }
 
 /** Typed selected pre-hit Focus stack contributions of Royal Longsword. */
-export const royalLongswordCombatActionEffects: readonly CombatActionEffect[] = stackCounts.map(createStackEffect)
+const authoredEffects: readonly CombatActionEffect[] = stackCounts.map(createStackEffect)
+
+/** Reviewed necessary choice, shared by equipped and comparison evaluation. */
+export const royalLongswordCombatActionEffects: readonly CombatActionEffect[] = withWeaponChoice(authoredEffects,
+  "royal-longsword-focus", "命中前专注层数", "none", "none")

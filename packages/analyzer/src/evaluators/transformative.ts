@@ -11,7 +11,7 @@ import { resolveActionScenarioParameters } from "./scenario-parameters.js"
 export { getScenarioParameterMinimumSourceConstellation, resolveActionScenarioParameters } from "./scenario-parameters.js"
 
 import type {
-  DeclaredDirectScenarioInput, DeclaredTransformativeScenarioEvaluation,
+  PreparedDeclaredDirectScenarioInput as DeclaredDirectScenarioInput, DeclaredTransformativeScenarioEvaluation,
   ResolvedDeclaredScenarioStats
 } from "./types.js"
 
@@ -63,6 +63,7 @@ export function evaluateDeclaredTransformativeScenarioAction(
     sourceFinalHpByBuildId,
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
+    ...(input.preparation ? { preparation: input.preparation } : {}),
     action,
     fieldContext,
     activeEffectIds,

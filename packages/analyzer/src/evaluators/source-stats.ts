@@ -1,15 +1,10 @@
+import { prepareSources, type SourcePreparation } from "./source-preparation.js"
+import { getCombatActionEffectDefinition } from "@gscombat/content"
 import { resolveFieldContext, type FieldContext } from "../core/field-presence.js"
 import { listCombatActionEffects, type CombatActionMetadata } from "@gscombat/content"
 import type { ArtifactStat, CharacterBuild, EvaluationScenario, ExternalBuff } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 
-import { resolveBaseCombatStats } from "../core/base-stats.js"
-import {
-  resolveBuildElement,
-  resolvePrimaryDifferentElementTeammateCount,
-  resolvePrimarySameElementTeammateCount,
-  resolveTeamUniqueElementCount
-} from "../core/build-variant.js"
 import {
   listSelectedSourceAttackSnapshotActivationEffectIds, listSelectedSourceDefenseSnapshotActivationEffectIds, resolveCombatActionAttackEffects,
   resolveCombatActionCharacterElementalMasteryEffects,
@@ -17,7 +12,6 @@ import {
   resolveCombatActionFinalElementalMasteryShareEffects,
   resolveCombatActionPartyEquipmentElementalMasteryEffects,
   resolveFinalHpToElementalMastery,
-  resolveSelfAutomaticEquipmentEffects,
   resolveSelfMaximumReachableCharacterHpEffects,
   resolveSelfMaximumReachableEquipmentStatEffects,
   type ResolvedCombatActionEffects
@@ -89,9 +83,8 @@ function listSelectedSelfEquipmentEffectIds(
   activeEffectIds: readonly string[],
   activeEffectSourceBuildIds: Readonly<Record<string, string>>
 ): readonly string[] {
-  const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
   return activeEffectIds.filter((effectId) => {
-    const effect = effectsById.get(effectId)
+    const effect = getCombatActionEffectDefinition(effectId)
     if (!effect || effect.source.kind === "character" || effect.source.holder === "party_member") return false
     const effectSource = effect.source
     const selectedSourceBuildId = activeEffectSourceBuildIds[effectId]
@@ -112,31 +105,22 @@ export function resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
   enemyCount: number,
   activeEffectIds: readonly string[] = [],
   activeEffectSourceBuildIds: Readonly<Record<string, string>> = {},
-  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates)
+  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates),
+  preparation?: SourcePreparation
 ): ReadonlyMap<string, ResolvedCombatActionEffects> {
-  const party = [primary, ...teammates]
-  const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
+  const prepared = preparation ?? prepareSources(primary, teammates, action, gameData, enemyCount, fieldContext)
+  const { party, teamUniqueElementCount } = prepared
   return new Map(
     party.map((source) => {
-      const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
+      const { sourceTeammates, base, primaryElement, primaryDifferentElementTeammateCount,
+        primarySameElementTeammateCount } = prepared.get(source)
       const selectedEffectIds = listSelectedSelfEquipmentEffectIds(
         source,
         source.buildId === primary.buildId,
         activeEffectIds,
         activeEffectSourceBuildIds
       )
-      const base = resolveBaseCombatStats(source, gameData, action.element)
-      const primaryElement = resolveBuildElement(source, gameData)
-      const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const primarySameElementTeammateCount = resolvePrimarySameElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
+
       return [
         source.buildId,
         resolveSourceSelfMaximumReachableEquipmentStatEffects(
@@ -178,41 +162,16 @@ export function resolveSourceFinalHpByBuildId(
   deltas: Partial<Readonly<Record<ArtifactStat, number>>> | undefined,
   enemyCount: number,
   sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>,
-  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates)
+  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates),
+  preparation?: SourcePreparation
 ): ReadonlyMap<string, number> {
-  const party = [primary, ...teammates]
-  const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
+  const prepared = preparation ?? prepareSources(primary, teammates, action, gameData, enemyCount, fieldContext)
+  const { party, teamUniqueElementCount } = prepared
   return new Map(
     party.map((source) => {
-      const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
-      const base = resolveBaseCombatStats(source, gameData, action.element)
-      const primaryElement = resolveBuildElement(source, gameData)
-      const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const primarySameElementTeammateCount = resolvePrimarySameElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const automaticEffects = resolveSelfAutomaticEquipmentEffects({
-        action,
-        fieldContext,
-        baseEnergyRecharge: base.energyRecharge,
-        enemyCount,
-        ...(primaryElement === null ? {} : { primaryElement }),
-        primary: source,
-        ...(primaryDifferentElementTeammateCount === null
-          ? {}
-          : { primaryDifferentElementTeammateCount }),
-        ...(primarySameElementTeammateCount === null
-          ? {}
-          : { primarySameElementTeammateCount }),
-        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
-        teammates: sourceTeammates
-      })
+      const { sourceTeammates, base, primaryElement, primaryDifferentElementTeammateCount,
+        primarySameElementTeammateCount } = prepared.get(source)
+      const automaticEffects = prepared.get(source).automaticEffects()
       const maximumReachableCharacterHpEffects = resolveSelfMaximumReachableCharacterHpEffects({
         action,
         fieldContext,
@@ -262,44 +221,20 @@ export function resolveSourceElementalMasterySnapshotsByBuildId(
   sourceFinalHpByBuildId: ReadonlyMap<string, number>,
   sourceFinalAttackByBuildId: ReadonlyMap<string, number>,
   sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>,
-  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates)
+  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates),
+  preparation?: SourcePreparation
 ): {
   readonly sourceElementalMasteryBeforeShareByBuildId: ReadonlyMap<string, number>
   readonly sourceFinalElementalMasteryByBuildId: ReadonlyMap<string, number>
 } {
-  const party = [primary, ...teammates]
-  const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
+  const prepared = preparation ?? prepareSources(primary, teammates, action, gameData, enemyCount, fieldContext)
+  const { party, teamUniqueElementCount } = prepared
   const moonsignLevel = resolveTeamState(primary, teammates, gameData).moonsign.level
   const preShareElementalMasteryByBuildId = new Map(
     party.map((source) => {
-      const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
-      const base = resolveBaseCombatStats(source, gameData, action.element)
-      const primaryElement = resolveBuildElement(source, gameData)
-      const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const primarySameElementTeammateCount = resolvePrimarySameElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const automaticEquipmentEffects = resolveSelfAutomaticEquipmentEffects({
-        action,
-        fieldContext,
-        baseEnergyRecharge: base.energyRecharge,
-        enemyCount,
-        gameData,
-        ...(primaryElement === null ? {} : { primaryElement }),
-        primary: source,
-        ...(primaryDifferentElementTeammateCount === null
-          ? {}
-          : { primaryDifferentElementTeammateCount }),
-        ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
-        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
-        teammates: sourceTeammates
-      })
+      const { sourceTeammates, base, primaryElement, primaryDifferentElementTeammateCount,
+        primarySameElementTeammateCount } = prepared.get(source)
+      const automaticEquipmentEffects = prepared.get(source).automaticEffects()
       const sourceEffectInput = {
         action,
         fieldContext,
@@ -347,19 +282,8 @@ export function resolveSourceElementalMasterySnapshotsByBuildId(
   )
   const sourceFinalElementalMasteryByBuildId = new Map(
     party.map((source) => {
-      const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
-      const base = resolveBaseCombatStats(source, gameData, action.element)
-      const primaryElement = resolveBuildElement(source, gameData)
-      const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const primarySameElementTeammateCount = resolvePrimarySameElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
+      const { sourceTeammates, base, primaryElement, primaryDifferentElementTeammateCount,
+        primarySameElementTeammateCount } = prepared.get(source)
       const shareEffects = resolveCombatActionFinalElementalMasteryShareEffects({
         action,
         fieldContext,
@@ -407,10 +331,11 @@ export function resolveSourceFinalDefenseByBuildId(
   activeEffectIds: readonly string[],
   activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined,
   sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>,
-  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates)
+  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates),
+  preparation?: SourcePreparation
 ): ReadonlyMap<string, number> {
-  const party = [primary, ...teammates]
-  const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
+  const prepared = preparation ?? prepareSources(primary, teammates, action, gameData, enemyCount, fieldContext)
+  const { party, teamUniqueElementCount } = prepared
   const selectedCharacterDefenseEffectIds = new Set(
     listCombatActionEffects().flatMap((effect) =>
       activeEffectIds.includes(effect.id) &&
@@ -429,33 +354,9 @@ export function resolveSourceFinalDefenseByBuildId(
         sourceBuild: source,
         teammates
       })
-      const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
-      const base = resolveBaseCombatStats(source, gameData, action.element)
-      const primaryElement = resolveBuildElement(source, gameData)
-      const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const primarySameElementTeammateCount = resolvePrimarySameElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const automaticEffects = resolveSelfAutomaticEquipmentEffects({
-        action,
-        fieldContext,
-        baseEnergyRecharge: base.energyRecharge,
-        enemyCount,
-        ...(primaryElement === null ? {} : { primaryElement }),
-        primary: source,
-        ...(primaryDifferentElementTeammateCount === null
-          ? {}
-          : { primaryDifferentElementTeammateCount }),
-        ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
-        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
-        teammates: sourceTeammates
-      })
+      const { sourceTeammates, base, primaryElement, primaryDifferentElementTeammateCount,
+        primarySameElementTeammateCount } = prepared.get(source)
+      const automaticEffects = prepared.get(source).automaticEffects()
       const maximumReachableEffects = getSourceSelfMaximumReachableEquipmentEffects(
         sourceSelfMaximumEquipmentEffectsByBuildId,
         source.buildId
@@ -511,10 +412,11 @@ export function resolveSourceFinalAttackByBuildId(
   activeEffectIds: readonly string[],
   activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined,
   sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>,
-  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates)
+  fieldContext: FieldContext = resolveFieldContext(action, primary, teammates),
+  preparation?: SourcePreparation
 ): ReadonlyMap<string, number> {
-  const party = [primary, ...teammates]
-  const teamUniqueElementCount = resolveTeamUniqueElementCount(party, gameData)
+  const prepared = preparation ?? prepareSources(primary, teammates, action, gameData, enemyCount, fieldContext)
+  const { party, teamUniqueElementCount } = prepared
   // Include selected front-recipient stat buffs in the same pre-conversion ATK snapshot.
   // Source-final-stat conversions remain staged separately and must not recursively feed themselves.
   const frontAttackEffectIds = new Set(listCombatActionEffects().filter((effect) =>
@@ -531,36 +433,9 @@ export function resolveSourceFinalAttackByBuildId(
         sourceBuild: source,
         teammates
       })
-      const sourceTeammates = party.filter((build) => build.buildId !== source.buildId)
-      const base = resolveBaseCombatStats(source, gameData, action.element)
-      const primaryElement = resolveBuildElement(source, gameData)
-      const primaryDifferentElementTeammateCount = resolvePrimaryDifferentElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const primarySameElementTeammateCount = resolvePrimarySameElementTeammateCount(
-        source,
-        sourceTeammates,
-        gameData
-      )
-      const automaticEffects = resolveSelfAutomaticEquipmentEffects({
-        action,
-        fieldContext,
-        baseEnergyRecharge: base.energyRecharge,
-        enemyCount,
-        gameData,
-        ...(primaryElement === null ? {} : { primaryElement }),
-        primary: source,
-        ...(primaryDifferentElementTeammateCount === null
-          ? {}
-          : { primaryDifferentElementTeammateCount }),
-        ...(primarySameElementTeammateCount === null
-          ? {}
-          : { primarySameElementTeammateCount }),
-        ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
-        teammates: sourceTeammates
-      })
+      const { sourceTeammates, base, primaryElement, primaryDifferentElementTeammateCount,
+        primarySameElementTeammateCount } = prepared.get(source)
+      const automaticEffects = prepared.get(source).automaticEffects()
       const maximumReachableEffects = getSourceSelfMaximumReachableEquipmentEffects(
         sourceSelfMaximumEquipmentEffectsByBuildId,
         source.buildId
@@ -629,6 +504,7 @@ export function resolveScenarioSourceStatMaps(input: {
   readonly sourceFinalHpByBuildId: ReadonlyMap<string, number>
 } {
   const fieldContext = input.fieldContext ?? resolveFieldContext(input.action, input.primary, input.teammates)
+  const preparation = prepareSources(input.primary, input.teammates, input.action, input.gameData, input.enemyCount, fieldContext)
   const sourceSelfMaximumEquipmentEffectsByBuildId = resolveSourceSelfMaximumReachableEquipmentEffectsByBuildId(
     input.primary,
     input.teammates,
@@ -637,7 +513,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.enemyCount,
     input.activeEffectIds,
     input.activeEffectSourceBuildIds,
-    fieldContext
+    fieldContext,
+    preparation
   )
   const sourceFinalHpByBuildId = resolveSourceFinalHpByBuildId(
     input.primary,
@@ -648,7 +525,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.artifactStatDeltas,
     input.enemyCount,
     sourceSelfMaximumEquipmentEffectsByBuildId,
-    fieldContext
+    fieldContext,
+    preparation
   )
   // Attack-derived mastery must read a complete source attack snapshot before mastery sharing starts.
   const sourceFinalAttackByBuildId = resolveSourceFinalAttackByBuildId(
@@ -662,7 +540,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.activeEffectIds,
     input.activeEffectSourceBuildIds,
     sourceSelfMaximumEquipmentEffectsByBuildId,
-    fieldContext
+    fieldContext,
+    preparation
   )
   const {
     sourceElementalMasteryBeforeShareByBuildId,
@@ -680,7 +559,8 @@ export function resolveScenarioSourceStatMaps(input: {
     sourceFinalHpByBuildId,
     sourceFinalAttackByBuildId,
     sourceSelfMaximumEquipmentEffectsByBuildId,
-    fieldContext
+    fieldContext,
+    preparation
   )
   const sourceFinalDefenseByBuildId = resolveSourceFinalDefenseByBuildId(
     input.primary,
@@ -693,7 +573,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.activeEffectIds,
     input.activeEffectSourceBuildIds,
     sourceSelfMaximumEquipmentEffectsByBuildId,
-    fieldContext
+    fieldContext,
+    preparation
   )
   return {
     sourceFinalAttackByBuildId,

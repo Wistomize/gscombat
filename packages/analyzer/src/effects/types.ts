@@ -173,6 +173,12 @@ export interface ResolveCombatActionEffectCandidatesInput {
   readonly action: CombatActionMetadata
   /** Stable action-relative event ID used by event-scoped effect filters. */
   readonly candidateEventId?: string
+  readonly candidateDamagePartId?: string
+  readonly candidateEventIndex?: number
+  /** Repeated hits with no authored spacing cannot prove that a consumed effect is still active. */
+  readonly candidateHitIndex?: number
+  /** Resolved nonzero ordinary events, after constellation and action-parameter gates. */
+  readonly candidateTimelineEventIds?: readonly string[]
   /** Event-level Vaporize or Melt kinds possible from the scenario's explicit target-aura windows. */
   readonly candidateAmplifyingReactionKinds?: readonly AmplifyingReactionConfig["kind"][]
   /** Ordinary reaction kinds directly declared by the metric or derived from its explicit target setup. */
@@ -231,6 +237,8 @@ export interface ResolveAdditionalDamageEventEffectsInput extends ResolveCombatA
 
 /** Input for effects that are always available from the metric source's own equipped weapon or artifact set. */
 export interface ResolveSelfAutomaticEquipmentEffectsInput {
+  /** Source-stat assembly adds these once through its prepared-equipment map; standalone support keeps them here. */
+  readonly excludePreparedWeaponChoiceStats?: boolean
   readonly fieldContext?: FieldContext
   readonly action: CombatActionMetadata
   /** Source energy recharge before any typed equipment effect is applied. */

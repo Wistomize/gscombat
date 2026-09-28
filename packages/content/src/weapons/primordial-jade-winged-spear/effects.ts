@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const PRIMORDIAL_JADE_WINGED_SPEAR_ATTACK_PERCENT_PER_STACK = [0.032, 0.039, 0.046, 0.053, 0.06] as const
 export const PRIMORDIAL_JADE_WINGED_SPEAR_SEVEN_STACK_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.21, 0.24] as const
@@ -13,7 +14,10 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
   const exclusivity = { group: "primordial-jade-winged-spear-eagle-spear", variant: `${stackCount}-stack` }
   const effects: CombatActionEffect[] = [
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: stackCount === 7
+        ? prepareWeaponEffect({ kind: "damage_hit", provider: "source", recipient: "source" }, "前台有自身命中能力时按七层准备；退场不计", true)
+        : { kind: "excluded", reason: "已改为前台自动七层，旧层数仅保留兼容" },
       exclusivity,
       id: `weapon.primordial-jade-winged-spear.eagle-spear.${stackCount}-stack.attack-percent`,
       label: `和璞鸢 · ${stackCount}层鹰之傲攻击力`,
@@ -24,7 +28,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
   ]
   if (stackCount === 7) {
     effects.push({
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareWeaponEffect({ kind: "damage_hit", provider: "source", recipient: "source" }, "前台有自身命中能力时按七层准备；退场不计", true),
       exclusivity,
       id: "weapon.primordial-jade-winged-spear.eagle-spear.7-stack.damage-bonus",
       label: "和璞鸢 · 七层鹰之傲全伤害",

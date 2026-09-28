@@ -5,6 +5,8 @@ import { yaoyaoDefinition } from "./definition.js"
 
 export const yaoyaoCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "yaoyao.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "yaoyao.kit.healing", label: "元素战技月桂治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("yaoyao", 5),
     ...declareWeaponHitCapabilities(yaoyaoDefinition),
     declareHitCapability("yaoyao.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["dendro"]),

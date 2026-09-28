@@ -59,7 +59,7 @@ describe("7.0 equipment registry", () => {
   })
 
   it("maps every implemented 7.0 coverage clause to one executable effect", () => {
-    const versionSevenEffects = listCombatActionEffects().filter(isVersionSevenEffect)
+    const versionSevenEffects = listCombatActionEffects().filter(isVersionSevenEffect).filter((effect) => effect.lifecycle?.kind !== "excluded")
     const versionSevenEffectIds = new Set(versionSevenEffects.map((effect) => effect.id))
     const coveredEffectIds = equipmentCoverageLedger
       .filter((entry) => versionSevenWeaponIds.has(entry.equipmentId) || versionSevenArtifactIds.has(entry.equipmentId))
@@ -107,9 +107,9 @@ describe("7.0 equipment registry", () => {
     expect(effectsById.get("weapon.whitelake-frostfeather.lake-hued-lament.3-stack.stellar-reaction-crit-damage")?.value)
       .toEqual({ kind: "refinement_table", values: [0.5, 0.65, 0.8, 0.95, 1.1] })
     expect(effectsById.get("weapon.exaiphanes-blade.after-hit.traveler.attack-percent")?.value)
-      .toEqual({ kind: "refinement_table", values: [0.16, 0.2, 0.24, 0.32, 0.4] })
+      .toEqual({ kind: "fixed", value: 0.24 })
     expect(effectsById.get("weapon.exaiphanes-blade.traveler.resonated-elements.crit-damage")?.value)
-      .toEqual({ kind: "refinement_table", values: [0, 0.42, 0.42, 0.42, 0.42] })
+      .toEqual({ kind: "fixed", value: 0.42 })
     expect(effectsById.get("artifact.scarlet-proof.4pc.after-stellar-swirl.crit-rate")?.value)
       .toEqual({ kind: "fixed", value: 0.16 })
     expect(effectsById.get("artifact.scarlet-proof.4pc.after-stellar-swirl.reaction-damage-bonus")?.value)

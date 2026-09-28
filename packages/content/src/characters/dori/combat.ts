@@ -5,6 +5,9 @@ import { doriDefinition } from "./definition.js"
 
 export const doriCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "dori.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "dori.kit.self-aura", label: "灯中幽精连接为前台施加雷附着", kind: "self_aura", elements: ["electro"], recipient: "on_field", sourceFieldPresence: "any", sustained: true },
+    { id: "dori.kit.healing", label: "灯中幽精连接治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("dori", 2),
     ...declareWeaponHitCapabilities(doriDefinition),
     declareHitCapability("dori.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),

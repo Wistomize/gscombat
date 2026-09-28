@@ -5,6 +5,9 @@ import { yelanDefinition } from "./definition.js"
 
 export const yelanCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "yelan.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "yelan.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 3 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("yelan", 3),
     { ...declareSkillCastCapability("yelan", 3, {"initialUses":2}), id: "yelan.kit.extra-skill-charge", minimumSourceConstellation: 1 },
     ...declareWeaponHitCapabilities(yelanDefinition),

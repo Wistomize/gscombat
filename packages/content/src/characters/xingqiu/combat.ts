@@ -5,6 +5,8 @@ import { xingqiuDefinition } from "./definition.js"
 
 export const xingqiuCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "xingqiu.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "xingqiu.kit.weapon-healing-qualification", label: "生水要诀雨帘剑消失时治疗当前角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false, minimumSourceAscension: 1 },
     declareSkillCastCapability("xingqiu", 4),
     ...declareWeaponHitCapabilities(xingqiuDefinition),
     declareHitCapability("xingqiu.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),

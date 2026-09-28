@@ -5,6 +5,7 @@ import { lisaDefinition } from "./definition.js"
 
 export const lisaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "lisa.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("lisa", 6),
     ...declareWeaponHitCapabilities(lisaDefinition),
     declareHitCapability("lisa.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),

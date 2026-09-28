@@ -5,6 +5,7 @@ import { mikaDefinition } from "./definition.js"
 
 export const mikaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "mika.kit.healing", label: "元素爆发施放时治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("mika", 5),
     ...declareWeaponHitCapabilities(mikaDefinition),
     declareHitCapability("mika.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill"], ["cryo"]),

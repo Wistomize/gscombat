@@ -1,3 +1,4 @@
+import { getCombatActionEffectDefinition } from "@gscombat/content"
 import {
   listCombatActionEffects,
   type CombatActionEffect,
@@ -64,7 +65,6 @@ function listSelectedSourceStatSnapshotEffectIds(
   conversionKind: "source_final_attack" | "source_final_defense"
 ): readonly string[] {
   const selectedEffectIds = new Set(input.activeEffectIds)
-  const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
   return [
     ...new Set(
       listCombatActionEffects().flatMap((effect) => {
@@ -77,7 +77,7 @@ function listSelectedSourceStatSnapshotEffectIds(
         }
         const snapshotEffectIds = getSourceStatSnapshotEffectIds(effect, conversionKind)
         return snapshotEffectIds.filter((snapshotEffectId) => {
-          const snapshotEffect = effectsById.get(snapshotEffectId)
+          const snapshotEffect = getCombatActionEffectDefinition(snapshotEffectId)
           return (
             snapshotEffect !== undefined &&
             isSourceStatConversionSelectedForBuild(effect, input) &&
@@ -91,13 +91,12 @@ function listSelectedSourceStatSnapshotEffectIds(
 
 /** Adds every recursively required state ID so a self snapshot can pass normal activation checks. */
 function listSnapshotActivationEffectIds(snapshotEffectIds: readonly string[]): readonly string[] {
-  const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
   const activeEffectIds = new Set(snapshotEffectIds)
   const pendingEffectIds = [...snapshotEffectIds]
   while (pendingEffectIds.length > 0) {
     const effectId = pendingEffectIds.pop()
     if (effectId === undefined) continue
-    for (const requiredEffectId of effectsById.get(effectId)?.requiredActiveEffectIds ?? []) {
+    for (const requiredEffectId of getCombatActionEffectDefinition(effectId)?.requiredActiveEffectIds ?? []) {
       if (activeEffectIds.has(requiredEffectId)) continue
       activeEffectIds.add(requiredEffectId)
       pendingEffectIds.push(requiredEffectId)

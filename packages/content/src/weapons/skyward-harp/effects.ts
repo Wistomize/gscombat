@@ -20,6 +20,7 @@ export const skywardHarpCombatActionEffects: readonly CombatActionEffect[] = [
     label: "天空之翼 · 本次攻击触发物理伤害（冷却已就绪）",
     source: { kind: "weapon", weaponId: "SkywardHarp" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     value: {
       canCrit: true,
       coefficient: { kind: "fixed", value: SKYWARD_HARP_PHYSICAL_COEFFICIENT },

@@ -10,9 +10,11 @@ function getOffFieldStackValues(values: readonly number[], stackCount: number): 
 
 function createOffFieldStackEffect(stackCount: (typeof offFieldStackCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
-    selectionMode: "optional",
-    ...(stackCount === 10 ? { weaponComparisonDefault: { recipientCharacterIds: "all" as const, requiresOffFieldAction: true } } : {}),
+    activation: "automatic",
+    lifecycle: stackCount === 10 ? { kind: "conditional", preparation: "qualified", retention: "while_applicable",
+      trigger: { event: "none", sourceFieldPresence: "any" }, applicability: { sourceFieldPresence: "off_field" },
+      explanation: "后台默认十层；前台不计，不模拟切入宽限时间" }
+      : { kind: "excluded", reason: "后台自动十层，旧层数不再手选" },
     exclusivity: { group: "alley-hunter-off-field", variant: `${stackCount}-stack` },
     id: `weapon.alley-hunter.off-field.${stackCount}-stack.damage-bonus`,
     label: `暗巷猎手 · 当前核心动作前已持有${stackCount}层伤害提升（最多10层）`,

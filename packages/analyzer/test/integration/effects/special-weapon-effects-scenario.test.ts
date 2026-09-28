@@ -93,7 +93,7 @@ describe("special-reaction weapon effects in real selected actions", () => {
     expect(active.actionExpectedDamage).toBeCloseTo(baseline.actionExpectedDamage)
     expectIndependentSpecialFormula(active)
 
-    expect(() =>
+    expect(
       evaluateScenario(
         createSpecialScenario(
           build,
@@ -106,7 +106,7 @@ describe("special-reaction weapon effects in real selected actions", () => {
         ),
         gameData
       )
-    ).toThrow("a-teaspoon-of-transcendence-transcendence effects cannot stack")
+    ).toMatchObject({ actionExpectedDamage: active.actionExpectedDamage })
   })
 
   it("routes Lightbearing Moonshard's selected Lunar-Crystallize window into only the special bonus stage", () => {

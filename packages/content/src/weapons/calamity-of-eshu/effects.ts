@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const CALAMITY_OF_ESHU_SHIELDED_NORMAL_CHARGED_DAMAGE_BONUS = [0.2, 0.25, 0.3, 0.35, 0.4] as const
 export const CALAMITY_OF_ESHU_SHIELDED_NORMAL_CHARGED_CRIT_RATE = [0.08, 0.1, 0.12, 0.14, 0.16] as const
@@ -6,7 +7,8 @@ export const CALAMITY_OF_ESHU_SHIELDED_NORMAL_CHARGED_CRIT_RATE = [0.08, 0.1, 0.
 /** Typed selected shielded normal-attack and charged-attack contributions of Calamity of Eshu. */
 export const calamityOfEshuCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "shield", provider: "party", recipient: "source" }, "前台装备者具有适用护盾来源", true),
     selectionMode: "optional",
     exclusivity: { group: "calamity-of-eshu-shield-state", variant: "shielded" },
     id: "weapon.calamity-of-eshu.shielded.normal-charged-damage-bonus",
@@ -17,7 +19,8 @@ export const calamityOfEshuCombatActionEffects: readonly CombatActionEffect[] = 
     value: { kind: "refinement_table", values: CALAMITY_OF_ESHU_SHIELDED_NORMAL_CHARGED_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "shield", provider: "party", recipient: "source" }, "前台装备者具有适用护盾来源", true),
     selectionMode: "optional",
     exclusivity: { group: "calamity-of-eshu-shield-state", variant: "shielded" },
     id: "weapon.calamity-of-eshu.shielded.normal-charged-crit-rate",

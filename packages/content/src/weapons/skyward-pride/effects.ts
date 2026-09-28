@@ -19,6 +19,7 @@ export const skywardPrideCombatActionEffects: readonly CombatActionEffect[] = [
     label: "天空之傲 · 真空刃（元素爆发后，本次命中可触发）",
     source: { kind: "weapon", weaponId: "SkywardPride" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"] },
     value: {
       canCrit: true,

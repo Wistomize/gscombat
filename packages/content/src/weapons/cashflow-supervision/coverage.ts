@@ -11,7 +11,7 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: [
+      effectIds: ["weapon.cashflow-supervision.hp-change.0-stack.charged-damage-bonus", "weapon.cashflow-supervision.hp-change.0-stack.normal-damage-bonus",
         "weapon.cashflow-supervision.hp-change.1-stack.normal-damage-bonus",
         "weapon.cashflow-supervision.hp-change.2-stack.normal-damage-bonus",
         "weapon.cashflow-supervision.hp-change.3-stack.normal-damage-bonus",
@@ -25,7 +25,7 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: [
+      effectIds: ["weapon.cashflow-supervision.hp-change.0-stack.star-superconduct-damage-bonus",
         "weapon.cashflow-supervision.hp-change.1-stack.star-superconduct-damage-bonus",
         "weapon.cashflow-supervision.hp-change.2-stack.star-superconduct-damage-bonus",
         "weapon.cashflow-supervision.hp-change.3-stack.star-superconduct-damage-bonus"

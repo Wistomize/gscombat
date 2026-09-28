@@ -5,6 +5,8 @@ import { sangonomiyaKokomiDefinition } from "./definition.js"
 
 export const sangonomiyaKokomiCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "sangonomiya-kokomi.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "sangonomiya-kokomi.kit.healing", label: "化海月治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("sangonomiya-kokomi", 4),
     ...declareWeaponHitCapabilities(sangonomiyaKokomiDefinition),
     declareHitCapability("sangonomiya-kokomi.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),

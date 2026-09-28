@@ -88,7 +88,7 @@ export function registerCatalogAuditRoutes(app: FastifyInstance, gameData: GameD
       }
     },
     async (request, reply) => {
-      const result = resolveActionEffectOptions(request.body)
+      const result = resolveActionEffectOptions(request.body, gameData)
       if (!result) {
         return reply.code(404).send({ code: "action_not_found", message: "目标动作不存在或不属于当前角色" })
       }

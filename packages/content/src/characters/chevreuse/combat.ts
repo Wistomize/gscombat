@@ -5,6 +5,7 @@ import { chevreuseDefinition } from "./definition.js"
 
 export const chevreuseCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "chevreuse.kit.healing", label: "长按元素战技治疗当前场上角色", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("chevreuse", 8),
     ...declareWeaponHitCapabilities(chevreuseDefinition),
     declareHitCapability("chevreuse.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),

@@ -18,6 +18,7 @@ const phantomPerformanceVeilMultiplier = {
 
 export const neferCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "nefer.kit.lunar_bloom-damage", label: "已维护的本人月曜伤害动作", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "on_field", sustained: true, specialReactions: ["lunar_bloom"] },
     declareSkillCastCapability("nefer", 11),
     { id: "nefer.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_bloom"] },
     ...declareWeaponHitCapabilities(neferDefinition),

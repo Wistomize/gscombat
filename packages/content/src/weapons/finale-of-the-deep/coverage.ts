@@ -13,14 +13,14 @@ export const equipmentCoverage = {
     {
       effectIds: ["weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack"],
       id: "weapon.finale-of-the-deep.bond-of-life-cleared.at-cap.flat-attack",
-      label: "海渊终曲 · 清除生命之契后攻击力达到上限",
+      label: "海渊终曲 · 有适用治疗并施放战技后，按最终生命25%完整清契量连续换算固定攻击并封顶（含未达上限）",
       source: weaponSource("FinaleOfTheDeep"),
       status: "implemented"
     },
     {
       id: "weapon.finale-of-the-deep.bond-of-life-cleared.uncapped-or-partial.flat-attack",
-      label: "海渊终曲 · 清除未达上限或部分生命之契后的攻击力",
-      reason: "当前核心动作固定假设治疗量充足，并完整清除本次按生命值上限25%生成的生命之契。",
+      label: "海渊终曲 · 手动指定部分清契量的攻击力",
+      reason: "有适用治疗时按充分治疗、完整清除本次25%生命之契计算，未达攻击上限也已连续换算；不提供部分清契量或实际治疗过程模拟。",
       source: weaponSource("FinaleOfTheDeep"),
       status: "not_applicable"
     }

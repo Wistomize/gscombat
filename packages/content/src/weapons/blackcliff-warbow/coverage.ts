@@ -4,7 +4,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: [
+      effectIds: ["weapon.blackcliff-warbow.defeated-enemy.1-stack.attack-percent.zero",
         "weapon.blackcliff-warbow.defeated-enemy.1-stack.attack-percent",
         "weapon.blackcliff-warbow.defeated-enemy.2-stack.attack-percent",
         "weapon.blackcliff-warbow.defeated-enemy.3-stack.attack-percent"

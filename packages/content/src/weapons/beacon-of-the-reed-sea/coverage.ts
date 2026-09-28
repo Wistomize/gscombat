@@ -4,7 +4,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: [
+      effectIds: ["weapon.beacon-of-the-reed-sea.after-taking-damage.attack-percent.disabled",
         "weapon.beacon-of-the-reed-sea.after-skill-hit.attack-percent",
         "weapon.beacon-of-the-reed-sea.after-taking-damage.attack-percent",
         "weapon.beacon-of-the-reed-sea.unshielded.hp-percent"

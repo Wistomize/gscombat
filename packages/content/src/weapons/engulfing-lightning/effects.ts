@@ -22,10 +22,8 @@ export const engulfingLightningCombatActionEffects: readonly CombatActionEffect[
     }
   },
   {
-    activation: "active",
-    deterministicSnapshotActivation: {
-      requiredActionSnapshotCapabilities: ["after_primary_burst"]
-    },
+    activation: "automatic",
+    lifecycle: { kind: "conditional", preparation: "qualified", retention: "retain_on_exit", trigger: { event: "burst_cast", sourceFieldPresence: "on_field" }, explanation: "提前施放元素爆发后，充能先进入属性，再参与薙草及绝缘转换" },
     id: "weapon.engulfing-lightning.post-burst-energy-recharge",
     label: "薙草之稻光 · 元素爆发后充能（当前动作前已生效）",
     source: { kind: "weapon", weaponId: "EngulfingLightning" },

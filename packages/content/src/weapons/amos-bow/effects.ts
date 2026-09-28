@@ -3,7 +3,7 @@ import type { CombatActionEffect } from "../../combat/types.js"
 export const AMOS_BOW_NORMAL_CHARGED_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 export const AMOS_BOW_PROJECTILE_FLIGHT_TIME_DAMAGE_BONUS_PER_STACK = [0.08, 0.1, 0.12, 0.14, 0.16] as const
 
-const projectileFlightStackCounts = [1, 2, 3, 4, 5] as const
+const projectileFlightStackCounts = [0, 1, 2, 3, 4, 5] as const
 
 function getProjectileFlightStackValues(values: readonly number[], stackCount: number): readonly number[] {
   return values.map((value) => Number((value * stackCount).toFixed(12)))
@@ -14,6 +14,8 @@ function createProjectileFlightStackEffect(
 ): CombatActionEffect {
   return {
     activation: "active",
+    weaponChoice: { group: "amos-bow-projectile-flight-time", label: "飞行层数", variant: `${stackCount}-stack`,
+      variantLabel: `${stackCount}层`, defaultVariant: "0-stack", fixedVariantByCharacter: { Ganyu: "5-stack" } },
     selectionMode: "optional",
     exclusivity: { group: "amos-bow-projectile-flight-time", variant: `${stackCount}-stack` },
     id: `weapon.amos-bow.projectile-flight-time.${stackCount}-stack.damage-bonus`,

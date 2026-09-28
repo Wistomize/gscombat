@@ -5,6 +5,7 @@ import { ineffaDefinition } from "./definition.js"
 
 export const ineffaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "ineffa.kit.lunar_charged-damage", label: "已维护的本人月曜伤害动作", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_charged"], requiredTeamReaction: "lunar", requiredTeamSpecialReactions: ["lunar_charged"], minimumSourceAscension: 1 },
     declareSkillCastCapability("ineffa", 6),
     { id: "ineffa.kit.retained-shield", label: "光流屏障护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     { id: "ineffa.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["lunar_charged"] },

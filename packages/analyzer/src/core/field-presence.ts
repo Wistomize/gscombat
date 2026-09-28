@@ -3,7 +3,12 @@ import type { CharacterBuild } from "@gscombat/contracts"
 
 /** A single action's field identity; changing the stat recipient must never change this context. */
 export interface FieldContext {
+  readonly targetIsSlime?: boolean
+  readonly arrowHitsWeakPoint?: boolean
+  /** Source-owned choices survive recipient/contributor changes without changing the actual foreground. */
+  readonly weaponEffectChoices?: Readonly<Record<string, Readonly<Record<string, string>>>>
   readonly actionOwnerBuildId: string
+  readonly actionOwnerStatCaptureFieldPresence?: "on_field" | "off_field"
   /** With no known foreground, damage owners default to off-field; support owners may be unknown. */
   readonly actionOwnerFieldPresence?: "off_field" | "unknown"
   readonly onFieldBuildId: string | null
@@ -27,6 +32,7 @@ export function resolveFieldContext(
   }
   return {
     actionOwnerBuildId: owner.buildId,
+    ...(action.statCaptureFieldPresence ? { actionOwnerStatCaptureFieldPresence: action.statCaptureFieldPresence } : {}),
     onFieldBuildId: onFieldBuildId ?? (action.fieldPresence === "off_field" ? null : owner.buildId)
   }
 }

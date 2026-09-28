@@ -5,6 +5,8 @@ import { kaeyaDefinition } from "./definition.js"
 
 export const kaeyaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "kaeya.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "kaeya.kit.weapon-healing-qualification", label: "冷血之剑战技命中自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false, minimumSourceAscension: 1 },
     declareSkillCastCapability("kaeya", 1),
     ...declareWeaponHitCapabilities(kaeyaDefinition),
     declareHitCapability("kaeya.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),
@@ -87,6 +89,7 @@ export const kaeyaCombatCoverage: CharacterCombatCoverage = {
       element: kaeyaDefinition.element,
       evaluator: "declared_direct",
       id: "kaeya.constellation.6.glacial_whirlwind.additional_glacial_waltz_icicle",
+      preparationAtSnapshot: { energyNotFull: false },
       kind: "damage",
       parameterReferences: [
         {

@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const HAKUSHIN_RING_RELATED_ELEMENT_DAMAGE_BONUS = [0.1, 0.125, 0.15, 0.175, 0.2] as const
 
@@ -15,14 +16,16 @@ function createReactionEffect(
   reaction: (typeof reactionElementPairs)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
-    selectionMode: "optional",
-    exclusivity: { group: "hakushin-ring-reaction", variant: reaction.id },
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "reaction_trigger", provider: "source", recipient: "source",
+      reactionElements: ["electro"], elements: reaction.elements, counterpartElements: reaction.elements },
+      "装备者亲自触发对应雷相关反应，关联元素角色在有效期内获得增伤"),
+    exclusivity: { group: "hakushin-ring-reaction", variant: reaction.id, automaticPriority: "refinement" },
     id: `weapon.hakushin-ring.${reaction.id}-related-element-damage-bonus`,
     label: `白辰之环 · 持有者触发${reaction.label}后的关联元素伤害`,
-    source: { holder: "party_member", kind: "weapon", weaponId: "HakushinRing" },
+    source: { holder: "party_member", kind: "weapon", weaponId: "HakushinRing", resolveOneMatchingPartySource: true },
     target: "damageBonus",
-    targetFilter: { elements: reaction.elements },
+    targetFilter: { elements: reaction.elements, recipientNativeElements: reaction.elements },
     value: { kind: "refinement_table", values: HAKUSHIN_RING_RELATED_ELEMENT_DAMAGE_BONUS }
   }
 }

@@ -5,6 +5,9 @@ import { clorindeDefinition } from "./definition.js"
 
 export const clorindeCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "clorinde.kit.normal-infusion", label: "夜巡雷元素普攻", kind: "normal_attack_infusion", elements: ["electro"], recipient: "self", sourceFieldPresence: "on_field", sustained: true },
+    { id: "clorinde.kit.bond-of-life-gain", label: "夜巡普攻获得自身生命之契", kind: "bond_of_life_gain", recipient: "self", sourceFieldPresence: "on_field", sustained: true },
+    { id: "clorinde.kit.healing", label: "夜巡状态元素战技消除生命之契自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("clorinde", 12),
     { id: "clorinde.kit.bond-of-life-change", label: "夜巡期间反复获得与消耗自身生命之契", kind: "bond_of_life_change", recipient: "self", sustained: true, sourceFieldPresence: "on_field" },
     ...declareWeaponHitCapabilities(clorindeDefinition),

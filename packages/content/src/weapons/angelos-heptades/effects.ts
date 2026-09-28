@@ -1,4 +1,9 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import type { CombatEffectLifecycle } from "../../combat/capabilities.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
+
+const ownPreparation = prepareWeaponEffect({ kind: "shield", provider: "source", recipient: "source" }, "装备者自己创造护盾")
+const ownHomework: CombatEffectLifecycle = { kind: "conditional", preparation: "qualified", retention: "while_applicable", trigger: { event: "none", sourceFieldPresence: "any" }, applicability: { sourceHomework: true }, explanation: "用户确认的装备者本人魔导资格" }
 
 export const ANGELOS_HEPTADES_ATTACK_PERCENT = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 export const ANGELOS_HEPTADES_DAMAGE_BONUS_PER_ATTACK = [0.0001, 0.00013, 0.00016, 0.00019, 0.00022] as const
@@ -23,11 +28,13 @@ export const angelosHeptadesCombatActionEffects: readonly CombatActionEffect[] =
     value: { kind: "refinement_table", values: ANGELOS_HEPTADES_ATTACK_PERCENT }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: ownPreparation,
+    requiresRecipientOnField: true,
     exclusivity: { group: "angelos-heptades-guiding-light-recipient-position", variant: "current-on-field" },
     id: "weapon.angelos-heptades.after-shield.source-final-attack-to-current-on-field-damage-bonus",
     label: "尘光七谕 · 创造护盾后的先导之光（当前场上角色伤害）",
-    source: { holder: "party_member", kind: "weapon", weaponId: "AngelosHeptades" },
+    source: { holder: "party_member", kind: "weapon", weaponId: "AngelosHeptades", resolveOneMatchingPartySource: true },
     target: "sourceFinalAttackToDamageBonus",
     value: {
       kind: "source_final_attack",
@@ -36,12 +43,13 @@ export const angelosHeptadesCombatActionEffects: readonly CombatActionEffect[] =
     }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "all_of", alternatives: [ownPreparation, ownHomework, { kind: "conditional", preparation: "qualified", retention: "while_applicable", trigger: { event: "none", sourceFieldPresence: "any" }, applicability: { recipientFieldPresence: "off_field" }, explanation: "后台魔导受益者只领取半额" }] },
     condition: { kind: "hexerei_secret_rite" },
     exclusivity: { group: "angelos-heptades-guiding-light-recipient-position", variant: "magic-secret-off-field" },
     id: "weapon.angelos-heptades.magic-secret.after-shield.source-final-attack-to-off-field-magic-recipient-damage-bonus",
     label: "尘光七谕 · 魔导·秘仪下后台魔导角色的先导之光（50%伤害）",
-    source: { holder: "party_member", kind: "weapon", weaponId: "AngelosHeptades" },
+    source: { holder: "party_member", kind: "weapon", weaponId: "AngelosHeptades", resolveOneMatchingPartySource: true },
     target: "sourceFinalAttackToDamageBonus",
     targetFilter: { recipientHexereiRequired: true },
     value: {

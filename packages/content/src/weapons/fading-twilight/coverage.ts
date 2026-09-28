@@ -2,6 +2,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 
 /** Maintainer-reviewed single-core-action coverage for this equipment item. */
 export const equipmentCoverage = {
+  comparison: { excluded: true },
   clauses: [
     {
       effectIds: [

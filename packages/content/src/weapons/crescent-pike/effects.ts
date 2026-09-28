@@ -10,6 +10,7 @@ export const crescentPikeCombatActionEffects: readonly CombatActionEffect[] = [
     label: "流月针 · 获得元素微粒或晶球后5秒内（本次普通攻击或重击额外物理伤害）",
     source: { kind: "weapon", weaponId: "CrescentPike" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"], talentSlots: ["normal"] },
     value: {
       canCrit: true,

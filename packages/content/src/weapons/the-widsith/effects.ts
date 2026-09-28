@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponChoice } from "../../combat/weapon-preparation.js"
 
 export const THE_WIDSITH_RECITATIVE_ATTACK_PERCENT = [0.6, 0.75, 0.9, 1.05, 1.2] as const
 export const THE_WIDSITH_ARIA_ALL_ELEMENT_DAMAGE_BONUS = [0.48, 0.6, 0.72, 0.84, 0.96] as const
@@ -7,7 +8,7 @@ export const THE_WIDSITH_INTERLUDE_ELEMENTAL_MASTERY = [240, 300, 360, 420, 480]
 const elementalDamageElements = ["anemo", "cryo", "dendro", "electro", "geo", "hydro", "pyro"] as const
 
 /** Typed selected theme contribution of The Widsith. */
-export const theWidsithCombatActionEffects: readonly CombatActionEffect[] = [
+const authoredEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     exclusivity: { group: "the-widsith-theme", variant: "recitative" },
@@ -40,3 +41,7 @@ export const theWidsithCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: THE_WIDSITH_INTERLUDE_ELEMENTAL_MASTERY }
   }
 ]
+
+/** Reviewed necessary choice, shared by equipped and comparison evaluation. */
+export const theWidsithCombatActionEffects: readonly CombatActionEffect[] = withWeaponChoice(authoredEffects,
+  "the-widsith-theme", "登场主题", "none", "none")

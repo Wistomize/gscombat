@@ -11,6 +11,7 @@ export const messengerCombatActionEffects: readonly CombatActionEffect[] = [
     label: "信使 · 本次瞄准射击命中要害且冷却已就绪，触发必定暴击的物理附加伤害",
     source: { holder: "primary", kind: "weapon", weaponId: "Messenger" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["charged"] },
     value: {
       canCrit: true,

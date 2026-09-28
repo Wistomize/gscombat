@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const FLOWER_WREATHED_FEATHERS_CHARGED_DAMAGE_BONUS_PER_STACK = [0.06, 0.075, 0.09, 0.105, 0.12] as const
 
@@ -10,14 +11,15 @@ function getDamageBonusValues(stackCount: number): readonly number[] {
 
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareMaximumWeaponStacks(stackCount, 6, { kind: "damage_hit", hitKinds: ["charged"], provider: "source", recipient: "source" }, true),
     selectionMode: "optional",
     exclusivity: { group: "flower-wreathed-feathers-aimed-shot", variant: `${stackCount}-stack` },
     id: `weapon.flower-wreathed-feathers.aimed-shot.${stackCount}-stack.charged-damage-bonus`,
     label: `缀花之翎 · 本次重击的${stackCount}层瞄准增伤`,
     source: { kind: "weapon", weaponId: "FlowerWreathedFeathers" },
     target: "damageBonus",
-    targetFilter: { attackKinds: ["charged"] },
+    targetFilter: { attackKinds: ["charged"], arrowHitsOnly: true },
     value: { kind: "refinement_table", values: getDamageBonusValues(stackCount) }
   }
 }

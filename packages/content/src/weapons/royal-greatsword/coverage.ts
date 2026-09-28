@@ -2,9 +2,10 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 
 /** Maintainer-reviewed single-core-action coverage for this equipment item. */
 export const equipmentCoverage = {
+  comparison: { excluded: true },
   clauses: [
     {
-      effectIds: [
+      effectIds: ["weapon.royal-greatsword.focus.1-stack.crit-rate.zero",
         "weapon.royal-greatsword.focus.1-stack.crit-rate",
         "weapon.royal-greatsword.focus.2-stack.crit-rate",
         "weapon.royal-greatsword.focus.3-stack.crit-rate",

@@ -5,6 +5,8 @@ import { alhaithamDefinition } from "./definition.js"
 
 export const alhaithamCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "alhaitham.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "alhaitham.kit.normal-infusion", label: "琢光镜草元素普攻重击", kind: "normal_attack_infusion", elements: ["dendro"], recipient: "self", sourceFieldPresence: "on_field", sustained: true },
     declareSkillCastCapability("alhaitham", 10),
     ...declareWeaponHitCapabilities(alhaithamDefinition),
     declareHitCapability("alhaitham.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["dendro"]),

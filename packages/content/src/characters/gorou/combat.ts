@@ -5,6 +5,11 @@ import { gorouDefinition } from "./definition.js"
 
 export const gorouCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "gorou.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "gorou.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 3 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "gorou.c4.healing", label: "四命大将威仪两岩状态治疗前台", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: true, minimumSourceConstellation: 4,
+      minimumPartyElementCount: { elements: ["geo"], count: 2 } },
     declareSkillCastCapability("gorou", 4),
     ...declareWeaponHitCapabilities(gorouDefinition),
     declareHitCapability("gorou.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["geo"]),

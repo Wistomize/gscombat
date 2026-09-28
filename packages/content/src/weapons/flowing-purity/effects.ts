@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect, prepareWeaponHealing } from "../../combat/weapon-preparation.js"
 
 export const FLOWING_PURITY_AFTER_SKILL_ALL_ELEMENT_DAMAGE_BONUS = [0.08, 0.1, 0.12, 0.14, 0.16] as const
 export const FLOWING_PURITY_BOND_OF_LIFE_CLEAR_ALL_ELEMENT_DAMAGE_BONUS_PER_THOUSAND = [
@@ -25,6 +26,7 @@ function createBondOfLifeClearDamageBonusEffect(
   const clearedBondOfLife = completeThousandPointClearCount * 1000
   return {
     activation: "active",
+    lifecycle: { kind: "excluded", reason: "旧分档清契输入已由实际生命上限的完整清契换算替代" },
     selectionMode: "optional",
     exclusivity: {
       group: "flowing-purity-bond-of-life-cleared",
@@ -42,8 +44,8 @@ function createBondOfLifeClearDamageBonusEffect(
 /** Full-clear default reuses the final-HP conversion stage; legacy partial-clear selections remain compatible. */
 export const flowingPurityCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "maximum_reachable",
-    weaponComparisonDefault: { recipientCharacterIds: "all" },
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "skill_cast", provider: "source", recipient: "source" }, "默认提前施放元素战技"),
     id: "weapon.flowing-purity.after-skill.all-element-damage-bonus",
     label: "纯水流华 · 施放元素战技后的所有元素伤害",
     source: { kind: "weapon", weaponId: "FlowingPurity" },
@@ -52,8 +54,9 @@ export const flowingPurityCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: FLOWING_PURITY_AFTER_SKILL_ALL_ELEMENT_DAMAGE_BONUS }
   },
   {
-    activation: "maximum_reachable",
-    weaponComparisonDefault: { recipientCharacterIds: "all" },
+    activation: "automatic",
+    lifecycle: { kind: "all_of", alternatives: [prepareWeaponHealing(),
+      prepareWeaponEffect({ kind: "skill_cast", provider: "source", recipient: "source" }, "先施放战技获得生命之契，再按充分治疗清除") ] },
     exclusivity: { group: "flowing-purity-bond-of-life-cleared", variant: "full-clear" },
     id: "weapon.flowing-purity.bond-of-life-cleared.full-clear.all-element-damage-bonus",
     label: "纯水流华 · 默认治疗充分，24%生命之契完整清除后的元素增伤（15秒内）",

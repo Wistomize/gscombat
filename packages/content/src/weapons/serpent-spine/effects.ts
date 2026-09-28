@@ -2,7 +2,7 @@ import type { CombatActionEffect } from "../../combat/types.js"
 
 export const SERPENT_SPINE_DAMAGE_BONUS_PER_STACK = [0.06, 0.07, 0.08, 0.09, 0.1] as const
 
-const stackCounts = [1, 2, 3, 4, 5] as const
+const stackCounts = [0, 1, 2, 3, 4, 5] as const
 
 function getDamageBonusValues(stackCount: number): readonly number[] {
   return SERPENT_SPINE_DAMAGE_BONUS_PER_STACK.map((value) => value * stackCount)
@@ -11,6 +11,8 @@ function getDamageBonusValues(stackCount: number): readonly number[] {
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
     activation: "active",
+    selectionMode: "optional",
+    weaponChoice: { group: "serpent-spine-wavesplitter", label: "破浪层数", variant: `${stackCount}-stack`, variantLabel: `${stackCount}层`, defaultVariant: "5-stack" },
     exclusivity: { group: "serpent-spine-wavesplitter", variant: `${stackCount}-stack` },
     id: `weapon.serpent-spine.wavesplitter.${stackCount}-stack.damage-bonus`,
     label: `螭骨剑 · ${stackCount}层破浪全伤害`,

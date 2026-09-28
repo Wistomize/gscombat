@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const BALLAD_OF_THE_BOUNDLESS_BLUE_NORMAL_DAMAGE_BONUS_PER_STACK = [0.08, 0.1, 0.12, 0.14, 0.16] as const
 export const BALLAD_OF_THE_BOUNDLESS_BLUE_CHARGED_DAMAGE_BONUS_PER_STACK = [0.06, 0.075, 0.09, 0.105, 0.12] as const
@@ -16,7 +17,8 @@ function createAzureSkiesStackEffect(
 ): CombatActionEffect {
   const actionLabel = attackKind === "normal" ? "普通攻击" : "重击"
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareMaximumWeaponStacks(stackCount, 3, { kind: "damage_hit", hitKinds: ["normal","charged"], provider: "source", recipient: "source" }, true),
     exclusivity: { group: "ballad-of-the-boundless-blue-azure-skies", variant: `${stackCount}-stack` },
     id: `weapon.ballad-of-the-boundless-blue.azure-skies.${stackCount}-stack.${attackKind}-damage-bonus`,
     label: `无垠蔚蓝之歌 · ${actionLabel}命中前已持有的${stackCount}层伤害提升（6秒内）`,

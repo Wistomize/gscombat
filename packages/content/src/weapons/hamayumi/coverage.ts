@@ -1,6 +1,6 @@
-import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-coverage.js"
+import type { EquipmentCoverageEntry } from "../../equipment-coverage.js"
 
-/** Maintainer-reviewed single-core-action coverage for this equipment item. */
+/** Reviewed executable effects; excluded legacy states and independent weapon procs are not coverage claims. */
 export const equipmentCoverage = {
   clauses: [
     {
@@ -8,11 +8,16 @@ export const equipmentCoverage = {
         "weapon.hamayumi.normal-damage-bonus",
         "weapon.hamayumi.charged-damage-bonus",
         "weapon.hamayumi.full-energy.normal-damage-bonus",
-        "weapon.hamayumi.full-energy.charged-damage-bonus"
+        "weapon.hamayumi.full-energy.charged-damage-bonus",
+        "weapon.hamayumi.full-energy.normal-damage-bonus.disabled",
+        "weapon.hamayumi.full-energy.charged-damage-bonus.disabled"
       ],
       id: "weapon.hamayumi.passive",
       label: "破魔之弓 · 浅水玉",
-      source: weaponSource("Hamayumi"),
+      source: {
+        kind: "weapon",
+        weaponId: "Hamayumi"
+      },
       status: "implemented"
     }
   ],

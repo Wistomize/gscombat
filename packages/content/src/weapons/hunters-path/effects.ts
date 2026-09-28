@@ -17,7 +17,7 @@ export const huntersPathCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: HUNTERS_PATH_ALL_ELEMENT_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.hunters-path.tireless-hunt.charged-em-additive-damage",
     label: "猎人之径 · 无休止的狩猎重击元素精通同一命中加算",
     source: { holder: "primary", kind: "weapon", weaponId: "HuntersPath" },

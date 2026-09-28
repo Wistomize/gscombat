@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const TULAYTULLAHS_REMEMBRANCE_NORMAL_DAMAGE_BONUS_PER_UNIT = [
   0.048, 0.06, 0.072, 0.084, 0.096
@@ -14,7 +15,8 @@ function createNormalDamageUnitEffect(
   unitCount: (typeof normalDamageUnitCounts)[number]
 ): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareMaximumWeaponStacks(unitCount, 10, { kind: "skill_cast", provider: "source", recipient: "source" }, true),
     exclusivity: { group: "tulaytullahs-remembrance-aeons-flow", variant: unitCount + "-unit" },
     id: "weapon.tulaytullahs-remembrance.aeons-flow." + unitCount + "-unit.normal-damage-bonus",
     label: "图莱杜拉的回忆 · 流转的微风" + unitCount + "次普通攻击伤害",

@@ -7,7 +7,7 @@ export const WANDERING_EVENSTAR_OTHER_PARTY_ATTACK_FROM_ELEMENTAL_MASTERY_BY_REF
 /** Typed selected current-action snapshots for Wandering Evenstar's Wildling Nightstar. */
 export const wanderingEvenstarCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.wandering-evenstar.after-10s.self.source-em-to-flat-attack",
     label: "流浪的晚星 · 每10秒触发后的自身攻击力",
     source: { holder: "primary", kind: "weapon", weaponId: "WanderingEvenstar" },
@@ -21,7 +21,7 @@ export const wanderingEvenstarCombatActionEffects: readonly CombatActionEffect[]
     }
   },
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.wandering-evenstar.after-10s.other-party.source-em-to-flat-attack",
     label: "流浪的晚星 · 每10秒触发后的其他队友攻击力",
     source: {

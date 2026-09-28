@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks, prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const HARAN_GEPPAKU_FUTSU_ALL_ELEMENT_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 export const HARAN_GEPPAKU_FUTSU_NORMAL_DAMAGE_BONUS_PER_STACK = [0.2, 0.25, 0.3, 0.35, 0.4] as const
@@ -12,7 +13,11 @@ function getNormalDamageBonusValues(stackCount: number): readonly number[] {
 
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: { kind: "all_of", alternatives: [
+      prepareMaximumWeaponStacks(stackCount, 2, { kind: "skill_cast", provider: "party", excludeSourceProvider: true, recipient: "source" }),
+      prepareWeaponEffect({ kind: "skill_cast", provider: "source", recipient: "source" }, "本人施放战技消耗波穗")
+    ] },
     exclusivity: { group: "haran-geppaku-futsu-wavespike", variant: `${stackCount}-stack` },
     id: `weapon.haran-geppaku-futsu.wavespike.${stackCount}-stack.normal-damage-bonus`,
     label: `波乱月白经津 · ${stackCount}层波穗普通攻击伤害`,

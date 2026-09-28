@@ -4,7 +4,11 @@ import type { CharacterCombatCoverage } from "../../combat/types.js"
 import { arlecchinoDefinition } from "./definition.js"
 
 export const arlecchinoCombatCoverage: CharacterCombatCoverage = {
+  healingReception: "own_kit_only",
   capabilities: [
+    { id: "arlecchino.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "arlecchino.kit.bond-of-life-gain", label: "回收血偿勒令获得自身生命之契", kind: "bond_of_life_gain", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "arlecchino.kit.healing", label: "元素爆发自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("arlecchino", 4),
     { id: "arlecchino.kit.bond-of-life-change", label: "红死之宴普攻持续消耗自身生命之契", kind: "bond_of_life_change", recipient: "self", sustained: true, sourceFieldPresence: "on_field" },
     ...declareWeaponHitCapabilities(arlecchinoDefinition),

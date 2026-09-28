@@ -5,6 +5,7 @@ import { kinichDefinition } from "./definition.js"
 
 export const kinichCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "kinich.kit.nightsoul-state", label: "本人夜魂加持状态", kind: "nightsoul_state", recipient: "self", sourceFieldPresence: "on_field", sustained: true },
     declareSkillCastCapability("kinich", 3),
     ...declareWeaponHitCapabilities(kinichDefinition),
     declareHitCapability("kinich.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["dendro"]),

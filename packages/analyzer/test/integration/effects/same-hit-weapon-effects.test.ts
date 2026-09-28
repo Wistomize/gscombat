@@ -164,7 +164,8 @@ describe("same-hit weapon additive terms", () => {
     const spreadIndex = r1.rotation.events[0]?.trace.findIndex((entry) => entry.kind === "additive_reaction")
     const scalingIndex = r1.rotation.events[0]?.trace.findIndex((entry) => entry.kind === "scaling_terms")
 
-    expectNoSameHitTerm(inactive, termLabel)
+    expect(requireSameHitTerm(inactive, termLabel).term).toEqual(r1Term.term)
+    expect(inactive.rotation.dpr).toBeCloseTo(r1.rotation.dpr)
     expectNoSameHitTerm(wrongAction, termLabel)
     expect(r1.appliedEffects).toEqual(
       expect.arrayContaining([
@@ -183,7 +184,7 @@ describe("same-hit weapon additive terms", () => {
     expect(r5.rotation.dpr).toBeGreaterThan(r1.rotation.dpr)
   })
 
-  it("keeps Light of Foliar Incision's normal and skill activations separate while keeping each term on its hit", () => {
+  it("automatically prepares Foliar Incision from elemental-normal capability and matches each term to its hit", () => {
     const normalTermId = "weapon.light-of-foliar-incision.foliar-incisiveness.normal-em-additive-damage"
     const normalTermLabel = "裁叶萃光 · 白月枝芒普通攻击元素精通同一命中加算"
     const skillTermId = "weapon.light-of-foliar-incision.foliar-incisiveness.skill-em-additive-damage"
@@ -240,8 +241,10 @@ describe("same-hit weapon additive terms", () => {
     const skillSpreadIndex = skillR1.rotation.events[0]?.trace.findIndex((entry) => entry.kind === "additive_reaction")
     const skillScalingIndex = skillR1.rotation.events[0]?.trace.findIndex((entry) => entry.kind === "scaling_terms")
 
-    expectNoSameHitTerm(normalWrongActivation, normalTermLabel)
-    expectNoSameHitTerm(skillWrongActivation, skillTermLabel)
+    expect(requireSameHitTerm(normalWrongActivation, normalTermLabel).term).toEqual(normalR1Term.term)
+    expect(requireSameHitTerm(skillWrongActivation, skillTermLabel).term).toEqual(skillR1Term.term)
+    expectNoSameHitTerm(normalR1, skillTermLabel)
+    expectNoSameHitTerm(skillR1, normalTermLabel)
     expect(normalR1.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -272,6 +275,22 @@ describe("same-hit weapon additive terms", () => {
     expect(skillR1.rotation.events.some((event) => event.id.includes("light-of-foliar-incision"))).toBe(false)
     expect(skillScalingIndex).toBeGreaterThanOrEqual(0)
     expect(skillSpreadIndex).toBeGreaterThan(skillScalingIndex ?? -1)
+  })
+
+  it("does not let a legacy Foliar selection substitute elemental skill damage for elemental normal capability", () => {
+    const skillTermId = "weapon.light-of-foliar-incision.foliar-incisiveness.skill-em-additive-damage"
+    const evaluation = evaluateDeclaredDirectScenarioAction({
+      action: requireAction("bennett.skill.passion_overload.press"),
+      activeEffectIds: [skillTermId],
+      build: createWeaponBuild("Bennett", "LightOfFoliarIncision", 1),
+      buffs: [],
+      enemy,
+      gameData
+    })
+
+    expectNoSameHitTerm(evaluation, "裁叶萃光 · 白月枝芒元素战技元素精通同一命中加算")
+    expect(evaluation.appliedEffects.some((effect) => effect.id === skillTermId)).toBe(false)
+    expect(evaluation.rotation.events).toHaveLength(1)
   })
 
   it("adds Everlasting Moonglow's refinement-indexed HP term to Kokomi's normal hit without a separate event", () => {

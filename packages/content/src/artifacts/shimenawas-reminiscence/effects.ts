@@ -1,4 +1,14 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import type { CombatEquipmentCapability } from "../../combat/capabilities.js"
+
+/** One prepared E consumes energy; another Q is a separate source, never a double count of this payment. */
+export const shimenawasReminiscenceCombatCapabilities: readonly CombatEquipmentCapability[] = [{
+  artifactSetId: "ShimenawasReminiscence", minimumPieces: 4, capability: {
+    id: "artifact.shimenawas-reminiscence.energy-spend", label: "追忆四件套 · 战技支付15点元素能量",
+    kind: "energy_spend", recipient: "self", sourceFieldPresence: "on_field", sustained: false,
+    energySpend: { withinSeconds: 0, count: 1 }
+  }
+}]
 
 export const SHIMENAWAS_REMINISCENCE_TWO_PIECE_ATTACK_PERCENT = 0.18
 export const SHIMENAWAS_REMINISCENCE_WEAPON_DAMAGE_BONUS = 0.5

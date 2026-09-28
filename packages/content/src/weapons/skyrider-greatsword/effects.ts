@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const SKYRIDER_GREATSWORD_ATTACK_PERCENT_PER_STACK = [0.06, 0.07, 0.08, 0.09, 0.1] as const
 
@@ -10,7 +11,8 @@ function getAttackPercentValues(stackCount: number): readonly number[] {
 
 function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareMaximumWeaponStacks(stackCount, 4, { kind: "damage_hit", hitKinds: ["normal","charged"], provider: "source", recipient: "source" }, true),
     exclusivity: { group: "skyrider-greatsword-courage-stacks", variant: `${stackCount}-stack` },
     id: `weapon.skyrider-greatsword.courage.${stackCount}-stack.attack-percent`,
     label: `飞天大御剑 · 此前普攻或重击命中后的勇气${stackCount}层攻击力`,

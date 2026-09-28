@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const FRUIT_OF_FULFILLMENT_ELEMENTAL_MASTERY_PER_STACK = [24, 27, 30, 33, 36] as const
 export const FRUIT_OF_FULFILLMENT_ATTACK_PERCENT_PER_STACK = -0.05
@@ -13,7 +14,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
   const exclusivity = { group: "fruit-of-fulfillment-wax-and-wane", variant: `${stackCount}-stack` }
   return [
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 5, { kind: "reaction_trigger", provider: "source", recipient: "source" }, false),
       exclusivity,
       id: `weapon.fruit-of-fulfillment.wax-and-wane.${stackCount}-stack.elemental-mastery`,
       label: `盈满之实 · ${stackCount}层盈亏元素精通`,
@@ -22,7 +24,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
       value: { kind: "refinement_table", values: getElementalMasteryValues(stackCount) }
     },
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 5, { kind: "reaction_trigger", provider: "source", recipient: "source" }, false),
       exclusivity,
       id: `weapon.fruit-of-fulfillment.wax-and-wane.${stackCount}-stack.attack-percent`,
       label: `盈满之实 · ${stackCount}层盈亏攻击力`,

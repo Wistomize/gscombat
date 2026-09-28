@@ -5,6 +5,7 @@ import { sucroseDefinition } from "./definition.js"
 
 export const sucroseCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "sucrose.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("sucrose", 1),
     { ...declareSkillCastCapability("sucrose", 1, {"initialUses":2}), id: "sucrose.kit.extra-skill-charge", minimumSourceConstellation: 1 },
     ...declareWeaponHitCapabilities(sucroseDefinition),

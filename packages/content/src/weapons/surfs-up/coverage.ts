@@ -11,7 +11,7 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: [
+      effectIds: ["weapon.surfs-up.scorching-summer.0-stack.normal-damage-bonus",
         "weapon.surfs-up.scorching-summer.1-stack.normal-damage-bonus",
         "weapon.surfs-up.scorching-summer.2-stack.normal-damage-bonus",
         "weapon.surfs-up.scorching-summer.3-stack.normal-damage-bonus",

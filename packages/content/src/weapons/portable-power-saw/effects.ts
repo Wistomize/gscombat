@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponHealingMarks } from "../../combat/weapon-preparation.js"
 
 export const PORTABLE_POWER_SAW_ELEMENTAL_MASTERY_PER_CONSUMED_MARK = [40, 50, 60, 70, 80] as const
 
@@ -10,7 +11,8 @@ function getElementalMasteryValues(consumedMarkCount: number): readonly number[]
 
 function createConsumedMarkEffect(consumedMarkCount: (typeof consumedMarkCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: consumedMarkCount === 3 ? prepareWeaponHealingMarks() : { kind: "excluded", reason: "按适用治疗来源自动准备三枚标记" },
     exclusivity: { group: "portable-power-saw-mariners-resolve", variant: `${consumedMarkCount}-mark` },
     id: `weapon.portable-power-saw.mariners-resolve.${consumedMarkCount}-mark.elemental-mastery`,
     label: `便携动力锯 · 消耗${consumedMarkCount}枚坚忍标记后的元素精通`,

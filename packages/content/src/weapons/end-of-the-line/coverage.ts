@@ -1,14 +1,17 @@
-import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-coverage.js"
+import type { EquipmentCoverageEntry } from "../../equipment-coverage.js"
 
-/** Maintainer-reviewed single-core-action coverage for this equipment item. */
+/** Reviewed executable effects; excluded legacy states and independent weapon procs are not coverage claims. */
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: ["weapon.end-of-the-line.flowrider.physical-hit"],
       id: "weapon.end-of-the-line.flowrider.physical-hit",
       label: "竭泽 · 沿洄状态下可触发的物理伤害",
-      source: weaponSource("EndOfTheLine"),
-      status: "implemented"
+      source: {
+        kind: "weapon",
+        weaponId: "EndOfTheLine"
+      },
+      status: "not_applicable",
+      reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性"
     }
   ],
   equipmentId: "EndOfTheLine",

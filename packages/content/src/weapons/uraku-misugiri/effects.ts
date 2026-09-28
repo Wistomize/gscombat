@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const URAKU_MISUGIRI_NORMAL_DAMAGE_BONUS = [0.16, 0.2, 0.24, 0.28, 0.32] as const
 export const URAKU_MISUGIRI_SKILL_DAMAGE_BONUS = [0.24, 0.3, 0.36, 0.42, 0.48] as const
@@ -33,7 +34,8 @@ export const urakuMisugiriCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: URAKU_MISUGIRI_DEFENSE_PERCENT }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "damage_hit", elements: ["geo"], provider: "party", recipient: "source" }, "队伍具有真实岩伤命中能力"),
     id: "weapon.uraku-misugiri.after-geo-hit.extra-normal-damage-bonus",
     label: "有乐御簾切 · 队伍造成岩元素伤害后的额外普通攻击伤害",
     source: { kind: "weapon", weaponId: "UrakuMisugiri" },
@@ -42,7 +44,8 @@ export const urakuMisugiriCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: URAKU_MISUGIRI_NORMAL_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "damage_hit", elements: ["geo"], provider: "party", recipient: "source" }, "队伍具有真实岩伤命中能力"),
     id: "weapon.uraku-misugiri.after-geo-hit.extra-skill-damage-bonus",
     label: "有乐御簾切 · 队伍造成岩元素伤害后的额外元素战技伤害",
     source: { kind: "weapon", weaponId: "UrakuMisugiri" },

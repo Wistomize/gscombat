@@ -6,17 +6,16 @@ export const equipmentCoverage = {
     {
       effectIds: ["weapon.cinnabar-spindle.skill-hit-ready.albedo-transient-blossom.defense-additive-damage"],
       id: "weapon.cinnabar-spindle.albedo-transient-blossom.defense-additive-damage",
-      label: "辰砂之纺锤 · 阿贝多单次刹那之花（武器冷却就绪）的防御力伤害加算",
+      label: "辰砂之纺锤 · 冷却就绪的元素战技命中防御力同一命中加算（不限阿贝多）",
       source: weaponSource("CinnabarSpindle"),
       status: "implemented"
     },
     {
       id: "weapon.cinnabar-spindle.other-skill-hits.per-trigger-cooldown",
       label: "辰砂之纺锤 · 其它元素战技命中的1.5秒触发上限",
-      reason: "当前同一命中加算会作用于一个元素战技的每一段，无法表示该被动每1.5秒至多触发一次；不能错误地让多段战技全段加算。",
-      requiredCapability: "matched_action_additive_damage_term_with_per_trigger_cooldown_across_multi_hit_actions",
+      effectIds: ["weapon.cinnabar-spindle.skill-hit-ready.albedo-transient-blossom.defense-additive-damage"],
       source: weaponSource("CinnabarSpindle"),
-      status: "unsupported"
+      status: "implemented"
     }
   ],
   equipmentId: "CinnabarSpindle",

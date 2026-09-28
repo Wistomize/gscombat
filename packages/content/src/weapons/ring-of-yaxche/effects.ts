@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const RING_OF_YAXCHE_FINAL_HP_TO_NORMAL_DAMAGE_BONUS_BY_REFINEMENT = [
   0.000006,
@@ -12,7 +13,8 @@ export const RING_OF_YAXCHE_NORMAL_DAMAGE_BONUS_MAXIMUM_BY_REFINEMENT = [0.16, 0
 /** Typed selected current-action snapshot for Ring of Yaxche's Jade Crown effect. */
 export const ringOfYaxcheCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "skill_cast", provider: "source", recipient: "source" }, "装备者可施放战技时自动准备；退场保留"),
     id: "weapon.ring-of-yaxche.after-skill.final-hp-to-normal-damage-bonus",
     label: "木棉之环 · 施放元素战技后10秒内的普通攻击伤害",
     source: { holder: "primary", kind: "weapon", weaponId: "RingOfYaxche" },

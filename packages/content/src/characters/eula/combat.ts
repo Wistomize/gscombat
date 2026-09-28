@@ -5,6 +5,7 @@ import { eulaDefinition } from "./definition.js"
 
 export const eulaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "eula.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("eula", 6),
     ...declareWeaponHitCapabilities(eulaDefinition),
     declareHitCapability("eula.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),

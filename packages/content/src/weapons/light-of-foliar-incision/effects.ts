@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const LIGHT_OF_FOLIAR_INCISION_CRIT_RATE = [0.04, 0.05, 0.06, 0.07, 0.08] as const
 export const LIGHT_OF_FOLIAR_INCISION_FOLIAR_INCISIVENESS_EM_ADDITIVE_DAMAGE = [1.2, 1.5, 1.8, 2.1, 2.4] as const
@@ -14,7 +15,8 @@ export const lightOfFoliarIncisionCombatActionEffects: readonly CombatActionEffe
     value: { kind: "refinement_table", values: LIGHT_OF_FOLIAR_INCISION_CRIT_RATE }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "elemental_normal_hit", provider: "source", recipient: "source" }, "本人元素普攻或合法队友附魔后普攻可命中，提前准备白月枝芒"),
     id: "weapon.light-of-foliar-incision.foliar-incisiveness.normal-em-additive-damage",
     label: "裁叶萃光 · 白月枝芒普通攻击元素精通同一命中加算",
     source: { holder: "primary", kind: "weapon", weaponId: "LightOfFoliarIncision" },
@@ -27,7 +29,8 @@ export const lightOfFoliarIncisionCombatActionEffects: readonly CombatActionEffe
     }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "elemental_normal_hit", provider: "source", recipient: "source" }, "本人元素普攻或合法队友附魔后普攻可命中，提前准备白月枝芒"),
     id: "weapon.light-of-foliar-incision.foliar-incisiveness.skill-em-additive-damage",
     label: "裁叶萃光 · 白月枝芒元素战技元素精通同一命中加算",
     source: { holder: "primary", kind: "weapon", weaponId: "LightOfFoliarIncision" },

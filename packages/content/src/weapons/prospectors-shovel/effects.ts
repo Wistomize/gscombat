@@ -6,7 +6,7 @@ export const PROSPECTORS_SHOVEL_LUNAR_CHARGED_DAMAGE_BONUS = [0.12, 0.15, 0.18, 
 /** Typed selected Electro-Charged-reaction damage contribution of Prospector's Shovel. */
 export const prospectorsShovelCombatActionEffects: readonly CombatActionEffect[] = [
   {
-    activation: "active",
+    activation: "automatic",
     id: "weapon.prospectors-shovel.electro-charged.reaction-damage-bonus",
     label: "掘金之锹 · 感电反应伤害",
     source: { kind: "weapon", weaponId: "ProspectorsShovel" },
@@ -24,7 +24,7 @@ export const prospectorsShovelCombatActionEffects: readonly CombatActionEffect[]
     value: { kind: "refinement_table", values: PROSPECTORS_SHOVEL_LUNAR_CHARGED_DAMAGE_BONUS }
   },
   {
-    activation: "active",
+    activation: "automatic",
     condition: { kind: "moonsign_level", minimum: "ascendant_gleam" },
     id: "weapon.prospectors-shovel.full-moonsign.lunar-charged.reaction-damage-bonus",
     label: "掘金之锹 · 月兆满辉时的月感电反应伤害",

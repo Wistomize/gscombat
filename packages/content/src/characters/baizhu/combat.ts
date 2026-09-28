@@ -5,6 +5,7 @@ import { baizhuDefinition } from "./definition.js"
 
 export const baizhuCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "baizhu.kit.healing", label: "元素战技游丝徵灵返回时治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("baizhu", 3),
     { ...declareSkillCastCapability("baizhu", 3, {"initialUses":2}), id: "baizhu.kit.extra-skill-charge", minimumSourceConstellation: 1 },
     { id: "baizhu.kit.retained-shield", label: "无郤气护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },

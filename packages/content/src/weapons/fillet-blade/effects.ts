@@ -11,6 +11,7 @@ export const filletBladeCombatActionEffects: readonly CombatActionEffect[] = [
     label: "吃虎鱼刀 · 当前攻击命中且冷却就绪时的决物理伤害期望",
     source: { kind: "weapon", weaponId: "FilletBlade" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     value: {
       canCrit: true,
       coefficient: { kind: "refinement_table", values: FILLET_BLADE_PHYSICAL_COEFFICIENT },

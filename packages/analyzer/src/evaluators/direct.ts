@@ -8,6 +8,7 @@ import {
 import type {
   CombatActionMetadata
 } from "@gscombat/content"
+import { listCombatActionEffects } from "@gscombat/content"
 
 import {
   resolveAdditionalDamageEventEffects, resolveCombatActionEffects, type AppliedCombatActionEffect, type ResolvedCombatActionEffects
@@ -23,7 +24,7 @@ export { getScenarioParameterMinimumSourceConstellation, resolveActionScenarioPa
 
 import type {
   DeclaredDirectScenarioEvaluation,
-  DeclaredDirectScenarioInput, ResolvedDeclaredScenarioStats
+  PreparedDeclaredDirectScenarioInput as DeclaredDirectScenarioInput, ResolvedDeclaredScenarioStats
 } from "./types.js"
 
 export type {
@@ -39,7 +40,22 @@ export type {
 } from "./types.js"
 
 import { resolveFieldContext } from "../core/field-presence.js"
+import type { ResolveCombatActionEffectsInput } from "../effects/types.js"
 import * as shared from "./shared.js"
+const consumingEffectIds = new Set(listCombatActionEffects().filter((effect) => effect.hitConsumption).map((effect) => effect.id))
+
+/** A grouped hit count has no spacing evidence: consume once, without inventing cooldown resets. */
+function expandConsumableHitGroups<T extends { readonly id: string; readonly hitCount: number }>(
+  events: readonly T[], consuming: boolean
+): { event: T; originalId: string; hitIndex: number; eventIndex: number }[] {
+  return events.flatMap((event, eventIndex) => consuming && event.hitCount > 1
+    ? [
+        { event: { ...event, hitCount: 1 }, originalId: event.id, hitIndex: 0, eventIndex },
+        { event: { ...event, id: `${event.id}.remaining-hits`, hitCount: event.hitCount - 1 },
+          originalId: event.id, hitIndex: 1, eventIndex }
+      ]
+    : [{ event, originalId: event.id, hitIndex: 0, eventIndex }])
+}
 
 export function evaluateDeclaredDirectScenarioAction(
   input: DeclaredDirectScenarioInput
@@ -91,6 +107,7 @@ export function evaluateDeclaredDirectScenarioAction(
     sourceFinalHpByBuildId,
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
+    ...(input.preparation ? { preparation: input.preparation } : {}),
     action,
     fieldContext,
     activeEffectIds,
@@ -116,7 +133,7 @@ export function evaluateDeclaredDirectScenarioAction(
     rotationAuras,
     rotationElementOverrides
   )
-  const actionEffects = resolveCombatActionEffects({
+  const actionEffectInput = {
     targetFrozen: input.targetFrozen ?? false,
     action,
     fieldContext,
@@ -140,7 +157,8 @@ export function evaluateDeclaredDirectScenarioAction(
     ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),
     teamElements: resolvePartyElements(build, teammates, gameData),
     teammates
-  })
+  } satisfies ResolveCombatActionEffectsInput
+  const actionEffects = resolveCombatActionEffects(actionEffectInput)
   shared.applyActionParameterEffects(action, resolvedActionParameters, actionEffects.appliedEffects)
   parts = action.damageParts.map((part) =>
     shared.resolveDamagePart(action, build, part, gameData, resolvedActionParameters)
@@ -276,21 +294,38 @@ export function evaluateDeclaredDirectScenarioAction(
       level: build.level
     }
   })
-  const declaredRotationEvents = timeline.events.map((event) =>
-    shared.createDeclaredRotationEvent(
+  const hasConsumingEffects = actionEffects.appliedEffects.some((effect) => consumingEffectIds.has(effect.id)) ||
+    actionEffects.matchedActionAdditiveDamageTerms.some((effect) => consumingEffectIds.has(effect.id))
+  const eventStatContributions: Record<string, typeof stats.scenario.statContributions> = {}
+  const declaredEventAppliedEffects: AppliedCombatActionEffect[] = []
+  const candidateTimelineEventIds = timeline.events.map((event) => event.id)
+  const declaredRotationEvents = expandConsumableHitGroups(timeline.events, hasConsumingEffects).map(({ event, originalId, hitIndex, eventIndex }) => {
+    const hasArrowParts = (action.aimedArrowDamagePartIds?.length ?? 0) > 0
+    const isArrow = event.part !== undefined && action.aimedArrowDamagePartIds?.includes(event.part.id)
+    const eventEffects = (hasArrowParts || hasConsumingEffects) && event.part ? resolveCombatActionEffects({ ...actionEffectInput,
+      candidateEventId: originalId, candidateDamagePartId: event.part.id,
+      candidateEventIndex: eventIndex, candidateHitIndex: hitIndex, candidateTimelineEventIds }) : actionEffects
+    const eventStats = eventEffects === actionEffects ? stats : shared.resolveStats(build, action, gameData,
+      buffs, artifactStatDeltas, resolvedActionParameters, eventEffects)
+    const materialized = shared.materializeDeferredStatEffects(eventEffects.appliedEffects,
+      eventStats.rotation.hp, eventStats.elementalMasteryForAttackConversion)
+    declaredEventAppliedEffects.push(...materialized)
+    const resolvedEvent = shared.createDeclaredRotationEvent(
       action,
       build.buildId,
       declaredReaction,
       legacyScalingStat,
-      matchedActionDamageScalingTerms,
-      actionEffects.baseDamageFlat,
-      stats.rotation,
+      shared.resolveMatchedActionDamageScalingTerms(eventEffects, resolvedActionParameters),
+      eventEffects.baseDamageFlat,
+      { ...eventStats.rotation, ...(isArrow && fieldContext.arrowHitsWeakPoint ? { critRate: 1 } : {}) },
       event,
-      actionEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
-      actionEffects.enemyDefenseIgnore,
-      actionEffects.amplifyingReactionBonus
+      eventEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
+      eventEffects.enemyDefenseIgnore,
+      eventEffects.amplifyingReactionBonus
     )
-  )
+    eventStatContributions[resolvedEvent.id] = eventStats.scenario.statContributions
+    return { ...resolvedEvent, appliedEffectIds: materialized.map((effect) => effect.id) }
+  })
   const additionalDamageEventTime = timeline.events[0]?.time ?? 0
   const additionalDamageEventSnapshotTime = timeline.events[0]?.statSnapshotTime ?? 0
   const additionalDamageEventAppliedEffects: AppliedCombatActionEffect[] = []
@@ -361,9 +396,15 @@ export function evaluateDeclaredDirectScenarioAction(
     events: [...declaredRotationEvents, ...additionalDamageRotationEvents].sort((left, right) => left.time - right.time)
   })
   return {
-    appliedEffects: shared.deduplicateAppliedEffects([...appliedEffects, ...additionalDamageEventAppliedEffects]),
+    appliedEffects: shared.deduplicateAppliedEffects([...appliedEffects, ...declaredEventAppliedEffects, ...additionalDamageEventAppliedEffects]),
+    eventStatContributions,
     parts,
-    result,
+    result: action.aimedArrowDamagePartIds?.length || hasConsumingEffects ? {
+      ...result,
+      expectedDamage: rotation.dpr,
+      nonCritDamage: rotation.events.reduce((total, event) => total + event.nonCritDamage, 0),
+      critDamage: rotation.events.reduce((total, event) => total + event.critDamage, 0)
+    } : result,
     rotation,
     stats: scenarioStats
   }
@@ -427,6 +468,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     sourceFinalHpByBuildId,
     teamUniqueElementCount
   } = shared.resolveScenarioActionEffectContext({
+    ...(input.preparation ? { preparation: input.preparation } : {}),
     action,
     fieldContext,
     activeEffectIds,
@@ -538,30 +580,43 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     ordinaryActionEffects.amplifyingReactionBonus
   )
   const declaredReaction = additiveReaction ?? amplifyingReaction
-  const matchedActionDamageScalingTerms = shared.resolveMatchedActionDamageScalingTerms(
-    ordinaryActionEffects,
-    resolvedActionParameters
-  )
   const ordinaryAppliedEffects = shared.materializeDeferredStatEffects(
     ordinaryActionEffects.appliedEffects,
     ordinaryStats.rotation.hp,
     ordinaryStats.elementalMasteryForAttackConversion
   )
-  const declaredRotationEvents = ordinaryEvents.map((event) =>
-    shared.createDeclaredRotationEvent(
+  const hasConsumingEffects = ordinaryActionEffects.appliedEffects.some((effect) => consumingEffectIds.has(effect.id)) ||
+    ordinaryActionEffects.matchedActionAdditiveDamageTerms.some((effect) => consumingEffectIds.has(effect.id))
+  const eventStatContributions: Record<string, typeof ordinaryStats.scenario.statContributions> = {}
+  const ordinaryEventAppliedEffects: AppliedCombatActionEffect[] = []
+  const candidateTimelineEventIds = ordinaryEvents.map((event) => event.id)
+  const declaredRotationEvents = expandConsumableHitGroups(ordinaryEvents, hasConsumingEffects).map(({ event, originalId, hitIndex, eventIndex }) => {
+    const isArrow = action.aimedArrowDamagePartIds?.includes(event.part.id)
+    const eventEffects = hasConsumingEffects || action.aimedArrowDamagePartIds?.length
+      ? resolveCombatActionEffects({ ...actionEffectContext, candidateSpecialReactionKinds: [],
+          candidateEventId: originalId, candidateDamagePartId: event.part.id,
+          candidateEventIndex: eventIndex, candidateHitIndex: hitIndex, candidateTimelineEventIds }) : ordinaryActionEffects
+    const eventStats = eventEffects === ordinaryActionEffects ? ordinaryStats : shared.resolveStats(
+      build, action, gameData, buffs, artifactStatDeltas, resolvedActionParameters, eventEffects)
+    const materialized = shared.materializeDeferredStatEffects(eventEffects.appliedEffects,
+      eventStats.rotation.hp, eventStats.elementalMasteryForAttackConversion)
+    ordinaryEventAppliedEffects.push(...materialized)
+    const resolvedEvent = shared.createDeclaredRotationEvent(
       action,
       build.buildId,
       declaredReaction,
       legacyScalingStat,
-      matchedActionDamageScalingTerms,
-      ordinaryActionEffects.baseDamageFlat,
-      ordinaryStats.rotation,
+      shared.resolveMatchedActionDamageScalingTerms(eventEffects, resolvedActionParameters),
+      eventEffects.baseDamageFlat,
+      { ...eventStats.rotation, ...(isArrow && fieldContext.arrowHitsWeakPoint ? { critRate: 1 } : {}) },
       event,
-      ordinaryActionEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
-      ordinaryActionEffects.enemyDefenseIgnore,
-      ordinaryActionEffects.amplifyingReactionBonus
+      eventEffects.enemyResistanceReduction + getBuffTotal(buffs, "enemy_resistance_reduction"),
+      eventEffects.enemyDefenseIgnore,
+      eventEffects.amplifyingReactionBonus
     )
-  )
+    eventStatContributions[resolvedEvent.id] = eventStats.scenario.statContributions
+    return { ...resolvedEvent, appliedEffectIds: materialized.map((effect) => effect.id) }
+  })
   const additionalDamageEventTime = ordinaryEvents[0]?.time ?? 0
   const additionalDamageEventSnapshotTime = ordinaryEvents[0]?.statSnapshotTime ?? 0
   const additionalDamageEventAppliedEffects: AppliedCombatActionEffect[] = []
@@ -692,6 +747,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
       const participantAction: CombatActionMetadata = { ...action, characterId: participant.characterId }
       const participantDeltas = participant.buildId === build.buildId ? artifactStatDeltas : undefined
       const participantContext = shared.resolveScenarioParticipantContext({
+        ...(input.preparation ? { preparation: input.preparation } : {}),
         action: participantAction,
         activeEffectIds: resolvedActiveEffectIds,
         ...(activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds }),
@@ -809,6 +865,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
   const constellationTalentBonuses = resolveDeclaredActionTalentLevelConstellationBonuses(action, build)
   const appliedEffects = shared.deduplicateAppliedEffects([
     ...ordinaryAppliedEffects,
+    ...ordinaryEventAppliedEffects,
     ...additionalDamageEventAppliedEffects,
     ...specialEventResults.flatMap((entry) => entry.appliedEffects),
     ...stellarSwirlReactionEventResults.flatMap((entry) => entry.appliedEffects),
@@ -828,7 +885,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     nonCritDamage: rotationEvents.reduce((total, event) => total + event.nonCritDamage, 0),
     trace: []
   }
-  return { appliedEffects, parts, result, rotation, stats }
+  return { appliedEffects, eventStatContributions, parts, result, rotation, stats }
 }
 
 /**

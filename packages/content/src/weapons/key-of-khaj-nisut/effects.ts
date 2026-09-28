@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const KEY_OF_KHAJ_NISUT_HP_PERCENT = [0.2, 0.25, 0.3, 0.35, 0.4] as const
 export const KEY_OF_KHAJ_NISUT_GRAND_HYMN_FINAL_HP_TO_ELEMENTAL_MASTERY_BY_REFINEMENT = [
@@ -18,10 +19,16 @@ export const KEY_OF_KHAJ_NISUT_PARTY_FINAL_HP_TO_ELEMENTAL_MASTERY_BY_REFINEMENT
 
 const grandHymnStacks = [1, 2, 3] as const
 
+function prepareHymn(stackCount: number) {
+  return prepareWeaponEffect({ kind: "damage_hit", provider: "source", recipient: "source", hitKinds: ["skill"],
+    opportunityWindow: { seconds: 20, minimum: stackCount, measure: "hits", minimumSeparationSeconds: 0.3 }
+  }, "本人前台战技命中准备宏大诗篇，三层后授予全队，退场保留")
+}
+
 function createGrandHymnStackEffect(stackCount: (typeof grandHymnStacks)[number]): CombatActionEffect {
   return {
-    activation: "active",
-    exclusivity: { group: "key-of-khaj-nisut-grand-hymn", variant: `${stackCount}-stack` },
+    activation: "automatic", lifecycle: prepareHymn(stackCount),
+    exclusivity: { group: "key-of-khaj-nisut-grand-hymn", variant: `${stackCount}-stack`, automaticPriority: stackCount },
     id: `weapon.key-of-khaj-nisut.grand-hymn.${stackCount}-stack.final-hp-to-elemental-mastery`,
     label: `圣显之钥 · 当前核心动作前已持有${stackCount}层宏大诗篇（20秒内）`,
     source: { kind: "weapon", weaponId: "KeyOfKhajNisut" },
@@ -47,7 +54,7 @@ export const keyOfKhajNisutCombatActionEffects: readonly CombatActionEffect[] = 
   },
   ...grandHymnStacks.map(createGrandHymnStackEffect),
   {
-    activation: "active",
+    activation: "automatic", lifecycle: prepareHymn(3),
     id: "weapon.key-of-khaj-nisut.grand-hymn.3-stack.party-source-final-hp-to-elemental-mastery",
     label: "圣显之钥 · 当前核心动作前已满3层宏大诗篇（队伍元素精通，20秒内）",
     source: { holder: "party_member", kind: "weapon", weaponId: "KeyOfKhajNisut" },

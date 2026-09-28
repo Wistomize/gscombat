@@ -1,21 +1,29 @@
-import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-coverage.js"
+import type { EquipmentCoverageEntry } from "../../equipment-coverage.js"
 
-/** Maintainer-reviewed single-core-action coverage for this equipment item. */
+/** Reviewed executable effects; excluded legacy states and independent weapon procs are not coverage claims. */
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: ["weapon.skyward-pride.damage-bonus"],
+      effectIds: [
+        "weapon.skyward-pride.damage-bonus"
+      ],
       id: "weapon.skyward-pride.damage-bonus",
       label: "天空之傲 · 造成的伤害",
-      source: weaponSource("SkywardPride"),
+      source: {
+        kind: "weapon",
+        weaponId: "SkywardPride"
+      },
       status: "implemented"
     },
     {
-      effectIds: ["weapon.skyward-pride.vacuum-blade"],
       id: "weapon.skyward-pride.vacuum-blade",
       label: "天空之傲 · 真空刃（元素爆发后，本次命中可触发）",
-      source: weaponSource("SkywardPride"),
-      status: "implemented"
+      source: {
+        kind: "weapon",
+        weaponId: "SkywardPride"
+      },
+      status: "not_applicable",
+      reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性"
     }
   ],
   equipmentId: "SkywardPride",

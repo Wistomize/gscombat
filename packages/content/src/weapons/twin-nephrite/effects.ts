@@ -1,9 +1,10 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const TWIN_NEPHRITE_POST_DEFEAT_ATTACK_PERCENT = [0.12, 0.14, 0.16, 0.18, 0.2] as const
 
 /** Typed selected post-defeat attack contribution of Twin Nephrite. */
-export const twinNephriteCombatActionEffects: readonly CombatActionEffect[] = [
+const authoredEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     selectionMode: "optional",
@@ -14,3 +15,7 @@ export const twinNephriteCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: TWIN_NEPHRITE_POST_DEFEAT_ATTACK_PERCENT }
   }
 ]
+
+export const twinNephriteCombatActionEffects: readonly CombatActionEffect[] = authoredEffects.flatMap((effect) =>
+  effect.activation === "active" ? withWeaponToggle(effect, "twin-nephrite-defeat", "已击败敌人", false) : [effect]
+)

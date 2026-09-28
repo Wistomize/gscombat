@@ -5,6 +5,7 @@ import { laylaDefinition } from "./definition.js"
 
 export const laylaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "layla.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("layla", 5),
     { id: "layla.kit.retained-shield", label: "安眠帷幕护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     ...declareWeaponHitCapabilities(laylaDefinition),

@@ -15,14 +15,14 @@ import {
   type PublishedEquipmentCoverageClause
 } from "./equipment-coverage-ledger.js"
 import { isHexereiCharacter } from "./rules/hexerei.js"
-import { assertWeaponComparisonDefaults } from "./combat/weapon-comparison-defaults.js"
+import { assertWeaponChoices } from "./combat/weapon-choices.js"
 import { assertCombatEffectLifecycles } from "./combat/capabilities.js"
 import type { CombatEffectLifecycle } from "./combat/capabilities.js"
 
 /** Small UI projection shared by the server-rendered website and public catalog API. */
 export function getArtifactConditionRequirements(setId: string): { condition: "targetFrozen"; minimumPieces: number }[] {
   const requiresFrozen = (lifecycle: CombatEffectLifecycle | undefined): boolean =>
-    lifecycle?.kind === "any_of" ? lifecycle.alternatives.some(requiresFrozen)
+    lifecycle?.kind === "any_of" || lifecycle?.kind === "all_of" ? lifecycle.alternatives.some(requiresFrozen)
       : lifecycle?.kind === "conditional" && lifecycle.applicability?.targetFrozen === true
   const thresholds = new Set(equipmentCombatActionEffects.flatMap((effect) =>
     effect.source.kind === "artifact_set" && effect.source.setId === setId && requiresFrozen(effect.lifecycle)
@@ -30,11 +30,22 @@ export function getArtifactConditionRequirements(setId: string): { condition: "t
   return [...thresholds].map((minimumPieces) => ({ condition: "targetFrozen", minimumPieces }))
 }
 
-assertWeaponComparisonDefaults(equipmentCombatActionEffects)
-assertCombatEffectLifecycles([
+const combatActionEffects = [
   ...equipmentCombatActionEffects,
   ...characterCombatCoverageRegistry.flatMap((coverage) => coverage.actionEffects ?? [])
-])
+]
+const combatActionEffectsById = new Map(combatActionEffects.map((effect, index) => [effect.id, { effect, index }]))
+const combatActionEffectIndicesBySource = new Map<string, number[]>()
+for (const [index, effect] of combatActionEffects.entries()) {
+  const source = effect.source
+  const key = source.kind === "character" ? `character:${source.characterId}`
+    : source.kind === "weapon" ? `weapon:${source.weaponId}` : `artifact_set:${source.setId}`
+  const indices = combatActionEffectIndicesBySource.get(key) ?? []
+  indices.push(index)
+  combatActionEffectIndicesBySource.set(key, indices)
+}
+assertWeaponChoices(equipmentCombatActionEffects)
+assertCombatEffectLifecycles(combatActionEffects)
 
 /** A JSON-safe source requirement that a UI can validate against the configured team. */
 export type CombatActionEffectOptionSource =
@@ -76,7 +87,30 @@ export function listCombatEquipmentEffectCoverage(): readonly CombatEquipmentEff
 
 /** Lists every maintained automatic or explicit current-action effect declaration. */
 export function listCombatActionEffects(): readonly CombatActionEffect[] {
-  return [...equipmentCombatActionEffects, ...characterCombatCoverageRegistry.flatMap((coverage) => coverage.actionEffects ?? [])]
+  return [...combatActionEffects]
+}
+
+/** Reads a fixed declaration without rebuilding the registry index. */
+export function getCombatActionEffectDefinition(id: string): CombatActionEffect | undefined {
+  return combatActionEffectsById.get(id)?.effect
+}
+
+/** Returns possible source declarations in registry order; dynamic holder/recipient eligibility is not inferred. */
+export function listCombatActionEffectsForSources(sources: readonly {
+  readonly characterId: string; readonly weaponId: string; readonly artifactSetIds: readonly string[]
+}[], selectedEffectIds: readonly string[] = []): readonly CombatActionEffect[] {
+  const indices = new Set<number>()
+  // Keep explicitly selected absent sources so normal qualification can report the original error.
+  for (const id of selectedEffectIds) {
+    const declaration = combatActionEffectsById.get(id)
+    if (declaration) indices.add(declaration.index)
+  }
+  for (const source of sources) {
+    const keys = [`character:${source.characterId}`, `weapon:${source.weaponId}`,
+      ...source.artifactSetIds.map((id) => `artifact_set:${id}`)]
+    for (const key of keys) for (const index of combatActionEffectIndicesBySource.get(key) ?? []) indices.add(index)
+  }
+  return [...indices].sort((a, b) => a - b).map((index) => combatActionEffects[index]!)
 }
 
 /**
@@ -94,10 +128,16 @@ export function isCombatActionEffectApplicable(
   candidateAmplifyingReactionKinds: readonly NonNullable<CombatActionMetadata["amplifyingReaction"]>["kind"][] = [],
   candidateReactionKinds: readonly CombatActionReactionKind[] = [],
   candidateSpecialReactionKinds?: readonly NonNullable<CombatActionMetadata["specialReaction"]>["kind"][],
-  candidateEventId?: string
+  candidateEventId?: string,
+  candidateDamagePartId?: string
 ): boolean {
   const filter = effect.targetFilter
   if (!filter) return true
+  if (filter.arrowHitsOnly && (action.attackKind ?? action.talentSlot) !== "normal") {
+    const arrowParts = action.aimedArrowDamagePartIds ?? []
+    if (candidateDamagePartId ? !arrowParts.includes(candidateDamagePartId)
+      : !action.damageParts?.length || !action.damageParts.every((part) => arrowParts.includes(part.id))) return false
+  }
   if (filter.actionIds && !filter.actionIds.includes(action.id) &&
       !action.effectActionIds?.some((id) => filter.actionIds!.includes(id))) return false
   if (filter.eventIds) {
@@ -161,7 +201,7 @@ function listDeclaredSpecialReactionKinds(
 /** Lists active snapshot choices that can affect the selected action before source-build validation. */
 export function listActiveCombatActionEffectsForAction(action: CombatActionMetadata): readonly CombatActionEffect[] {
   return listCombatActionEffects().filter(
-    (effect) => effect.activation === "active" && isCombatActionEffectApplicable(effect, action)
+    (effect) => effect.activation === "active" && effect.lifecycle?.kind !== "excluded" && isCombatActionEffectApplicable(effect, action)
   )
 }
 

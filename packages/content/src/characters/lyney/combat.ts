@@ -5,6 +5,9 @@ import { lyneyDefinition } from "./definition.js"
 
 export const lyneyCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "lyney.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 3 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "lyney.kit.healing", label: "元素战技消耗隐具余数后自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("lyney", 3),
     ...declareWeaponHitCapabilities(lyneyDefinition),
     declareHitCapability("lyney.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["pyro"]),
@@ -91,6 +94,7 @@ export const lyneyCombatCoverage: CharacterCombatCoverage = {
       element: lyneyDefinition.element,
       evaluator: "declared_direct",
       id: "lyney.normal.card_force_translocation.second_charge.prop_arrow.hydro_aura_vaporize",
+      aimedArrowDamagePartIds: ["prop-arrow"],
       kind: "damage",
       parameterReferences: [
         {
@@ -123,6 +127,7 @@ export const lyneyCombatCoverage: CharacterCombatCoverage = {
       element: lyneyDefinition.element,
       evaluator: "declared_direct",
       id: "lyney.normal.card_force_translocation.second_charge.prop_arrow.cryo_aura_melt",
+      aimedArrowDamagePartIds: ["prop-arrow"],
       kind: "damage",
       parameterReferences: [
         {

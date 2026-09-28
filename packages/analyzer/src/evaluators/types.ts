@@ -1,3 +1,4 @@
+import type { AnalysisPreparation } from "../core/analysis-preparation.js"
 import type {
   ExpectedDamageResult,
   RotationEffectWindow,
@@ -126,6 +127,7 @@ export interface ResolvedStatContribution {
 
 /** Result of a verified content-declared, baseline direct action within a full scenario. */
 export interface DeclaredDirectScenarioEvaluation {
+  readonly eventStatContributions?: Readonly<Record<string, readonly ResolvedStatContribution[]>>
   readonly appliedEffects: readonly AppliedCombatActionEffect[]
   readonly parts: readonly DeclaredDirectActionPartEvaluation[]
   /** Legacy aggregate formula trace retained for one-hit compatibility; use rotation DPR for timed action totals. */
@@ -152,6 +154,11 @@ export interface DeclaredSpecialReactionScenarioEvaluation {
   /** Legacy single-event container for the selected action, never a full rotation. */
   readonly rotation: RotationResult
   readonly stats: ResolvedDeclaredScenarioStats
+}
+
+/** Package-private input extension, excluded from the public evaluator facade. */
+export interface PreparedDeclaredDirectScenarioInput extends DeclaredDirectScenarioInput {
+  readonly preparation?: AnalysisPreparation
 }
 
 /** Input for evaluating a declared baseline direct action in a normalized team scenario. */

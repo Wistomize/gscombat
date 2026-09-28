@@ -5,6 +5,7 @@ import { xianyunDefinition } from "./definition.js"
 
 export const xianyunCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "xianyun.kit.healing", label: "元素爆发治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("xianyun", 4),
     { ...declareSkillCastCapability("xianyun", 4, {"initialUses":2}), id: "xianyun.kit.extra-skill-charge", minimumSourceConstellation: 1 },
     { id: "xianyun.kit.plunge-access", label: "竹星协助当前前台提高跳跃能力", kind: "plunge_access", recipient: "on_field", sourceFieldPresence: "any", sustained: true },

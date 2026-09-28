@@ -5,6 +5,8 @@ import { candaceDefinition } from "./definition.js"
 
 export const candaceCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "candace.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "candace.kit.normal-infusion", label: "圣仪灰鸰衒潮近战水附魔", kind: "normal_attack_infusion", elements: ["hydro"], recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     declareSkillCastCapability("candace", 4),
     ...declareWeaponHitCapabilities(candaceDefinition),
     declareHitCapability("candace.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),

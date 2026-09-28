@@ -5,6 +5,7 @@ import { iansanDefinition } from "./definition.js"
 
 export const iansanCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "iansan.kit.weapon-healing-qualification", label: "动能梯度测试治疗前台", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false, minimumSourceAscension: 4 },
     declareSkillCastCapability("iansan", 2),
     ...declareWeaponHitCapabilities(iansanDefinition),
     declareHitCapability("iansan.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),

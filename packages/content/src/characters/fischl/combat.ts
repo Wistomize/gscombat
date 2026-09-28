@@ -5,10 +5,15 @@ import { fischlDefinition } from "./definition.js"
 
 export const fischlCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "fischl.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "fischl.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 1 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
+    { id: "fischl.kit.weapon-healing-qualification", label: "四命爆发结束自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false, minimumSourceConstellation: 4 },
     declareSkillCastCapability("fischl", 3),
     ...declareWeaponHitCapabilities(fischlDefinition),
     declareHitCapability("fischl.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["electro"]),
-    { ...declareHitCapability("fischl.kit.sustained_skill_hits", "可持续造成战技命中", ["skill"], ["electro"], true), skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+    // Oz fires once per second: https://keqingmains.com/fischl/ (Talent Overview).
+    { ...declareHitCapability("fischl.kit.sustained_skill_hits", "奥兹每秒一次战技命中", ["skill"], ["electro"], true), skillHitOpportunities: { withinSeconds: 4, count: 4, minimumSeparationSeconds: 1 } },
   ],
   actions: [
     {
@@ -57,6 +62,7 @@ export const fischlCombatCoverage: CharacterCombatCoverage = {
       element: fischlDefinition.element,
       evaluator: "declared_direct",
       id: "fischl.skill.nightrider.oz.level_one_bolt",
+      statCaptureFieldPresence: "on_field",
       kind: "damage",
       fieldPresence: "off_field",
       parameterReferences: [

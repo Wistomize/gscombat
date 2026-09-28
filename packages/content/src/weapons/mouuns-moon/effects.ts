@@ -16,7 +16,6 @@ export const mouunsMoonCombatActionEffects: readonly CombatActionEffect[] = [
       kind: "team_burst_energy_cost",
       maximumValue: { kind: "refinement_table", values: MOUUNS_MOON_DAMAGE_CAP_BY_REFINEMENT },
       multiplier: { kind: "refinement_table", values: MOUUNS_MOON_DAMAGE_PER_ENERGY_BY_REFINEMENT },
-      requiresFullParty: true
     }
   }
 ]

@@ -5,6 +5,9 @@ import { yoimiyaDefinition } from "./definition.js"
 
 export const yoimiyaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "yoimiya.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "yoimiya.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 4 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("yoimiya", 2),
     ...declareWeaponHitCapabilities(yoimiyaDefinition),
     declareHitCapability("yoimiya.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["pyro"]),

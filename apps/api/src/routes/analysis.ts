@@ -23,6 +23,7 @@ import type { GameDataRepository } from "@gscombat/game-data"
 import type { FastifyInstance } from "fastify"
 
 import {
+  ANALYSIS_ENGINE_VERSION,
   serializeAnalysisResponse,
   serializeSupportMetricResult
 } from "../serializers/analysis.js"
@@ -40,6 +41,7 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
     async (request) => {
       assertMetricConstellation(request.body.targetActionId, request.body.primary.constellation)
       const { evaluation, analysis } = evaluateScenarioAnalysis(request.body, gameData, {
+        ...(request.body.weaponComparisonChoices ? { weaponComparisonChoices: request.body.weaponComparisonChoices } : {}),
         ...(request.body.weaponComparisonRefinements === undefined
           ? {}
           : { weaponComparisonRefinements: request.body.weaponComparisonRefinements })
@@ -56,7 +58,8 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
     { schema: { body: WeaponComparisonRequestSchema, response: { 200: WeaponComparisonResponseSchema } } },
     async ({ body }) => {
       assertMetricConstellation(body.scenario.targetActionId, body.scenario.primary.constellation)
-      return analyzeWeaponComparison(body.scenario, gameData, body.weaponId, body.refinement)
+      return { ...analyzeWeaponComparison(body.scenario, gameData, body.weaponId, body.refinement, body.choices),
+        engineVersion: ANALYSIS_ENGINE_VERSION }
     }
   )
 
@@ -84,7 +87,7 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
       if (evaluated.kind === "damage") {
         throw new Error(`Support metric endpoint received damage metric ${request.body.metricId}`)
       }
-      return { engineVersion: "support-metric-2-artifact-lifecycle", metric: serializeSupportMetricResult(evaluated) }
+      return { engineVersion: "support-metric-3-weapon-rules", metric: serializeSupportMetricResult(evaluated) }
     }
   )
 }

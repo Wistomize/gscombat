@@ -24,6 +24,7 @@ const huntersPrecisionParameter = {
 
 export const alyoshaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "alyosha.kit.weapon-healing-qualification", label: "图加林治疗前台", kind: "healing", recipient: "on_field", sourceFieldPresence: "any", sustained: false, minimumSourceAscension: 1 },
     declareSkillCastCapability("alyosha", 2),
     ...declareWeaponHitCapabilities(alyoshaDefinition),
     declareHitCapability("alyosha.kit.skill-burst-hits", "伏袭霆击与轰霆猎场、图加林可造成雷伤", ["skill", "burst"], ["electro"])

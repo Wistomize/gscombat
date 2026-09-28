@@ -7,6 +7,7 @@ import {
 } from "../catalog-presentation.js"
 import { listCombatActions, listCombatMetrics } from "../combat-registry.js"
 import { listPublishedArtifactSets, listPublishedWeapons } from "../equipment-coverage-ledger.js"
+import type { WeaponComparisonPolicy } from "../equipment-coverage.js"
 import type {
   CombatActionIntegerScenarioParameter,
   CombatActionMetadata,
@@ -33,6 +34,7 @@ export type WeaponType = CatalogWeaponType
 /** A selectable, already-verified target action with its player-facing label. */
 export interface CharacterPrimaryAction {
   readonly fieldPresence?: NonNullable<CombatActionMetadata["fieldPresence"]>
+  readonly supportsArrowWeakPoint?: boolean
   readonly id: string
   readonly label: string
   readonly minimumSourceConstellation?: number
@@ -69,6 +71,7 @@ export interface CharacterSupportConditionalRecipientRequirement {
 }
 
 export interface WeaponCatalogEntry {
+  readonly comparison?: WeaponComparisonPolicy
   readonly label: string
   readonly rarity: 3 | 4 | 5
   readonly weaponId: string
@@ -175,6 +178,7 @@ function createPrimaryAction(
     id: action.id,
     label: getPrimaryActionLabel(action, presentation, metric.label),
     ...(action.fieldPresence === undefined ? {} : { fieldPresence: action.fieldPresence }),
+    ...(action.aimedArrowDamagePartIds?.length ? { supportsArrowWeakPoint: true } : {}),
     ...(metric.minimumSourceConstellation === undefined
       ? {}
       : { minimumSourceConstellation: metric.minimumSourceConstellation }),

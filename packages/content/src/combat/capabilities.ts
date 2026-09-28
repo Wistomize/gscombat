@@ -9,7 +9,11 @@ export type CombatFieldPresence = "on_field" | "off_field" | "any"
 export interface CombatCapability {
   readonly id: string
   readonly label: string
-  readonly kind: "hp_loss" | "healing" | "shield" | "bond_of_life_change" | "damage_taken" | "damage_hit" | "reaction_conversion" | "special_reaction_damage" | "plunge_access" | "skill_cast" | "skill_reset"
+  readonly kind: "hp_loss" | "healing" | "shield" | "self_aura" | "normal_attack_infusion" | "bond_of_life_change" | "bond_of_life_gain" | "damage_taken" | "damage_hit" | "reaction_conversion" | "special_reaction_damage" | "plunge_access" | "skill_cast" | "skill_reset" | "nightsoul_state" | "energy_spend" | "particle_generation"
+  /** Pickup healing requires a proven party particle source and the holder's actual foreground. */
+  readonly requiresParticlePickup?: true
+  readonly energySpend?: { readonly burstCooldownParameterIndex: number } |
+    { readonly withinSeconds: number; readonly count: number }
   readonly skillCast?: {
     readonly cooldownParameterIndex: number
     readonly initialUses?: number
@@ -24,8 +28,15 @@ export interface CombatCapability {
     readonly count: number
     readonly minimumSeparationSeconds: number
   }
+  /** Bounded proof for the declared hitKinds, including burst hits; never inferred from another talent. */
+  readonly hitOpportunities?: {
+    readonly withinSeconds: number
+    readonly count: number
+    readonly minimumSeparationSeconds: number
+  }
   readonly specialReactions?: readonly CombatDirectSpecialReactionConfig["kind"][]
-  readonly requiredTeamReaction?: "stellar" | "stellar_swirl" | "stellar_superconduct"
+  readonly requiredTeamReaction?: "stellar" | "stellar_swirl" | "stellar_superconduct" | "lunar"
+  readonly requiredTeamSpecialReactions?: readonly CombatDirectSpecialReactionConfig["kind"][]
   readonly requiredReactionFamily?: "any"
   readonly requiredReactionCounterpartElements?: readonly TravelerElement[]
   readonly minimumEnemyCount?: number
@@ -36,6 +47,7 @@ export interface CombatCapability {
   readonly sourceFieldPresence: CombatFieldPresence
   readonly minimumSourceAscension?: number
   readonly minimumSourceConstellation?: number
+  readonly minimumPartyElementCount?: { readonly elements: readonly TravelerElement[]; readonly count: number }
   readonly requiredActiveEffectIds?: readonly string[]
   readonly travelerElement?: TravelerElement
   /** Sustained describes the kit mechanism, not a simulated count of ticks. */
@@ -44,16 +56,29 @@ export interface CombatCapability {
 
 /** Query the affected build separately from the provider; another member's self-only ability cannot qualify it. */
 export interface CombatCapabilityRequirement {
-  readonly kind: CombatCapability["kind"] | "reaction_trigger"
+  readonly kind: CombatCapability["kind"] | "reaction_trigger" | "elemental_normal_hit"
   /** Composition-qualified reaction preparation, not the selected metric's damage formula. */
-  readonly reactionFamily?: "any" | "swirl" | "bloom" | "bloom_family" | "burning" | "crystallize" | "ordinary_crystallize" | "superconduct" | "lunar" | "stellar" | "stellar_swirl" | "stellar_superconduct"
+  readonly reactionFamily?: "any" | "electro_charged" | "swirl" | "bloom" | "bloom_family" | "burning" | "crystallize" | "ordinary_crystallize" | "superconduct" | "lunar" | "stellar" | "stellar_swirl" | "stellar_superconduct"
   readonly specialReactions?: CombatCapability["specialReactions"]
   readonly distinctHitKinds?: { readonly minimum: number; readonly maximum?: number }
-  readonly opportunityWindow?: { readonly seconds: number; readonly minimum: number; readonly maximum?: number; readonly measure: "casts" | "hits" }
+  readonly opportunityWindow?: {
+    readonly seconds: number
+    readonly minimum: number
+    readonly maximum?: number
+    readonly measure: "casts" | "hits"
+    /** Required trigger separation; omitted preserves the existing artifact 0.3-second proof threshold. */
+    readonly minimumSeparationSeconds?: number
+    /** A new cast refreshes existing stacks; a cooldown shorter than the window can sustain this cap. */
+    readonly refreshableMaximum?: number
+  }
   readonly counterpartElements?: readonly TravelerElement[]
   readonly reactionElements?: readonly TravelerElement[]
   readonly recipient: "source" | "recipient"
+  /** Query affected teammates other than the wearer, never confuse another member's self change with the wearer. */
+  readonly recipientOtherThanSource?: boolean
   readonly provider?: "source" | "party"
+  /** For teammate-cast triggers; the wearer's own cast cannot prepare its own teammate charge. */
+  readonly excludeSourceProvider?: boolean
   readonly sustained?: boolean
   readonly present?: boolean
   /** At least one requested category must be supplied by the same qualified capability. */
@@ -78,8 +103,8 @@ export function declareSkillCastCapability(
 }
 
 /** Equipment-owned capabilities share the same qualification model as character kits. */
-export interface CombatEquipmentCapability {
-  readonly weaponId: string
+export type CombatEquipmentCapability = ({ readonly weaponId: string } |
+  { readonly artifactSetId: string; readonly minimumPieces: number }) & {
   readonly capability: CombatCapability
 }
 
@@ -98,6 +123,7 @@ export function declareWeaponHitCapabilities(character: CharacterDefinition): re
 export type CombatEffectLifecycle =
   | { readonly kind: "constant" }
   | { readonly kind: "any_of"; readonly alternatives: readonly CombatEffectLifecycle[] }
+  | { readonly kind: "all_of"; readonly alternatives: readonly CombatEffectLifecycle[] }
   | {
       readonly kind: "conditional"
       readonly trigger: {
@@ -113,11 +139,15 @@ export type CombatEffectLifecycle =
       readonly retention: "retain_on_exit" | "clear_on_exit" | "while_applicable"
       readonly applicability?: {
         readonly sourceFieldPresence?: CombatFieldPresence
+        /** Read only the source's reviewed snapshot presence; never promotes recipients or teammates. */
+        readonly sourceFieldPresenceAt?: "stat_capture"
         readonly recipientFieldPresence?: CombatFieldPresence
         /** Static composition requirement, not a claim that the enemy has an aura. */
         readonly teamElements?: readonly TravelerElement[]
         readonly energyResource?: "elemental" | "special"
         readonly targetFrozen?: true
+        readonly targetIsSlime?: true
+        readonly arrowHitsWeakPoint?: true
         readonly sourceHomework?: true
         readonly hexereiSecretRite?: boolean
         readonly elementRelationship?: { readonly element: TravelerElement; readonly includeOnField: boolean }
@@ -147,7 +177,7 @@ export function afterSkillUntilExit(explanation: string): CombatEffectLifecycle 
 export function assertCombatEffectLifecycles(effects: readonly CombatActionEffect[]): void {
   const definitions = new Map(effects.map((effect) => [effect.id, effect]))
   const leaves = (lifecycle: CombatEffectLifecycle | undefined): readonly CombatEffectLifecycle[] =>
-    lifecycle?.kind === "any_of" ? lifecycle.alternatives.flatMap(leaves) : lifecycle ? [lifecycle] : []
+    lifecycle?.kind === "any_of" || lifecycle?.kind === "all_of" ? lifecycle.alternatives.flatMap(leaves) : lifecycle ? [lifecycle] : []
   for (const effect of effects) {
     for (const lifecycle of leaves(effect.lifecycle)) {
       if (lifecycle.kind !== "conditional") continue

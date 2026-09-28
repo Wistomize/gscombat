@@ -5,6 +5,8 @@ import { kamisatoAyakaDefinition } from "./definition.js"
 
 export const kamisatoAyakaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "kamisato-ayaka.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "kamisato-ayaka.kit.normal-infusion", label: "霰步后冰元素普攻重击", kind: "normal_attack_infusion", elements: ["cryo"], recipient: "self", sourceFieldPresence: "on_field", sustained: true },
     declareSkillCastCapability("kamisato-ayaka", 1),
     ...declareWeaponHitCapabilities(kamisatoAyakaDefinition),
     declareHitCapability("kamisato-ayaka.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),

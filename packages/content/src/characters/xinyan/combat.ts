@@ -5,6 +5,8 @@ import { xinyanDefinition } from "./definition.js"
 
 export const xinyanCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "xinyan.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "xinyan.kit.self-aura", label: "热情拂扫护盾生成及切换时给当前角色火附着", kind: "self_aura", elements: ["pyro"], recipient: "on_field", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("xinyan", 9),
     { id: "xinyan.kit.retained-shield", label: "热情拂扫护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     ...declareWeaponHitCapabilities(xinyanDefinition),

@@ -93,6 +93,10 @@ export function serializeCatalogResponse(): CatalogResponse {
           : {})
       }))
     })),
-    weapons: [...supportedWeapons]
+    weapons: supportedWeapons.map(({ comparison, ...weapon }) => {
+      if (!comparison) return weapon
+      const { refinements, ...policy } = comparison
+      return { ...weapon, comparison: { ...policy, ...(refinements ? { refinements: [...refinements] } : {}) } }
+    })
   }
 }

@@ -18,7 +18,7 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: ["weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack"],
+      effectIds: ["weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack", "weapon.staff-of-homa.hp-below-50.disabled"],
       id: "weapon.staff-of-homa.hp-below-50.extra-hp-sourced-flat-attack",
       label: "护摩之杖 · 当前生命值低于50%时的额外攻击力",
       source: weaponSource("StaffOfHoma", "primary"),

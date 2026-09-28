@@ -1,9 +1,10 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const BLOODTAINTED_GREATSWORD_PYRO_OR_ELECTRO_AURA_DAMAGE_BONUS = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 
 /** Typed selected Pyro-or-Electro-aura target damage contribution of Bloodtainted Greatsword. */
-export const bloodtaintedGreatswordCombatActionEffects: readonly CombatActionEffect[] = [
+const authoredEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     selectionMode: "optional",
@@ -14,3 +15,9 @@ export const bloodtaintedGreatswordCombatActionEffects: readonly CombatActionEff
     value: { kind: "refinement_table", values: BLOODTAINTED_GREATSWORD_PYRO_OR_ELECTRO_AURA_DAMAGE_BONUS }
   }
 ]
+
+export const bloodtaintedGreatswordCombatActionEffects: readonly CombatActionEffect[] = authoredEffects.flatMap((effect) =>
+  withWeaponToggle(effect, "bloodtainted-greatsword-target-aura", "目标火／雷附着", true).map((choice) => ({ ...choice,
+    weaponChoice: { ...choice.weaponChoice!, targetAuraElements: ["pyro","electro"] }
+  }))
+)

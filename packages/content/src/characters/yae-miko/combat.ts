@@ -25,6 +25,7 @@ const c2SesshouSakuraRankFourParameter = {
 
 export const yaeMikoCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "yae-miko.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("yae-miko", 5, {"initialUses":3}),
     { id: "yae-miko.kit.stellar-damage", label: "辉映状态下自身造成星烁反应伤害", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["stellar_superconduct"], requiredTeamReaction: "stellar_superconduct" },
     ...declareWeaponHitCapabilities(yaeMikoDefinition),

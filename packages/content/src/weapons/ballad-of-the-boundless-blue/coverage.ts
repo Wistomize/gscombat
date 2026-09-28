@@ -1,20 +1,20 @@
-import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-coverage.js"
+import type { EquipmentCoverageEntry } from "../../equipment-coverage.js"
 
-/** Maintainer-reviewed single-core-action coverage for this equipment item. */
+/** Reviewed executable effects; excluded legacy states and independent weapon procs are not coverage claims. */
 export const equipmentCoverage = {
   clauses: [
     {
       effectIds: [
-        "weapon.ballad-of-the-boundless-blue.azure-skies.1-stack.normal-damage-bonus",
-        "weapon.ballad-of-the-boundless-blue.azure-skies.1-stack.charged-damage-bonus",
-        "weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.normal-damage-bonus",
-        "weapon.ballad-of-the-boundless-blue.azure-skies.2-stack.charged-damage-bonus",
         "weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.normal-damage-bonus",
         "weapon.ballad-of-the-boundless-blue.azure-skies.3-stack.charged-damage-bonus"
       ],
       id: "weapon.ballad-of-the-boundless-blue.azure-skies.damage-bonus",
-      label: "无垠蔚蓝之歌 · 命中前已持有的1至3层普通攻击或重击伤害提升（6秒内）",
-      source: weaponSource("BalladOfTheBoundlessBlue", "primary"),
+      label: "无垠蔚蓝之歌 · 前台具备普通攻击或重击命中能力时默认提前三层，后台不预存",
+      source: {
+        holder: "primary",
+        kind: "weapon",
+        weaponId: "BalladOfTheBoundlessBlue"
+      },
       status: "implemented"
     }
   ],

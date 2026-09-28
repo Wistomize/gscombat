@@ -5,7 +5,7 @@ export const TOME_OF_THE_ETERNAL_FLOW_CHARGED_DAMAGE_BONUS_PER_STACK = [
   0.14, 0.18, 0.22, 0.26, 0.3
 ] as const
 
-const chargedDamageStackCounts = [1, 2, 3] as const
+const chargedDamageStackCounts = [0, 1, 2, 3] as const
 
 function getChargedDamageBonusValues(stackCount: number): readonly number[] {
   return TOME_OF_THE_ETERNAL_FLOW_CHARGED_DAMAGE_BONUS_PER_STACK.map((value) => value * stackCount)
@@ -17,7 +17,10 @@ function createChargedDamageStackEffect(
   return {
     activation: "active",
     selectionMode: "optional",
-    ...(stackCount === 3 ? { weaponComparisonDefault: { recipientCharacterIds: ["Neuvillette"] } } : {}),
+    requiresSourceOnField: true,
+    weaponChoice: { group: "tome-of-the-eternal-flow-raging-tides", label: "生命变化层数", variant: `${stackCount}-stack`,
+      variantLabel: `${stackCount}层`, defaultVariant: "0-stack",
+      automaticVariant: { variant: "3-stack", capability: { kind: "hp_loss", provider: "party", recipient: "source" } } },
     exclusivity: { group: "tome-of-the-eternal-flow-raging-tides", variant: stackCount + "-stack" },
     id: "weapon.tome-of-the-eternal-flow.raging-tides." + stackCount + "-stack.charged-damage-bonus",
     label: "万世流涌大典 · 荡尽" + stackCount + "层重击伤害",

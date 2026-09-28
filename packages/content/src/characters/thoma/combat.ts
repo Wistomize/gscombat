@@ -5,6 +5,7 @@ import { thomaDefinition } from "./definition.js"
 
 export const thomaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "thoma.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("thoma", 6),
     { id: "thoma.kit.retained-shield", label: "烈烧佑命护盾保护当前场上角色", kind: "shield", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     ...declareWeaponHitCapabilities(thomaDefinition),

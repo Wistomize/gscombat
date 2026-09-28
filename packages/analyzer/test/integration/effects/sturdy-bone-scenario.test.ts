@@ -94,11 +94,10 @@ function expectNoSturdyBoneTerm(evaluation: ReturnType<typeof evaluateScenario>)
 }
 
 describe("Sturdy Bone declared scenarios", () => {
-  it("adds the selected post-sprint normal hit inside the real infusion, Melt, bonus, and crit pipeline", () => {
+  it("automatically prepares the post-sprint normal hit inside the real infusion, Melt, bonus, and crit pipeline", () => {
     /**
-     * This active snapshot means the caller has already declared this one core hit to be one of Sturdy Bone's
-     * first 18 Normal Attacks in its seven-second window. The one-action evaluator intentionally does not infer
-     * sprint timing or consume a hit count.
+     * The reviewed default prepares sprint before an on-field normal hit. Legacy selections neither enable
+     * nor duplicate that preparation; this single action does not simulate sprint timing or a whole rotation.
      */
     const r1Build = createSturdyBoneBuild(1)
     const r5Build = createSturdyBoneBuild(5)
@@ -132,7 +131,7 @@ describe("Sturdy Bone declared scenarios", () => {
       throw new Error("Expected Sturdy Bone's term and all shared hit-multiplier trace stages")
     }
 
-    expectNoSturdyBoneTerm(inactive)
+    expect(requireScalingTerms(inactive).scalingTerms.terms).toEqual(r1ScalingTerms.terms)
     expect(r1.appliedEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -169,11 +168,11 @@ describe("Sturdy Bone declared scenarios", () => {
     expect(r1Melt.before).toBeCloseTo(r1ScalingTerms.after)
     expect(r1DamageBonus.before).toBeCloseTo(r1Melt.after)
     expect(r1ExpectedCrit.before).toBeCloseTo(r1DamageBonus.after)
-    expect(r1.actionExpectedDamage).toBeGreaterThan(inactive.actionExpectedDamage)
+    expect(r1.actionExpectedDamage).toBeCloseTo(inactive.actionExpectedDamage)
     expect(r5.actionExpectedDamage).toBeGreaterThan(r1.actionExpectedDamage)
   })
 
-  it("does not resolve the selected sprint-followup term for an inactive or non-normal action", () => {
+  it("prepares an unselected normal hit but rejects a legacy selection for a non-normal action", () => {
     const build = createSturdyBoneBuild(1)
     const inactiveNormal = evaluateSturdyBoneScenario(
       alhaithamNormalActionId,
@@ -191,7 +190,9 @@ describe("Sturdy Bone declared scenarios", () => {
     expect(requireAction("alhaitham.skill.particular_field_fetters_of_phenomena.chisel_light_mirror_projection_attack.spread").talentSlot).toBe(
       "skill"
     )
-    expectNoSturdyBoneTerm(inactiveNormal)
+    expect(inactiveNormal.appliedEffects).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: sturdyBoneEffectId, value: 0.16 })
+    ]))
     expectNoSturdyBoneTerm(activeSkill)
     expect(activeSkill.rotation.events).toHaveLength(1)
     expect(activeSkill.rotation.events.some((event) => event.id.includes("sturdy-bone"))).toBe(false)

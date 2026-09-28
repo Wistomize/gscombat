@@ -1,12 +1,13 @@
+import { getCombatActionEffectDefinition } from "@gscombat/content"
 import type { ScalingStat } from "@gscombat/calculator"
 import { getBuildFieldPresence } from "../core/field-presence.js"
 import { resolveCombatEffectLifecycle } from "../scenario/effect-lifecycle.js"
+import { isWeaponChoiceSelected, resolveAutomaticWeaponVariant, resolveWeaponAuraVariant } from "./weapon-state.js"
 import {
   canEnterNightsoulBlessing, hasHexereiSecretRite,
   getCharacterBurstEnergyCost,
   isCombatActionEffectApplicable,
-  isCombatActionEffectDeterministicallyActive, listCombatActionEffects,
-  listCombatElementOverrideEffects,
+  isCombatActionEffectDeterministicallyActive, listCombatActionEffectsForSources,
   resolveMaximumNightsoulBurstTriggers,
   weaponInventory, type CombatActionEffect,
   type CombatActionMetadata,
@@ -28,7 +29,6 @@ import {
   type ResolveCombatActionEffectsInput,
   type ResolvedAdditionalDamageEvent,
   type ResolvedCombatActionEffects,
-  type ResolveDependentActiveEffectIdsInput,
   type ResolveSelfAutomaticEquipmentEffectsInput
 } from "./types.js"
 
@@ -54,95 +54,25 @@ interface EligibleStatActionEffect {
   readonly source: CharacterBuild
 }
 
+function listPartyEffects(input: {
+  primary: CharacterBuild; teammates?: readonly CharacterBuild[]; activeEffectIds?: readonly string[]
+}) {
+  return listCombatActionEffectsForSources([input.primary, ...(input.teammates ?? [])].map((build) => ({
+    characterId: build.characterId, weaponId: build.weapon.weaponId,
+    artifactSetIds: build.artifacts.map((artifact) => artifact.setId)
+  })), input.activeEffectIds)
+}
+
 /**
  * Materializes typed current-action effects without inferring cast order, duration, or a full rotation.
  *
  * Energy-recharge contributors resolve first so an Emblem four-piece bonus reads the final action ER.
  */
 export function resolveCombatActionEffects(input: ResolveCombatActionEffectsInput): ResolvedCombatActionEffects {
-  return resolveCombatActionEffectsForCandidates(input, listCombatActionEffects())
+  return resolveCombatActionEffectsForCandidates(input, listPartyEffects(input))
 }
 
-/**
- * Expands explicit snapshots with dependent effects and content-declared deterministic action-state effects.
- *
- * A dependent effect cannot be selected independently: it is derived only when every requirement is selected and
- * a unique or explicitly selected source build meets its source constraints. Deterministic effects require the
- * selected action to declare their state. Scenario constraints are still resolved by the normal evaluator.
- */
-export function resolveDependentActiveEffectIds(input: ResolveDependentActiveEffectIdsInput): string[] {
-  const effects = listCombatActionEffects()
-  const elementOverrideEffects = listCombatElementOverrideEffects()
-  const dependentEffects = effects.filter(
-    (effect) => effect.requiredActiveEffectIds !== undefined && effect.deterministicSnapshotActivation === undefined
-  )
-  const deterministicEffects = effects.filter((effect) => effect.deterministicSnapshotActivation !== undefined)
-  const dependentElementOverrideEffects = elementOverrideEffects.filter((effect) => effect.requiredActiveEffectIds !== undefined)
-  const derivedEffectIds = new Set(
-    [...dependentEffects, ...deterministicEffects, ...dependentElementOverrideEffects].map((effect) => effect.id)
-  )
-  const activeEffectIds = new Set(input.activeEffectIds.filter((effectId) => !derivedEffectIds.has(effectId)))
-  let added = true
-
-  while (added) {
-    added = false
-    for (const effect of dependentEffects) {
-      const requiredActiveEffectIds = effect.requiredActiveEffectIds
-      if (
-        effect.activation !== "active" ||
-        activeEffectIds.has(effect.id) ||
-        requiredActiveEffectIds === undefined ||
-        !requiredActiveEffectIds.every((effectId) => activeEffectIds.has(effectId)) ||
-        !hasActivatableEffectSource(effect, input)
-      ) {
-        continue
-      }
-      activeEffectIds.add(effect.id)
-      added = true
-    }
-    for (const effect of deterministicEffects) {
-      const requiredActiveEffectIds = effect.requiredActiveEffectIds
-      if (
-        effect.activation !== "active" ||
-        activeEffectIds.has(effect.id) ||
-        !isDeterministicallyActiveForAction(effect, input.action) ||
-        (requiredActiveEffectIds !== undefined &&
-          !requiredActiveEffectIds.every((effectId) => activeEffectIds.has(effectId))) ||
-        !hasActivatableEffectSource(effect, input)
-      ) {
-        continue
-      }
-      activeEffectIds.add(effect.id)
-      added = true
-    }
-    for (const effect of dependentElementOverrideEffects) {
-      const requiredActiveEffectIds = effect.requiredActiveEffectIds
-      if (
-        activeEffectIds.has(effect.id) ||
-        requiredActiveEffectIds === undefined ||
-        !requiredActiveEffectIds.every((effectId) => activeEffectIds.has(effectId)) ||
-        !hasActivatableElementOverrideSource(effect, input)
-      ) {
-        continue
-      }
-      activeEffectIds.add(effect.id)
-      added = true
-    }
-  }
-
-  return [...activeEffectIds]
-}
-
-function isDeterministicallyActiveForAction(
-  effect: CombatActionEffect,
-  action: CombatActionMetadata | undefined
-): boolean {
-  return (
-    action !== undefined &&
-    isCombatActionEffectApplicable(effect, action) &&
-    isCombatActionEffectDeterministicallyActive(effect, action)
-  )
-}
+export { resolveDependentActiveEffectIds } from "./dependent-effects.js"
 
 /**
  * Resolves global and element-compatible stat effects for one independently owned additional damage event.
@@ -155,7 +85,7 @@ export function resolveAdditionalDamageEventEffects(
   input: ResolveAdditionalDamageEventEffectsInput
 ): ResolvedCombatActionEffects {
   const event = input.additionalDamageEvent
-  const candidates = listCombatActionEffects().filter((effect) =>
+  const candidates = listPartyEffects(input).filter((effect) =>
     isCombatActionEffectCompatibleWithAdditionalDamageEvent(effect, event)
   )
   const action = createAdditionalDamageEventAction(input.action, event)
@@ -188,9 +118,10 @@ function createAdditionalDamageEventAction(
 export function resolveSelfAutomaticEquipmentEffects(
   input: ResolveSelfAutomaticEquipmentEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) =>
-      isSelfAutomaticEquipmentEffect(effect) ||
+      (isSelfAutomaticEquipmentEffect(effect) &&
+        !(input.excludePreparedWeaponChoiceStats && isSelfPreparedWeaponChoiceStatEffect(effect))) ||
       (input.includeMaximumReachableCharacterStatEffects === true &&
         isSelfMaximumReachableCharacterStatEffect(effect, input.primary))
   )
@@ -220,7 +151,7 @@ export function resolveSelfAutomaticEquipmentEffects(
 export function resolveSelfMaximumReachableCharacterHpEffects(
   input: ResolveSelfAutomaticEquipmentEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) =>
       isSelfMaximumReachableCharacterStatEffect(effect, input.primary) &&
       (effect.target === "hpFlat" || effect.target === "hpPercent")
@@ -257,7 +188,7 @@ export function resolveSelfMaximumReachableCharacterHpEffects(
 export function resolveSelfMaximumReachableEquipmentStatEffects(
   input: ResolveCombatActionEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) =>
       isSelfMaximumReachableEquipmentStatEffect(effect) &&
       isSelfMaximumReachableEquipmentStatEffectCompatibleWithSource(effect, input.primary)
@@ -269,9 +200,10 @@ export function resolveSelfMaximumReachableEquipmentStatEffects(
 export function resolveCombatActionDefenseEffects(
   input: ResolveCombatActionEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) =>
-      (effect.activation !== "automatic" || isAutomaticPartyArtifactStatEffect(effect)) &&
+      !isSelfPreparedWeaponChoiceStatEffect(effect) &&
+      (effect.activation !== "automatic" || isAutomaticPartyEquipmentStatEffect(effect)) &&
       (effect.target === "defenseFlat" || effect.target === "defensePercent")
   )
   return resolveCombatActionEffectsForCandidates(input, candidates)
@@ -281,25 +213,26 @@ export function resolveCombatActionDefenseEffects(
 export function resolveCombatActionAttackEffects(
   input: ResolveCombatActionEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) =>
-      (effect.activation !== "automatic" || isAutomaticPartyArtifactStatEffect(effect)) &&
+      !isSelfPreparedWeaponChoiceStatEffect(effect) &&
+      (effect.activation !== "automatic" || isAutomaticPartyEquipmentStatEffect(effect)) &&
       (effect.target === "attackPercent" || effect.target === "baseAttackFlat" || effect.target === "flatAttack")
   )
   return resolveCombatActionEffectsForCandidates(input, candidates)
 }
 
 /** Includes prepared party stats in source conversion inputs, without counting self equipment twice. */
-function isAutomaticPartyArtifactStatEffect(effect: CombatActionEffect): boolean {
+function isAutomaticPartyEquipmentStatEffect(effect: CombatActionEffect): boolean {
   return effect.activation === "automatic" && effect.lifecycle !== undefined &&
-    effect.source.kind === "artifact_set" && effect.source.holder === "party_member"
+    effect.source.kind !== "character" && effect.source.holder === "party_member"
 }
 
 /** Resolves only elemental-mastery effects while assembling a source build's final mastery snapshot. */
 export function resolveCombatActionElementalMasteryEffects(
   input: ResolveCombatActionEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) =>
       (effect.target === "elementalMastery" &&
         effect.value.kind !== "final_elemental_mastery" &&
@@ -313,7 +246,7 @@ export function resolveCombatActionElementalMasteryEffects(
 export function resolveCombatActionCharacterElementalMasteryEffects(
   input: ResolveCombatActionEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) =>
       effect.source.kind === "character" &&
       ((effect.target === "elementalMastery" &&
@@ -328,7 +261,7 @@ export function resolveCombatActionCharacterElementalMasteryEffects(
 export function resolveCombatActionPartyEquipmentElementalMasteryEffects(
   input: ResolveCombatActionEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) => effect.source.kind !== "character" && effect.source.holder === "party_member" &&
       ((effect.target === "elementalMastery" && effect.value.kind !== "final_elemental_mastery" &&
         effect.value.kind !== "source_final_defense") || effect.target === "sourceFinalHpToElementalMastery")
@@ -340,16 +273,11 @@ export function resolveCombatActionPartyEquipmentElementalMasteryEffects(
 export function resolveCombatActionFinalElementalMasteryShareEffects(
   input: ResolveCombatActionEffectsInput
 ): ResolvedCombatActionEffects {
-  const candidates = listCombatActionEffects().filter(
+  const candidates = listPartyEffects(input).filter(
     (effect) => effect.target === "elementalMastery" && effect.value.kind === "final_elemental_mastery"
   )
   return resolveCombatActionEffectsForCandidates(input, candidates)
 }
-
-import {
-  hasActivatableEffectSource,
-  hasActivatableElementOverrideSource
-} from "./source-selection.js"
 
 export {
   listSelectedSourceAttackSnapshotActivationEffectIds,
@@ -371,14 +299,15 @@ export function resolveCombatActionEffectsForCandidates(
   assertActiveEffectSourceSelections(input)
   assertSelectedActiveEffectExclusivity(input.activeEffectIds)
   const recipientWeaponType = weaponInventory.find((weapon) => weapon.id === input.primary.weapon.weaponId)?.weaponType
-  const definitions = new Map([...listCombatActionEffects(), ...candidates].map((effect) => [effect.id, effect]))
+  // Explicit candidate declarations can override maintained IDs in isolated integration callers.
+  const definitions = new Map(candidates.map((effect) => [effect.id, effect]))
   const qualifiedParents: CombatActionEffect[] = []
   const hasQualifiedDependencies = (effect: CombatActionEffect, visiting = new Set<string>()): boolean => {
     if (visiting.has(effect.id)) return false
     const next = new Set(visiting).add(effect.id)
     return effect.requiredActiveEffectIds?.every((id) => {
       if (!input.activeEffectIds.includes(id)) return false
-      const parent = definitions.get(id)
+      const parent = definitions.get(id) ?? getCombatActionEffectDefinition(id)
       // Legacy field-state IDs have no stat declaration; source eligibility is checked by their dependent effects.
       if (!parent) return true
       if (!hasQualifiedDependencies(parent, next) || resolveEligibleActionEffect(parent, input).length === 0) return false
@@ -387,6 +316,27 @@ export function resolveCombatActionEffectsForCandidates(
     }) ?? true
   }
   const eligibleCandidates = candidates
+    .filter((effect) => {
+      const window = effect.hitConsumption
+      if (!window || input.candidateEventIndex === undefined) return true
+      if ((input.candidateHitIndex ?? 0) > 0) return false
+      const events = input.action.timeline?.damageEvents
+      // Multiple default parts do not provide proof of simultaneous hits.
+      if (!events) return input.candidateEventIndex === 0
+      const target = events.find((event) => event.id === input.candidateEventId)
+      if (!target) return false
+      let preparedAt: number | undefined
+      for (const event of [...events].sort((a, b) => a.at - b.at)) {
+        if (event.hitCount === 0 || (input.candidateTimelineEventIds && !input.candidateTimelineEventIds.includes(event.id))) continue
+        if (event.specialReaction || event.stellarSwirlReaction ||
+          (event.minimumSourceConstellation !== undefined && input.primary.constellation < event.minimumSourceConstellation) ||
+          (event.maximumSourceConstellation !== undefined && input.primary.constellation > event.maximumSourceConstellation)) continue
+        if (preparedAt === undefined || (window.retriggerAfterSeconds !== undefined &&
+          event.at - preparedAt >= window.retriggerAfterSeconds)) preparedAt = event.at
+        if (event.id === target.id) return event.at - preparedAt < window.clearAfterSeconds
+      }
+      return false
+    })
     .filter((effect) => hasQualifiedDependencies(effect))
     .filter((effect) =>
       isCombatActionEffectApplicable(
@@ -397,19 +347,27 @@ export function resolveCombatActionEffectsForCandidates(
         input.candidateAmplifyingReactionKinds,
         input.candidateReactionKinds,
         input.candidateSpecialReactionKinds,
-        input.candidateEventId
+        input.candidateEventId,
+        input.candidateDamagePartId
       )
     )
     .flatMap((effect) => resolveEligibleActionEffect(effect, input))
-  const priorities = new Map<string, number>()
-  for (const { effect } of eligibleCandidates) {
+  const priorities = new Map<string, { score: number; variant: string }>()
+  for (const { effect, source } of eligibleCandidates) {
     const exclusive = effect.exclusivity
     if (exclusive?.automaticPriority === undefined || effect.activation !== "automatic") continue
-    priorities.set(exclusive.group, Math.max(priorities.get(exclusive.group) ?? -Infinity, exclusive.automaticPriority))
+    const score = exclusive.automaticPriority === "refinement" ? source.weapon.refinement : exclusive.automaticPriority
+    const current = priorities.get(exclusive.group)
+    if (!current || score > current.score || (score === current.score && exclusive.variant < current.variant)) {
+      priorities.set(exclusive.group, { score, variant: exclusive.variant })
+    }
   }
   const eligibleEffects = eligibleCandidates.filter(({ effect }) => effect.exclusivity?.automaticPriority === undefined ||
-    effect.activation !== "automatic" || effect.exclusivity.automaticPriority === priorities.get(effect.exclusivity.group))
-  assertExclusiveActionEffectsAreCompatible([...qualifiedParents, ...eligibleEffects.map(({ effect }) => effect)])
+    effect.activation !== "automatic" || effect.exclusivity.variant === priorities.get(effect.exclusivity.group)?.variant)
+  assertExclusiveActionEffectsAreCompatible([
+    ...qualifiedParents.filter((effect) => !effect.weaponChoice),
+    ...eligibleEffects.flatMap(({ effect }) => effect.weaponChoice ? [] : [effect])
+  ])
   const additionalDamageEvents = eligibleEffects.flatMap(({ effect, source }) =>
     effect.target === "additionalDamageEvent" ? [resolveAdditionalDamageEvent(effect, source, input)] : []
   )
@@ -534,9 +492,12 @@ function resolveSpecialReactionBaseDamageScalingSnapshot(
 
 function isSelfAutomaticEquipmentEffect(effect: CombatActionEffect): boolean {
   if (!isCombatActionStatEffect(effect)) return false
-  if (effect.activation !== "automatic" || effect.value.kind === "team_burst_energy_cost") {
+  if ((effect.activation !== "automatic" && !effect.weaponChoice) || effect.value.kind === "team_burst_energy_cost") {
     return false
   }
+  // Initial source panels must not read a final source map that is assembled only afterward.
+  // These conversions remain in the final recipient pass, including automatic weapon effects.
+  if (effect.target.startsWith("sourceFinal")) return false
   if (effect.source.kind === "weapon") return effect.source.holder !== "party_member"
   return effect.source.kind === "artifact_set" && effect.source.holder !== "party_member"
 }
@@ -638,6 +599,11 @@ function isSelfMaximumReachableEquipmentStatEffect(effect: CombatActionEffect): 
   )
 }
 
+/** These self-owned direct stats have one owner in source panels: the prepared-equipment map. */
+function isSelfPreparedWeaponChoiceStatEffect(effect: CombatActionEffect): boolean {
+  return effect.weaponChoice !== undefined && isSelfMaximumReachableEquipmentStatEffect(effect)
+}
+
 /** Keeps a source-only equipment snapshot from inheriting a passive restricted to another character. */
 function isSelfMaximumReachableEquipmentStatEffectCompatibleWithSource(
   effect: CombatActionEffect,
@@ -653,10 +619,10 @@ interface ExclusiveActionEffect {
 }
 
 function assertSelectedActiveEffectExclusivity(activeEffectIds: readonly string[]): void {
-  const effectsById = new Map(listCombatActionEffects().map((effect) => [effect.id, effect]))
   const selectedActiveEffects = activeEffectIds.flatMap((effectId) => {
-    const effect = effectsById.get(effectId)
-    return effect?.activation === "active" ? [effect] : []
+    const effect = getCombatActionEffectDefinition(effectId)
+    // Weapon variants are validated per source in weapon-state, not globally across different holders.
+    return effect?.activation === "active" && !effect.weaponChoice ? [effect] : []
   })
   assertExclusiveActionEffectsAreCompatible(selectedActiveEffects)
 }
@@ -732,6 +698,10 @@ function resolveEligibleActionEffect(
     return []
   }
   if (!matchesEffectCondition(effect, input)) return []
+  if (effect.targetFilter?.recipientNativeElements) {
+    const element = input.primaryElement ?? (input.gameData ? resolveBuildElement(input.primary, input.gameData) : undefined)
+    if (!element || element === "physical" || !effect.targetFilter.recipientNativeElements.includes(element)) return []
+  }
   if (effect.target === "finalHpToOwnElementDamageBonus") {
     const effectiveElements = input.effectiveElements ?? [input.action.element]
     if (input.primaryElement === undefined || !effectiveElements.some((element) => element === input.primaryElement)) {
@@ -741,7 +711,7 @@ function resolveEligibleActionEffect(
   const isSelectedActiveEffect = input.activeEffectIds.includes(effect.id)
   const hasQualifiedDefault = effect.lifecycle?.kind === "conditional" &&
     effect.lifecycle.preparation === "qualified_or_selected"
-  if (effect.activation !== "automatic" && !isSelectedActiveEffect && !hasQualifiedDefault) return []
+  if (effect.activation !== "automatic" && !isSelectedActiveEffect && !hasQualifiedDefault && !effect.weaponChoice) return []
   const selectedSourceBuildId = input.activeEffectSourceBuildIds?.[effect.id]
   const effectSource = effect.source
   const selectedTeammateSource = input.teammates.find((build) => build.buildId === selectedSourceBuildId)
@@ -755,17 +725,17 @@ function resolveEligibleActionEffect(
   if (
     effectSource.kind !== "character" &&
     effectSource.holder !== "party_member" &&
-    selectedTeammateOwnsSelfEffect
+    selectedTeammateOwnsSelfEffect && !effect.weaponChoice
   ) {
     return []
   }
-  const deduplicateQualifiedSources = effect.source.kind === "artifact_set" &&
+  const deduplicateQualifiedSources = (effect.source.kind === "artifact_set" || effect.source.kind === "weapon") &&
     effect.source.resolveOneMatchingPartySource === true
   const sources = resolveEffectSources(
     effect,
     input.primary,
     input.teammates,
-    deduplicateQualifiedSources ? undefined : input.activeEffectSourceBuildIds?.[effect.id]
+    deduplicateQualifiedSources || effect.weaponChoice ? undefined : input.activeEffectSourceBuildIds?.[effect.id]
   )
   if (sources.length === 0) {
     if (effect.activation !== "automatic" && isSelectedActiveEffect) {
@@ -774,6 +744,24 @@ function resolveEligibleActionEffect(
     return []
   }
   const qualified = sources.flatMap((source) => {
+    if (effect.weaponRecipientChoice) {
+      const choice = effect.weaponRecipientChoice
+      const recipientId = fieldContext.weaponEffectChoices?.[source.buildId]?.[choice.group] ??
+        (choice.defaultRecipient === "source" ? source.buildId : "none")
+      if (recipientId !== input.primary.buildId || (choice.excludeSource && recipientId === source.buildId)) return []
+    }
+    const capabilityInput = { builds: [input.primary, ...input.teammates], sourceBuildId: source.buildId,
+      recipientBuildId: input.primary.buildId, fieldContext, activeEffectIds: input.activeEffectIds,
+      ...(input.gameData ? { gameData: input.gameData } : {}), enemyCount: input.enemyCount ?? 1 }
+    if (!isWeaponChoiceSelected({
+      effect, sourceBuildId: source.buildId, actionOwnerBuildId: fieldContext.actionOwnerBuildId,
+      sourceCharacterId: source.characterId,
+      automaticVariant: resolveWeaponAuraVariant(effect, input.action, capabilityInput,
+        input.candidateAmplifyingReactionKinds, input.targetFrozen) ?? resolveAutomaticWeaponVariant(effect, capabilityInput),
+      ...(fieldContext.weaponEffectChoices ? { choices: fieldContext.weaponEffectChoices[source.buildId] } : {}),
+      activeEffectIds: input.activeEffectIds,
+      ...(input.activeEffectSourceBuildIds === undefined ? {} : { activeEffectSourceBuildIds: input.activeEffectSourceBuildIds })
+    })) return []
     const lifecycle = resolveCombatEffectLifecycle({
       targetFrozen: input.targetFrozen ?? false,
       enemyCount: input.enemyCount ?? 1,
@@ -826,9 +814,17 @@ function resolveEligibleActionEffect(
     return [{ effect, source }]
   })
   // Eligibility precedes same-name deduplication; an ineligible wearer must not shadow a valid source.
-  return deduplicateQualifiedSources
-    ? qualified.sort((left, right) => left.source.buildId.localeCompare(right.source.buildId)).slice(0, 1)
-    : qualified
+  if (!deduplicateQualifiedSources || qualified.length < 2) return qualified
+  // Refinement alone cannot rank HP/DEF/ATK-derived buffs. Compare their resolved recipient value,
+  // after source snapshots exist, without recursively rebuilding any source panel.
+  const strength = (entry: (typeof qualified)[number]): number =>
+    isCombatActionStatEffect(entry.effect)
+      ? resolveEffectValue(entry.effect, input, input.baseEnergyRecharge, entry.source)
+      : 0
+  return qualified.map((entry) => ({ entry, value: strength(entry) }))
+    .sort((left, right) => right.value - left.value ||
+      left.entry.source.buildId.localeCompare(right.entry.source.buildId))
+    .slice(0, 1).map(({ entry }) => entry)
 }
 
 function hasRequiredActiveEffects(effect: CombatActionEffect, activeEffectIds: readonly string[]): boolean {
@@ -957,7 +953,7 @@ function resolveEffectSources(
       effect.id,
       matchingSources,
       selectedSourceBuildId,
-      source.resolveAllMatchingPartySources === true
+      source.resolveAllMatchingPartySources === true, undefined, source.resolveOneMatchingPartySource === true
     )
   }
   if (source.kind === "artifact_set") {

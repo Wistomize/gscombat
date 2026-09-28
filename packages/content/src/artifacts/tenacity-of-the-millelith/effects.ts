@@ -11,7 +11,7 @@ export const tenacityPreparation: CombatEffectLifecycle = {
     kind: "damage_hit", recipient: "source", provider: "source", hitKinds: ["skill"]
   } },
   defaultCapability: { kind: "damage_hit", recipient: "source", provider: "source", hitKinds: ["skill"], sustained: true },
-  explanation: "实际站位下具备持续战技命中能力时默认生效；仅单次命中需显式选择，队友不能代为触发"
+  explanation: "本次前后台设定下，装备者具备持续战技命中能力时默认生效；仅单次命中默认不计，队友不能代为触发"
 }
 
 /** Typed two-piece and selected team-window four-piece contributions of Tenacity of the Millelith. */

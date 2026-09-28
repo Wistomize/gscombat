@@ -2,7 +2,7 @@ import type { CombatActionEffect } from "../../combat/types.js"
 
 export const LOST_PRAYER_ALL_ELEMENT_DAMAGE_BONUS_PER_STACK = [0.08, 0.1, 0.12, 0.14, 0.16] as const
 
-const stackCounts = [1, 2, 3, 4] as const
+const stackCounts = [0, 1, 2, 3, 4] as const
 const elementalDamageElements = ["anemo", "cryo", "dendro", "electro", "geo", "hydro", "pyro"] as const
 
 function getDamageBonusValues(stackCount: number): readonly number[] {
@@ -13,6 +13,11 @@ function createStackEffect(stackCount: (typeof stackCounts)[number]): CombatActi
   return {
     activation: "active",
     selectionMode: "optional",
+    requiresSourceOnField: true,
+    weaponChoice: {
+      group: "lost-prayer-movement", label: "前台增伤层数", variant: `${stackCount}-stack`,
+      variantLabel: `${stackCount} 层`, defaultVariant: "2-stack"
+    },
     exclusivity: { group: "lost-prayer-movement", variant: `${stackCount}-stack` },
     id: `weapon.lost-prayer-to-the-sacred-winds.movement.${stackCount}-stack.all-element-damage-bonus`,
     label: `四风原典 · 登场后的${stackCount}层所有元素伤害`,

@@ -1,0 +1,193 @@
+{
+  "node": "v22.22.0",
+  "baselineRoot": "/tmp/gscombat-reuse-baseline.IDSkcy",
+  "outputsEqual": true,
+  "versions": {
+    "before": {
+      "sourceHash": "94168a5534380bc613c56c7db3f93e0fd201d945e0f715fdff6e62b5eb55aef7",
+      "buildHash": "090b4030d760b8e981082d29f3d6713a604aa481c376c254cae55622721c3c48",
+      "effects": 1459,
+      "snapshot": "d12acc5a2c89a82ac5faa88c6d2b78a6c879f5ec7bc62fe74308385b5bc4d71e",
+      "inputs": "e03581c7b62386f19497ca37818069a282c02aa6f298096b259b10566a197493",
+      "samples": {
+        "ordinary.single": {
+          "samples": [
+            44.94791699999951,
+            36.6864170000008,
+            35.41129200000432
+          ],
+          "medianMs": 36.6864170000008,
+          "outputDigest": "af08665af94d76cf3fe29a0396078b738c9dcdfac48fa165398112c776fe0380"
+        },
+        "ordinary.full": {
+          "samples": [
+            2292.3681669999987,
+            2124.466833000002,
+            2113.213874999994
+          ],
+          "medianMs": 2124.466833000002,
+          "outputDigest": "9bd964ea1d45136d4f2fe44fb2debc462a9f8cc6aadf217ad3e833875bb7f66c",
+          "candidates": 40
+        },
+        "ordinary.weapon": {
+          "samples": [
+            84.35625000000073,
+            83.94270799999867,
+            83.53162500000326
+          ],
+          "medianMs": 83.94270799999867,
+          "outputDigest": "75b2113f9b8f9337409dbdde4709ad10167d2b4381e8ac7577f22bd1663e7669"
+        },
+        "wind.single": {
+          "samples": [
+            54.645832999998674,
+            54.24633300000278,
+            53.92566600000282
+          ],
+          "medianMs": 54.24633300000278,
+          "outputDigest": "a5407d3c9cf69c5aadf1b06f0f38ce75d5a5f628d479d4a1184180a1e8f2a0f5"
+        },
+        "wind.full": {
+          "samples": [
+            3321.907583,
+            3491.4913750000014,
+            3274.724166
+          ],
+          "medianMs": 3321.907583,
+          "outputDigest": "3013a23b6fe9294cddd48b2438df31ec8291ea7a35ad6ba094e5be228e390850",
+          "candidates": 50
+        },
+        "wind.weapon": {
+          "samples": [
+            94.5344589999986,
+            96.11108299999978,
+            93.57195799999317
+          ],
+          "medianMs": 94.5344589999986,
+          "outputDigest": "76bf71b24da37d2e09556c6ac8d13f7a0b71869cbc799c6f168158a500931797"
+        },
+        "ice.single": {
+          "samples": [
+            46.98008299999856,
+            46.573999999996886,
+            46.6716249999954
+          ],
+          "medianMs": 46.6716249999954,
+          "outputDigest": "5d079742f3c1b9c09941f6ccc44612048adc72324c7c22309398bdaf621d03fa"
+        },
+        "ice.full": {
+          "samples": [
+            3140.0464580000007,
+            3047.9244169999984,
+            3221.50475
+          ],
+          "medianMs": 3140.0464580000007,
+          "outputDigest": "5b960e4196ed4d4ca6f65422c8a84659223cb08df562cd7293a089c7776fad28",
+          "candidates": 50
+        },
+        "ice.weapon": {
+          "samples": [
+            94.22891600000003,
+            95.76891700000124,
+            93.40404200000194
+          ],
+          "medianMs": 94.22891600000003,
+          "outputDigest": "88d54eb4f8c4bd387b2420dcf564ccf4256a3740b06ecb01504621a9749d4b5b"
+        }
+      }
+    },
+    "after": {
+      "sourceHash": "a276343622cab6e528519750cd2c816f4e3a313566d42b6b5f90692cd1db2882",
+      "buildHash": "f5f0f8104fdce75813018d50434f84024669b25d396d178713339051686079bb",
+      "effects": 1459,
+      "snapshot": "d12acc5a2c89a82ac5faa88c6d2b78a6c879f5ec7bc62fe74308385b5bc4d71e",
+      "inputs": "e03581c7b62386f19497ca37818069a282c02aa6f298096b259b10566a197493",
+      "samples": {
+        "ordinary.single": {
+          "samples": [
+            6.891582999996899,
+            4.720000000001164,
+            6.36095899999782
+          ],
+          "medianMs": 6.36095899999782,
+          "outputDigest": "af08665af94d76cf3fe29a0396078b738c9dcdfac48fa165398112c776fe0380"
+        },
+        "ordinary.full": {
+          "samples": [
+            319.2436659999985,
+            256.4616660000029,
+            291.88970800000243
+          ],
+          "medianMs": 291.88970800000243,
+          "outputDigest": "9bd964ea1d45136d4f2fe44fb2debc462a9f8cc6aadf217ad3e833875bb7f66c",
+          "candidates": 40
+        },
+        "ordinary.weapon": {
+          "samples": [
+            11.79095800000141,
+            10.274542000002839,
+            10.168082999996841
+          ],
+          "medianMs": 10.274542000002839,
+          "outputDigest": "75b2113f9b8f9337409dbdde4709ad10167d2b4381e8ac7577f22bd1663e7669"
+        },
+        "wind.single": {
+          "samples": [
+            9.6842080000024,
+            10.680000000000291,
+            9.075833000002604
+          ],
+          "medianMs": 9.6842080000024,
+          "outputDigest": "a5407d3c9cf69c5aadf1b06f0f38ce75d5a5f628d479d4a1184180a1e8f2a0f5"
+        },
+        "wind.full": {
+          "samples": [
+            588.8521670000009,
+            523.632375000001,
+            586.0336669999961
+          ],
+          "medianMs": 586.0336669999961,
+          "outputDigest": "3013a23b6fe9294cddd48b2438df31ec8291ea7a35ad6ba094e5be228e390850",
+          "candidates": 50
+        },
+        "wind.weapon": {
+          "samples": [
+            18.07849999999962,
+            15.25854199999958,
+            17.881792000000132
+          ],
+          "medianMs": 17.881792000000132,
+          "outputDigest": "76bf71b24da37d2e09556c6ac8d13f7a0b71869cbc799c6f168158a500931797"
+        },
+        "ice.single": {
+          "samples": [
+            7.7873340000005555,
+            7.439666000002035,
+            8.660292000000481
+          ],
+          "medianMs": 7.7873340000005555,
+          "outputDigest": "5d079742f3c1b9c09941f6ccc44612048adc72324c7c22309398bdaf621d03fa"
+        },
+        "ice.full": {
+          "samples": [
+            572.2249579999989,
+            490.9363749999975,
+            585.7547919999997
+          ],
+          "medianMs": 572.2249579999989,
+          "outputDigest": "5b960e4196ed4d4ca6f65422c8a84659223cb08df562cd7293a089c7776fad28",
+          "candidates": 50
+        },
+        "ice.weapon": {
+          "samples": [
+            16.335707999998704,
+            15.039375000000291,
+            17.495624999995925
+          ],
+          "medianMs": 16.335707999998704,
+          "outputDigest": "88d54eb4f8c4bd387b2420dcf564ccf4256a3740b06ecb01504621a9749d4b5b"
+        }
+      }
+    }
+  }
+}

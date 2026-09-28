@@ -5,6 +5,7 @@ import { escoffierDefinition } from "./definition.js"
 
 export const escoffierCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "escoffier.kit.healing", label: "元素爆发治疗全队", kind: "healing", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("escoffier", 5),
     ...declareWeaponHitCapabilities(escoffierDefinition),
     declareHitCapability("escoffier.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["cryo"]),

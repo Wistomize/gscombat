@@ -5,6 +5,7 @@ import { kaedeharaKazuhaDefinition } from "./definition.js"
 
 export const kaedeharaKazuhaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "kaedehara-kazuha.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("kaedehara-kazuha", 1),
     { id: "kaedehara-kazuha.kit.plunge-access", label: "千早振振腾空后进行乱岚拨止", kind: "plunge_access", recipient: "self", sourceFieldPresence: "on_field", sustained: true },
     ...declareWeaponHitCapabilities(kaedeharaKazuhaDefinition),

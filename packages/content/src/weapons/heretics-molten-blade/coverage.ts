@@ -4,7 +4,7 @@ import { weaponSource, type EquipmentCoverageEntry } from "../../equipment-cover
 export const equipmentCoverage = {
   clauses: [
     {
-      effectIds: ["weapon.heretics-molten-blade.after-skill.maximum-movement.attack-percent"],
+      effectIds: ["weapon.heretics-molten-blade.after-skill.maximum-movement.attack-percent", "weapon.heretics-molten-blade.after-skill.minimum-movement.attack-percent"],
       id: "weapon.heretics-molten-blade.after-skill.movement.attack-percent",
       label: "熔猎异端之刃 · 映落瞳中的初光攻击力",
       source: weaponSource("HereticsMoltenBlade"),

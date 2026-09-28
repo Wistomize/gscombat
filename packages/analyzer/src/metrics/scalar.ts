@@ -55,7 +55,8 @@ export function evaluateScalarMetric(
     input.context?.source,
     input.context?.teammates,
     input.gameData,
-    resolveSupportFieldContext(input.build.buildId, input.context?.onFieldBuildId)
+    { ...resolveSupportFieldContext(input.build.buildId, input.context?.onFieldBuildId),
+      ...(input.context?.weaponEffectChoices ? { weaponEffectChoices: input.context.weaponEffectChoices } : {}) }
   )
   const ratioParameterDefinition = metric.ratioParameter
   const flatParameterDefinition = metric.flatParameter

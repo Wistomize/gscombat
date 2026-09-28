@@ -5,6 +5,7 @@ import { albedoDefinition } from "./definition.js"
 
 export const albedoCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "albedo.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
     declareSkillCastCapability("albedo", 3),
     { id: "albedo.kit.plunge-access", label: "阳华电梯提供腾空条件", kind: "plunge_access", recipient: "on_field", sourceFieldPresence: "any", sustained: true },
     ...declareWeaponHitCapabilities(albedoDefinition),
@@ -58,6 +59,7 @@ export const albedoCombatCoverage: CharacterCombatCoverage = {
       element: albedoDefinition.element,
       evaluator: "declared_direct",
       id: "albedo.burst.rite_of_progeniture_tectonic_tide.initial_hit",
+      preparationAtSnapshot: { energyNotFull: false },
       kind: "damage",
       parameterReferences: [
         {

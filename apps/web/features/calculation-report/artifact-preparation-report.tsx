@@ -15,7 +15,7 @@ export function ArtifactPreparationReport({ analysis, catalog }: {
       {rows.map((row) => (
         <div key={`${row.sourceBuildId}:${row.effectId}`}>
           <strong>{getCharacterLabel(catalog, row.sourceCharacterId)} · {
-            { on_field: "前台", off_field: "后台", unknown: "站位未指定" }[row.sourcePresence]
+            { on_field: "前台", off_field: "后台", unknown: "前后台未确定" }[row.sourcePresence]
           } · {row.label}</strong>
           <p>{row.applied ? "已应用" : row.qualified ? "准备条件满足" : "准备条件未满足"}：{row.reason}</p>
           {row.capabilitySourceIds.length ? <small>能力来源：{row.capabilitySourceIds.join("、")}</small> : null}

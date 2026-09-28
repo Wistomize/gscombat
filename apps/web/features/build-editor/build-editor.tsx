@@ -160,6 +160,8 @@ function ArtifactEditor({
 export function BuildEditor({ build, catalog, onChange }: BuildEditorProps) {
   const character = catalog.characters.find((candidate) => candidate.characterId === build.characterId)
   const weapons = catalog.weapons.filter((weapon) => weapon.weaponType === character?.weaponType)
+  const selectedWeapon = weapons.find((weapon) => weapon.weaponId === build.weapon.weaponId)
+  const legalRefinements = selectedWeapon?.comparison?.refinements
   const artifactSectionLabel = build.artifacts.length === 0 ? "未装备圣遗物" : `${build.artifacts.length} 件圣遗物`
   const updateWeapon = (weaponId: string) => {
     const weapon = weapons.find((candidate) => candidate.weaponId === weaponId)
@@ -167,13 +169,22 @@ export function BuildEditor({ build, catalog, onChange }: BuildEditorProps) {
       ...build,
       weapon: {
         ...build.weapon,
-        refinement: weapon ? getWeaponComparisonRefinement(weapon.rarity) : build.weapon.refinement,
+        refinement: weapon?.comparison?.refinements?.[0] ?? (weapon ? getWeaponComparisonRefinement(weapon.rarity) : build.weapon.refinement),
+        ...(weapon?.comparison?.level ? { level: weapon.comparison.level, ascension: weapon.comparison.ascension ?? build.weapon.ascension } : {}),
         weaponId
       }
     })
   }
   const updateArtifact = (index: number, artifact: ArtifactPiece) => {
     onChange({ ...build, artifacts: build.artifacts.map((current, artifactIndex) => (artifactIndex === index ? artifact : current)) })
+  }
+  const updateWeaponLevel = (value: string) => {
+    const level = numberValue(value, 1)
+    const policy = selectedWeapon?.comparison
+    onChange({ ...build, weapon: { ...build.weapon,
+      level: policy?.level === undefined ? level : Math.min(policy.level, Math.max(1, Math.trunc(level))),
+      ...(policy?.ascension === undefined ? {} : { ascension: Math.min(build.weapon.ascension, policy.ascension) })
+    } })
   }
 
   return (
@@ -227,20 +238,19 @@ export function BuildEditor({ build, catalog, onChange }: BuildEditorProps) {
           <label>
             <span>等级</span>
             <input
-              max={90}
+              max={selectedWeapon?.comparison?.level ?? 90}
               min={1}
               type="number"
               value={build.weapon.level}
-              onChange={(event) =>
-                onChange({ ...build, weapon: { ...build.weapon, level: numberValue(event.target.value, 1) } })
-              }
+              onChange={(event) => updateWeaponLevel(event.target.value)}
             />
           </label>
           <label>
             <span>精炼</span>
             <input
-              max={5}
-              min={1}
+              max={legalRefinements?.at(-1) ?? 5}
+              min={legalRefinements?.[0] ?? 1}
+              disabled={legalRefinements?.length === 1}
               type="number"
               value={build.weapon.refinement}
               onChange={(event) =>

@@ -11,7 +11,7 @@ export const equipmentCoverage = {
       status: "implemented"
     },
     {
-      effectIds: [
+      effectIds: ["weapon.ultimate-overlords-mega-magic-sword.melusine.0-stack.attack-percent",
         "weapon.ultimate-overlords-mega-magic-sword.melusine.1-stack.attack-percent",
         "weapon.ultimate-overlords-mega-magic-sword.melusine.2-stack.attack-percent",
         "weapon.ultimate-overlords-mega-magic-sword.melusine.3-stack.attack-percent",

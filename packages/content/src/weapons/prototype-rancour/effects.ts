@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareMaximumWeaponStacks } from "../../combat/weapon-preparation.js"
 
 export const PROTOTYPE_RANCOUR_ATTACK_DEFENSE_PERCENT_PER_STACK = [0.04, 0.05, 0.06, 0.07, 0.08] as const
 
@@ -12,7 +13,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
   const exclusivity = { group: "prototype-rancour-shattered-stone", variant: `${stackCount}-stack` }
   return [
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 4, { kind: "damage_hit", hitKinds: ["normal", "charged"], provider: "source", recipient: "source" }, true),
       exclusivity,
       id: `weapon.prototype-rancour.shattered-stone.${stackCount}-stack.attack-percent`,
       label: `试作斩岩 · 普通攻击或重击命中后的${stackCount}层攻击力`,
@@ -21,7 +23,8 @@ function createStackEffects(stackCount: (typeof stackCounts)[number]): readonly 
       value: { kind: "refinement_table", values: getValues(stackCount) }
     },
     {
-      activation: "active",
+      activation: "automatic",
+      lifecycle: prepareMaximumWeaponStacks(stackCount, 4, { kind: "damage_hit", hitKinds: ["normal", "charged"], provider: "source", recipient: "source" }, true),
       exclusivity,
       id: `weapon.prototype-rancour.shattered-stone.${stackCount}-stack.defense-percent`,
       label: `试作斩岩 · 普通攻击或重击命中后的${stackCount}层防御力`,

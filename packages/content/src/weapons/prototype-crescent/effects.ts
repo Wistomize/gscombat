@@ -1,9 +1,10 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const PROTOTYPE_CRESCENT_AFTER_WEAK_POINT_ATTACK_PERCENT = [0.36, 0.45, 0.54, 0.63, 0.72] as const
 
 /** Typed selected post-weak-point-hit contribution of Prototype Crescent. */
-export const prototypeCrescentCombatActionEffects: readonly CombatActionEffect[] = [
+export const prototypeCrescentCombatActionEffects: readonly CombatActionEffect[] = withWeaponToggle(
   {
     activation: "active",
     selectionMode: "optional",
@@ -13,4 +14,4 @@ export const prototypeCrescentCombatActionEffects: readonly CombatActionEffect[]
     target: "attackPercent",
     value: { kind: "refinement_table", values: PROTOTYPE_CRESCENT_AFTER_WEAK_POINT_ATTACK_PERCENT }
   }
-]
+, "prototype-crescent-weak-point-prepared", "此前重击已命中要害", false)

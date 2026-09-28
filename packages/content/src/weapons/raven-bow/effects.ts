@@ -1,9 +1,10 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { withWeaponToggle } from "../../combat/weapon-preparation.js"
 
 export const RAVEN_BOW_DAMAGE_BONUS_BY_REFINEMENT = [0.12, 0.15, 0.18, 0.21, 0.24] as const
 
 /** Typed selected target-aura contribution of Raven Bow to a maintained core action. */
-export const ravenBowCombatActionEffects: readonly CombatActionEffect[] = [
+const authoredEffects: readonly CombatActionEffect[] = [
   {
     activation: "active",
     selectionMode: "optional",
@@ -14,3 +15,9 @@ export const ravenBowCombatActionEffects: readonly CombatActionEffect[] = [
     value: { kind: "refinement_table", values: RAVEN_BOW_DAMAGE_BONUS_BY_REFINEMENT }
   }
 ]
+
+export const ravenBowCombatActionEffects: readonly CombatActionEffect[] = authoredEffects.flatMap((effect) =>
+  withWeaponToggle(effect, "raven-bow-target-aura", "目标水／火附着", true).map((choice) => ({ ...choice,
+    weaponChoice: { ...choice.weaponChoice!, targetAuraElements: ["hydro","pyro"] }
+  }))
+)

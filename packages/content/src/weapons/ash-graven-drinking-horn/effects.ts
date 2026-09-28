@@ -10,6 +10,7 @@ export const ashGravenDrinkingHornCombatActionEffects: readonly CombatActionEffe
     label: "苍纹角杯 · 本次攻击触发基于生命值上限的物理伤害（冷却已就绪）",
     source: { kind: "weapon", weaponId: "AshGravenDrinkingHorn" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     value: {
       canCrit: true,
       coefficient: { kind: "refinement_table", values: ASH_GRAVEN_DRINKING_HORN_HP_COEFFICIENT },

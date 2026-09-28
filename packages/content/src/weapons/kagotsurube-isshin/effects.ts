@@ -1,4 +1,5 @@
 import type { CombatActionEffect } from "../../combat/types.js"
+import { prepareWeaponEffect } from "../../combat/weapon-preparation.js"
 
 export const KAGOTSURUBE_ISSHIN_ATTACK_PERCENT = 0.15
 export const KAGOTSURUBE_ISSHIN_PHYSICAL_COEFFICIENT = 1.8
@@ -11,6 +12,7 @@ export const kagotsurubeIsshinCombatActionEffects: readonly CombatActionEffect[]
     label: "笼钓瓶一心 · 本次普通攻击、重击或下落攻击命中（8秒冷却已就绪）",
     source: { kind: "weapon", weaponId: "KagotsurubeIsshin" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "独立武器追加伤害不并入角色单次指标" },
     targetFilter: { attackKinds: ["normal", "charged", "plunge"] },
     value: {
       canCrit: true,
@@ -23,7 +25,8 @@ export const kagotsurubeIsshinCombatActionEffects: readonly CombatActionEffect[]
     }
   },
   {
-    activation: "active",
+    activation: "automatic",
+    lifecycle: prepareWeaponEffect({ kind: "damage_hit", hitKinds: ["normal", "charged", "plunge"], provider: "source", recipient: "source" }, "前台普攻、重击或下落命中准备攻击加成", true),
     id: "weapon.kagotsurube-isshin.after-hit.attack-percent",
     label: "笼钓瓶一心 · 触发物理伤害后8秒内（当前动作前已生效）",
     source: { kind: "weapon", weaponId: "KagotsurubeIsshin" },

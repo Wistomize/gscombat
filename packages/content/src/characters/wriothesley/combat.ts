@@ -5,6 +5,7 @@ import { wriothesleyDefinition } from "./definition.js"
 
 export const wriothesleyCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "wriothesley.kit.weapon-healing-qualification", label: "恩典之诫强化重击自疗", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false, minimumSourceAscension: 1 },
     declareSkillCastCapability("wriothesley", 3),
     ...declareWeaponHitCapabilities(wriothesleyDefinition),
     declareHitCapability("wriothesley.kit.skill_burst_hits", "战技/爆发直接命中准备", ["burst"], ["cryo"]),

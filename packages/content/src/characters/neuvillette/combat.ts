@@ -8,6 +8,7 @@ const neuvilletteC6WaterfallActionId =
 
 export const neuvilletteCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "neuvillette.kit.healing", label: "吸收源水之滴恢复自身生命", kind: "healing", recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("neuvillette", 3),
     ...declareWeaponHitCapabilities(neuvilletteDefinition),
     declareHitCapability("neuvillette.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),

@@ -1,4 +1,4 @@
-import type { CatalogResponse, CharacterBuild, EvaluationScenario } from "@gscombat/contracts"
+import type { ActionEffectOptionsResponse, CatalogResponse, CharacterBuild, EvaluationScenario } from "@gscombat/contracts"
 
 import { getCharacterLabel } from "../../lib/formatting/builds"
 import { numberValue } from "../../lib/formatting/numbers"
@@ -26,6 +26,7 @@ function splitEffectOptionLabel(label: string): readonly [string, string] {
 }
 
 interface CalculationScenarioProps {
+  readonly weaponChoices?: ActionEffectOptionsResponse["weaponChoices"]
   readonly buffs: ScenarioBuffs
   readonly catalog: CatalogResponse
   readonly characterEffectOptions: readonly ScenarioEffectOption[]
@@ -61,6 +62,7 @@ export function CalculationScenario({
   catalog,
   characterEffectOptions,
   conditions,
+  weaponChoices,
   enemy,
   hasFrozenCondition,
   hasGeoResonance,
@@ -107,6 +109,27 @@ export function CalculationScenario({
           <p>{selectedSupportMetric ? "辅助指标与伤害指标共享队伍前台身份；选择前台不会切换计算对象。" : "当前指标由后台角色造成伤害；选择前台角色不会切换计算对象。"}</p>
         </div>
       ) : null}
+      {(weaponChoices ?? []).length > 0 ? <div className="scenarioToggles">
+        {(weaponChoices ?? []).flatMap((entry) => entry.choiceGroups.map((group) => {
+          const source = partyBuilds.find((build) => build.buildId === entry.sourceBuildId)
+          const weaponLabel = catalog.weapons.find((weapon) => weapon.weaponId === entry.weaponId)?.label ?? entry.weaponId
+          return <label className="optionalEffectSelect" key={`${entry.sourceBuildId}:${group.id}`}>
+            <span>{source ? getCharacterLabel(catalog, source.characterId) : ""} · {weaponLabel} · {group.label}</span>
+            <select aria-label={`${weaponLabel} · ${group.label}`}
+              value={conditions.weaponEffectChoices?.[entry.sourceBuildId]?.[group.id] ?? entry.choices[group.id] ?? group.defaultVariant}
+              onChange={(event) => onConditionsChange((current) => ({ ...current, weaponEffectChoices: {
+                ...current.weaponEffectChoices, [entry.sourceBuildId]: {
+                  ...current.weaponEffectChoices?.[entry.sourceBuildId], [group.id]: event.target.value
+                }
+              } }))}>
+              {group.options.map((option) => {
+                const recipient = partyBuilds.find((build) => build.buildId === option.id)
+                return <option key={option.id} value={option.id}>{recipient ? getCharacterLabel(catalog, recipient.characterId) : option.label}</option>
+              })}
+            </select>
+          </label>
+        }))}
+      </div> : null}
       {selectedSupportMetric ? (
         <div className="scenarioControls">
           {selectedSupportMetric.target === "friendly_recipient" ? (
@@ -286,6 +309,15 @@ export function CalculationScenario({
             ))}
           </div>
           <div className="scenarioToggles">
+            {targetAction?.supportsArrowWeakPoint ? <label className="toggleRow"><span>本次箭命中要害（所有武器共用）</span>
+              <input type="checkbox" checked={conditions.arrowHitsWeakPoint ?? false}
+                onChange={(event) => onConditionsChange((current) => ({ ...current, arrowHitsWeakPoint: event.target.checked }))} />
+            </label> : null}
+            {catalog.characters.find((character) => character.characterId === targetBuild.characterId)?.weaponType === "polearm"
+              ? <label className="toggleRow"><span>目标为史莱姆（所有武器共用）</span>
+                <input type="checkbox" checked={conditions.targetIsSlime ?? false}
+                  onChange={(event) => onConditionsChange((current) => ({ ...current, targetIsSlime: event.target.checked }))} />
+              </label> : null}
             {hasGeoResonance ? (
               <label className="toggleRow">
                 <span>角色处于护盾保护（双岩共鸣）</span>
@@ -330,7 +362,6 @@ export function CalculationScenario({
               }, new Map<string, ScenarioEffectOption>()).values()]
               const label = effects[0] ? splitEffectOptionLabel(effects[0].label)[0] : "可选效果"
               const required = effects[0]?.selectionMode === "required"
-              const automaticPreparation = effects.some((effect) => effect.automaticPreparation)
               const preparationDescription = effects.find((effect) => effect.preparationDescription)?.preparationDescription
               const selectedVariant = variants.find((variant) => effects.some((effect) =>
                 (effect.exclusiveVariant ?? effect.id) === (variant.exclusiveVariant ?? variant.id) &&
@@ -344,7 +375,7 @@ export function CalculationScenario({
                     value={selectedVariant?.id ?? ""}
                     onChange={(event) => onScenarioEffectSelect(effects, event.target.value)}
                   >
-                    <option disabled={required} value="">{required ? "请选择" : automaticPreparation ? "自动（按能力与站位判断）" : "未选择 / 不触发"}</option>
+                    <option disabled={required} value="">{required ? "请选择" : "未选择 / 不触发"}</option>
                     {variants.map((effect) => (
                       <option key={effect.id} value={effect.id}>{splitEffectOptionLabel(effect.label)[1]}</option>
                     ))}
@@ -364,31 +395,31 @@ export function CalculationScenario({
               </label>
             ))}
           </div>
-          {scenarioEffectOptionsStatus === "loading" ? (
-            <p className="automaticEffectsNote">正在加载当前队伍可用的角色、武器与圣遗物效果…</p>
-          ) : null}
-          {scenarioEffectOptionsStatus === "error" ? (
-            <div className="effectOptionsError">
-              <span>{scenarioEffectOptionsError}</span>
-              <button type="button" onClick={onReloadEffects}>重新加载</button>
-            </div>
-          ) : null}
           <p className="automaticEffectsNote">
-            效果按装备者、队伍能力与真实前后台自动判定；退场清除的效果不会给后台角色。
-            自动层数与手动指定分开，选择零层会覆盖自动准备；未支持的累计效果不默认吃满。
+            圣遗物效果按装备者、队伍能力与本次指标的前后台设定自动计算，无需选择触发或层数。
+            仅保留需要明确指定的场景条件；生效与未生效原因可在计算结果中查看。
           </p>
         </>
       )}
+      {scenarioEffectOptionsStatus === "loading" ? (
+        <p className="automaticEffectsNote">正在加载当前队伍可用的角色、武器与圣遗物效果…</p>
+      ) : null}
+      {scenarioEffectOptionsStatus === "error" ? (
+        <div className="effectOptionsError">
+          <span>{scenarioEffectOptionsError}</span>
+          <button type="button" onClick={onReloadEffects}>重新加载</button>
+        </div>
+      ) : null}
       <button
         className="workspacePrimaryButton calculateButton"
-        disabled={Boolean(targetAction) &&
-          (scenarioEffectOptionsStatus !== "ready" || hasUnselectedRequiredEffect)}
+        disabled={Boolean(targetAction || selectedSupportMetric) &&
+          (scenarioEffectOptionsStatus !== "ready" || (!selectedSupportMetric && hasUnselectedRequiredEffect))}
         type="button"
         onClick={() => void onRunAnalysis()}
       >
         {scenarioEffectOptionsStatus === "loading"
           ? "正在加载可用效果…"
-          : hasUnselectedRequiredEffect
+          : !selectedSupportMetric && hasUnselectedRequiredEffect
             ? "请先完成必选 Buff"
             : "开始计算"}
       </button>

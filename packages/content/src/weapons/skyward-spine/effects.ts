@@ -19,6 +19,7 @@ export const skywardSpineCombatActionEffects: readonly CombatActionEffect[] = [
     label: "天空之脊 · 真空刃（2秒冷却已就绪）",
     source: { kind: "weapon", weaponId: "SkywardSpine" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"], talentSlots: ["normal"] },
     value: {
       canCrit: true,

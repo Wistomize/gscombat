@@ -10,6 +10,7 @@ export const debateClubCombatActionEffects: readonly CombatActionEffect[] = [
     label: "以理服人 · 此前施放元素战技后本次普攻或重击触发物理伤害（冷却已就绪）",
     source: { kind: "weapon", weaponId: "DebateClub" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"] },
     value: {
       canCrit: true,

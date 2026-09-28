@@ -13,15 +13,15 @@ function getDamageBonusValues(stackCount: number): readonly number[] {
 
 function createBondOfLifeIncreaseEffect(stackCount: (typeof stackCounts)[number]): CombatActionEffect {
   return {
-    activation: "active",
-    selectionMode: "optional",
+    activation: "automatic",
+    lifecycle: stackCount === 3 ? { kind: "constant" } : { kind: "excluded", reason: "克洛琳德自动三层；其他角色不计" },
     exclusivity: { group: "absolution-bond-of-life-increase", variant: `${stackCount}-stack` },
     id: `weapon.absolution.bond-of-life-increase.${stackCount}-stack.damage-bonus`,
     label: `赦罪 · 本次命中前已持有的${stackCount}层生命之契数值增加伤害提升（6秒内）`,
     source: { holder: "primary", kind: "weapon", weaponId: "Absolution" },
     target: "damageBonus",
-    value: { kind: "refinement_table", values: getDamageBonusValues(stackCount) },
-    ...(stackCount === 3 ? { weaponComparisonDefault: { recipientCharacterIds: ["Clorinde"] } } : {})
+    targetFilter: { recipientCharacterIds: ["Clorinde"] },
+    value: { kind: "refinement_table", values: getDamageBonusValues(stackCount) }
   }
 }
 

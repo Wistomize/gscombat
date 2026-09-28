@@ -5,6 +5,8 @@ import { kamisatoAyatoDefinition } from "./definition.js"
 
 export const kamisatoAyatoCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "kamisato-ayato.kit.particle-generation", label: "已核验的自身产球准备", kind: "particle_generation", recipient: "party", sourceFieldPresence: "any", sustained: false },
+    { id: "kamisato-ayato.kit.normal-infusion", label: "泷廻鉴花水元素普攻", kind: "normal_attack_infusion", elements: ["hydro"], recipient: "self", sourceFieldPresence: "on_field", sustained: true },
     declareSkillCastCapability("kamisato-ayato", 7),
     ...declareWeaponHitCapabilities(kamisatoAyatoDefinition),
     declareHitCapability("kamisato-ayato.kit.skill_burst_hits", "战技/爆发直接命中准备", ["skill","burst"], ["hydro"]),

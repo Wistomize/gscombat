@@ -162,11 +162,23 @@ function getScenarioEffectSourceBuilds(
   return sourceBuilds
 }
 
+/** Keeps explicit scenario choices, but leaves automatic artifact groups entirely to the evaluator. */
+export function getSelectableScenarioEffectOptions(
+  effectOptions: readonly ScenarioEffectOption[]
+): readonly ScenarioEffectOption[] {
+  const automaticArtifactGroups = new Set(effectOptions
+    .filter((effect) => effect.source.kind === "artifact_set" && effect.automaticPreparation)
+    .map((effect) => effect.exclusiveGroup ?? effect.id))
+  return effectOptions.filter((effect) => effect.source.kind !== "artifact_set" ||
+    !automaticArtifactGroups.has(effect.exclusiveGroup ?? effect.id))
+}
+
 export function reconcileScenarioEffectIds(
   activeEffectIds: readonly string[],
   effectOptions: readonly ScenarioEffectOption[]
 ): string[] {
-  const effectsById = new Map(effectOptions.map((effect) => [effect.id, effect]))
+  const selectableOptions = getSelectableScenarioEffectOptions(effectOptions)
+  const effectsById = new Map(selectableOptions.map((effect) => [effect.id, effect]))
   const selectedEffectIds = new Set(
     activeEffectIds.filter((effectId) => {
       const effect = effectsById.get(effectId)
@@ -176,7 +188,7 @@ export function reconcileScenarioEffectIds(
   let added = true
   while (added) {
     added = false
-    for (const effect of effectOptions) {
+    for (const effect of selectableOptions) {
       const requiredActiveEffectIds = effect.requiredActiveEffectIds
       if (
         selectedEffectIds.has(effect.id) ||

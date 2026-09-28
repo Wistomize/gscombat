@@ -8,6 +8,7 @@ export const swordOfDescensionCombatActionEffects: readonly CombatActionEffect[]
     label: "降临之剑 · PlayStation Network 被动已生效，本次攻击触发物理伤害（冷却已就绪）",
     source: { kind: "weapon", weaponId: "SwordOfDescension" },
     target: "additionalDamageEvent",
+    lifecycle: { kind: "excluded", reason: "已确认忽略武器独立追加伤害，仅保留角色指标相关属性" },
     targetFilter: { attackKinds: ["normal", "charged"] },
     value: {
       canCrit: true,

@@ -5,6 +5,8 @@ import { chascaDefinition } from "./definition.js"
 
 export const chascaCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
+    { id: "chasca.kit.burst-energy-spend", label: "元素爆发扣能准备（冷却读取固定数据）", kind: "energy_spend",
+      energySpend: { burstCooldownParameterIndex: 3 }, recipient: "self", sourceFieldPresence: "on_field", sustained: false },
     declareSkillCastCapability("chasca", 5),
     ...declareWeaponHitCapabilities(chascaDefinition),
     declareHitCapability("chasca.kit.skill_burst_hits", "灵缰共鸣初始战技与爆发命中准备", ["skill", "burst"], ["anemo"]),
