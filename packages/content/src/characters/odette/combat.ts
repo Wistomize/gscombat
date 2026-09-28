@@ -212,8 +212,11 @@ export const odetteCombatCoverage: CharacterCombatCoverage = {
     { id: "odette.passive.reaction-conversion", label: "固有祝赐：队伍特殊反应转换", kind: "reaction_conversion", recipient: "party", sourceFieldPresence: "any", sustained: true, specialReactions: ["stellar_superconduct","stellar_swirl"] },
     { id: "odette.kit.stellar-damage", label: "辉映状态下自身造成星烁反应伤害", kind: "special_reaction_damage", recipient: "self", sourceFieldPresence: "any", sustained: true, specialReactions: ["stellar_superconduct","stellar_swirl"], requiredTeamReaction: "stellar" },
     ...declareWeaponHitCapabilities(odetteDefinition),
+    // Sustained Reflection hits can prepare three stacks; the two E casts are not a two-hit limit.
+    // Default prepared Coda uses reachable E -> E stacks, not the first rotation's unprepared Q -> E.
+    // Evidence: https://meropide.com/chs/characters/奥黛塔/theorycraft/ (白湖冬羽叠层说明).
     { ...declareHitCapability("odette.kit.sustained_skill_hits", "独舞倒影持续后台战技命中", ["skill"], ["cryo"], true),
-      skillHitOpportunities: { withinSeconds: 7, count: 2, minimumSeparationSeconds: 0.3 } },
+      skillHitOpportunities: { withinSeconds: 7, count: 3, minimumSeparationSeconds: 0.3 } },
     declareHitCapability("odette.kit.skill_burst_hits", "已维护战技/爆发命中机制", ["skill"], ["cryo"]),
   ],
   actions: [

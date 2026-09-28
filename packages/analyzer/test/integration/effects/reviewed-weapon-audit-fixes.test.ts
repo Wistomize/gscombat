@@ -39,6 +39,29 @@ function withChoice(input: EvaluationScenario, group: string, variant: string): 
 }
 
 describe("reviewed weapon audit fixes", () => {
+  it.each(["stellar_superconduct", "stellar_swirl"])(
+    "prepares all Whitelake stacks for Odette's %s Coda in equipment and comparisons", (reaction) => {
+      const input = scenario(build("Odette", "PrimordialJadeCutter"),
+        `odette.skill.adagio_coda_at_dawn.final_hit.${reaction}`)
+      for (const [refinement, attackPercent, critDamage] of [[1, 0.24, 0.5], [5, 0.48, 1.1]] as const) {
+        const equipped = { ...input, primary: { ...input.primary,
+          weapon: { ...input.primary.weapon, weaponId: "WhitelakeFrostfeather", refinement } } }
+        const result = evaluateScenario(equipped, db)
+        expect(result.appliedEffects.filter((effect) => effect.id.startsWith("weapon.whitelake-frostfeather.")))
+          .toEqual(expect.arrayContaining([
+            expect.objectContaining({ id: "weapon.whitelake-frostfeather.lake-hued-lament.3-stack.attack-percent",
+              value: attackPercent }),
+            expect.objectContaining({ id: "weapon.whitelake-frostfeather.lake-hued-lament.3-stack.stellar-reaction-crit-damage",
+              value: critDamage })
+          ]))
+        expect(result.appliedEffects.some((effect) => /lake-hued-lament\.[12]-stack/.test(effect.id))).toBe(false)
+        expect(analyzeWeaponComparison(input, db, "WhitelakeFrostfeather", refinement).weapon.expectedDamage)
+          .toBeCloseTo(result.actionExpectedDamage, 8)
+        expect(analyzeWeaponComparison(equipped, db, "WhitelakeFrostfeather", refinement).weapon.gainRatio).toBe(0)
+      }
+    }
+  )
+
   it("counts Xianyun's Widsith theme only once in her source ATK and EM snapshots", () => {
     const xiao = build("Xiao", "FavoniusLance")
     const xianyun = build("Xianyun", "TheWidsith")
