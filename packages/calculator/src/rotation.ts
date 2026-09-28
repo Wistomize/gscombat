@@ -1,4 +1,5 @@
 import { calculateDefenseMultiplier, calculateResistanceMultiplier } from "./evaluate.js"
+import type { CriticalStatsTransform } from "./critical-stats.js"
 import type {
   DamageScalingTerm,
   Element,
@@ -191,6 +192,7 @@ export interface RotationDamageEvent {
 }
 
 export interface RotationInput {
+  readonly transformCriticalStats?: CriticalStatsTransform
   readonly duration: number
   readonly enemy: RotationEnemyStats
   readonly effects?: readonly RotationEffectWindow[]
@@ -466,14 +468,17 @@ export function evaluateRotation(input: RotationInput): RotationResult {
       standardIcdStates,
       elementOverride !== undefined
     )
+    const finalStats = resolveElementDamageBonus(
+      applyStatModifiers(event.stats, activeEffects.map((effect) => effect.stats)), resolvedEvent.element)
+    const criticalStats = input.transformCriticalStats && event.canCrit && event.critPolicy !== "guaranteed"
+      ? input.transformCriticalStats({ eventId: event.id, ownerId: event.ownerId,
+          appliedEffectIds: [...(event.appliedEffectIds ?? []), ...activeEffects.map(effect => effect.id)],
+          critRate: finalStats.critRate, critDamage: finalStats.critDamage }) : undefined
     const result = evaluateRotationEvent(
       {
         ...resolvedEvent,
         ...(elementalApplication?.reaction ? { reaction: elementalApplication.reaction } : {}),
-        stats: resolveElementDamageBonus(
-          applyStatModifiers(event.stats, activeEffects.map((effect) => effect.stats)),
-          resolvedEvent.element
-        )
+        stats: criticalStats ? { ...finalStats, critRate: criticalStats.critRate, critDamage: criticalStats.critDamage } : finalStats
       },
       input.enemy
     )

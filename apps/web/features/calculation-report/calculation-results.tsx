@@ -5,8 +5,10 @@ import { OrderedDamageReport } from "./damage-report"
 import { SupportMetricReport } from "./support-metric-report"
 import { ArtifactPreparationReport } from "./artifact-preparation-report"
 import type { WeaponRequestState } from "../calculation-workspace/use-incremental-analysis"
+import type { EquipmentComparisonState } from "../calculation-workspace/use-equipment-comparisons"
 
 interface CalculationResultsProps {
+  readonly equipment?: EquipmentComparisonState | undefined
   readonly analysis: AnalysisResponse | null
   readonly weaponStates?: Readonly<Record<string, WeaponRequestState>>
   readonly catalog: CatalogResponse
@@ -19,6 +21,7 @@ interface CalculationResultsProps {
 
 /** Selects the authoritative support or damage report for the latest completed calculation. */
 export function CalculationResults({
+  equipment,
   analysis,
   weaponStates,
   catalog,
@@ -38,6 +41,7 @@ export function CalculationResults({
         <SupportMetricReport catalog={catalog} response={supportMetricResponse} />
       ) : analysis && targetBuild ? (
         <OrderedDamageReport
+          equipment={equipment}
           analysis={analysis}
           weaponStates={weaponStates}
           build={targetBuild}

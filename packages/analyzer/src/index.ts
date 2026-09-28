@@ -3,6 +3,9 @@ export {
   RAIDEN_SKILL_EYE_EFFECT_ID as EFFECT_RAIDEN_SKILL_EYE
 } from "@gscombat/content"
 export { analyzeScenario, analyzeWeaponComparison, evaluateScenarioAnalysis } from "./analysis/analyze.js"
+export { EquipmentComparisonSession } from "./analysis/equipment-session.js"
+export { listArtifactLoadoutCandidates, rankArtifactLoadouts } from "./analysis/artifact-comparison.js"
+export type { ArtifactLoadoutCandidate, ArtifactLoadoutResult } from "./analysis/artifact-comparison.js"
 export { describeWeaponChoices } from "./effects/weapon-state.js"
 export { explainArtifactPreparations } from "./scenario/artifact-preparations.js"
 export type {

@@ -1,4 +1,6 @@
 import { WeaponComparisonRow } from "./weapon-comparison-row"
+import { ArtifactComparisonReport, ComparisonLoading } from "./artifact-comparison-report"
+import type { EquipmentComparisonState } from "../calculation-workspace/use-equipment-comparisons"
 import type { AnalysisResponse, CatalogResponse, CharacterBuild } from "@gscombat/contracts"
 import type { WeaponRequestState } from "../calculation-workspace/use-incremental-analysis"
 
@@ -111,6 +113,7 @@ function ArtifactRawValueReport({ build, catalog }: { readonly build: CharacterB
 }
 
 export function OrderedDamageReport({
+  equipment,
   analysis,
   weaponStates = {},
   build,
@@ -119,6 +122,7 @@ export function OrderedDamageReport({
   targetAction
 }: {
   readonly analysis: AnalysisResponse
+  readonly equipment?: EquipmentComparisonState | undefined
   readonly weaponStates?: Readonly<Record<string, WeaponRequestState>> | undefined
   readonly build: CharacterBuild
   readonly catalog: CatalogResponse
@@ -251,11 +255,13 @@ export function OrderedDamageReport({
 
       <article className="wideReport weaponReport">
         <div className="cardTitle"><span>WEAPON SWAP</span><strong>更换武器收益</strong><small>每把武器可独立选择精炼等级，并重新解析装备效果</small></div>
+        {equipment ? <ComparisonLoading state={equipment.weaponLoad} retry={equipment.retryWeapons} /> : null}
         <div className="weaponRows">{analysis.analysis.weapons.map((weapon, index) =>
           <WeaponComparisonRow key={weapon.weaponId} weapon={weapon} index={index}
             state={weaponStates[weapon.weaponId]} onChange={onWeaponRefinementChange} />
         )}</div>
       </article>
+      {equipment ? <ArtifactComparisonReport equipment={equipment} catalog={catalog} /> : null}
     </div>
   )
 }

@@ -1,5 +1,6 @@
-import type { AnalysisResponse, EvaluationScenario, WeaponComparisonResponse } from "@gscombat/contracts"
+import type { AnalysisRequest, AnalysisResponse, CoreAnalysisResponse, EvaluationScenario, WeaponComparisonResponse } from "@gscombat/contracts"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { DEFERRED_EQUIPMENT_ENABLED, useEquipmentComparisons } from "./use-equipment-comparisons"
 
 export interface WeaponRequestState {
   readonly pending?: number
@@ -16,9 +17,17 @@ export function useIncrementalAnalysis() {
   const generation = useRef(0)
   const report = useRef<{ scenario: EvaluationScenario; analysis: AnalysisResponse } | null>(null)
   const requests = useRef(new Map<string, AbortController>())
+  const equipment = useEquipmentComparisons((weapons) => {
+    if (!report.current) return
+    const latest = report.current.analysis
+    const next = { ...latest, analysis: { ...latest.analysis, weapons } }
+    report.current = { ...report.current, analysis: next }
+    setAnalysis(next)
+  })
 
   const invalidate = useCallback(() => {
     generation.current++
+    equipment.invalidate()
     for (const controller of requests.current.values()) controller.abort()
     requests.current.clear()
     report.current = null
@@ -35,10 +44,11 @@ export function useIncrementalAnalysis() {
   }, [])
 
   const isCurrent = (version: number) => generation.current === version
-  const complete = (version: number, scenario: EvaluationScenario, result: AnalysisResponse) => {
+  const complete = (version: number, scenario: AnalysisRequest, result: AnalysisResponse | CoreAnalysisResponse) => {
     if (!isCurrent(version)) return
     report.current = { scenario: structuredClone(scenario), analysis: result }
     setAnalysis(result)
+    if (DEFERRED_EQUIPMENT_ENABLED && "computationId" in result) equipment.start(scenario, result.computationId)
   }
 
   const changeRefinement = async (weaponId: string, refinement: number, overrides?: Record<string, string>) => {
@@ -104,5 +114,5 @@ export function useIncrementalAnalysis() {
     }
   }
 
-  return { analysis, weaponStates, invalidate, isCurrent, complete, changeRefinement }
+  return { analysis, weaponStates, equipment, invalidate, isCurrent, complete, changeRefinement }
 }

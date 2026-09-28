@@ -1,4 +1,5 @@
 import { prepareSources, type SourcePreparation } from "./source-preparation.js"
+import { countArtifactSet } from "../core/artifact-stats.js"
 import { getCombatActionEffectDefinition } from "@gscombat/content"
 import { resolveFieldContext, type FieldContext } from "../core/field-presence.js"
 import { listCombatActionEffects, type CombatActionMetadata } from "@gscombat/content"
@@ -91,7 +92,7 @@ function listSelectedSelfEquipmentEffectIds(
     if (selectedSourceBuildId !== undefined && selectedSourceBuildId !== source.buildId) return false
     if (selectedSourceBuildId === undefined && !isScenarioPrimary) return false
     if (effectSource.kind === "weapon") return source.weapon.weaponId === effectSource.weaponId
-    const pieceCount = source.artifacts.filter((artifact) => artifact.setId === effectSource.setId).length
+    const pieceCount = countArtifactSet(source, effectSource.setId)
     return pieceCount >= effectSource.minimumPieces
   })
 }

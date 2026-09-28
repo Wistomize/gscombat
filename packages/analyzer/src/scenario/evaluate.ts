@@ -1,6 +1,7 @@
 import { AnalysisPreparation } from "../core/analysis-preparation.js"
 import { resolveFieldContext } from "../core/field-presence.js"
 import {
+  type CriticalStatsTransform,
   type ExpectedDamageResult,
   type RotationResult
 } from "@gscombat/calculator"
@@ -48,6 +49,7 @@ export interface ScenarioEvaluation extends ScenarioTargetEvaluation {
 }
 
 export interface ScenarioIntervention {
+  readonly transformCriticalStats?: CriticalStatsTransform
   readonly artifactStatDeltas?: Partial<Readonly<Record<ArtifactStat, number>>>
 }
 
@@ -106,6 +108,7 @@ function evaluateVerifiedTargetAction(
       teammates: scenario.teammates
     })
     return evaluateDeclaredDirectScenarioAction({
+      ...(intervention.transformCriticalStats ? { transformCriticalStats: intervention.transformCriticalStats } : {}),
       preparation,
       activeEffectIds: scenario.conditions.activeEffectIds,
       ...(scenario.conditions.activeEffectSourceBuildIds === undefined
@@ -152,6 +155,7 @@ function evaluateVerifiedTargetAction(
   if (action.evaluator === "declared_special_reaction") {
     const artifactStatDeltas = intervention.artifactStatDeltas
     return evaluateDeclaredSpecialReactionScenarioAction({
+      ...(intervention.transformCriticalStats ? { transformCriticalStats: intervention.transformCriticalStats } : {}),
       preparation,
       activeEffectIds: scenario.conditions.activeEffectIds,
       ...(scenario.conditions.activeEffectSourceBuildIds === undefined

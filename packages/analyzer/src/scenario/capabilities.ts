@@ -3,6 +3,7 @@ import type { CharacterBuild } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 import { getBuildFieldPresence, type FieldContext } from "../core/field-presence.js"
 import { resolveBuildElement } from "../core/build-variant.js"
+import { countArtifactSet } from "../core/artifact-stats.js"
 
 /** A qualified provider and its kit evidence; never a persisted or inferred team-wide flag. */
 export interface CombatCapabilityProvider {
@@ -51,7 +52,7 @@ export function findCapabilityProviders(input: {
     const capabilities = [
       ...characterCapabilities,
       ...equipmentCombatCapabilities.filter((entry) => "weaponId" in entry ? entry.weaponId === build.weapon.weaponId
-        : build.artifacts.filter((artifact) => artifact.setId === entry.artifactSetId).length >= entry.minimumPieces).map((entry) => entry.capability)
+        : countArtifactSet(build, entry.artifactSetId) >= entry.minimumPieces).map((entry) => entry.capability)
     ]
     return capabilities.flatMap((capability) => {
       if (capability.kind !== input.requirement.kind) return []

@@ -15,7 +15,7 @@ import {
 } from "@gscombat/content"
 import type { CharacterBuild } from "@gscombat/contracts"
 
-import { countArtifactSet } from "../core/artifact-stats.js"
+import { countArtifactSet, getArtifactSetCounts } from "../core/artifact-stats.js"
 import {
   resolveBuildElement,
   resolvePrimaryDifferentElementOrRegionPartyCount,
@@ -59,7 +59,7 @@ function listPartyEffects(input: {
 }) {
   return listCombatActionEffectsForSources([input.primary, ...(input.teammates ?? [])].map((build) => ({
     characterId: build.characterId, weaponId: build.weapon.weaponId,
-    artifactSetIds: build.artifacts.map((artifact) => artifact.setId)
+    artifactSetIds: Object.keys(getArtifactSetCounts(build))
   })), input.activeEffectIds)
 }
 

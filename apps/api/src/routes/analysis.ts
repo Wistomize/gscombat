@@ -1,5 +1,4 @@
 import {
-  analyzeWeaponComparison,
   evaluateCombatMetric,
   evaluateScenarioAnalysis,
   explainArtifactPreparations
@@ -21,15 +20,19 @@ import {
 } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 import type { FastifyInstance } from "fastify"
+import { EquipmentComparisonService } from "../services/equipment-comparison.js"
+import { registerEquipmentComparisonRoutes, withComparisonSignal } from "./equipment-comparison.js"
 
 import {
-  ANALYSIS_ENGINE_VERSION,
   serializeAnalysisResponse,
   serializeSupportMetricResult
 } from "../serializers/analysis.js"
 
 /** Registers authoritative damage-analysis and non-damage support-metric routes. */
 export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataRepository): void {
+  const comparisons = new EquipmentComparisonService(gameData)
+  registerEquipmentComparisonRoutes(app, comparisons)
+  app.addHook("onClose", async () => comparisons.close())
   app.post<{ Body: AnalysisRequest; Reply: AnalysisResponse }>(
     "/v1/analysis",
     {
@@ -56,10 +59,10 @@ export function registerAnalysisRoutes(app: FastifyInstance, gameData: GameDataR
   app.post<{ Body: WeaponComparisonRequest; Reply: WeaponComparisonResponse }>(
     "/v1/analysis/weapon-comparison",
     { schema: { body: WeaponComparisonRequestSchema, response: { 200: WeaponComparisonResponseSchema } } },
-    async ({ body }) => {
+    async (request, reply) => {
+      const { body } = request
       assertMetricConstellation(body.scenario.targetActionId, body.scenario.primary.constellation)
-      return { ...analyzeWeaponComparison(body.scenario, gameData, body.weaponId, body.refinement, body.choices),
-        engineVersion: ANALYSIS_ENGINE_VERSION }
+      return withComparisonSignal(request, reply, signal => comparisons.weapon(body.scenario, body.weaponId, body.refinement, body.choices, signal))
     }
   )
 

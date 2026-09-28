@@ -1,5 +1,6 @@
 import type { AnalysisPreparation } from "../core/analysis-preparation.js"
 import type {
+  CriticalStatsTransform,
   ExpectedDamageResult,
   RotationEffectWindow,
   RotationElementalApplication,
@@ -159,6 +160,7 @@ export interface DeclaredSpecialReactionScenarioEvaluation {
 /** Package-private input extension, excluded from the public evaluator facade. */
 export interface PreparedDeclaredDirectScenarioInput extends DeclaredDirectScenarioInput {
   readonly preparation?: AnalysisPreparation
+  readonly transformCriticalStats?: CriticalStatsTransform
 }
 
 /** Input for evaluating a declared baseline direct action in a normalized team scenario. */

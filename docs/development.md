@@ -162,8 +162,32 @@ Content 的 `build`、`test` 和 `typecheck` 都会先验证生成注册表的�
 
 ### 性能复用边界
 
-固定效果声明可建立模块级只读索引；用户 Build 的裸属性只在单次分析内按对象身份和元素复用，
-绑定当前 GameData 实例。HP/ATK/DEF/EM 可以共用同一场景变体的来源准备，不能把上一把候选武器的
+套装比较使用内部临时件数覆盖，不改写保存的五件圣遗物。四星部位主词条取快照四星16级值，副词条不变；
+两件枚举10种、四件枚举5种部位，正式求值取最大并返回 `fourStarSlots`。主词条变体在同一准备生命周期内
+按原Build及必要件数缓存，相同实际属性分配去重；不同套装复用变体基础面板但重算派生效果。
+五星不枚举。候选计数仍按套装方案，不能将一次候选求值等同于一次伤害求值。所有 Analyzer 件数消费者必须调用
+`getArtifactSetCounts` / `countArtifactSet`，不要直接按 `build.artifacts[].setId` 统计有效套装。
+详情见 [ADR 0024](adr/0024-use-bounded-deferred-equipment-comparisons.md)。
+
+2＋2 类别由 Content 的 `artifact-comparison-groups.ts` 维护，每类一对不同真实代表套装；求值前核对
+二件效果的数值、条件和来源语义一致，不动态枚举跨类别或真实套装排列组合。
+暴击调配是仅限四件套候选的理论干预：在正式求值器取得每事件最终双暴后，按同事件、同角色实际基准
+扣除原有溢出，只将新增溢出按 1∶2 调配。观察基准与求值共用一次遍历，不重新生成核心收益报告；
+多人反应只修改装备者的输入，仍由原公式计算全队期望，不直接修改最终伤害或队友贡献。
+
+新 Web 先请求 `/v1/analysis/core`，再独立请求 `/v1/analysis/weapons` 和
+`/v1/analysis/artifact-loadouts`；必要条件更新使用 `/v1/analysis/artifact-loadouts/candidate`。
+各比较请求提交完整场景及核心报告的 `computationId`，不是只凭标识读缓存。旧完整分析与单武器接口继续兼容。
+构建 Web 时设置 `NEXT_PUBLIC_DEFERRED_EQUIPMENT=false` 可回退原武器加载流程并隐藏套装比较。
+短期缓存、排队和批次预算集中在 API 的 `comparison-scheduler.ts`；不是持久后台任务服务。
+
+套装请求的 `selectedCandidateId` 仅控制指定四件套展示，与修改条件对象的 `candidateId` 分离。
+响应中 `results` 始终是默认榜单，`selectedCandidate` 是额外指定结果；Web按ID去重，不能让指定项
+挤占较低两档。选择ID参与请求合并身份，但不参与基准或候选数值缓存键；切换缓存内选择不新增求值。
+场景、选择和清除均使用请求取消及身份校验，旧响应不能恢复已取消的选择。
+
+固定效果声明可建立模块级只读索引；用户 Build 的裸属性只在单次分析或同一有界比较会话内按不可变对象身份和元素复用，
+绑定当前 GameData 实例及完整场景。HP/ATK/DEF/EM 可以共用同一场景变体的来源准备，不能把上一把候选武器的
 最终队友面板沿用到下一把。具体边界见 [ADR 0021](adr/0021-use-stateless-incremental-weapon-comparison.md)。
 
 性能重构必须对当前工作树而非过时 HEAD 做完整输出差分。使用公开内置场景和相同 SQLite 快照，

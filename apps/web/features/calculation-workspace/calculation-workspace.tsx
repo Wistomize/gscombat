@@ -38,6 +38,7 @@ import {
 } from "../calculation-setup/model"
 import { assembleEvaluationScenario } from "../calculation-setup/scenario-adapter"
 import { useIncrementalAnalysis } from "./use-incremental-analysis"
+import { DEFERRED_EQUIPMENT_ENABLED } from "./use-equipment-comparisons"
 
 interface TeamCalculationWorkspaceProps {
   readonly catalog: CatalogResponse
@@ -351,7 +352,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         partyBuilds,
         targetActionId: targetAction.id
       })
-      const response = await fetch("/api/backend/v1/analysis", {
+      const response = await fetch(`/api/backend/v1/analysis${DEFERRED_EQUIPMENT_ENABLED ? "/core" : ""}`, {
         body: JSON.stringify({ ...scenario, weaponComparisonRefinements, weaponComparisonChoices }),
         headers: { "Content-Type": "application/json" },
         method: "POST"
@@ -363,7 +364,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
       const result = (await response.json()) as AnalysisResponse
       if (!incremental.isCurrent(version)) return
       setSupportMetricResponse(null)
-      incremental.complete(version, scenario, result)
+      incremental.complete(version, { ...scenario, weaponComparisonRefinements, weaponComparisonChoices }, result)
       setStatus("计算完成")
     } catch (caught) {
       if (!incremental.isCurrent(version)) return
@@ -470,6 +471,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
       </section>
 
       <CalculationResults
+        equipment={DEFERRED_EQUIPMENT_ENABLED ? incremental.equipment : undefined}
         analysis={analysis}
         catalog={catalog}
         selectedSupportMetric={selectedSupportMetric}

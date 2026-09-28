@@ -4,6 +4,7 @@ import type { GameDataRepository } from "@gscombat/game-data"
 import { getBuildFieldPresence, resolveFieldContext } from "../core/field-presence.js"
 import type { AppliedCombatActionEffect } from "../effects/types.js"
 import { resolveCombatEffectLifecycle } from "./effect-lifecycle.js"
+import { countArtifactSet } from "../core/artifact-stats.js"
 
 /** Explains preparation independently of damage totals; called once for the baseline, never for each candidate. */
 export function explainArtifactPreparations(
@@ -19,7 +20,7 @@ export function explainArtifactPreparations(
   return builds.flatMap((source) => effects.flatMap((effect) => {
     const equipmentSource = effect.source
     if (equipmentSource.kind !== "artifact_set" || !effect.lifecycle || effect.lifecycle.kind === "constant" ||
-      source.artifacts.filter((piece) => piece.setId === equipmentSource.setId).length < equipmentSource.minimumPieces) return []
+      countArtifactSet(source, equipmentSource.setId) < equipmentSource.minimumPieces) return []
     const sourceChoice = scenario.conditions.activeEffectSourceBuildIds?.[effect.id]
     const state = resolveCombatEffectLifecycle({
       lifecycle: effect.lifecycle, source, recipient: scenario.primary, builds, gameData, fieldContext,

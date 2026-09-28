@@ -42,6 +42,7 @@ export type {
 import { resolveFieldContext } from "../core/field-presence.js"
 import type { ResolveCombatActionEffectsInput } from "../effects/types.js"
 import * as shared from "./shared.js"
+import { transformSpecialCriticalStats } from "./critical-stats.js"
 const consumingEffectIds = new Set(listCombatActionEffects().filter((effect) => effect.hitConsumption).map((effect) => effect.id))
 
 /** A grouped hit count has no spacing evidence: consume once, without inventing cooldown resets. */
@@ -384,6 +385,7 @@ export function evaluateDeclaredDirectScenarioAction(
     )
   })
   const rotation = evaluateRotation({
+    ...(input.transformCriticalStats ? { transformCriticalStats: input.transformCriticalStats } : {}),
     duration: timeline.duration,
     enemy: {
       defenseReduction: effectiveDefenseReduction,
@@ -658,6 +660,7 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
     )
   })
   const ordinaryRotation = evaluateRotation({
+    ...(input.transformCriticalStats ? { transformCriticalStats: input.transformCriticalStats } : {}),
     duration: timeline.duration,
     enemy: {
       defenseReduction: effectiveDefenseReduction,
@@ -723,7 +726,8 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
         event.specialReaction,
         baseDamage,
         baseDamageTerms,
-        scenarioStats,
+        transformSpecialCriticalStats(scenarioStats, `${action.id}.${event.id}`, build.buildId,
+          effects.appliedEffects.map(effect => effect.id), input.transformCriticalStats),
         effects,
         getBuffTotal(buffs, "special_reaction_damage_bonus"),
         enemy.resistance,
@@ -815,8 +819,8 @@ function evaluateDeclaredMixedSpecialReactionScenarioAction(
           baseDamageBonus: effects.specialReactionBaseDamageBonus,
           baseDamageFlat: effects.specialReactionBaseDamageFlat,
           baseDamageMultiplier: effects.specialReactionBaseDamageMultiplier,
-          critDamage: stats.rotation.critDamage,
-          critRate: stats.rotation.critRate,
+          ...transformSpecialCriticalStats({ critDamage: stats.rotation.critDamage, critRate: stats.rotation.critRate },
+            `${action.id}.${event.id}`, participant.buildId, appliedEffects.map(effect => effect.id), input.transformCriticalStats),
           elementalMastery: stats.rotation.elementalMastery,
           enemyResistance: enemy.resistance,
           flatDamageAddition: effects.specialReactionFlatDamageAddition,

@@ -20,6 +20,23 @@ as an opaque score.
 
 _Create a party of one to four configured characters. Party slots do not imply rotation or field order._
 
+Artifact-set comparisons keep substats unchanged, replacing the current damage character's
+full set bonuses with a four-piece set or two distinct two-piece sets. Results include all improvements and the
+nearest two lower damage tiers, including ties. This is a theoretical comparison, not an inventory optimizer;
+four-star positions use level-16 main stats, while other positions keep their current main stats.
+The highest-damage allocation is retained (10 allocations for two four-star pieces, 5 for four).
+Four-star sets retain current five-star substats in this simulation, but actual four-star gear has fewer rolls.
+Saved builds are never changed.
+Four-piece sets are compared individually; 2+2 uses maintained same-effect categories only (such as ATK+ATK), not mixed categories.
+For active four-piece CR bonuses only, newly overflowing CR relative to the actual baseline is theoretically
+reallocated to CD at 1:2 and annotated per result. Existing overflow, actual metrics, weapon comparisons and marginal gains are unchanged.
+
+Weapon and artifact comparisons load independently after the main report and can be retried separately.
+Teammate artifact swaps and non-damage support metrics are not part of artifact comparison.
+Use the set selector to inspect any supported four-piece set, even when it falls outside the default ranking or
+matches the baseline. Ranked selections are marked without duplication; clearing the selection restores the default
+list. Required effect options remain editable, and saved builds are never changed.
+
 ## What GSCombat can do
 
 ### Analyze a target action

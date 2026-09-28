@@ -1,6 +1,7 @@
 import Type from "typebox"
 
 export * from "./analysis.js"
+export * from "./equipment-comparison.js"
 export * from "./builds.js"
 export * from "./combat-authoring-audit.js"
 export * from "./catalog.js"

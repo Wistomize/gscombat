@@ -75,6 +75,7 @@ export interface ProgressionGainResult {
 }
 
 export interface AnalyzeScenarioOptions {
+  readonly deferEquipmentComparisons?: boolean
   readonly weaponComparisonChoices?: Readonly<Record<string, Readonly<Record<string, string>>>>
   readonly weaponComparisonRefinements?: Readonly<Record<string, number>>
 }
@@ -351,7 +352,7 @@ function analyzeWeapons(
     .sort((left, right) => right.expectedDamage - left.expectedDamage)
 }
 
-function prepareWeaponCandidate(
+export function prepareWeaponCandidate(
   scenario: EvaluationScenario, gameData: GameDataRepository, weaponId: string, refinement: number,
   choices?: Readonly<Record<string, string>>
 ) {
@@ -375,7 +376,7 @@ function prepareWeaponCandidate(
   }
 }
 
-function evaluateWeaponCandidate(
+export function evaluateWeaponCandidate(
   candidate: NonNullable<ReturnType<typeof prepareWeaponCandidate>>,
   gameData: GameDataRepository,
   baselineExpectedDamage: number,
@@ -489,7 +490,7 @@ export function evaluateScenarioAnalysis(
   return { evaluation, analysis: analyzeWithBaseline(scenario, gameData, evaluation, options, preparation) }
 }
 
-function analyzeWithBaseline(
+export function analyzeWithBaseline(
   scenario: EvaluationScenario, gameData: GameDataRepository,
   baseline: ScenarioEvaluation, options: AnalyzeScenarioOptions, preparation: AnalysisPreparation
 ): ScenarioAnalysis {
@@ -503,7 +504,7 @@ function analyzeWithBaseline(
     marginalSubstats,
     progressionGains: analyzeProgressionGains(scenario, gameData, baselineExpectedDamage, preparation),
     totalEffectiveRolls: effectiveArtifacts.reduce((total, artifact) => total + artifact.effectiveRolls, 0),
-    weapons: analyzeWeapons(scenario, gameData, baselineExpectedDamage, options.weaponComparisonRefinements ?? {},
+    weapons: options.deferEquipmentComparisons ? [] : analyzeWeapons(scenario, gameData, baselineExpectedDamage, options.weaponComparisonRefinements ?? {},
       options.weaponComparisonChoices ?? {}, preparation)
   }
 }

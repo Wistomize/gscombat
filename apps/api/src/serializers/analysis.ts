@@ -11,7 +11,8 @@ import type {
   SupportMetricResult
 } from "@gscombat/contracts"
 
-export const ANALYSIS_ENGINE_VERSION = "scenario-3-reviewed-weapon-rules"
+import { ANALYSIS_ENGINE_VERSION } from "../services/analysis-version.js"
+export { ANALYSIS_ENGINE_VERSION } from "../services/analysis-version.js"
 
 function serializeRotationTraceEntry(trace: RotationTraceEntry) {
   if (trace.kind === "scaling_terms") return { ...trace, terms: trace.terms.map((term) => ({ ...term })) }

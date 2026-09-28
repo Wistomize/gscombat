@@ -32,6 +32,7 @@ export type {
 
 import { resolveFieldContext } from "../core/field-presence.js"
 import * as shared from "./shared.js"
+import { transformSpecialCriticalStats } from "./critical-stats.js"
 
 export function evaluateDeclaredSpecialReactionScenarioAction(
   input: DeclaredDirectScenarioInput
@@ -134,7 +135,8 @@ export function evaluateDeclaredSpecialReactionScenarioAction(
       action.specialReaction,
       baseDamage,
       baseDamageTerms,
-      scenarioStats,
+      transformSpecialCriticalStats(scenarioStats, `${action.id}.single-special-reaction`, build.buildId,
+        actionEffects.appliedEffects.map(effect => effect.id), input.transformCriticalStats),
       actionEffects,
       getBuffTotal(buffs, "special_reaction_damage_bonus"),
       enemy.resistance,

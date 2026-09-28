@@ -49,3 +49,36 @@ body {
 .siteFooter a:hover {
   text-decoration: underline;
 }
+
+.comparisonSpinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: comparisonSpin 0.8s linear infinite;
+}
+
+@keyframes comparisonSpin { to { transform: rotate(360deg); } }
+.artifactComparisonRow {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto minmax(120px, auto) 90px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line, #ddd);
+}
+.artifactComparisonIdentity { display: flex; align-items: center; gap: 8px; }
+.artifactComparisonRow small { display: block; opacity: 0.65; }
+.artifactComparisonRow[data-updated="true"] { background: #e6efdb; }
+.artifactComparisonRow[data-selected="true"] { border-left: 3px solid currentColor; }
+.artifactSelection { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.artifactSelection select { max-width: 100%; }
+.artifactSelection small { opacity: 0.65; }
+@media (max-width: 720px) {
+  .artifactComparisonRow { grid-template-columns: 1fr auto; gap: 10px; }
+  .artifactComparisonIdentity { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .comparisonSpinner { animation: none; } }

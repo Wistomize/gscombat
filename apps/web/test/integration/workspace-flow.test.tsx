@@ -24,6 +24,12 @@ import {
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }))
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: routerPush }) }))
+// Keep the existing full-workspace suite as the explicit rollback/legacy loading contract.
+// The independent request lifecycle and stale responses are exercised in deferred-equipment.test.tsx.
+vi.mock("../../features/calculation-workspace/use-equipment-comparisons", async importOriginal => ({
+  ...await importOriginal<typeof import("../../features/calculation-workspace/use-equipment-comparisons")>(),
+  DEFERRED_EQUIPMENT_ENABLED: false
+}))
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 

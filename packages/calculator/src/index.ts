@@ -24,6 +24,7 @@ export type {
   TraceEntry
 } from "./domain.js"
 export { evaluateExpectedDamage } from "./evaluate.js"
+export type { CriticalStatsSample, CriticalStatsTransform } from "./critical-stats.js"
 export {
   calculateAdditiveReactionDamage,
   calculateAmplifyingReactionMultiplier,
