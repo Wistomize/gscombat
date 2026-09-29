@@ -79,7 +79,7 @@ function createScenario(
     },
     enemy: { defenseReduction: 0, level: 100, name: "训练木桩", resistance: 0.1 },
     externalBuffs: [],
-    gameDataVersion: "7.0",
+    gameDataVersion: "7.1",
     primary: createVarkaBuild(constellation, ascension),
     targetActionId: actionId,
     teammates

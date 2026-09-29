@@ -85,7 +85,7 @@ const RecipientRequirementSchema = Type.Union([
     label: Type.String({ minLength: 1, maxLength: 160 })
   }),
   Type.Object({
-    comparison: Type.Union([Type.Literal("at_most"), Type.Literal("above")]),
+    comparison: Type.Union([Type.Literal("at_most"), Type.Literal("above"), Type.Literal("less_than")]),
     kind: Type.Literal("recipient_hp_fraction"),
     label: Type.String({ minLength: 1, maxLength: 160 }),
     threshold: Type.Number({ maximum: 1, minimum: 0 }),
@@ -106,7 +106,7 @@ const SupportMetricCatalogEntrySchema = Type.Object({
       Type.Object({
         minimumSourceConstellation: Type.Integer({ maximum: 6, minimum: 0 }),
         requirement: Type.Object({
-          comparison: Type.Union([Type.Literal("at_most"), Type.Literal("above")]),
+          comparison: Type.Union([Type.Literal("at_most"), Type.Literal("above"), Type.Literal("less_than")]),
           kind: Type.Literal("recipient_hp_fraction"),
           label: Type.String({ minLength: 1, maxLength: 160 }),
           threshold: Type.Number({ maximum: 1, minimum: 0 })
@@ -166,6 +166,7 @@ export const CatalogResponseSchema = Type.Object({
   ),
   weapons: Type.Array(
     Type.Object({
+      conditionRequirements: Type.Optional(Type.Array(Type.Object({ condition: Type.Literal("targetFrozen") }))),
       comparison: Type.Optional(Type.Object({
         excluded: Type.Optional(Type.Boolean()),
         level: Type.Optional(Type.Integer({ minimum: 1, maximum: 90 })),

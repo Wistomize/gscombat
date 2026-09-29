@@ -222,7 +222,8 @@ const pinnedSnapshotComparisonWeaponIds = [
   "HereticsMoltenBlade",
   "JadeVista",
   "SongOfTheVigil",
-  "WhitelakeFrostfeather"
+  "WhitelakeFrostfeather",
+  "NewBough", "Silverlight", "BeyondTheChrysalis", "WintersHeavyHeart", "HymnOfTheMaelstrom", "BreezeborneRefrain"
 ] as const
 
 function sorted(values: readonly string[]): string[] {
@@ -240,10 +241,10 @@ describe("official weapon-name registry", () => {
       upstreamCommit: "98aafa1f135f086524b611c7d5b5bfb78d98bb6d",
       upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
     })
-    expect(pinnedSnapshotComparisonWeaponIds).toHaveLength(212)
+    expect(pinnedSnapshotComparisonWeaponIds).toHaveLength(218)
     expect(new Set(pinnedSnapshotComparisonWeaponIds).size).toBe(pinnedSnapshotComparisonWeaponIds.length)
     expect(sorted(registeredWeaponIds)).toEqual(sorted(pinnedSnapshotComparisonWeaponIds))
-    expect(registeredWeaponIds).toHaveLength(212)
+    expect(registeredWeaponIds).toHaveLength(218)
 
     for (const weaponId of pinnedSnapshotComparisonWeaponIds) {
       const name = getOfficialWeaponName(weaponId)

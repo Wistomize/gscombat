@@ -1,0 +1,137 @@
+[
+  {
+    "target": "Aino/passive2/0/0",
+    "semanticName": "爱诺元素爆发伤害按元素精通提升的系数",
+    "canonicalUnit": "ratio",
+    "sourceUnit": "percent",
+    "rationale": "固有天赋明确将爱诺元素精通的 50% 用作元素爆发伤害提升值。",
+    "formula": "identity",
+    "terms": [{
+      "kind": "description-literal",
+      "sourcePath": "src/data/ChineseSimplified/talents/aino.json#/passive2/description",
+      "sourceSha256": "3e810de410316d69d49b82f0f72aac92fe8cf8207172f5b692b5c9cac8c53164",
+      "quote": "元素精通的50%",
+      "literal": "50%"
+    }],
+    "reviewedValue": 0.5
+  },
+  {
+    "target": "Alhaitham/passive2/0/0",
+    "semanticName": "艾尔海森每点元素精通给予光幕和元素爆发的伤害加成",
+    "canonicalUnit": "ratio",
+    "sourceUnit": "percent",
+    "rationale": "固有天赋明确每点元素精通提升 0.1%，规范库保存每点比例。",
+    "formula": "identity",
+    "terms": [{
+      "kind": "description-literal",
+      "sourcePath": "src/data/ChineseSimplified/talents/alhaitham.json#/passive2/description",
+      "sourceSha256": "30c0993ca44bc037d9b0b55e43be9187f3208629e233ea78ad95e632dc4ab118",
+      "quote": "每点元素精通，都会使光幕伤害与殊境·显象缚结造成的伤害提升0.1%",
+      "literal": "0.1%"
+    }],
+    "reviewedValue": 0.001
+  },
+  {
+    "target": "Alhaitham/passive2/1/0",
+    "semanticName": "艾尔海森元素精通转伤害加成上限",
+    "canonicalUnit": "ratio",
+    "sourceUnit": "percent",
+    "rationale": "固有天赋明确该伤害提升至多为 100%。",
+    "formula": "identity",
+    "terms": [{
+      "kind": "description-literal",
+      "sourcePath": "src/data/ChineseSimplified/talents/alhaitham.json#/passive2/description",
+      "sourceSha256": "30c0993ca44bc037d9b0b55e43be9187f3208629e233ea78ad95e632dc4ab118",
+      "quote": "至多使光幕伤害与殊境·显象缚结造成的伤害提升100%",
+      "literal": "100%"
+    }],
+    "reviewedValue": 1
+  },
+  {
+    "target": "Alyosha/passive1/0/0",
+    "semanticName": "图加林攻击后的前台角色治疗量攻击倍率",
+    "canonicalUnit": "ratio",
+    "sourceUnit": "percent",
+    "rationale": "固有天赋明确按阿罗夏攻击力的 120% 治疗当前场上角色。",
+    "formula": "identity",
+    "terms": [{
+      "kind": "description-literal",
+      "sourcePath": "src/data/ChineseSimplified/talents/alyosha.json#/passive1/description",
+      "sourceSha256": "cf2b077c61ee4182fb2eb8a8f1af2cf42900b9406a8e61a7155753c6835eb843",
+      "quote": "攻击力的120%",
+      "literal": "120%"
+    }],
+    "reviewedValue": 1.2
+  },
+  {
+    "target": "AratakiItto/passive2/0/0",
+    "semanticName": "荒泷逆袈裟的防御力固定伤害加成倍率",
+    "canonicalUnit": "ratio",
+    "sourceUnit": "percent",
+    "rationale": "固有天赋明确荒泷逆袈裟伤害提高值为防御力的 35%。",
+    "formula": "identity",
+    "terms": [{
+      "kind": "description-literal",
+      "sourcePath": "src/data/ChineseSimplified/talents/aratakiitto.json#/passive2/description",
+      "sourceSha256": "3bb7c64dfce425d934f49feeedd59ac005dabcf80e130c8d9331c16f202c584b",
+      "quote": "防御力的35%",
+      "literal": "35%"
+    }],
+    "reviewedValue": 0.35
+  },
+  {
+    "target": "Xiangling/constellation1/0",
+    "semanticName": "锅巴命中降低火元素抗性",
+    "canonicalUnit": "ratio",
+    "sourceUnit": "percent",
+    "rationale": "命座一描述明确给出降低火元素抗性 15%，规范库用比例表示。",
+    "formula": "identity",
+    "terms": [{
+      "kind": "description-literal",
+      "sourcePath": "src/data/ChineseSimplified/constellations/xiangling.json#/c1/description",
+      "sourceSha256": "d32938bf342247dbba0b9f8bf18185cc1aee768b1784ac74e3e92cba3152ac8d",
+      "quote": "火元素抗性降低15%",
+      "literal": "15%"
+    }],
+    "reviewedValue": 0.15
+  },
+  {
+    "target": "Xiangling/constellation1/1",
+    "semanticName": "锅巴命中减抗持续时间",
+    "canonicalUnit": "seconds",
+    "sourceUnit": "seconds",
+    "rationale": "命座一描述明确给出持续 6 秒，规范库以秒表示。",
+    "formula": "identity",
+    "terms": [{
+      "kind": "description-literal",
+      "sourcePath": "src/data/ChineseSimplified/constellations/xiangling.json#/c1/description",
+      "sourceSha256": "d32938bf342247dbba0b9f8bf18185cc1aee768b1784ac74e3e92cba3152ac8d",
+      "quote": "持续6秒",
+      "literal": "6"
+    }],
+    "reviewedValue": 6
+  },
+  {
+    "target": "Jean/passive2/0/0",
+    "semanticName": "使用蒲公英之风后的固定能量恢复量",
+    "canonicalUnit": "energy",
+    "sourceUnit": "burst energy times restored ratio",
+    "rationale": "固有天赋恢复爆发能量的 20%；蒲公英之风的元素能量为 80，因此恢复 16 点。",
+    "formula": "multiply",
+    "terms": [
+      {
+        "kind": "description-literal",
+        "sourcePath": "src/data/ChineseSimplified/talents/jean.json#/passive2/description",
+        "sourceSha256": "d5989b2a464e5ce61d64f9a80e682f2b6cd7ceefcb98ef9a9242454c7054f27f",
+        "quote": "恢复20%元素能量",
+        "literal": "20%"
+      },
+      {
+        "kind": "source-number",
+        "sourcePath": "src/data/stats/talents.json#/jean/combat3/param8/0",
+        "sourceSha256": "a6e87c30c325f6dd5f7441cbeded21b329175286c92bfd9757ce9be2680048d7"
+      }
+    ],
+    "reviewedValue": 16
+  }
+]

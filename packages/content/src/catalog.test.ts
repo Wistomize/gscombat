@@ -93,7 +93,7 @@ describe("supported character catalog", () => {
       characterCatalogPresentation.map((character) => [character.characterId, character])
     )
 
-    expect(characterCatalogPresentationVersion).toBe("7.0.0")
+    expect(characterCatalogPresentationVersion).toBe("7.1.0")
     expect(new Set(characterCatalogPresentation.map((character) => character.characterId))).toHaveLength(
       characterCatalogPresentation.length
     )
@@ -263,6 +263,12 @@ describe("supported weapon catalog", () => {
       WhiteTassel: "白缨枪"
     }
     const officialLabels: Readonly<Record<string, string>> = {
+      NewBough: "新枝",
+      Silverlight: "银釭",
+      BeyondTheChrysalis: "蝶变",
+      WintersHeavyHeart: "凝雪沉心",
+      HymnOfTheMaelstrom: "漩流颂歌",
+      BreezeborneRefrain: "柔风游弦",
       ...officialThreeStarLabels,
       AquilaFavonia: "风鹰剑",
       AquaSimulacra: "若水",

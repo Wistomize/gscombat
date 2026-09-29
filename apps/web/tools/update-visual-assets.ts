@@ -7,6 +7,9 @@ import { promisify } from "node:util"
 import { fileURLToPath } from "node:url"
 
 import { supportedCharacters, supportedWeapons } from "@gscombat/content"
+// Node's native TypeScript runner requires the real extension for this standalone maintenance tool.
+// @ts-expect-error Next's tsconfig does not enable allowImportingTsExtensions for tool scripts.
+import { additionalCharacters, additionalWeapons, updateAdditionalVisualAssets } from "./update-visual-assets-7.1.ts"
 
 const execFileAsync = promisify(execFile)
 const upstreamCommit = "98aafa1f135f086524b611c7d5b5bfb78d98bb6d"
@@ -171,6 +174,7 @@ async function main(): Promise<void> {
 
   try {
     for (const character of supportedCharacters) {
+      if (character.characterId in additionalCharacters) continue
       const sourceDirectory = character.characterId === "Traveler" ? "TravelerM" : character.characterId
       const sourcePath = requireMatchingPath(
         paths,
@@ -185,6 +189,7 @@ async function main(): Promise<void> {
     }
 
     for (const weapon of supportedWeapons) {
+      if ((additionalWeapons as readonly string[]).includes(weapon.weaponId)) continue
       const sourcePath = requireMatchingPath(
         paths,
         new RegExp(`^libs/gi/assets/src/gen/weapons/${weapon.weaponId}/(?!.*_Awaken\\.png$)[^/]+\\.png$`),
@@ -224,6 +229,7 @@ async function main(): Promise<void> {
       weapons
     }
     await writeFile(generatedPath, `${JSON.stringify(generated, null, 2)}\n`)
+    updateAdditionalVisualAssets()
   } finally {
     await rm(temporaryRoot, { force: true, recursive: true })
   }

@@ -211,7 +211,8 @@ function createSupportMetric(
     metric.kind === "healing"
       ? [
           ...("conditionalScalingBonuses" in metric ? metric.conditionalScalingBonuses ?? [] : []),
-          ...(metric.recipientIncomingHealingBonuses ?? [])
+          ...(metric.recipientIncomingHealingBonuses ?? []),
+          ...(metric.conditionalHealingMultipliers ?? [])
         ].map(
           (bonus) => ({
             minimumSourceConstellation: bonus.minimumSourceConstellation,

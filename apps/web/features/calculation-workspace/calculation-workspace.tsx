@@ -127,7 +127,9 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
     new Map<string, number>()
   )
   const hasCryoResonance = (partyElementCounts.get("cryo") ?? 0) >= 2
-  const hasFrozenCondition = hasCryoResonance || partyBuilds.some((build) => catalog.artifactSets.some((set) =>
+  const hasFrozenCondition = hasCryoResonance || partyBuilds.some(build =>
+    catalog.weapons.find(weapon => weapon.weaponId === build.weapon.weaponId)?.conditionRequirements?.some(
+      requirement => requirement.condition === "targetFrozen")) || partyBuilds.some((build) => catalog.artifactSets.some((set) =>
     set.conditionRequirements?.some((requirement) => requirement.condition === "targetFrozen" &&
       build.artifacts.filter((piece) => piece.setId === set.setId).length >= requirement.minimumPieces)))
   const hasGeoResonance = (partyElementCounts.get("geo") ?? 0) >= 2
@@ -302,7 +304,7 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
         const response = await fetch("/api/backend/v1/support-metrics/evaluate", {
           body: JSON.stringify({
             build: targetBuild,
-            context: { ...createSupportMetricEvaluationContext(supportMetricContext, teammates, conditions.onFieldBuildId),
+            context: { ...createSupportMetricEvaluationContext(supportMetricContext, teammates, conditions.onFieldBuildId, conditions.targetFrozen),
               ...(conditions.weaponEffectChoices ? { weaponEffectChoices: conditions.weaponEffectChoices } : {}) },
             metricId: selectedSupportMetric.id
           }),

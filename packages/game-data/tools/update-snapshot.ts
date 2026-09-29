@@ -12,6 +12,13 @@ const manifest = JSON.parse(readFileSync(sourcePath, "utf8")) as GameDataSourceM
 const snapshotDirectory = join(packageRoot, "snapshots", manifest.gameVersion)
 const databasePath = join(snapshotDirectory, "game-data.sqlite")
 
+if (manifest.gameVersion === "7.1") {
+  const pinned = JSON.parse(readFileSync(join(packageRoot, "snapshots/7.1/manifest.json"), "utf8")) as GameDataSourceManifest
+  if (manifest.dataSha256 !== pinned.dataSha256 || manifest.upstreamCommit !== pinned.upstreamCommit) {
+    throw new Error("7.1 incremental updater requires the pinned manifest")
+  }
+  await import("./update-7.1.js")
+} else {
 console.log(`Downloading gi-stats at ${manifest.upstreamCommit}`)
 const source = await downloadGameDataSource(manifest)
 console.log(`Verified gi-stats SHA-256 ${manifest.dataSha256}`)
@@ -20,3 +27,4 @@ createGameDataSnapshot({ databasePath, document: source.document, manifest: sour
 writeFileSync(join(snapshotDirectory, "manifest.json"), `${JSON.stringify(source.manifest, null, 2)}\n`)
 
 console.log(`Created ${databasePath}`)
+}

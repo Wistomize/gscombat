@@ -1,0 +1,16 @@
+[
+  {
+    "target": "Albedo/lockedPassive/0/0",
+    "semanticName": "旧库 lockedPassive 第一项，具体效果尚未确认",
+    "question": "固定 7.1 来源未发现与此旧字段 4% 唯一对应的描述；这个旧字段实际代表什么效果，是否有可核实的 7.1 来源？",
+    "sourceEvidence": [{
+      "sourcePath": "src/data/ChineseSimplified/talents/albedo.json#/passive1/description",
+      "sourceSha256": "f96923605263531da15d2040139aa47e605aab7cb5f60eec5b21c2a3f08432d2",
+      "shortExcerpt": "生命值低于50%的敌人造成的伤害提高25%"
+    }],
+    "candidateConversions": [{
+      "description": "当前没有可验证的 4% 候选换算；不能把来源中的 25% 或旧值直接写入候选库。",
+      "candidateValue": null
+    }]
+  }
+]

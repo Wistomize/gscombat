@@ -127,6 +127,7 @@ export function resolveSelfAutomaticEquipmentEffects(
   )
   const candidateInput: ResolveCombatActionEffectCandidatesInput = {
     action: input.action,
+    targetFrozen: input.fieldContext?.targetFrozen ?? false,
     ...(input.fieldContext === undefined ? {} : { fieldContext: input.fieldContext }),
     activeEffectIds: [],
     baseEnergyRecharge: input.baseEnergyRecharge,

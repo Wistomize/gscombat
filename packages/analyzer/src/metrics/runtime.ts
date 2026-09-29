@@ -362,7 +362,9 @@ export function evaluateRecipientRequirement(
   const satisfied =
     requirement.comparison === "at_most"
       ? currentHpFraction <= requirement.threshold
-      : currentHpFraction > requirement.threshold
+      : requirement.comparison === "less_than"
+        ? currentHpFraction < requirement.threshold
+        : currentHpFraction > requirement.threshold
   return {
     comparison: requirement.comparison,
     currentHpFraction,
@@ -402,7 +404,7 @@ export function resolveMetricSourceCombatStats(
     includeMaximumReachableCharacterStatEffects: true,
     ...(sourceContext?.enemyCount === undefined ? {} : { enemyCount: sourceContext.enemyCount }),
     primary: build,
-    fieldContext: fieldContext ?? resolveSupportFieldContext(build.buildId),
+    fieldContext: { ...(fieldContext ?? resolveSupportFieldContext(build.buildId)), targetFrozen: sourceContext?.targetFrozen ?? false },
     ...(primaryDifferentElementTeammateCount === null ? {} : { primaryDifferentElementTeammateCount }),
     ...(primarySameElementTeammateCount === null ? {} : { primarySameElementTeammateCount }),
     ...(teamUniqueElementCount === null ? {} : { teamUniqueElementCount }),

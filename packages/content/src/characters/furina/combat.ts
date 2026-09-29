@@ -176,6 +176,7 @@ export const furinaCombatCoverage: CharacterCombatCoverage = {
       element: furinaDefinition.element,
       evaluator: "declared_direct",
       id: "furina.skill.salon_solitaire.mademoiselle_crabaletta.single_hit",
+      fieldPresence: "off_field",
       intrinsicEffects: [
         {
           coefficientParameterId: "a4-salon-member-damage-bonus-per-1000-max-hp",

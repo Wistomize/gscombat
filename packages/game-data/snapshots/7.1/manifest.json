@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "gameVersion": "7.1",
+  "dataSha256": "ed667d1049c0a97feeaab4f1c9065e2cb42683202afc8192bd69f7bc06d68e37",
+  "dataUrl": "https://github.com/Wistomize/gscombat/blob/main/packages/game-data/snapshots/7.1/provenance.json",
+  "upstreamCommit": "49a6544a6c6ae36089cb42fa591fc46f01de8bcf",
+  "upstreamCommittedAt": "2026-09-21T20:39:46Z",
+  "upstreamRepository": "https://github.com/theBowja/genshin-db",
+  "upstreamLicense": "MIT"
+}

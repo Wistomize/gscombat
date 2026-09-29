@@ -3,6 +3,8 @@ import type { CharacterBuild } from "@gscombat/contracts"
 
 /** A single action's field identity; changing the stat recipient must never change this context. */
 export interface FieldContext {
+  /** Shared enemy snapshot must survive source/recipient stat preparation. */
+  readonly targetFrozen?: boolean
   readonly targetIsSlime?: boolean
   readonly arrowHitsWeakPoint?: boolean
   /** Source-owned choices survive recipient/contributor changes without changing the actual foreground. */

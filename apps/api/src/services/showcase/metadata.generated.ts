@@ -3,18 +3,18 @@ export const showcaseMetadataSource = {
   "artifactItemCount": 4145,
   "artifactSetCount": 63,
   "avatarMetadataPath": "store/gi/avatars.json",
-  "avatarMetadataSha256": "d704b82f35e7c29e8624f677b06675964f103c42f5ee064a9e407ddb150914be",
-  "characterCount": 119,
-  "commit": "dc86b5dc06ad27d26c9a4df9f0b6ffd0417bf554",
+  "avatarMetadataSha256": "d399a75241d1206553f3e2cb860d513faa01ccfb3a98d944d35f9e5ffc27c56b",
+  "characterCount": 121,
+  "commit": "ac2c249e86d29ebd85f6753fbc5a2ebe15fac608",
   "localizationPath": "store/gi/locs.json",
-  "localizationSha256": "1a2ac69e432f8a174143fe146b1861724efc358055c934896eb48eda1c828798",
+  "localizationSha256": "4553446022c6b45293190577cd8590a9d553cb895e1e92e8bfad46b670fd9727",
   "relicMetadataPath": "store/gi/relics.json",
-  "relicMetadataSha256": "c0238e4ef049139f43f4525045036549d139526b7863f6e2fdcca29ca0b7ff6f",
+  "relicMetadataSha256": "e991c4b316634fba45fde0622d7d979c861c0ec4c2b0229c908b08fb01b89c4f",
   "repository": "https://github.com/EnkaNetwork/API-docs",
   "travelerVariantCount": 14,
-  "weaponCount": 246,
+  "weaponCount": 252,
   "weaponMetadataPath": "store/gi/weapons.json",
-  "weaponMetadataSha256": "6bf79427a7da71c2072f4e84a9c5ad1897cb59383e38580836a6210d07af53e3"
+  "weaponMetadataSha256": "606e61d91ca0f6e4db4bdff2b0c831f07ee4f27edf47e87acc872ef4e1cb4639"
 } as const
 
 export const showcaseCharacterMetadataGenerated = [
@@ -1663,6 +1663,30 @@ export const showcaseCharacterMetadataGenerated = [
     "weaponType": "claymore"
   },
   {
+    "avatarId": 10000140,
+    "characterId": "Vodyanitsa",
+    "label": "沃雅妮莎",
+    "lookupId": "10000140",
+    "skillIds": [
+      11401,
+      11402,
+      11405
+    ],
+    "weaponType": "catalyst"
+  },
+  {
+    "avatarId": 10000143,
+    "characterId": "Vesna",
+    "label": "薇斯纳",
+    "lookupId": "10000143",
+    "skillIds": [
+      11431,
+      11432,
+      11435
+    ],
+    "weaponType": "sword"
+  },
+  {
     "avatarId": 10000148,
     "characterId": "Alyosha",
     "label": "阿罗夏",
@@ -1918,6 +1942,18 @@ export const showcaseWeaponMetadataGenerated = [
     "weaponType": "sword"
   },
   {
+    "itemId": 11437,
+    "label": "新枝",
+    "weaponId": "NewBough",
+    "weaponType": "sword"
+  },
+  {
+    "itemId": 11438,
+    "label": "银釭",
+    "weaponId": "Silverlight",
+    "weaponType": "sword"
+  },
+  {
     "itemId": 11501,
     "label": "风鹰剑",
     "weaponId": "AquilaFavonia",
@@ -2023,6 +2059,12 @@ export const showcaseWeaponMetadataGenerated = [
     "itemId": 11521,
     "label": "星锋剑",
     "weaponId": "ExaiphanesBlade",
+    "weaponType": "sword"
+  },
+  {
+    "itemId": 11522,
+    "label": "蝶变",
+    "weaponId": "BeyondTheChrysalis",
     "weaponType": "sword"
   },
   {
@@ -2758,6 +2800,12 @@ export const showcaseWeaponMetadataGenerated = [
     "weaponType": "catalyst"
   },
   {
+    "itemId": 14437,
+    "label": "凝雪沉心",
+    "weaponId": "WintersHeavyHeart",
+    "weaponType": "catalyst"
+  },
+  {
     "itemId": 14501,
     "label": "天空之卷",
     "weaponId": "SkywardAtlas",
@@ -2869,6 +2917,12 @@ export const showcaseWeaponMetadataGenerated = [
     "itemId": 14523,
     "label": "尘光七谕",
     "weaponId": "AngelosHeptades",
+    "weaponType": "catalyst"
+  },
+  {
+    "itemId": 14524,
+    "label": "漩流颂歌",
+    "weaponId": "HymnOfTheMaelstrom",
     "weaponType": "catalyst"
   },
   {
@@ -3091,6 +3145,12 @@ export const showcaseWeaponMetadataGenerated = [
     "itemId": 15436,
     "label": "霜雪誓约",
     "weaponId": "CovenantOfFrostAndSnow",
+    "weaponType": "bow"
+  },
+  {
+    "itemId": 15437,
+    "label": "柔风游弦",
+    "weaponId": "BreezeborneRefrain",
     "weaponType": "bow"
   },
   {

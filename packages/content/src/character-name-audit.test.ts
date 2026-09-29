@@ -22,7 +22,7 @@ function duplicateIds(ids: readonly string[]): string[] {
 }
 
 describe("official Chinese character presentation audit", () => {
-  it("pins every selectable character name to the reviewed 7.0 chs localization evidence", () => {
+  it("pins every selectable name to its original localization evidence including 7.1 additions", () => {
     const presentationIds = characterCatalogPresentation.map((character) => character.characterId)
     const auditIds = officialChineseCharacterNameAudit.map((character) => character.characterId)
     const auditById = new Map(officialChineseCharacterNameAudit.map((character) => [character.characterId, character]))
@@ -33,7 +33,7 @@ describe("official Chinese character presentation audit", () => {
       upstreamCommit: "98aafa1f135f086524b611c7d5b5bfb78d98bb6d",
       upstreamRepository: "https://github.com/frzyc/genshin-optimizer"
     })
-    expect(officialChineseCharacterNameAudit).toHaveLength(119)
+    expect(officialChineseCharacterNameAudit).toHaveLength(121)
     expect(duplicateIds(auditIds)).toEqual([])
     expect(sortedIds(auditIds)).toEqual(sortedIds(presentationIds))
 
@@ -44,6 +44,12 @@ describe("official Chinese character presentation audit", () => {
       expect(audit?.label).toBe(presentation.label)
       expect(audit?.sourceSha256).toMatch(/^[a-f0-9]{64}$/)
       expect(presentation.label).toMatch(/\p{Script=Han}/u)
+      if (audit?.sourcePath) {
+        expect(audit.upstreamCommit).toBe("49a6544a6c6ae36089cb42fa591fc46f01de8bcf")
+        expect(audit.upstreamRepository).toBe("https://github.com/theBowja/genshin-db")
+        expect(audit.sourcePath).toBe(`src/data/ChineseSimplified/characters/${presentation.characterId.toLowerCase()}.json`)
+        continue
+      }
       expect(
         `${officialChineseCharacterNameAuditSource.assetPathPrefix}${presentation.characterId}${
           officialChineseCharacterNameAuditSource.assetPathSuffix

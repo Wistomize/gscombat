@@ -6,7 +6,7 @@ interface BurstEnergyCostGroup {
 }
 
 /**
- * Generated from the pinned 7.0 SQLite snapshot's `burst` parameter groups.
+ * Baseline 7.0 groups plus the 7.1 additions, verified against the maintained SQLite `burst` groups.
  * Every regular character has exactly one constant scalar in the standard Energy-cost set 40/50/60/70/80/90.
  */
 const burstEnergyCostGroups: readonly BurstEnergyCostGroup[] = [
@@ -74,6 +74,8 @@ const burstEnergyCostGroups: readonly BurstEnergyCostGroup[] = [
       "Tartaglia",
       "Varka",
       "Venti",
+      "Vesna",
+      "Vodyanitsa",
       "Wanderer",
       "Wriothesley",
       "Xilonen",

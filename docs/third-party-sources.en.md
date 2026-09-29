@@ -20,7 +20,7 @@ materials belong to their respective rights holders.
 - **Project:** [frzyc/genshin-optimizer](https://github.com/frzyc/genshin-optimizer)
 - **Pinned commit:** `98aafa1f135f086524b611c7d5b5bfb78d98bb6d`
 - **Upstream license:** [MIT](https://github.com/frzyc/genshin-optimizer/blob/master/LICENSE)
-- **Local evidence:** `packages/game-data/sources/current.json`,
+- **Local evidence:** `packages/game-data/snapshots/7.0/manifest.json`,
   `packages/game-data/sources/semantic-localization-preview.v3.json`, and
   `apps/web/lib/visual-assets.generated.json`
 
@@ -28,6 +28,24 @@ GSCombat uses the generated `allStat_gen.json` dataset for static numeric facts;
 official names and reviewed talent labels; and generated character, weapon, artifact, and element assets for compact
 web thumbnails. Downloads are pinned and checksum-verified. Converted thumbnails retain the rights of their original
 material. We thank the Genshin Optimizer maintainers for organizing reproducible game data and asset mappings.
+
+### genshin-db (7.1 additions and offline evaluation)
+
+- Project: [theBowja/genshin-db](https://github.com/theBowja/genshin-db). Thanks to theBowja and its maintainers.
+- Pinned revision: `49a6544a6c6ae36089cb42fa591fc46f01de8bcf` (7.1).
+- Usage: append two characters and six weapons to our SQLite, including numeric facts, growth curves, Chinese text
+  and icon mappings. Existing 7.0 facts retain their original sources.
+- Evidence: `packages/game-data/snapshots/7.1/provenance.json`; earlier evaluation remains in `sources/genshin-db-evaluation.*.json`.
+- The repository uses MIT; its notice is retained beside the fixtures. Game content retains its original rights.
+
+### AnimeGameData (7.1 passive supplement)
+
+Thanks to [DimbreathBot/AnimeGameData](https://github.com/DimbreathBot/AnimeGameData) for raw-data organization.
+Pinned commit `9587d1afbd9ab0419cdd00dc05ecd114b9e3fe99` supplies ProudSkillExcelConfigData and Chinese TextMap
+evidence for the new passives and linked descriptions. Paths, IDs and checksums are in the 7.1 provenance ledger.
+Game facts and text retain their original rights; our AGPL and other repositories' MIT notices do not relicense them.
+New thumbnails use genshin-db filename mappings and Enka's `/ui` hosting. Source image URLs and checksums are
+recorded separately in `visual-assets.generated.json` under `additionalSources`; images remain HoYoverse property.
 
 ## 3. Enka.Network
 

@@ -33,6 +33,15 @@ export interface EquipmentInventorySource {
   readonly weaponNameAggregateSha256: string
 }
 
-export const weaponInventory: readonly WeaponInventoryEntry[] = weaponInventoryGenerated
+/** 7.1 additions retain their own source rather than relabelling the inherited 7.0 inventory. */
+export const weaponInventory: readonly WeaponInventoryEntry[] = [
+  ...weaponInventoryGenerated,
+  { id: "NewBough", label: "新枝", rarity: 4, weaponType: "sword" },
+  { id: "Silverlight", label: "银釭", rarity: 4, weaponType: "sword" },
+  { id: "BeyondTheChrysalis", label: "蝶变", rarity: 5, weaponType: "sword" },
+  { id: "WintersHeavyHeart", label: "凝雪沉心", rarity: 4, weaponType: "catalyst" },
+  { id: "HymnOfTheMaelstrom", label: "漩流颂歌", rarity: 5, weaponType: "catalyst" },
+  { id: "BreezeborneRefrain", label: "柔风游弦", rarity: 4, weaponType: "bow" }
+]
 export const artifactSetInventory: readonly ArtifactSetInventoryEntry[] = artifactSetInventoryGenerated
 export const pinnedEquipmentInventorySource: EquipmentInventorySource = equipmentInventorySource

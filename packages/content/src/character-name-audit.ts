@@ -1,7 +1,7 @@
 /**
  * 角色官方简中名称的离线审计锁。
  *
- * 除旅行者外，每项的 label 均逐项核对同一固定 Genshin Optimizer 7.0 提交中
+ * 除显式附带 sourcePath 的新版本条目和旅行者外，label 均逐项核对固定 Genshin Optimizer 7.0 提交中
  * `chs/char_<CharacterId>_gen.json` 的顶层 `name`，并记录该文件的 SHA-256。
  * `Traveler` 是性别无关的可选角色记录，展示名固定为官方通用称呼“旅行者”；
  * 其“荧 / 空”本地化原名及校验和在下方例外中明确锁定。
@@ -19,9 +19,18 @@ export interface OfficialChineseCharacterNameAuditEntry {
   readonly characterId: string
   readonly label: string
   readonly sourceSha256: string
+  readonly sourcePath?: string
+  readonly upstreamCommit?: string
+  readonly upstreamRepository?: string
 }
 
 export const officialChineseCharacterNameAudit: readonly OfficialChineseCharacterNameAuditEntry[] = [
+  { characterId: "Vesna", label: "薇斯纳", sourceSha256: "dc54badc20793ba7eb271e3fb818b15010e90df51b7afb404278ad7ad7669418",
+    sourcePath: "src/data/ChineseSimplified/characters/vesna.json", upstreamCommit: "49a6544a6c6ae36089cb42fa591fc46f01de8bcf",
+    upstreamRepository: "https://github.com/theBowja/genshin-db" },
+  { characterId: "Vodyanitsa", label: "沃雅妮莎", sourceSha256: "343a7cb8b62a5e3a3700f2cddde405475facaa84a54eae44735ea644b274c2e8",
+    sourcePath: "src/data/ChineseSimplified/characters/vodyanitsa.json", upstreamCommit: "49a6544a6c6ae36089cb42fa591fc46f01de8bcf",
+    upstreamRepository: "https://github.com/theBowja/genshin-db" },
   { characterId: "RaidenShogun", label: "雷电将军", sourceSha256: "a9b82fd494da823ba0be6f4cc756a0142af15764428d036663ee656ad78d1725" },
   { characterId: "Traveler", label: "旅行者", sourceSha256: "a8fb39787480c54c028442f3f8ee60491c75878428c32f859c0c9c8355a0c927" },
   { characterId: "Bennett", label: "班尼特", sourceSha256: "6402b4d0c7a95c6ee9a59d24f0a2caafecb2215dde9a97cf591811c13df6482b" },

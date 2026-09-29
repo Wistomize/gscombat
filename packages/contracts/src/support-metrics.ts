@@ -25,7 +25,7 @@ const MetricConditionSchema = Type.Union([
     satisfied: Type.Boolean()
   }),
   Type.Object({
-    comparison: Type.Union([Type.Literal("at_most"), Type.Literal("above")]),
+    comparison: Type.Union([Type.Literal("at_most"), Type.Literal("above"), Type.Literal("less_than")]),
     currentHpFraction: Type.Optional(Type.Number()),
     kind: Type.Literal("recipient_hp_fraction"),
     label: Type.String(),
@@ -187,6 +187,8 @@ export const SupportMetricResultSchema = Type.Cyclic(
           Type.Literal("damage_bonus"),
           Type.Literal("defense_buff"),
           Type.Literal("elemental_flat_damage_bonus"),
+          Type.Literal("hydro_cryo_flat_damage_bonus"),
+          Type.Literal("stellar_swirl_flat_damage_bonus"),
           Type.Literal("elemental_normal_attack_damage_bonus"),
           Type.Literal("elemental_mastery_buff"),
           Type.Literal("geo_damage_flat_bonus"),

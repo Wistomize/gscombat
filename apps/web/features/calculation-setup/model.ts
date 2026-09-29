@@ -51,7 +51,8 @@ export function createSupportMetricContextDraft(): SupportMetricContextDraft {
 export function createSupportMetricEvaluationContext(
   draft: SupportMetricContextDraft,
   teammates: readonly CharacterBuild[],
-  onFieldBuildId?: string
+  onFieldBuildId?: string,
+  targetFrozen = false
 ): MetricEvaluationContext {
   const context: MetricEvaluationContext = {
     teammates: [...teammates], ...(onFieldBuildId === undefined ? {} : { onFieldBuildId })
@@ -62,6 +63,7 @@ export function createSupportMetricEvaluationContext(
   if (draft.source) {
     context.source = draft.source.currentHpFraction === undefined ? {} : { currentHpFraction: draft.source.currentHpFraction }
   }
+  context.source = { ...context.source, targetFrozen }
   if (draft.recipient?.buildId) {
     context.recipient = {
       buildId: draft.recipient.buildId,

@@ -414,10 +414,13 @@ export function resolveSourceFinalAttackByBuildId(
   activeEffectSourceBuildIds: Readonly<Record<string, string>> | undefined,
   sourceSelfMaximumEquipmentEffectsByBuildId: ReadonlyMap<string, ResolvedCombatActionEffects>,
   fieldContext: FieldContext = resolveFieldContext(action, primary, teammates),
-  preparation?: SourcePreparation
+  preparation?: SourcePreparation,
+  sourceFinalHpByBuildId?: ReadonlyMap<string, number>
 ): ReadonlyMap<string, number> {
   const prepared = preparation ?? prepareSources(primary, teammates, action, gameData, enemyCount, fieldContext)
   const { party, teamUniqueElementCount } = prepared
+  const finalHp = sourceFinalHpByBuildId ?? resolveSourceFinalHpByBuildId(primary, teammates, action, gameData,
+    buffs, deltas, enemyCount, sourceSelfMaximumEquipmentEffectsByBuildId, fieldContext, prepared)
   // Include selected front-recipient stat buffs in the same pre-conversion ATK snapshot.
   // Source-final-stat conversions remain staged separately and must not recursively feed themselves.
   const frontAttackEffectIds = new Set(listCombatActionEffects().filter((effect) =>
@@ -443,6 +446,7 @@ export function resolveSourceFinalAttackByBuildId(
       )
       const sourceAttackEffects = resolveCombatActionAttackEffects({
         action,
+        sourceFinalHpByBuildId: finalHp,
         fieldContext,
         activeEffectIds: [...new Set([
           ...activeEffectIds.filter((id) => frontAttackEffectIds.has(id)), ...sourceAttackSnapshotActivationEffectIds
@@ -542,7 +546,8 @@ export function resolveScenarioSourceStatMaps(input: {
     input.activeEffectSourceBuildIds,
     sourceSelfMaximumEquipmentEffectsByBuildId,
     fieldContext,
-    preparation
+    preparation,
+    sourceFinalHpByBuildId
   )
   const {
     sourceElementalMasteryBeforeShareByBuildId,

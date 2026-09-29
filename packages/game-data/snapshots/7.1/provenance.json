@@ -1,0 +1,656 @@
+{
+  "gameVersion": "7.1",
+  "policy": "Append new entities; retain existing 7.0 rows without relabelling their source.",
+  "baseline": {
+    "path": "../7.0/game-data.sqlite",
+    "sha256": "d12acc5a2c89a82ac5faa88c6d2b78a6c879f5ec7bc62fe74308385b5bc4d71e",
+    "source": {
+      "schemaVersion": 2,
+      "gameVersion": "7.0",
+      "upstreamRepository": "https://github.com/frzyc/genshin-optimizer",
+      "upstreamCommit": "98aafa1f135f086524b611c7d5b5bfb78d98bb6d",
+      "upstreamCommittedAt": "2026-08-20T13:27:18Z",
+      "upstreamLicense": "MIT",
+      "dataUrl": "https://raw.githubusercontent.com/frzyc/genshin-optimizer/98aafa1f135f086524b611c7d5b5bfb78d98bb6d/libs/gi/stats/src/allStat_gen.json",
+      "dataSha256": "6776559bb8844a091052bcb580ad9e13370e22509c9b4682e5a829b52c7d3ee9"
+    }
+  },
+  "additions": {
+    "repository": "https://github.com/theBowja/genshin-db",
+    "commit": "49a6544a6c6ae36089cb42fa591fc46f01de8bcf",
+    "committedAt": "2026-09-21T20:39:46Z",
+    "license": "MIT",
+    "files": {
+      "src/data/ChineseSimplified/characters/vesna.json": "dc54badc20793ba7eb271e3fb818b15010e90df51b7afb404278ad7ad7669418",
+      "src/data/ChineseSimplified/characters/vodyanitsa.json": "343a7cb8b62a5e3a3700f2cddde405475facaa84a54eae44735ea644b274c2e8",
+      "src/data/ChineseSimplified/constellations/vesna.json": "e5a2e5698bfc2d06ef94f26def52b6506c9fdf71e6bc45bd02cd1d9907718fcd",
+      "src/data/ChineseSimplified/constellations/vodyanitsa.json": "6271260fb2729786edb7ea5c03455ebcfc5fe225a1d2368ff8b9af3c73dd7caf",
+      "src/data/ChineseSimplified/talents/vesna.json": "ba621237701584370e1145d288204d8fa697f9897e5bfa4e751fc54fc6f7cae4",
+      "src/data/ChineseSimplified/talents/vodyanitsa.json": "3c4193852def96b5209763ed0b73d98a6cb84249c23e399e7d40657af84fcdbe",
+      "src/data/ChineseSimplified/weapons/beyondthechrysalis.json": "b538d7a0f23997dca8ea3291129f1c7209a71229ec1f59bff4c52b08a2bb2220",
+      "src/data/ChineseSimplified/weapons/breezebornerefrain.json": "cfd14ea7005d7a0864ce2be26bd3a4bb94e67ecd510968a84a794bed0edb07c5",
+      "src/data/ChineseSimplified/weapons/hymnofthemaelstrom.json": "fe24f2aaa0ff8692dfcfc521c470e4e1e3e92da5b456c857616cbae045b73885",
+      "src/data/ChineseSimplified/weapons/newbough.json": "c5b03215245e4133b8e3e742fd6dee40172292f685c02cd91664bec24045ae0f",
+      "src/data/ChineseSimplified/weapons/silverlight.json": "2395289d933212b6f7ce6f0b20366632a9a9502a075998d092b76154cd06199d",
+      "src/data/ChineseSimplified/weapons/wintersheavyheart.json": "03b68e93a1e4b1291b2389a8f618124c4b135e6289258ee1da89ca10d5befe8b",
+      "src/data/curve/characters.json": "51c4f9c13e61f227af59660f8a89336f1397009d84d7ce479593fd7a4c62709c",
+      "src/data/curve/weapons.json": "1beab74a929e0d47b6ce3fe3fe70336544c8990eb8f691ad12988432e9e6957d",
+      "src/data/stats/characters.json": "00c40710eba757f5f6cf1fefc3f13905204b9381798310726a81082435f6035c",
+      "src/data/stats/talents.json": "a6e87c30c325f6dd5f7441cbeded21b329175286c92bfd9757ce9be2680048d7",
+      "src/data/stats/weapons.json": "2d4952882fd9954e5f5b08ca21f4c8cb641c6b01e6b5dde311f2c5477493db15",
+      "src/data/version/artifacts.json": "14bc9f81fc0c6caee74877e7a763259ae3e6194ca60b4085b84264cbe0a9e894",
+      "src/data/version/characters.json": "10d48725d2653724de9e6b3240c055808c95af66e8435e0ac76169f55eca78e0",
+      "src/data/version/weapons.json": "bcdbe53e956eca74d645650db66df76011b117f2d87cbf534928cf971e9cb214"
+    },
+    "mappings": {
+      "commit": "49a6544a6c6ae36089cb42fa591fc46f01de8bcf",
+      "characters": [
+        {
+          "id": "Vodyanitsa",
+          "key": "vodyanitsa"
+        },
+        {
+          "id": "Vesna",
+          "key": "vesna"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "NewBough",
+          "key": "newbough"
+        },
+        {
+          "id": "Silverlight",
+          "key": "silverlight"
+        },
+        {
+          "id": "BeyondTheChrysalis",
+          "key": "beyondthechrysalis"
+        },
+        {
+          "id": "WintersHeavyHeart",
+          "key": "wintersheavyheart"
+        },
+        {
+          "id": "HymnOfTheMaelstrom",
+          "key": "hymnofthemaelstrom"
+        },
+        {
+          "id": "BreezeborneRefrain",
+          "key": "breezebornerefrain"
+        }
+      ],
+      "artifacts": [],
+      "talentOwners": [],
+      "talents": [
+        {
+          "owner": "Vodyanitsa",
+          "key": "vodyanitsa",
+          "group": "auto",
+          "sourceGroup": "combat1",
+          "status": "source-only",
+          "evidence": "2026-09-29: 7.1 source values and CN labels; no 7.0 numeric gold or Content action semantics.",
+          "parameters": [
+            {
+              "index": 0,
+              "key": "param1",
+              "labels": [
+                "一段伤害|{param1:F1P}"
+              ]
+            },
+            {
+              "index": 1,
+              "key": "param2",
+              "labels": [
+                "二段伤害|{param2:F1P}"
+              ]
+            },
+            {
+              "index": 2,
+              "key": "param3",
+              "labels": [
+                "三段伤害|{param3:F1P}"
+              ]
+            },
+            {
+              "index": 3,
+              "key": "param4",
+              "labels": [
+                "四段伤害|{param4:F1P}"
+              ]
+            },
+            {
+              "index": 4,
+              "key": "param5",
+              "labels": [
+                "重击伤害|{param5:F1P}"
+              ]
+            },
+            {
+              "index": 5,
+              "key": "param6",
+              "labels": [
+                "重击体力消耗|{param6:F1}点"
+              ]
+            },
+            {
+              "index": 6,
+              "key": "param7",
+              "labels": [
+                "下坠期间伤害|{param7:F1P}"
+              ]
+            },
+            {
+              "index": 7,
+              "key": "param8",
+              "labels": [
+                "低空/高空坠地冲击伤害|{param8:P}/{param9:P}"
+              ]
+            },
+            {
+              "index": 8,
+              "key": "param9",
+              "labels": [
+                "低空/高空坠地冲击伤害|{param8:P}/{param9:P}"
+              ]
+            }
+          ]
+        },
+        {
+          "owner": "Vodyanitsa",
+          "key": "vodyanitsa",
+          "group": "skill",
+          "sourceGroup": "combat2",
+          "status": "source-only",
+          "evidence": "2026-09-29: 7.1 source values and CN labels; no 7.0 numeric gold or Content action semantics.",
+          "parameters": [
+            {
+              "index": 0,
+              "key": "param1",
+              "labels": [
+                "技能伤害|{param1:F2P}生命值上限"
+              ]
+            },
+            {
+              "index": 1,
+              "key": "param2",
+              "labels": [
+                "持续时间|{param2:F1}秒"
+              ]
+            },
+            {
+              "index": 2,
+              "key": "param3",
+              "labels": [
+                "唤春角笛攻击间隔|{param3:F1}秒"
+              ]
+            },
+            {
+              "index": 3,
+              "key": "param4",
+              "labels": [
+                "唤春角笛伤害|{param4:F2P}生命值上限"
+              ]
+            },
+            {
+              "index": 4,
+              "key": "param5",
+              "labels": [
+                "遥久之歌治疗量|{param5:I}+{param6:F2P}生命值上限"
+              ]
+            },
+            {
+              "index": 5,
+              "key": "param6",
+              "labels": [
+                "遥久之歌治疗量|{param5:I}+{param6:F2P}生命值上限"
+              ]
+            },
+            {
+              "index": 6,
+              "key": "param7",
+              "labels": [
+                "遥久之歌治疗间隔|{param7:F1}秒"
+              ]
+            },
+            {
+              "index": 7,
+              "key": "param8",
+              "labels": [
+                "水元素/冰元素抗性降低|{param8:F1P}"
+              ]
+            },
+            {
+              "index": 8,
+              "key": "param9",
+              "labels": [
+                "抗性降低持续时间|{param9:F1}秒"
+              ]
+            },
+            {
+              "index": 9,
+              "key": "param10",
+              "labels": [
+                "技能冷却时间|{param10:F1}秒"
+              ]
+            }
+          ]
+        },
+        {
+          "owner": "Vodyanitsa",
+          "key": "vodyanitsa",
+          "group": "burst",
+          "sourceGroup": "combat3",
+          "status": "source-only",
+          "evidence": "2026-09-29: 7.1 source values and CN labels; no 7.0 numeric gold or Content action semantics.",
+          "parameters": [
+            {
+              "index": 0,
+              "key": "param1",
+              "labels": [
+                "技能伤害|{param1:F1P}生命值上限"
+              ]
+            },
+            {
+              "index": 1,
+              "key": "param2",
+              "labels": [
+                "遥久之歌伤害加成|{param2:F1P}"
+              ]
+            },
+            {
+              "index": 2,
+              "key": "param3",
+              "labels": [
+                "冷却时间|{param3:F1}秒"
+              ]
+            },
+            {
+              "index": 3,
+              "key": "param4",
+              "labels": [
+                "元素能量|{param4:I}"
+              ]
+            }
+          ]
+        },
+        {
+          "owner": "Vesna",
+          "key": "vesna",
+          "group": "auto",
+          "sourceGroup": "combat1",
+          "status": "source-only",
+          "evidence": "2026-09-29: 7.1 source values and CN labels; no 7.0 numeric gold or Content action semantics.",
+          "parameters": [
+            {
+              "index": 0,
+              "key": "param1",
+              "labels": [
+                "一段伤害|{param1:F1P}"
+              ]
+            },
+            {
+              "index": 1,
+              "key": "param2",
+              "labels": [
+                "二段伤害|{param2:F1P}"
+              ]
+            },
+            {
+              "index": 2,
+              "key": "param3",
+              "labels": [
+                "三段伤害|{param3:F1P}*2"
+              ]
+            },
+            {
+              "index": 3,
+              "key": "param4",
+              "labels": [
+                "四段伤害|{param4:F1P}"
+              ]
+            },
+            {
+              "index": 4,
+              "key": "param5",
+              "labels": [
+                "五段伤害|{param5:F1P}"
+              ]
+            },
+            {
+              "index": 5,
+              "key": "param6",
+              "labels": [
+                "六段伤害|{param6:F1P}"
+              ]
+            },
+            {
+              "index": 6,
+              "key": "param7",
+              "labels": [
+                "重击伤害|{param7:F1P}"
+              ]
+            },
+            {
+              "index": 7,
+              "key": "param8",
+              "labels": [
+                "重击体力消耗|{param8:F1}点"
+              ]
+            },
+            {
+              "index": 8,
+              "key": "param9",
+              "labels": [
+                "下坠期间伤害|{param9:F1P}"
+              ]
+            },
+            {
+              "index": 9,
+              "key": "param10",
+              "labels": [
+                "低空/高空坠地冲击伤害|{param10:P}/{param11:P}"
+              ]
+            },
+            {
+              "index": 10,
+              "key": "param11",
+              "labels": [
+                "低空/高空坠地冲击伤害|{param10:P}/{param11:P}"
+              ]
+            }
+          ]
+        },
+        {
+          "owner": "Vesna",
+          "key": "vesna",
+          "group": "skill",
+          "sourceGroup": "combat2",
+          "status": "source-only",
+          "evidence": "2026-09-29: 7.1 source values and CN labels; no 7.0 numeric gold or Content action semantics.",
+          "parameters": [
+            {
+              "index": 0,
+              "key": "param1",
+              "labels": [
+                "技能伤害|{param1:F1P}"
+              ]
+            },
+            {
+              "index": 1,
+              "key": "param2",
+              "labels": [
+                "翔风剑一阶伤害|{param2:F1P}"
+              ]
+            },
+            {
+              "index": 2,
+              "key": "param3",
+              "labels": [
+                "翔风剑二阶伤害|{param3:F1P}"
+              ]
+            },
+            {
+              "index": 3,
+              "key": "param4",
+              "labels": [
+                "翔风剑二阶灵剑伤害|{param4:F1P}"
+              ]
+            },
+            {
+              "index": 4,
+              "key": "param5",
+              "labels": [
+                "翔风剑二阶灵剑星扩散伤害|{param5:F1P}"
+              ]
+            },
+            {
+              "index": 5,
+              "key": "param6",
+              "labels": [
+                "翔风剑三阶灵剑伤害|{param6:F1P}*4"
+              ]
+            },
+            {
+              "index": 6,
+              "key": "param7",
+              "labels": [
+                "翔风剑三阶灵剑星扩散伤害|{param7:F1P}*4"
+              ]
+            },
+            {
+              "index": 7,
+              "key": "param8",
+              "labels": [
+                "翔风剑三阶灵剑最终段伤害|{param8:F1P}"
+              ]
+            },
+            {
+              "index": 8,
+              "key": "param9",
+              "labels": [
+                "翔风剑三阶灵剑最终段星扩散伤害|{param9:F1P}"
+              ]
+            },
+            {
+              "index": 9,
+              "key": "param10",
+              "labels": [
+                "风翎伤害|{param10:F1P}"
+              ]
+            },
+            {
+              "index": 10,
+              "key": "param12",
+              "labels": [
+                "巡风列装持续时间|{param12:F1}秒"
+              ]
+            },
+            {
+              "index": 11,
+              "key": "param13",
+              "labels": []
+            },
+            {
+              "index": 12,
+              "key": "param14",
+              "labels": [
+                "冷却时间|{param14:F1}秒"
+              ]
+            }
+          ]
+        },
+        {
+          "owner": "Vesna",
+          "key": "vesna",
+          "group": "burst",
+          "sourceGroup": "combat3",
+          "status": "source-only",
+          "evidence": "2026-09-29: 7.1 source values and CN labels; no 7.0 numeric gold or Content action semantics.",
+          "parameters": [
+            {
+              "index": 0,
+              "key": "param1",
+              "labels": [
+                "灵剑伤害|{param1:F1P}"
+              ]
+            },
+            {
+              "index": 1,
+              "key": "param2",
+              "labels": [
+                "灵剑星扩散伤害|{param2:F1P}"
+              ]
+            },
+            {
+              "index": 2,
+              "key": "param3",
+              "labels": [
+                "冷却时间|{param3:F1}秒"
+              ]
+            },
+            {
+              "index": 3,
+              "key": "param4",
+              "labels": [
+                "元素能量|{param4:I}"
+              ]
+            }
+          ]
+        }
+      ],
+      "refinements": [
+        {
+          "id": "NewBough",
+          "key": "newbough",
+          "parameters": [
+            {
+              "name": "atk_",
+              "index": 0
+            },
+            {
+              "name": "eleMas",
+              "index": 1
+            },
+            {
+              "name": "stellarAtk_",
+              "index": 2
+            },
+            {
+              "name": "stellar_dmg_",
+              "index": 3
+            }
+          ]
+        },
+        {
+          "id": "Silverlight",
+          "key": "silverlight",
+          "parameters": [
+            {
+              "name": "eleMas",
+              "index": 0
+            }
+          ]
+        },
+        {
+          "id": "BeyondTheChrysalis",
+          "key": "beyondthechrysalis",
+          "parameters": [
+            {
+              "name": "critDMG_",
+              "index": 0
+            },
+            {
+              "name": "stellarSwirl_dmg_",
+              "index": 1
+            },
+            {
+              "name": "energy",
+              "index": 2
+            },
+            {
+              "name": "energyLimit",
+              "index": 3
+            }
+          ]
+        },
+        {
+          "id": "WintersHeavyHeart",
+          "key": "wintersheavyheart",
+          "parameters": [
+            {
+              "name": "cryoEleMas",
+              "index": 0
+            },
+            {
+              "name": "electroAtk_",
+              "index": 1
+            },
+            {
+              "name": "stellarEleMas",
+              "index": 2
+            },
+            {
+              "name": "stellar_dmg_",
+              "index": 3
+            }
+          ]
+        },
+        {
+          "id": "HymnOfTheMaelstrom",
+          "key": "hymnofthemaelstrom",
+          "parameters": [
+            {
+              "name": "heal_",
+              "index": 0
+            },
+            {
+              "name": "hp_",
+              "index": 1
+            },
+            {
+              "name": "atkPer1000Hp_",
+              "index": 2
+            },
+            {
+              "name": "maxAtk_",
+              "index": 3
+            }
+          ]
+        },
+        {
+          "id": "BreezeborneRefrain",
+          "key": "breezebornerefrain",
+          "parameters": [
+            {
+              "name": "enerRech_",
+              "index": 0
+            },
+            {
+              "name": "stellar_dmg_",
+              "index": 1
+            }
+          ]
+        }
+      ]
+    },
+    "characters": [
+      "Vodyanitsa",
+      "Vesna"
+    ],
+    "weapons": [
+      "NewBough",
+      "Silverlight",
+      "BeyondTheChrysalis",
+      "WintersHeavyHeart",
+      "HymnOfTheMaelstrom",
+      "BreezeborneRefrain"
+    ],
+    "artifactSets": []
+  },
+  "passiveSupplement": {
+    "repository": "https://github.com/DimbreathBot/AnimeGameData",
+    "commit": "9587d1afbd9ab0419cdd00dc05ecd114b9e3fe99",
+    "path": "ExcelBinOutput/ProudSkillExcelConfigData.json",
+    "sha256": "381b70963eb3ede60de040b8da6f167c77c5065a613adeaf99121f1358294fe5",
+    "passiveIds": {
+      "Vesna": [
+        1432101,
+        1432201,
+        1432301,
+        1432501
+      ],
+      "Vodyanitsa": [
+        1402101,
+        1402201,
+        1402301,
+        1402501
+      ]
+    },
+    "linkedDescription": {
+      "path": "TextMap/TextMapCHS.json",
+      "sha256": "358e586f097d4081b804744375be128fa932406aa2de7cb2410d1de46998bbb8",
+      "leadVocalHash": "2726019721"
+    }
+  }
+}

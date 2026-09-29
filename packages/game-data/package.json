@@ -10,9 +10,12 @@
     }
   },
   "scripts": {
+    "genshin-db:evaluate": "tsx tools/genshin-db/cli.ts",
+    "genshin-db:map:check": "tsx tools/genshin-db/semantic-check.ts",
     "build": "tsc -p tsconfig.build.json",
     "semantic-preview:import": "tsx tools/import-semantic-localization-preview.ts",
     "snapshot:update": "tsx tools/update-snapshot.ts",
+    "snapshot:update:7.1": "tsx tools/update-7.1.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

@@ -103,6 +103,8 @@ import { travelerCombatCoverage as characterTravelerCoverage } from "../characte
 import { varesaCombatCoverage as characterVaresaCoverage } from "../characters/varesa/combat.js"
 import { varkaCombatCoverage as characterVarkaCoverage } from "../characters/varka/combat.js"
 import { ventiCombatCoverage as characterVentiCoverage } from "../characters/venti/combat.js"
+import { vesnaCombatCoverage as characterVesnaCoverage } from "../characters/vesna/combat.js"
+import { vodyanitsaCombatCoverage as characterVodyanitsaCoverage } from "../characters/vodyanitsa/combat.js"
 import { wandererCombatCoverage as characterWandererCoverage } from "../characters/wanderer/combat.js"
 import { wriothesleyCombatCoverage as characterWriothesleyCoverage } from "../characters/wriothesley/combat.js"
 import { xianglingCombatCoverage as characterXianglingCoverage } from "../characters/xiangling/combat.js"
@@ -224,6 +226,8 @@ export const characterCombatCoverageRegistry: readonly CharacterCombatCoverage[]
   characterVaresaCoverage,
   characterVarkaCoverage,
   characterVentiCoverage,
+  characterVesnaCoverage,
+  characterVodyanitsaCoverage,
   characterWandererCoverage,
   characterWriothesleyCoverage,
   characterXianglingCoverage,

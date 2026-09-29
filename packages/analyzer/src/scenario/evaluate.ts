@@ -94,6 +94,7 @@ function evaluateVerifiedTargetAction(
 ): ScenarioTargetEvaluation {
   const action = getVerifiedDamageAction(scenario)
   const fieldContext = { ...resolveFieldContext(action, scenario.primary, scenario.teammates, scenario.conditions.onFieldBuildId),
+    targetFrozen: scenario.conditions.targetFrozen ?? false,
     targetIsSlime: scenario.conditions.targetIsSlime ?? false,
     arrowHitsWeakPoint: scenario.conditions.arrowHitsWeakPoint ?? false,
     ...(scenario.conditions.weaponEffectChoices ? { weaponEffectChoices: scenario.conditions.weaponEffectChoices } : {}) }

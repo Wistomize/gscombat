@@ -16,7 +16,7 @@
 - **项目**：[frzyc/genshin-optimizer](https://github.com/frzyc/genshin-optimizer)
 - **固定提交**：`98aafa1f135f086524b611c7d5b5bfb78d98bb6d`
 - **上游许可证**：[MIT](https://github.com/frzyc/genshin-optimizer/blob/master/LICENSE)
-- **本地证据**：`packages/game-data/sources/current.json`、
+- **本地证据**：`packages/game-data/snapshots/7.0/manifest.json`、
   `packages/game-data/sources/semantic-localization-preview.v3.json`、
   `apps/web/lib/visual-assets.generated.json`
 
@@ -29,6 +29,23 @@
   是固定提交素材的缩略转换，不代表素材权利发生转移。
 
 感谢 Genshin Optimizer 维护者整理可复现的游戏静态数据、名称和资产映射。
+
+### genshin-db（7.1 新增数据及离线评估）
+
+- 项目：[theBowja/genshin-db](https://github.com/theBowja/genshin-db)，感谢 theBowja 及数据维护者。
+- 固定提交：`49a6544a6c6ae36089cb42fa591fc46f01de8bcf`（7.1）。
+- 用途：为自己的 SQLite 增量提供 7.1 两名角色、六把武器的数值、成长曲线、中文文本及图标映射；不覆盖原有 7.0 事实。
+- 证据：`packages/game-data/snapshots/7.1/provenance.json`；早期评估保留在 `sources/genshin-db-evaluation.*.json`。
+- 仓库采用 MIT，样本目录保留许可证；游戏文本和资产权利仍归原权利人。
+
+### AnimeGameData（7.1 天赋参数补源）
+
+- [DimbreathBot/AnimeGameData](https://github.com/DimbreathBot/AnimeGameData)，感谢原始数据整理者。
+- 固定提交 `9587d1afbd9ab0419cdd00dc05ecd114b9e3fe99` 的 ProudSkillExcelConfigData 与简中 TextMap，
+  用于新角色固有天赋及链接说明的核对；路径、参数 ID 和校验和保存在 7.1 provenance。
+- 原始游戏数值、文本仍归原权利人，不因本项目 AGPL 或其他数据仓的 MIT 许可而重新授权。
+- 新增缩略图通过 genshin-db 的文件名映射从 Enka `/ui` 获取，原始图像哈希及 URL 记录在
+  `apps/web/lib/visual-assets.generated.json` 的 `additionalSources`，图片权利归 HoYoverse。
 
 ## 3. Enka.Network
 

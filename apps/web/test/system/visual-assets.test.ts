@@ -13,7 +13,7 @@ interface ArtifactSetRow {
 
 const artifactVisuals = generatedVisualAssets.artifacts as Readonly<Record<string, Readonly<Record<string, string>>>>
 const weaponVisuals = generatedVisualAssets.weapons as Readonly<Record<string, string>>
-const gameDataPath = fileURLToPath(new URL("../../../../packages/game-data/snapshots/7.0/game-data.sqlite", import.meta.url))
+const gameDataPath = fileURLToPath(new URL("../../../../packages/game-data/snapshots/7.1/game-data.sqlite", import.meta.url))
 const publicPath = fileURLToPath(new URL("../../public", import.meta.url))
 
 function listArtifactSetIds(): readonly string[] {

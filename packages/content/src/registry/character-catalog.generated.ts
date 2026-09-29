@@ -120,6 +120,8 @@ import { sangonomiyaKokomiDefinition as characterSangonomiyaKokomiDefinition } f
 import { durinDefinition as characterDurinDefinition } from "../characters/durin/definition.js"
 import { odetteDefinition as characterOdetteDefinition } from "../characters/odette/definition.js"
 import { alyoshaDefinition as characterAlyoshaDefinition } from "../characters/alyosha/definition.js"
+import { vesnaDefinition as characterVesnaDefinition } from "../characters/vesna/definition.js"
+import { vodyanitsaDefinition as characterVodyanitsaDefinition } from "../characters/vodyanitsa/definition.js"
 
 export const characterCatalogPresentation: readonly CharacterCatalogPresentation[] = [
   characterRaidenDefinition.catalog,
@@ -240,5 +242,7 @@ export const characterCatalogPresentation: readonly CharacterCatalogPresentation
   characterSangonomiyaKokomiDefinition.catalog,
   characterDurinDefinition.catalog,
   characterOdetteDefinition.catalog,
-  characterAlyoshaDefinition.catalog
+  characterAlyoshaDefinition.catalog,
+  characterVesnaDefinition.catalog,
+  characterVodyanitsaDefinition.catalog
 ]

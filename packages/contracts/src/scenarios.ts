@@ -108,6 +108,7 @@ export type MetricFriendlyRecipientContext = Type.Static<typeof MetricFriendlyRe
 
 /** Runtime state for the source character when one support metric needs an explicit self condition. */
 export const MetricSourceContextSchema = Type.Object({
+  targetFrozen: Type.Optional(Type.Boolean()),
   currentHpFraction: Type.Optional(Type.Number({ maximum: 1, minimum: 0 })),
   /** Explicit source-action enemy count used only for relevant self-owned equipment passives. */
   enemyCount: Type.Optional(Type.Integer({ maximum: 20, minimum: 1 }))

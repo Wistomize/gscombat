@@ -92,7 +92,7 @@ export type CombatMetricConditionEvaluation =
       readonly satisfied: boolean
     }
   | {
-      readonly comparison: "at_most" | "above"
+      readonly comparison: "at_most" | "above" | "less_than"
       readonly currentHpFraction?: number
       readonly kind: "recipient_hp_fraction"
       readonly label: string

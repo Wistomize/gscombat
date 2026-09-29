@@ -215,6 +215,13 @@ export function CalculationScenario({
               />
             </label>
           ) : null}
+          {hasFrozenCondition ? (
+            <label className="toggleRow">
+              <span>目标处于冻结状态（共鸣与装备共享）</span>
+              <input type="checkbox" checked={conditions.targetFrozen ?? false}
+                onChange={event => onConditionsChange(current => ({ ...current, targetFrozen: event.target.checked }))} />
+            </label>
+          ) : null}
           {selectedSupportMetric.scenarioParameters?.map((parameter) => {
             const range = getScenarioParameterRange(parameter, targetBuild.constellation)
             return (

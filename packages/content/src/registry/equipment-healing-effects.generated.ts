@@ -5,10 +5,12 @@ import { maidenBelovedHealingEquipmentEffects } from "../artifacts/maiden-belove
 import { oceanHuedClamHealingEquipmentEffects } from "../artifacts/ocean-hued-clam/support-effects.js"
 import { songOfDaysPastHealingEquipmentEffects } from "../artifacts/song-of-days-past/support-effects.js"
 import { everlastingMoonglowHealingEquipmentEffects } from "../weapons/everlasting-moonglow/support-effects.js"
+import { hymnOfTheMaelstromHealingEquipmentEffects } from "../weapons/hymn-of-the-maelstrom/support-effects.js"
 
 export const healingEquipmentEffects: readonly HealingEquipmentEffect[] = [
   ...maidenBelovedHealingEquipmentEffects,
   ...oceanHuedClamHealingEquipmentEffects,
   ...songOfDaysPastHealingEquipmentEffects,
-  ...everlastingMoonglowHealingEquipmentEffects
+  ...everlastingMoonglowHealingEquipmentEffects,
+  ...hymnOfTheMaelstromHealingEquipmentEffects
 ]

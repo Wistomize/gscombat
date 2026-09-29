@@ -35,7 +35,7 @@ interface DownloadedJson<T> {
 
 type TravelerElement = "anemo" | "cryo" | "dendro" | "electro" | "geo" | "hydro" | "pyro"
 
-const enkaApiDocsCommit = "dc86b5dc06ad27d26c9a4df9f0b6ffd0417bf554"
+const enkaApiDocsCommit = "ac2c249e86d29ebd85f6753fbc5a2ebe15fac608"
 const enkaApiDocsRepository = "https://github.com/EnkaNetwork/API-docs"
 const enkaStoreRoot =
   `https://raw.githubusercontent.com/EnkaNetwork/API-docs/${enkaApiDocsCommit}` + "/store/gi"

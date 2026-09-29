@@ -1,5 +1,6 @@
 import {
   getArtifactConditionRequirements,
+  getWeaponConditionRequirements,
   supportedArtifactSets,
   supportedBuffPresets,
   supportedCharacters,
@@ -94,9 +95,11 @@ export function serializeCatalogResponse(): CatalogResponse {
       }))
     })),
     weapons: supportedWeapons.map(({ comparison, ...weapon }) => {
-      if (!comparison) return weapon
+      const conditionRequirements = getWeaponConditionRequirements(weapon.weaponId)
+      const entry = { ...weapon, ...(conditionRequirements.length ? { conditionRequirements } : {}) }
+      if (!comparison) return entry
       const { refinements, ...policy } = comparison
-      return { ...weapon, comparison: { ...policy, ...(refinements ? { refinements: [...refinements] } : {}) } }
+      return { ...entry, comparison: { ...policy, ...(refinements ? { refinements: [...refinements] } : {}) } }
     })
   }
 }

@@ -433,7 +433,7 @@ export interface CombatMetricRecipientInSourceAreaRequirement {
 
 /** Requires the selected friendly recipient's current HP fraction to pass a declared comparison. */
 export interface CombatMetricRecipientHpFractionRequirement {
-  readonly comparison: "at_most" | "above"
+  readonly comparison: "at_most" | "above" | "less_than"
   readonly kind: "recipient_hp_fraction"
   readonly label: string
   readonly threshold: number
@@ -469,6 +469,8 @@ export type CombatScalarMetricSemantic =
   | "elemental_normal_attack_damage_bonus"
   | "elemental_mastery_buff"
   | "geo_damage_flat_bonus"
+  | "hydro_cryo_flat_damage_bonus"
+  | "stellar_swirl_flat_damage_bonus"
   | "lunar_bloom_flat_damage_bonus"
   | "lunar_crystallize_base_damage_bonus"
   | "lunar_crystallize_flat_damage_bonus"
@@ -510,6 +512,8 @@ export interface CombatDamageMetricDefinition extends CombatMetricDefinitionBase
 
 /** Shared declaration fields for one selected recipient's healing and recipient-side context. */
 interface CombatHealingMetricDefinitionBase extends CombatFriendlyRecipientMetricDefinitionBase {
+  /** Independent per-heal bonuses, distinct from outgoing and incoming healing bonuses. */
+  readonly conditionalHealingMultipliers?: readonly CombatHealingRecipientIncomingHealingBonus[]
   /** Multiplies final healing only when the recipient is the source; distinct from the healing-bonus pool. */
   readonly selfRecipientMultiplier?: { readonly label: string; readonly value: number }
   readonly includeHealingBonus: boolean

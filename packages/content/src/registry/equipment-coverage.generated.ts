@@ -84,6 +84,7 @@ import { equipmentCoverage as weaponBalladOfTheBoundlessBlueCoverage } from "../
 import { equipmentCoverage as weaponBalladOfTheFjordsCoverage } from "../weapons/ballad-of-the-fjords/coverage.js"
 import { equipmentCoverage as weaponBeaconOfTheReedSeaCoverage } from "../weapons/beacon-of-the-reed-sea/coverage.js"
 import { equipmentCoverage as weaponBeginnersProtectorCoverage } from "../weapons/beginners-protector/coverage.js"
+import { equipmentCoverage as weaponBeyondTheChrysalisCoverage } from "../weapons/beyond-the-chrysalis/coverage.js"
 import { equipmentCoverage as weaponBlackTasselCoverage } from "../weapons/black-tassel/coverage.js"
 import { equipmentCoverage as weaponBlackcliffAgateCoverage } from "../weapons/blackcliff-agate/coverage.js"
 import { equipmentCoverage as weaponBlackcliffLongswordCoverage } from "../weapons/blackcliff-longsword/coverage.js"
@@ -94,6 +95,7 @@ import { equipmentCoverage as weaponBlackmarrowLanternCoverage } from "../weapon
 import { equipmentCoverage as weaponBladeOfAtonementCoverage } from "../weapons/blade-of-atonement/coverage.js"
 import { equipmentCoverage as weaponBloodsoakedRuinsCoverage } from "../weapons/bloodsoaked-ruins/coverage.js"
 import { equipmentCoverage as weaponBloodtaintedGreatswordCoverage } from "../weapons/bloodtainted-greatsword/coverage.js"
+import { equipmentCoverage as weaponBreezeborneRefrainCoverage } from "../weapons/breezeborne-refrain/coverage.js"
 import { equipmentCoverage as weaponCalamityOfEshuCoverage } from "../weapons/calamity-of-eshu/coverage.js"
 import { equipmentCoverage as weaponCalamityQuellerCoverage } from "../weapons/calamity-queller/coverage.js"
 import { equipmentCoverage as weaponCashflowSupervisionCoverage } from "../weapons/cashflow-supervision/coverage.js"
@@ -163,6 +165,7 @@ import { equipmentCoverage as weaponHarbingerOfDawnCoverage } from "../weapons/h
 import { equipmentCoverage as weaponHereticsMoltenBladeCoverage } from "../weapons/heretics-molten-blade/coverage.js"
 import { equipmentCoverage as weaponHuntersBowCoverage } from "../weapons/hunters-bow/coverage.js"
 import { equipmentCoverage as weaponHuntersPathCoverage } from "../weapons/hunters-path/coverage.js"
+import { equipmentCoverage as weaponHymnOfTheMaelstromCoverage } from "../weapons/hymn-of-the-maelstrom/coverage.js"
 import { equipmentCoverage as weaponIbisPiercerCoverage } from "../weapons/ibis-piercer/coverage.js"
 import { equipmentCoverage as weaponIronPointCoverage } from "../weapons/iron-point/coverage.js"
 import { equipmentCoverage as weaponIronStingCoverage } from "../weapons/iron-sting/coverage.js"
@@ -196,6 +199,7 @@ import { equipmentCoverage as weaponMoonpiercerCoverage } from "../weapons/moonp
 import { equipmentCoverage as weaponMoonweaversDawnCoverage } from "../weapons/moonweavers-dawn/coverage.js"
 import { equipmentCoverage as weaponMountainBracingBoltCoverage } from "../weapons/mountain-bracing-bolt/coverage.js"
 import { equipmentCoverage as weaponMouunsMoonCoverage } from "../weapons/mouuns-moon/coverage.js"
+import { equipmentCoverage as weaponNewBoughCoverage } from "../weapons/new-bough/coverage.js"
 import { equipmentCoverage as weaponNightweaversLookingGlassCoverage } from "../weapons/nightweavers-looking-glass/coverage.js"
 import { equipmentCoverage as weaponNocturnesCurtainCallCoverage } from "../weapons/nocturnes-curtain-call/coverage.js"
 import { equipmentCoverage as weaponOathswornEyeCoverage } from "../weapons/oathsworn-eye/coverage.js"
@@ -244,6 +248,7 @@ import { equipmentCoverage as weaponSerenitysCallCoverage } from "../weapons/ser
 import { equipmentCoverage as weaponSerpentSpineCoverage } from "../weapons/serpent-spine/coverage.js"
 import { equipmentCoverage as weaponSharpshootersOathCoverage } from "../weapons/sharpshooters-oath/coverage.js"
 import { equipmentCoverage as weaponSilverSwordCoverage } from "../weapons/silver-sword/coverage.js"
+import { equipmentCoverage as weaponSilverlightCoverage } from "../weapons/silverlight/coverage.js"
 import { equipmentCoverage as weaponSilvershowerHeartstringsCoverage } from "../weapons/silvershower-heartstrings/coverage.js"
 import { equipmentCoverage as weaponSkyriderGreatswordCoverage } from "../weapons/skyrider-greatsword/coverage.js"
 import { equipmentCoverage as weaponSkyriderSwordCoverage } from "../weapons/skyrider-sword/coverage.js"
@@ -307,6 +312,7 @@ import { equipmentCoverage as weaponWhiteblindCoverage } from "../weapons/whiteb
 import { equipmentCoverage as weaponWhitelakeFrostfeatherCoverage } from "../weapons/whitelake-frostfeather/coverage.js"
 import { equipmentCoverage as weaponWindblumeOdeCoverage } from "../weapons/windblume-ode/coverage.js"
 import { equipmentCoverage as weaponWineAndSongCoverage } from "../weapons/wine-and-song/coverage.js"
+import { equipmentCoverage as weaponWintersHeavyHeartCoverage } from "../weapons/winters-heavy-heart/coverage.js"
 import { equipmentCoverage as weaponWolfFangCoverage } from "../weapons/wolf-fang/coverage.js"
 import { equipmentCoverage as weaponWolfsGravestoneCoverage } from "../weapons/wolfs-gravestone/coverage.js"
 import { equipmentCoverage as weaponXiphosMoonlightCoverage } from "../weapons/xiphos-moonlight/coverage.js"
@@ -395,6 +401,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponBalladOfTheFjordsCoverage,
   weaponBeaconOfTheReedSeaCoverage,
   weaponBeginnersProtectorCoverage,
+  weaponBeyondTheChrysalisCoverage,
   weaponBlackTasselCoverage,
   weaponBlackcliffAgateCoverage,
   weaponBlackcliffLongswordCoverage,
@@ -405,6 +412,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponBladeOfAtonementCoverage,
   weaponBloodsoakedRuinsCoverage,
   weaponBloodtaintedGreatswordCoverage,
+  weaponBreezeborneRefrainCoverage,
   weaponCalamityOfEshuCoverage,
   weaponCalamityQuellerCoverage,
   weaponCashflowSupervisionCoverage,
@@ -474,6 +482,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponHereticsMoltenBladeCoverage,
   weaponHuntersBowCoverage,
   weaponHuntersPathCoverage,
+  weaponHymnOfTheMaelstromCoverage,
   weaponIbisPiercerCoverage,
   weaponIronPointCoverage,
   weaponIronStingCoverage,
@@ -507,6 +516,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponMoonweaversDawnCoverage,
   weaponMountainBracingBoltCoverage,
   weaponMouunsMoonCoverage,
+  weaponNewBoughCoverage,
   weaponNightweaversLookingGlassCoverage,
   weaponNocturnesCurtainCallCoverage,
   weaponOathswornEyeCoverage,
@@ -555,6 +565,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponSerpentSpineCoverage,
   weaponSharpshootersOathCoverage,
   weaponSilverSwordCoverage,
+  weaponSilverlightCoverage,
   weaponSilvershowerHeartstringsCoverage,
   weaponSkyriderGreatswordCoverage,
   weaponSkyriderSwordCoverage,
@@ -618,6 +629,7 @@ export const reviewedEquipmentCoverageRegistry: readonly EquipmentCoverageEntry[
   weaponWhitelakeFrostfeatherCoverage,
   weaponWindblumeOdeCoverage,
   weaponWineAndSongCoverage,
+  weaponWintersHeavyHeartCoverage,
   weaponWolfFangCoverage,
   weaponWolfsGravestoneCoverage,
   weaponXiphosMoonlightCoverage

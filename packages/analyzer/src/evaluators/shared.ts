@@ -1142,7 +1142,8 @@ export function resolveScenarioActionEffectContext(input: ScenarioActionEffectCo
     input.activeEffectSourceBuildIds,
     sourceSelfMaximumEquipmentEffectsByBuildId,
     fieldContext,
-    preparation
+    preparation,
+    sourceFinalHpByBuildId
   )
   const {
     sourceElementalMasteryBeforeShareByBuildId,

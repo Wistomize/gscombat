@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "gameVersion": "7.0",
-  "upstreamRepository": "https://github.com/frzyc/genshin-optimizer",
-  "upstreamCommit": "98aafa1f135f086524b611c7d5b5bfb78d98bb6d",
-  "upstreamCommittedAt": "2026-08-20T13:27:18Z",
+  "gameVersion": "7.1",
+  "upstreamRepository": "https://github.com/theBowja/genshin-db",
+  "upstreamCommit": "49a6544a6c6ae36089cb42fa591fc46f01de8bcf",
+  "upstreamCommittedAt": "2026-09-21T20:39:46Z",
   "upstreamLicense": "MIT",
-  "dataUrl": "https://raw.githubusercontent.com/frzyc/genshin-optimizer/98aafa1f135f086524b611c7d5b5bfb78d98bb6d/libs/gi/stats/src/allStat_gen.json",
-  "dataSha256": "6776559bb8844a091052bcb580ad9e13370e22509c9b4682e5a829b52c7d3ee9"
+  "dataUrl": "https://github.com/Wistomize/gscombat/blob/main/packages/game-data/snapshots/7.1/provenance.json",
+  "dataSha256": "ed667d1049c0a97feeaab4f1c9065e2cb42683202afc8192bd69f7bc06d68e37"
 }

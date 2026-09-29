@@ -902,6 +902,14 @@
     "Alyosha": {
       "element": "electro",
       "icon": "/icons/characters/Alyosha.webp"
+    },
+    "Vesna": {
+      "element": "anemo",
+      "icon": "/icons/characters/Vesna.webp"
+    },
+    "Vodyanitsa": {
+      "element": "hydro",
+      "icon": "/icons/characters/Vodyanitsa.webp"
     }
   },
   "elementPaths": {
@@ -1153,6 +1161,61 @@
     "WineAndSong": "/icons/weapons/WineAndSong.webp",
     "WolfFang": "/icons/weapons/WolfFang.webp",
     "WolfsGravestone": "/icons/weapons/WolfsGravestone.webp",
-    "XiphosMoonlight": "/icons/weapons/XiphosMoonlight.webp"
+    "XiphosMoonlight": "/icons/weapons/XiphosMoonlight.webp",
+    "NewBough": "/icons/weapons/NewBough.webp",
+    "Silverlight": "/icons/weapons/Silverlight.webp",
+    "BeyondTheChrysalis": "/icons/weapons/BeyondTheChrysalis.webp",
+    "WintersHeavyHeart": "/icons/weapons/WintersHeavyHeart.webp",
+    "HymnOfTheMaelstrom": "/icons/weapons/HymnOfTheMaelstrom.webp",
+    "BreezeborneRefrain": "/icons/weapons/BreezeborneRefrain.webp"
+  },
+  "additionalSources": {
+    "7.1": {
+      "commit": "49a6544a6c6ae36089cb42fa591fc46f01de8bcf",
+      "repository": "https://github.com/theBowja/genshin-db",
+      "imageOwner": "HoYoverse",
+      "files": {
+        "characters": {
+          "url": "https://raw.githubusercontent.com/theBowja/genshin-db/49a6544a6c6ae36089cb42fa591fc46f01de8bcf/src/data/image/characters.json",
+          "sha256": "3da0d49db479f255ca15f89acf16e10b1887aa0edb78e3a8e24fc1b79b7744c2"
+        },
+        "Vesna": {
+          "url": "https://enka.network/ui/UI_AvatarIcon_Vesna.png",
+          "sha256": "09b3656a2e92bc170a9018f14b8117c03f68ff3b80bdf2ed6d700cd43fbae580"
+        },
+        "Vodyanitsa": {
+          "url": "https://enka.network/ui/UI_AvatarIcon_Vodyanitsa.png",
+          "sha256": "401347f6f5910f638ee998708f615c6cb6b94f774590b3f4be335f37be7610c8"
+        },
+        "weapons": {
+          "url": "https://raw.githubusercontent.com/theBowja/genshin-db/49a6544a6c6ae36089cb42fa591fc46f01de8bcf/src/data/image/weapons.json",
+          "sha256": "e2fa5fb31a393ff63c24c3432f632f72320bbccad5e99672b134a3c3dd2bbfda"
+        },
+        "NewBough": {
+          "url": "https://enka.network/ui/UI_EquipIcon_Sword_SpikedStake.png",
+          "sha256": "11eedda88f67b780ce4af9b7c9c8e63bd66b5a36f9411331fa66ced6ba9d5c68"
+        },
+        "Silverlight": {
+          "url": "https://enka.network/ui/UI_EquipIcon_Sword_Fajian.png",
+          "sha256": "c06ecfcb2fe4f0c5260ee43c2e094a31ad2792977d9dfa027559a864471564a5"
+        },
+        "BeyondTheChrysalis": {
+          "url": "https://enka.network/ui/UI_EquipIcon_Sword_Samosvist.png",
+          "sha256": "1d50a7e48ecfe6fc55430d7742d895984381f6386fd65939227a6408d9eb2641"
+        },
+        "WintersHeavyHeart": {
+          "url": "https://enka.network/ui/UI_EquipIcon_Catalyst_FrostScepter.png",
+          "sha256": "60c234d84b92f34e77dc508493f6c07c20215f5c4f4126f82ef141730ee9075a"
+        },
+        "HymnOfTheMaelstrom": {
+          "url": "https://enka.network/ui/UI_EquipIcon_Catalyst_Bludnye.png",
+          "sha256": "3711c89b768eef4d1c621dab1c427dfb84ac36aa3671101a78d89eababc4de18"
+        },
+        "BreezeborneRefrain": {
+          "url": "https://enka.network/ui/UI_EquipIcon_Bow_Windtalker.png",
+          "sha256": "b9c408d9b0f209a4076977ffe0e9a744d430e78d2a5d92d7f6e8d5700900d212"
+        }
+      }
+    }
   }
 }

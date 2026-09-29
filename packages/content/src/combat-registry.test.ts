@@ -135,21 +135,21 @@ describe("character combat coverage registry", () => {
     const nonTravelerMappings = coverage
       .filter((entry) => entry.characterId !== "Aloy" && entry.characterId !== "Traveler")
       .flatMap((entry) => entry.talentLevelConstellationBonuses ?? [])
-    expect(nonTravelerMappings).toHaveLength(234)
+    expect(nonTravelerMappings).toHaveLength(238)
     expect(nonTravelerMappings.every((bonus) => bonus.travelerElement === undefined && bonus.value === 3)).toBe(true)
-    expect(nonTravelerMappings.filter((bonus) => bonus.minimumSourceConstellation === 3)).toHaveLength(117)
-    expect(nonTravelerMappings.filter((bonus) => bonus.minimumSourceConstellation === 5)).toHaveLength(117)
+    expect(nonTravelerMappings.filter((bonus) => bonus.minimumSourceConstellation === 3)).toHaveLength(119)
+    expect(nonTravelerMappings.filter((bonus) => bonus.minimumSourceConstellation === 5)).toHaveLength(119)
 
     const allMappings = [...nonTravelerMappings, ...(traveler.talentLevelConstellationBonuses ?? [])]
-    expect(allMappings).toHaveLength(248)
-    expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 3)).toHaveLength(124)
-    expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 5)).toHaveLength(124)
+    expect(allMappings).toHaveLength(252)
+    expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 3)).toHaveLength(126)
+    expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 5)).toHaveLength(126)
     expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 3 && bonus.talentSlot === "normal")).toHaveLength(7)
-    expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 3 && bonus.talentSlot === "skill")).toHaveLength(64)
+    expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 3 && bonus.talentSlot === "skill")).toHaveLength(66)
     expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 3 && bonus.talentSlot === "burst")).toHaveLength(53)
     expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 5 && bonus.talentSlot === "normal")).toHaveLength(1)
     expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 5 && bonus.talentSlot === "skill")).toHaveLength(53)
-    expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 5 && bonus.talentSlot === "burst")).toHaveLength(70)
+    expect(allMappings.filter((bonus) => bonus.minimumSourceConstellation === 5 && bonus.talentSlot === "burst")).toHaveLength(72)
 
     const travelerElements = ["anemo", "geo", "electro", "dendro", "hydro", "pyro", "cryo"] as const
     for (const travelerElement of travelerElements) {

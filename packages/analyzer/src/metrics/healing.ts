@@ -107,9 +107,13 @@ export function evaluateHealingMetric(
   const recipientIncomingHealingBonuses = (metric.recipientIncomingHealingBonuses ?? []).map((bonus) =>
     runtime.resolveHealingRecipientIncomingBonus(bonus, build, recipient)
   )
+  const conditionalMultipliers = (metric.conditionalHealingMultipliers ?? []).map(bonus =>
+    runtime.resolveHealingRecipientIncomingBonus(bonus, build, recipient)
+  )
   sourceConditions.push(
     ...conditionalScalingBonuses.flatMap((bonus) => bonus.conditions),
-    ...recipientIncomingHealingBonuses.flatMap((bonus) => bonus.conditions)
+    ...recipientIncomingHealingBonuses.flatMap((bonus) => bonus.conditions),
+    ...conditionalMultipliers.flatMap(bonus => bonus.conditions)
   )
   const baseHealing = addFormula("基础单跳治疗", [
     sourceScaling,
@@ -149,12 +153,16 @@ export function evaluateHealingMetric(
   ])
   const recipientFormula = multiplyFormula("受益角色单跳治疗量", [sourceFormula, recipientHealingMultiplier])
   const selfRecipientMultiplier = recipient.recipient.buildId === build.buildId ? metric.selfRecipientMultiplier : undefined
-  const potentialFormula = selfRecipientMultiplier
+  const selfFormula = selfRecipientMultiplier
     ? multiplyFormula("来源本人专属治疗倍率", [
         recipientFormula,
         modifierTerm("recipient_modifier", selfRecipientMultiplier.label, selfRecipientMultiplier.value)
       ])
     : recipientFormula
+  const potentialFormula = conditionalMultipliers.length
+    ? multiplyFormula("本次治疗条件倍率", [selfFormula, ...conditionalMultipliers.map(bonus =>
+        addFormula("条件治疗倍率", [constantTerm("基础倍率", 1), bonus.formula]))])
+    : selfFormula
   const formula = applyConditions(potentialFormula, recipient.conditions)
   const actualRestoredFormula =
     recipient.missingHp === undefined

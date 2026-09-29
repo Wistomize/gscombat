@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
+import { GameDataRepository } from "@gscombat/game-data"
+import { fileURLToPath } from "node:url"
 
 import { artifactSetInventory, pinnedEquipmentInventorySource, weaponInventory } from "./equipment-inventory.js"
 
@@ -8,14 +9,14 @@ function sortedIds(entries: readonly { readonly id: string }[]): string[] {
 }
 
 describe("pinned equipment inventory", () => {
-  it("matches every 7.0 weapon and artifact set in the bundled game-data snapshot", () => {
-    using repository = new GameDataRepository(DEFAULT_GAME_DATA_PATH)
+  it("matches every 7.1 weapon and artifact set in the incremental game-data snapshot", () => {
+    using repository = new GameDataRepository(fileURLToPath(new URL("../../game-data/snapshots/7.1/game-data.sqlite", import.meta.url)))
     const snapshotWeapons = repository.listWeapons()
     const snapshotArtifactSets = repository.listArtifactSets()
     const excludedWeaponIds = new Set(pinnedEquipmentInventorySource.excludedNonGenshinWeaponIds)
     const playerFacingSnapshotWeapons = snapshotWeapons.filter((weapon) => !excludedWeaponIds.has(weapon.id))
 
-    expect(snapshotWeapons).toHaveLength(247)
+    expect(snapshotWeapons).toHaveLength(253)
     expect(snapshotArtifactSets).toHaveLength(63)
     expect(pinnedEquipmentInventorySource.excludedNonGenshinWeaponIds).toEqual(["QuantumCatalyst"])
     expect(sortedIds(weaponInventory)).toEqual(sortedIds(playerFacingSnapshotWeapons))

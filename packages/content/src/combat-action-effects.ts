@@ -20,14 +20,21 @@ import { assertCombatEffectLifecycles } from "./combat/capabilities.js"
 import type { CombatEffectLifecycle } from "./combat/capabilities.js"
 
 /** Small UI projection shared by the server-rendered website and public catalog API. */
-export function getArtifactConditionRequirements(setId: string): { condition: "targetFrozen"; minimumPieces: number }[] {
-  const requiresFrozen = (lifecycle: CombatEffectLifecycle | undefined): boolean =>
+const requiresFrozen = (lifecycle: CombatEffectLifecycle | undefined): boolean =>
     lifecycle?.kind === "any_of" || lifecycle?.kind === "all_of" ? lifecycle.alternatives.some(requiresFrozen)
       : lifecycle?.kind === "conditional" && lifecycle.applicability?.targetFrozen === true
+
+export function getArtifactConditionRequirements(setId: string): { condition: "targetFrozen"; minimumPieces: number }[] {
   const thresholds = new Set(equipmentCombatActionEffects.flatMap((effect) =>
     effect.source.kind === "artifact_set" && effect.source.setId === setId && requiresFrozen(effect.lifecycle)
       ? [effect.source.minimumPieces] : []))
   return [...thresholds].map((minimumPieces) => ({ condition: "targetFrozen", minimumPieces }))
+}
+
+/** Derives weapon environmental controls from declarations, without equipment IDs in the frontend. */
+export function getWeaponConditionRequirements(weaponId: string): { condition: "targetFrozen" }[] {
+  return equipmentCombatActionEffects.some(effect => effect.source.kind === "weapon" &&
+    effect.source.weaponId === weaponId && requiresFrozen(effect.lifecycle)) ? [{ condition: "targetFrozen" }] : []
 }
 
 const combatActionEffects = [
