@@ -135,7 +135,7 @@ Weapons, artifacts, constellations, passives, teammate effects, party resonances
 individually. Newly released mechanics or unreviewed interactions may be incomplete. When a result looks wrong, please
 include the build, party, target metric, and formula trace in the report.
 
-The current pinned Genshin Impact 7.0 snapshot contains 119 characters, 247 weapons, and 63 artifact sets. Runtime
+The current pinned Genshin Impact 7.1 snapshot contains 121 characters, 253 weapons, and 63 artifact sets. Runtime
 services do not query an external API for static game data; showcase import is a separate optional feature.
 
 ## Feedback, license, and disclaimer
@@ -151,6 +151,8 @@ are community-tool estimates, not official game conclusions.
 ## Development and contributing
 
 Repository layout, local development, Content authoring, data updates, testing, and deployment are documented in the
-[GSCombat development guide](docs/development.en.md). Architecture decisions live under [`docs/adr`](docs/adr), and
+[GSCombat development guide](docs/development.en.md). See the [architecture overview](docs/architecture.en.md) for current
+boundaries and the [issue ledger](docs/plans/2026-10-08-architecture-review.md) for proposed improvements.
+Architecture decisions live under [`docs/adr`](docs/adr), and
 the production deployment flow is covered by the
 [Tencent Cloud deployment guide](docs/deployment/tencent-cloud.en.md).

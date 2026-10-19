@@ -1,7 +1,7 @@
 # GSCombat Development Guide
 
 [Back to the player README](../README.en.md) · [中文](development.md) ·
-[Architecture decisions](adr) · [Tencent Cloud deployment](deployment/tencent-cloud.en.md)
+[Architecture overview](architecture.en.md) · [Architecture decisions](adr) · [Tencent Cloud deployment](deployment/tencent-cloud.en.md)
 
 This guide is for contributors working on GSCombat code and maintained combat content. See the repository
 [README](../README.en.md) for player-facing capabilities, usage, and calculation boundaries.
@@ -16,6 +16,12 @@ This guide is for contributors working on GSCombat code and maintained combat co
 - Vitest system, integration, and unit tests
 
 Node.js 22+ and pnpm 11.15.1 are required.
+
+Production images use Node 22. The 2026-10-08 review reproduced a conflict between Node 26 global Web Storage and the Web
+test environment. On that version, temporarily run
+`NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @gscombat/web test`.
+This is not a browser-side defect. Runtime/test-environment alignment remains
+[ARCH-018](plans/2026-10-08-architecture-review.md#arch-018运行版本与验证可复现性).
 
 ## Repository layout
 
@@ -36,6 +42,10 @@ docs/
 └── plans/        Feature designs and implementation plans
 openspec/         Behavioral specs, designs, and tasks for significant changes
 ```
+
+The Mini Program is currently a shell with calculation paused. See the [architecture overview](architecture.en.md)
+and [issue ledger](plans/2026-10-08-architecture-review.md) for implemented responsibilities, evaluation, field presence,
+cache boundaries, and remaining risks.
 
 Character actions, passives, constellations, and support metrics live under
 `packages/content/src/characters/<character>/`. Weapon and artifact effects belong to their respective content
@@ -87,6 +97,20 @@ every existing ADR.
 
 ## Local development
 
+### Catalog maintenance
+
+Entity declarations own names, indicators and parameters. Content `catalog/index.ts` selects the maintained display
+model; `catalog/response.ts` constructs `CatalogResponse`. API `serializers/catalog.ts` and Web `lib/catalog.ts` call
+the factory through `@gscombat/content/catalog`, rather than maintaining independent field mappings.
+Construction is server/build-side. Client components receive data, not imports of that subpath or the Content root.
+
+When adding display metadata, update its shared response Schema and verify nested/optional fields survive real HTTP
+serialization. Preserve declared fields such as `minimumSourceConstellationByValue`; do not duplicate character-ID
+gates in UI logic. Check compatibility, omission rules, detached nested data and all three output layers.
+Root exports remain compatible. There is no new display snapshot or generation command.
+See [ADR-0026](adr/0026-share-server-side-catalog-projection.md) and the
+[ARCH-007 record](../openspec/changes/unify-catalog-projection/implementation-progress.md).
+
 ### Maintaining weapon rules
 
 Keep automatic preparation, necessary choices, and comparison eligibility in the weapon's Content directory.
@@ -125,12 +149,19 @@ workspace:
 ```bash
 mkdir -p runtime/workspace
 export WORKSPACE_DATA_PATH="$PWD/runtime/workspace/workspaces.sqlite"
-export INVITE_TOKEN_SECRET="replace-with-at-least-32-random-characters"
+export INVITE_TOKEN_SECRET="$(openssl rand -base64 48)"
 pnpm --filter @gscombat/api invite -- create local
 ```
 
 Keep these environment variables when starting the API. An invite code is displayed only once and must not be written
 to source code, logs, or committed files.
+
+Generate a secret only when first creating the local workspace. Reuse its original secret on later starts; generating
+a new one invalidates existing invites and sessions. Development/test API instances can default to a development
+secret and an in-memory store, but invite management always requires an explicit valid secret and a file-backed store.
+With `NODE_ENV=production`, API startup requires both values and rejects public default/example secrets, empty values,
+and memory or URI paths before opening databases. It never substitutes a temporary store. Relative and absolute file
+paths are supported; create their parent directory first.
 
 ## Maintaining Content declarations
 
@@ -168,6 +199,24 @@ See [`docs/adr`](adr), especially
 [ADR 0014](adr/0014-use-one-authoritative-scenario-metric-evaluation-path.md).
 
 ## Verification
+
+### Input errors and diagnostics
+
+Analyzer callers identify input rejections using the root-exported `AnalysisInputError` and its finite code, not an HTTP
+status. Broken declarations, pinned-data failures and engine invariants remain internal errors. API reuses
+`ApiErrorResponseSchema` (`{ code, message }`): input 400, version conflict 409, comparison capacity 429,
+budget/shutdown 503, connected cancellation 499, unknown failure 500. Existing session/workspace business codes
+and success bodies remain compatible. See [ADR-0025](adr/0025-separate-domain-input-errors-from-http-failures.md).
+
+Find the server-generated `X-Request-Id` in the response (also included in a 500 message), then locate the matching
+stderr JSON diagnostic. Partial artifact responses link each request to computationId/candidateId; coalesced waiters
+retain independent request identities. Do not log UIDs, invite codes, cookies, Authorization, Builds, full task keys or
+raw exceptions, and do not enable full request logging. Enka missing/unavailable/timeout/other external failures map
+to 404/503/504/502; normalization program errors remain 500.
+
+Validate explicit artifact choices before evaluation. Generated candidate failures keep partial results, not user 400
+or fabricated zero gains. Support UI displays usable backend messages and falls back to HTTP status for invalid JSON
+or missing messages. Verification commands and scope: [implementation record](../openspec/changes/normalize-api-domain-errors/implementation-progress.md).
 
 Run at least the following before delivery:
 

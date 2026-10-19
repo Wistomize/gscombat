@@ -3,6 +3,7 @@ import {
 } from "@gscombat/content"
 
 import { evaluateScenario } from "../scenario/evaluate.js"
+import { AnalysisInputError } from "../core/errors.js"
 
 import type {
   CombatDamageMetricEvaluation, EvaluateCombatMetricInput
@@ -36,7 +37,7 @@ export function evaluateDamageMetric(
   metric: CombatDamageMetricDefinition,
   input: EvaluateCombatMetricInput
 ): CombatDamageMetricEvaluation {
-  if (!input.scenario) throw new Error(`Damage metric ${metric.id} requires an action scenario`)
+  if (!input.scenario) throw new AnalysisInputError("invalid_metric_context", `Damage metric ${metric.id} requires an action scenario`)
   const conditions = { ...input.scenario.conditions }
   if (input.scenario.targetActionId !== metric.actionId) delete conditions.actionParameters
 

@@ -1,4 +1,5 @@
 import { AnalysisPreparation } from "../core/analysis-preparation.js"
+import { AnalysisInputError } from "../core/errors.js"
 import { resolveFieldContext } from "../core/field-presence.js"
 import {
   type CriticalStatsTransform,
@@ -56,10 +57,10 @@ export interface ScenarioIntervention {
 function getVerifiedDamageAction(scenario: EvaluationScenario) {
   const action = getCombatActionDefinition(scenario.targetActionId)
   if (!action || action.kind !== "damage" || action.status !== "verified") {
-    throw new Error(`Target action ${scenario.targetActionId} is not registered as a verified damage action`)
+    throw new AnalysisInputError("invalid_metric", `Target action ${scenario.targetActionId} is not registered as a verified damage action`)
   }
   if (action.characterId !== scenario.primary.characterId) {
-    throw new Error(`Target action ${action.id} belongs to ${action.characterId}, not ${scenario.primary.characterId}`)
+    throw new AnalysisInputError("invalid_metric", `Target action ${action.id} belongs to ${action.characterId}, not ${scenario.primary.characterId}`)
   }
   const selectableMetrics = listCombatMetrics().filter(
     (metric) => metric.kind === "damage" && metric.status === "verified" && metric.actionId === action.id
@@ -68,7 +69,7 @@ function getVerifiedDamageAction(scenario: EvaluationScenario) {
     ...selectableMetrics.map((metric) => metric.minimumSourceConstellation ?? 0)
   )
   if (selectableMetrics.length > 0 && scenario.primary.constellation < minimumSourceConstellation) {
-    throw new Error(
+    throw new AnalysisInputError("invalid_metric",
       `Target action ${action.id} requires source constellation ${minimumSourceConstellation}, ` +
         `but build has constellation ${scenario.primary.constellation}`
     )
@@ -80,7 +81,7 @@ function assertScenarioBuildsAreValid(scenario: EvaluationScenario): void {
   for (const build of [scenario.primary, ...scenario.teammates]) {
     const errors = validateCharacterBuild(build)
     if (errors.length > 0) {
-      throw new Error(`Invalid character build ${build.buildId}: ${errors.join("; ")}`)
+      throw new AnalysisInputError("invalid_build", `Invalid character build ${build.buildId}: ${errors.join("; ")}`)
     }
   }
 }
@@ -187,7 +188,7 @@ export function evaluatePreparedScenario(
   preparation = new AnalysisPreparation(gameData)
 ): ScenarioEvaluation {
   if (scenario.gameDataVersion !== gameData.getManifest().gameVersion) {
-    throw new Error(`Game-data version mismatch: scenario ${scenario.gameDataVersion}`)
+    throw new AnalysisInputError("game_data_version_mismatch", `Game-data version mismatch: scenario ${scenario.gameDataVersion}`)
   }
   assertScenarioBuildsAreValid(scenario)
   const teamState = resolveTeamState(scenario.primary, scenario.teammates, gameData)

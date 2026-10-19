@@ -1,7 +1,7 @@
 # GSCombat 开发指南
 
 [返回玩家 README](../README.md) · [English](development.en.md) ·
-[架构决策](adr) · [腾讯云部署](deployment/tencent-cloud.md)
+[架构总览](architecture.md) · [架构决策](adr) · [腾讯云部署](deployment/tencent-cloud.md)
 
 本文面向参与 GSCombat 开发和内容维护的贡献者。玩家使用说明、产品能力和计算边界请阅读仓库根目录的
 [README](../README.md)。
@@ -16,6 +16,10 @@
 - Vitest 系统、集成与单元测试。
 
 要求 Node.js 22+、pnpm 11.15.1。
+
+生产镜像使用 Node 22。2026-10-08 复审发现本机 Node 26 的全局 Web Storage 与 Web 测试环境冲突；
+在该版本运行 Web 测试时，临时使用 `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @gscombat/web test`。
+这不是浏览器端故障；统一运行版本与测试环境的待办见[ARCH-018](plans/2026-10-08-architecture-review.md#arch-018运行版本与验证可复现性)。
 
 ## 仓库结构
 
@@ -36,6 +40,9 @@ docs/
 └── plans/        功能设计与实施计划
 openspec/         重大变更的行为规格、设计与任务
 ```
+
+小程序目前为暂停计算的应用壳。各目录的实际职责、求值链路、前后台语义、缓存边界与当前风险见
+[架构总览](architecture.md)及[问题台账](plans/2026-10-08-architecture-review.md)。
 
 角色动作、固有天赋、命座和辅助指标放在
 `packages/content/src/characters/<character>/`。武器与圣遗物效果分别属于 `weapons/` 和 `artifacts/`，队伍规则
@@ -83,6 +90,19 @@ Agent 的强制触发规则见根目录 [`AGENTS.md`](../AGENTS.md)，完整决�
 
 ## 本地开发
 
+### Catalog 维护
+
+实体目录声明名称、指标和参数；Content `catalog/index.ts` 决定维护中的展示模型，
+`catalog/response.ts` 统一生成 `CatalogResponse`。API `serializers/catalog.ts` 和 Web `lib/catalog.ts`
+仅调用 `@gscombat/content/catalog` 的工厂，不各自新增一份字段映射。
+该入口用于服务端/构建时，客户端组件接收数据，不直接导入该入口或 Content 根。
+
+新增展示参数时同时检查共享响应 Schema，特别是嵌套数组与可选字段；已有字段如
+`minimumSourceConstellationByValue` 必须通过真实 HTTP 保留。使用既有声明推导，不在 UI 按角色 ID 重写门槛。
+新增字段的兼容性、参数省略、嵌套对象隔离与真实三层输出需验证；根导出仍兼容，不必全量改写旧消费者。
+没有新展示快照或生成命令。具体边界见 [ADR-0026](adr/0026-share-server-side-catalog-projection.md)，
+实施证据见 [ARCH-007 记录](../openspec/changes/unify-catalog-projection/implementation-progress.md)。
+
 ### 武器规则维护
 
 武器默认准备和必要选项属于 `packages/content/src/weapons/<weapon>/`，不要在 Web 或比较器增加武器 ID 分支。
@@ -119,11 +139,16 @@ pnpm --filter @gscombat/web dev
 ```bash
 mkdir -p runtime/workspace
 export WORKSPACE_DATA_PATH="$PWD/runtime/workspace/workspaces.sqlite"
-export INVITE_TOKEN_SECRET="replace-with-at-least-32-random-characters"
+export INVITE_TOKEN_SECRET="$(openssl rand -base64 48)"
 pnpm --filter @gscombat/api invite -- create local
 ```
 
 保留这些环境变量后再启动 API。邀请码只显示一次，不应写入源码、日志或提交到仓库。
+
+以上随机生成仅用于首次创建本地工作区；再次使用已有库时沿用原密钥，不要重新生成，否则旧邀请码及会话会失效。
+开发/测试 API 缺省可用开发密钥和内存库；管理邀请码的命令始终要求显式有效密钥和文件型工作区。
+`NODE_ENV=production` 的 API 也必须显式提供这两项，拒绝公开默认/示例密钥、空值及内存或 URI 路径；
+配置先校验再打开数据库，失败不会创建临时替代库。文件路径允许相对或绝对路径，上级目录需提前创建。
 
 ## Content 声明维护
 
@@ -159,6 +184,23 @@ Content 的 `build`、`test` 和 `typecheck` 都会先验证生成注册表的�
 [ADR 0014](adr/0014-use-one-authoritative-scenario-metric-evaluation-path.md)。
 
 ## 验证
+
+### 输入错误与故障诊断
+
+Analyzer 调用方按包根导出的 `AnalysisInputError` 及 code 识别用户输入拒绝，不向领域附加 HTTP statusCode。
+声明/固定数据/引擎故障保留内部 Error。API 复用 `ApiErrorResponseSchema`，统一输出 `{ code, message }`；
+输入 400、版本冲突 409、比较容量 429、预算/关闭 503、连接可写时取消 499，未知故障 500。
+原有会话/工作区业务码与成功体保持兼容。错误字段的变化记录于
+[ADR-0025](adr/0025-separate-domain-input-errors-from-http-failures.md)。
+
+排障先获取响应 `X-Request-Id`（500 提示中也包含），在 API stderr JSON 诊断中按该编号查找。
+部分套装失败用 requestId → computationId/candidateId 关联候选诊断；合并请求各有自己的请求编号。
+不记录 UID、邀请码、Cookie、Authorization、Build 内容、完整任务键或异常原文，也不要为排错开启全量请求日志。
+Enka 不存在/暂不可用/超时/其他外部故障分别为 404/503/504/502；内部归一化故障仍为 500。
+
+套装必须在候选求值前校验显式选择；合法基准内部生成候选失败仍返回不完整结果，不能改成用户 400 或零收益。
+辅助指标读取后端可用 message，非 JSON/无合法 message 时显示 HTTP 状态。验收命令及范围见
+[实施记录](../openspec/changes/normalize-api-domain-errors/implementation-progress.md)。
 
 ### 性能复用边界
 

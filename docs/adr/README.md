@@ -6,6 +6,10 @@ docs/adr/ 是长期架构决策档案，继续保留每项决策的背景、备�
 - 单次变更的 proposal、design 和 tasks 位于 [openspec/changes/](../../openspec/changes)；
 - Agent 强制入口位于 [AGENTS.md](../../AGENTS.md)，跨变更约束位于 [openspec/config.yaml](../../openspec/config.yaml)。
 
+当前实现总览见[中文架构](../architecture.md)与[英文架构](../architecture.en.md)，
+已发现的边界缺口及状态漂移见[当前问题台账](../plans/2026-10-08-architecture-review.md)。
+下表的实现状态不等于变更已归档；主规格尚未同步的情况也必须保留区分。
+
 ## 决策与当前规格
 
 | ADR | 状态 | 当前行为或约束的主要位置 |
@@ -32,8 +36,10 @@ docs/adr/ 是长期架构决策档案，继续保留每项决策的背景、备�
 | [ADR-0020](0020-preserve-explicit-event-effect-eligibility.md) | Accepted | [显式事件资格修复设计](../../openspec/changes/audit-and-repair-combat-metric-regressions/design.md) |
 | [ADR-0021](0021-use-stateless-incremental-weapon-comparison.md) | Accepted | [无状态单武器比较设计](../../openspec/changes/optimize-counterfactual-analysis-performance/design.md) |
 | [ADR-0022](0022-preserve-scenario-field-identity.md) | 已接受 | [场景前台身份与参与者设计](../../openspec/changes/fix-team-reaction-participants-and-buff-scope/design.md) |
-| [ADR-0023](0023-declare-effect-field-lifecycle.md) | Accepted，实现中 | [效果生命周期设计](../../openspec/changes/model-artifact-field-lifecycle/design.md) |
-| [ADR-0024](0024-use-bounded-deferred-equipment-comparisons.md) | 已接受，实现中 | [异步套装与武器比较](../../openspec/changes/compare-artifact-loadouts/design.md) |
+| [ADR-0023](0023-declare-effect-field-lifecycle.md) | Accepted，已实施（范围见任务） | [效果生命周期设计](../../openspec/changes/model-artifact-field-lifecycle/design.md) · [实施验收](../../openspec/changes/model-artifact-field-lifecycle/tasks.md) |
+| [ADR-0024](0024-use-bounded-deferred-equipment-comparisons.md) | 已接受，已实施 | [异步套装与武器比较](../../openspec/changes/compare-artifact-loadouts/design.md) · [实施验收](../../openspec/changes/compare-artifact-loadouts/tasks.md) |
+| [ADR-0025](0025-separate-domain-input-errors-from-http-failures.md) | 已接受，本地实施未部署 | [统一错误边界](../../openspec/changes/normalize-api-domain-errors/design.md) · [实施验收](../../openspec/changes/normalize-api-domain-errors/tasks.md) |
+| [ADR-0026](0026-share-server-side-catalog-projection.md) | 已接受，本地实施未部署 | [共享 Catalog 投影](../../openspec/changes/unify-catalog-projection/design.md) · [实施验收](../../openspec/changes/unify-catalog-projection/tasks.md) |
 
 更细的当前性、实现证据和 Agent 规则无损核对见
 [openspec/governance-migration-map.md](../../openspec/governance-migration-map.md)。新增决策时继续使用顺序编号，

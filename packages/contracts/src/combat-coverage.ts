@@ -244,6 +244,10 @@ export const CombatActionIntegerScenarioParameterSchema = Type.Object({
   id: Type.String({ minLength: 1 }),
   label: Type.String({ minLength: 1 }),
   maximumValue: Type.Integer(),
+  minimumSourceConstellationByValue: Type.Optional(Type.Array(Type.Object({
+    minimumSourceConstellation: Type.Integer({ minimum: 1, maximum: 6 }),
+    value: Type.Integer()
+  }), { minItems: 1 })),
   maximumValueByParameter: Type.Optional(
     Type.Object({
       parameterId: Type.String({ minLength: 1 }),

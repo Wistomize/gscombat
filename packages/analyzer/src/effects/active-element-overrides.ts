@@ -7,6 +7,7 @@ import {
 } from "@gscombat/content"
 import type { CharacterBuild } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
+import { AnalysisInputError } from "../core/errors.js"
 
 /** Input used to materialize maintained active effects into one target action's relative timeline. */
 export interface ResolveActiveElementOverrideWindowsInput {
@@ -34,7 +35,7 @@ export function resolveActiveElementOverrideWindows(
 
   for (const effectId of input.activeEffectIds) {
     if (activeEffectIds.has(effectId)) {
-      throw new Error(`Active effect ${effectId} is declared more than once`)
+      throw new AnalysisInputError("invalid_effect_selection", `Active effect ${effectId} is declared more than once`)
     }
     activeEffectIds.add(effectId)
   }
@@ -51,7 +52,7 @@ export function resolveActiveElementOverrideWindows(
     const duration = resolveEffectDuration(effect, source, input.gameData)
     const existingWindow = windows.find((window) => window.target === effect.target)
     if (existingWindow) {
-      throw new Error(
+      throw new AnalysisInputError("invalid_effect_selection",
         `Active elemental override effects ${existingWindow.id} and ${effect.id} overlap on ${effect.target}`
       )
     }
@@ -86,15 +87,15 @@ function resolveEffectSourceBuild(
   const sourceBuilds = [primary, ...teammates].filter((build) => build.characterId === effect.sourceCharacterId)
   if (sourceBuilds.length === 1) return sourceBuilds[0] as CharacterBuild
   if (sourceBuilds.length === 0) {
-    throw new Error(`Active effect ${effect.id} requires ${effect.sourceCharacterId} to be present in the configured team`)
+    throw new AnalysisInputError("invalid_effect_selection", `Active effect ${effect.id} requires ${effect.sourceCharacterId} to be present in the configured team`)
   }
-  throw new Error(`Active effect ${effect.id} requires exactly one ${effect.sourceCharacterId} source build`)
+  throw new AnalysisInputError("invalid_effect_selection", `Active effect ${effect.id} requires exactly one ${effect.sourceCharacterId} source build`)
 }
 
 function validateSourceConstellation(effect: CombatElementOverrideEffect, source: CharacterBuild): void {
   const requiredConstellation = effect.minimumSourceConstellation
   if (requiredConstellation === undefined || source.constellation >= requiredConstellation) return
-  throw new Error(
+  throw new AnalysisInputError("invalid_effect_selection",
     `Active effect ${effect.id} requires ${effect.sourceCharacterId} constellation ${requiredConstellation}, ` +
       `but source build has constellation ${source.constellation}`
   )

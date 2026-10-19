@@ -337,6 +337,18 @@ describe("build editor artifact display", () => {
     } })
     expect(document.body.textContent).toContain("辅助指标计算完成")
     expect(fetchMock.mock.calls.some(([input]) => String(input).includes("weapon-comparison"))).toBe(false)
+    const persisted = window.localStorage.getItem(BUILD_LIBRARY_STORAGE_KEY)
+    for (const [body, message] of [
+      [JSON.stringify({ code: "invalid_metric_context", message: "请选择有效受益人" }), "请选择有效受益人"],
+      ["<html>proxy unavailable</html>", "辅助指标接口返回 HTTP 503"],
+      [JSON.stringify({ message: 123 }), "辅助指标接口返回 HTTP 503"]
+    ]) {
+      fetchMock.mockResolvedValueOnce(new Response(body, { status: 503 }))
+      await click(findButton("开始计算"))
+      await flushAsyncWork()
+      expect(document.body.textContent).toContain(message)
+      expect(window.localStorage.getItem(BUILD_LIBRARY_STORAGE_KEY)).toBe(persisted)
+    }
   })
   it("automates artifact groups without overrides while retaining explicit crystal and frozen choices", async () => {
     const primary = { ...raidenNationalBuiltinScenario.primary,

@@ -11,7 +11,7 @@ import {
   listCharacterScenarioEffectOptionsForAction,
   supportedCharacters
 } from "@gscombat/content"
-import { describeWeaponChoices, raidenNationalBuiltinScenario } from "@gscombat/analyzer"
+import { AnalysisInputError, describeWeaponChoices, raidenNationalBuiltinScenario } from "@gscombat/analyzer"
 import type { GameDataRepository } from "@gscombat/game-data"
 
 function countArtifactSetPieces(build: CharacterBuild, setId: string): number {
@@ -65,11 +65,11 @@ export function resolveActionEffectOptions(input: ActionEffectOptionsRequest, ga
   const onFieldBuildId = input.conditions?.onFieldBuildId
   if (primary && onFieldBuildId !== undefined) {
     if (![primary, ...teammates].some((build) => build.buildId === onFieldBuildId)) {
-      throw Object.assign(new Error("前台角色必须是当前队伍成员"), { statusCode: 400 })
+      throw new AnalysisInputError("invalid_field_presence", "前台角色必须是当前队伍成员")
     }
     if (!input.supportMetricId && ((action.fieldPresence === "off_field" && onFieldBuildId === primary.buildId) ||
       (action.fieldPresence !== "off_field" && onFieldBuildId !== primary.buildId))) {
-      throw Object.assign(new Error("所选前台角色与当前指标的前后台要求冲突"), { statusCode: 400 })
+      throw new AnalysisInputError("invalid_field_presence", "所选前台角色与当前指标的前后台要求冲突")
     }
   }
   const options = [

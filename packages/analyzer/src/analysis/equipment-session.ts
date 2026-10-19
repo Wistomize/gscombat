@@ -2,11 +2,12 @@ import { getCombatActionDefinition, listArtifactComparisonSets, supportedWeapons
 import { getWeaponComparisonRefinement, type EvaluationScenario } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 import { AnalysisPreparation } from "../core/analysis-preparation.js"
+import { AnalysisInputError } from "../core/errors.js"
 import type { CriticalStatsSample } from "@gscombat/calculator"
 import { criticalSampleKey } from "./artifact-crit-conversion.js"
 import { evaluatePreparedScenario } from "../scenario/evaluate.js"
 import { analyzeWithBaseline, evaluateWeaponCandidate, prepareWeaponCandidate, type AnalyzeScenarioOptions } from "./analyze.js"
-import { evaluateArtifactLoadout, listArtifactLoadoutCandidates } from "./artifact-comparison.js"
+import { evaluateArtifactLoadout, listArtifactLoadoutCandidates, prepareArtifactLoadout, validateArtifactLoadoutChoices } from "./artifact-comparison.js"
 
 /** One immutable scenario's trusted baseline and pure preparation, with no HTTP or scheduling dependency. */
 export class EquipmentComparisonSession {
@@ -18,7 +19,7 @@ export class EquipmentComparisonSession {
   constructor(readonly scenario: EvaluationScenario, private readonly gameData: GameDataRepository) {
     const action = getCombatActionDefinition(scenario.targetActionId)
     if (!action || action.kind !== "damage" || action.status !== "verified" || action.characterId !== scenario.primary.characterId) {
-      throw Object.assign(new Error("套装和武器比较只支持当前角色的伤害指标"), { statusCode: 400 })
+      throw new AnalysisInputError("invalid_metric", "套装和武器比较只支持当前角色的伤害指标")
     }
     this.preparation = new AnalysisPreparation(gameData)
     this.evaluation = evaluatePreparedScenario(scenario, gameData, { transformCriticalStats: sample => {
@@ -59,14 +60,21 @@ export class EquipmentComparisonSession {
 
   weapon(weaponId: string, refinement: number, choices?: Readonly<Record<string, string>>) {
     const candidate = prepareWeaponCandidate(this.scenario, this.gameData, weaponId, refinement, choices)
-    if (!candidate) throw Object.assign(new Error(`当前场景无法比较武器：${weaponId}`), { statusCode: 400 })
+    if (!candidate) throw new AnalysisInputError("invalid_weapon_choice", `当前场景无法比较武器：${weaponId}`)
     this.counts.weapons++
     return evaluateWeaponCandidate(candidate, this.gameData, this.evaluation.actionExpectedDamage, this.preparation)
   }
 
+  /** Checks caller choices without evaluating a generated equipment candidate. */
+  validateArtifactChoices(candidateId: string, choices?: Readonly<Record<string, string>>): void {
+    const candidate = this.artifactCandidates.find(row => row.id === candidateId)
+    if (!candidate) throw new AnalysisInputError("invalid_artifact_choice", `未知套装组合：${candidateId}`)
+    validateArtifactLoadoutChoices(prepareArtifactLoadout(this.scenario, candidate), candidate, choices)
+  }
+
   artifact(candidateId: string, choices?: Readonly<Record<string, string>>) {
     const candidate = this.artifactCandidates.find(row => row.id === candidateId)
-    if (!candidate) throw Object.assign(new Error(`未知套装组合：${candidateId}`), { statusCode: 400 })
+    if (!candidate) throw new AnalysisInputError("invalid_artifact_choice", `未知套装组合：${candidateId}`)
     this.counts.artifacts++
     return evaluateArtifactLoadout(this.scenario, this.gameData, candidate, this.evaluation.actionExpectedDamage,
       this.preparation, choices, this.criticalSamples)

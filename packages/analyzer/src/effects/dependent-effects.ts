@@ -1,4 +1,5 @@
 import {
+  listCharacterCombatCoverage,
   isCombatActionEffectApplicable,
   isCombatActionEffectDeterministicallyActive,
   listCombatActionEffects,
@@ -6,9 +7,22 @@ import {
 } from "@gscombat/content"
 import { hasActivatableEffectSource, hasActivatableElementOverrideSource } from "./source-selection.js"
 import type { ResolveDependentActiveEffectIdsInput } from "./types.js"
+import { AnalysisInputError } from "../core/errors.js"
+
+// Activation states may name a prerequisite, rather than a numeric effect declaration itself.
+const registeredStateIds = new Set([
+  ...listCharacterCombatCoverage().flatMap(coverage => (coverage.scenarioEffectOptions ?? []).map(option => option.id)),
+  ...[...listCombatActionEffects(), ...listCombatElementOverrideEffects()].flatMap(effect =>
+    [effect.id, ...(effect.requiredActiveEffectIds ?? [])])
+])
 
 /** Derives dependent and deterministic selections without evaluating damage or weapon choices. */
 export function resolveDependentActiveEffectIds(input: ResolveDependentActiveEffectIdsInput): string[] {
+  for (const id of input.activeEffectIds) {
+    if (!registeredStateIds.has(id)) {
+      throw new AnalysisInputError("invalid_effect_selection", `Active effect ${id} is not registered`)
+    }
+  }
   const effects = listCombatActionEffects()
   const elementOverrideEffects = listCombatElementOverrideEffects()
   const dependentEffects = effects.filter(

@@ -37,17 +37,18 @@ import * as runtime from "./runtime.js"
 import { evaluateScalarMetric } from "./scalar.js"
 import { evaluateFlatStatBuffMetric } from "./stat-buff.js"
 import { validateWeaponChoices } from "../effects/weapon-state.js"
+import { AnalysisInputError } from "../core/errors.js"
 
 export function evaluateCombatMetric(input: EvaluateCombatMetricInput): CombatMetricEvaluation {
   const metric = getCombatMetricDefinition(input.metricId)
-  if (!metric) throw new Error(`Combat metric ${input.metricId} is not registered`)
+  if (!metric) throw new AnalysisInputError("invalid_metric", `Combat metric ${input.metricId} is not registered`)
 
   runtime.assertMetricBuild(metric, input.build)
   validateWeaponChoices({ primary: input.build, teammates: [...(input.context?.teammates ?? [])],
     conditions: input.context?.weaponEffectChoices ? { weaponEffectChoices: input.context.weaponEffectChoices } : {} })
   if (input.context?.onFieldBuildId !== undefined &&
     ![input.build, ...(input.context.teammates ?? [])].some((build) => build.buildId === input.context!.onFieldBuildId)) {
-    throw new Error("前台角色必须是当前队伍成员")
+    throw new AnalysisInputError("invalid_field_presence", "前台角色必须是当前队伍成员")
   }
   if (metric.kind === "damage") return evaluateDamageMetric(metric, input)
   if (metric.kind === "scalar") return evaluateScalarMetric(metric, input)

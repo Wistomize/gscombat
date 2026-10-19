@@ -1,4 +1,5 @@
 import type { CombatActionMetadata } from "@gscombat/content"
+import { AnalysisInputError } from "../core/errors.js"
 
 /** Resolves and validates manual integer snapshot inputs declared by one target action. */
 export function resolveActionScenarioParameters(
@@ -7,7 +8,7 @@ export function resolveActionScenarioParameters(
   sourceConstellation: number
 ): ReadonlyMap<string, number> {
   if (!Number.isInteger(sourceConstellation) || sourceConstellation < 0 || sourceConstellation > 6) {
-    throw new Error(`Declared action ${action.id} requires a source constellation from 0 to 6`)
+    throw new AnalysisInputError("invalid_action_parameters", `Declared action ${action.id} requires a source constellation from 0 to 6`)
   }
   const definitions = action.scenarioParameters ?? []
   const definitionsById = new Map(definitions.map((definition) => [definition.id, definition]))
@@ -16,7 +17,7 @@ export function resolveActionScenarioParameters(
   }
   for (const parameterId of Object.keys(selectedParameters ?? {})) {
     if (!definitionsById.has(parameterId)) {
-      throw new Error(`Declared action ${action.id} does not declare scenario parameter ${parameterId}`)
+      throw new AnalysisInputError("invalid_action_parameters", `Declared action ${action.id} does not declare scenario parameter ${parameterId}`)
     }
   }
 
@@ -33,13 +34,13 @@ export function resolveActionScenarioParameters(
       selectedValue > range.maximumValue ||
       (definition.allowedValues !== undefined && !definition.allowedValues.includes(selectedValue))
     ) {
-      throw new Error(
+      throw new AnalysisInputError("invalid_action_parameters",
         `Scenario parameter ${definition.id} for action ${action.id} must be an allowed integer from ${range.minimumValue} to ${range.maximumValue}`
       )
     }
     const requiredConstellation = getScenarioParameterMinimumSourceConstellation(definition, selectedValue)
     if (requiredConstellation !== undefined && sourceConstellation < requiredConstellation) {
-      throw new Error(
+      throw new AnalysisInputError("invalid_action_parameters",
         `Scenario parameter ${definition.id} value ${selectedValue} for action ${action.id} requires source constellation ` +
           `${requiredConstellation}, but build has constellation ${sourceConstellation}`
       )
@@ -58,7 +59,7 @@ export function resolveActionScenarioParameters(
     }
     const value = resolved.get(definition.id)
     if (value === undefined || value > matchingMaximum.maximumValue) {
-      throw new Error(
+      throw new AnalysisInputError("invalid_action_parameters",
         `Scenario parameter ${definition.id} for action ${action.id} must not exceed ${matchingMaximum.maximumValue} when ${maximumByParameter.parameterId}=${sourceValue}`
       )
     }

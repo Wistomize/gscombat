@@ -1,5 +1,6 @@
 import type { CombatActionMetadata } from "@gscombat/content"
 import type { CharacterBuild } from "@gscombat/contracts"
+import { AnalysisInputError } from "./errors.js"
 
 /** A single action's field identity; changing the stat recipient must never change this context. */
 export interface FieldContext {
@@ -24,13 +25,13 @@ export function resolveFieldContext(
   onFieldBuildId?: string
 ): FieldContext {
   if (onFieldBuildId !== undefined && ![owner, ...teammates].some((build) => build.buildId === onFieldBuildId)) {
-    throw new Error("前台角色必须是当前队伍成员")
+    throw new AnalysisInputError("invalid_field_presence", "前台角色必须是当前队伍成员")
   }
   if (onFieldBuildId !== undefined && (
     (action.fieldPresence === "off_field" && onFieldBuildId === owner.buildId) ||
     (action.fieldPresence !== "off_field" && onFieldBuildId !== owner.buildId)
   )) {
-    throw new Error("所选前台角色与当前指标的前后台要求冲突")
+    throw new AnalysisInputError("invalid_field_presence", "所选前台角色与当前指标的前后台要求冲突")
   }
   return {
     actionOwnerBuildId: owner.buildId,

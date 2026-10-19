@@ -2,7 +2,10 @@
 
 ## 状态
 
-已接受，实施中。范围见 [OpenSpec 设计](../../openspec/changes/compare-artifact-loadouts/design.md)。
+已接受，已实施。范围见 [OpenSpec 设计](../../openspec/changes/compare-artifact-loadouts/design.md)，
+实施验收见[任务记录](../../openspec/changes/compare-artifact-loadouts/tasks.md)。
+实施完成不等于变更已归档；当前资源预算的实际边界见
+[ARCH-014](../plans/2026-10-08-architecture-review.md#arch-014有界调度不能等同于全服务资源有界)。
 
 ## 决策
 

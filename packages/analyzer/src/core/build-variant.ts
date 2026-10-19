@@ -2,6 +2,7 @@ import type { Element } from "@gscombat/calculator"
 import type { CombatActionMetadata } from "@gscombat/content"
 import { validateCharacterBuild, type CharacterBuild, type TravelerElement } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
+import { AnalysisInputError } from "./errors.js"
 
 const travelerOwnerElementSegment: Readonly<Record<TravelerElement, string>> = {
   anemo: "Anemo",
@@ -27,7 +28,7 @@ const supportedElements: ReadonlySet<Element> = new Set([
 function assertValidCharacterBuild(build: CharacterBuild): void {
   const validationErrors = validateCharacterBuild(build)
   if (validationErrors.length > 0) {
-    throw new Error(`Invalid character build ${build.buildId}: ${validationErrors.join("; ")}`)
+    throw new AnalysisInputError("invalid_build", `Invalid character build ${build.buildId}: ${validationErrors.join("; ")}`)
   }
 }
 
@@ -40,7 +41,7 @@ export function getTravelerTalentParameterOwnerIds(element: TravelerElement): re
 function resolveTravelerTalentParameterOwnerId(build: CharacterBuild): string {
   const variant = build.variant
   if (!variant) {
-    throw new Error("Traveler builds must declare an element and gender variant before resolving talent parameters")
+    throw new AnalysisInputError("invalid_build", "Traveler builds must declare an element and gender variant before resolving talent parameters")
   }
   const [femaleOwnerId, maleOwnerId] = getTravelerTalentParameterOwnerIds(variant.element)
   return variant.gender === "female" ? femaleOwnerId : maleOwnerId
@@ -71,10 +72,10 @@ function assertTravelerElementEligibility(action: CombatActionMetadata, build: C
     throw new Error(`Traveler element action ${action.id} cannot declare a fixed talent parameter owner`)
   }
   if (build.characterId !== "Traveler") {
-    throw new Error(`Action ${action.id} requires Traveler ${travelerElement}, not ${build.characterId}`)
+    throw new AnalysisInputError("invalid_metric", `Action ${action.id} requires Traveler ${travelerElement}, not ${build.characterId}`)
   }
   if (build.variant?.element !== travelerElement) {
-    throw new Error(`Action ${action.id} requires Traveler ${travelerElement}, not ${build.variant?.element}`)
+    throw new AnalysisInputError("invalid_metric", `Action ${action.id} requires Traveler ${travelerElement}, not ${build.variant?.element}`)
   }
 }
 
@@ -83,11 +84,11 @@ export function resolveBuildElement(build: CharacterBuild, gameData: GameDataRep
   assertValidCharacterBuild(build)
   if (build.characterId === "Traveler") {
     if (!build.variant) {
-      throw new Error("Traveler builds must declare an element and gender variant before resolving their element")
+      throw new AnalysisInputError("invalid_build", "Traveler builds must declare an element and gender variant before resolving their element")
     }
     return build.variant.element
   }
-  if (build.variant) throw new Error("Only Traveler builds may declare a character variant")
+  if (build.variant) throw new AnalysisInputError("invalid_build", "Only Traveler builds may declare a character variant")
 
   const element = gameData.getCharacter(build.characterId)?.element
   if (element === null || element === undefined) return null

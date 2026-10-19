@@ -43,6 +43,7 @@ export type {
 import type { ResolvedFriendlyRecipient, ResolvedRecipientEquipmentEffect } from "./runtime.js"
 import * as runtime from "./runtime.js"
 import { resolveSupportFieldContext } from "../core/field-presence.js"
+import { AnalysisInputError } from "../core/errors.js"
 
 export function evaluateScalarMetric(
   metric: CombatScalarMetricDefinition,
@@ -205,14 +206,14 @@ function resolveScalarMetricTarget(
 ): CombatScalarMetricEvaluation["target"] {
   if (metric.target === "enemy") return { kind: "enemy" }
   if (metric.target === "self") return { characterId: input.build.characterId, kind: "self" }
-  if (!recipient) throw new Error(`Combat metric ${metric.id} requires a friendly recipient context`)
+  if (!recipient) throw new AnalysisInputError("invalid_metric_context", `Combat metric ${metric.id} requires a friendly recipient context`)
   const routing = metric.recipientTargetRouting
   if (!routing) return recipient.recipient
   if (routing !== "active_recipient_if_moonsign_else_self") {
     throw new Error(`Combat metric ${metric.id} declares an unsupported recipient target route`)
   }
   if (typeof recipient.recipientContext.isMoonsign !== "boolean") {
-    throw new Error(`Combat metric ${metric.id} requires the active recipient Moonsign state`)
+    throw new AnalysisInputError("invalid_metric_context", `Combat metric ${metric.id} requires the active recipient Moonsign state`)
   }
   return recipient.recipientContext.isMoonsign
     ? recipient.recipient

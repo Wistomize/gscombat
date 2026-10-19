@@ -1,4 +1,4 @@
-import { EquipmentComparisonSession, evaluateScenarioAnalysis } from "@gscombat/analyzer"
+import { AnalysisInputError, EquipmentComparisonSession, evaluateScenarioAnalysis } from "@gscombat/analyzer"
 import { raidenNationalBuiltinScenario } from "@gscombat/content"
 import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 import { afterAll, expect, it, vi } from "vitest"
@@ -146,28 +146,50 @@ it("coalesces waiters, cancels one caller safely and bounds queue capacity", asy
     expect(steps).toBe(before)
   } finally { clock.mockRestore() }
   scheduler.close()
+  await expect(scheduler.run("closed", task)).rejects.toMatchObject({ statusCode: 503, code: "comparison_unavailable" })
 })
 
 it("makes partial rankings explicit and retries failed candidates without repeating successful ones", async () => {
   const original = EquipmentComparisonSession.prototype.artifact
+  const diagnostic = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
   let broken = true
   const spy = vi.spyOn(EquipmentComparisonSession.prototype, "artifact").mockImplementation(function (this: EquipmentComparisonSession, id, choices) {
-    if (broken && id === "four:EmblemOfSeveredFate") throw new Error("temporary evaluator failure")
+    if (broken && id === "four:EmblemOfSeveredFate") throw new Error("private-candidate-evaluator-failure")
+    if (broken && id === "four:Instructor") throw new AnalysisInputError("invalid_build", "private-generated-build")
     return original.call(this, id, choices)
   })
   try {
     const request = { scenario: { ...scenario, primary: { ...scenario.primary, label: "partial ranking test" } },
       selectedCandidateId: "four:EmblemOfSeveredFate" }
-    const first = await app.inject({ method: "POST", url: "/v1/analysis/artifact-loadouts", body: request })
+    const post = () => app.inject({ method: "POST", url: "/v1/analysis/artifact-loadouts", body: request })
+    const [first, duplicate] = await Promise.all([post(), post()])
     expect(first.statusCode, first.body).toBe(200)
+    expect(duplicate.json()).toEqual(first.json())
     expect(first.json().complete).toBe(false)
-    expect(first.json().failures).toHaveLength(1)
+    expect(first.json().failures).toHaveLength(2)
     expect(first.json().selectedCandidate).toBeUndefined()
+    for (const candidateId of ["four:EmblemOfSeveredFate", "four:Instructor"]) {
+      expect(first.json().results.some((row: { id: string }) => row.id === candidateId)).toBe(false)
+    }
+    const records = diagnostic.mock.calls.map(call => JSON.parse(String(call[0])))
+    const failures = records.filter(row => row.event === "candidate_failure")
+    expect(failures).toHaveLength(2)
+    expect(failures.every(row => row.computationId === first.json().computationId && row.locations.length > 0)).toBe(true)
+    for (const response of [first, duplicate]) {
+      expect(records.filter(row => row.event === "partial_response" && row.requestId === response.headers["x-request-id"])).toHaveLength(2)
+    }
+    expect(JSON.stringify(records)).not.toMatch(/private-candidate|private-generated|249548209/)
     const calls = spy.mock.calls.length
+    const invalid = await app.inject({ method: "POST", url: "/v1/analysis/artifact-loadouts", body: {
+      ...request, choices: { "four:BlizzardStrayer": { targetFrozen: "illegal" } }
+    } })
+    expect(invalid.statusCode, invalid.body).toBe(400)
+    expect(invalid.json().code).toBe("invalid_artifact_choice")
+    expect(spy).toHaveBeenCalledTimes(calls)
     broken = false
     const retry = await app.inject({ method: "POST", url: "/v1/analysis/artifact-loadouts", body: request })
     expect(retry.json().complete).toBe(true)
     expect(retry.json().selectedCandidate.id).toBe(request.selectedCandidateId)
-    expect(spy.mock.calls.length - calls).toBe(1)
-  } finally { spy.mockRestore() }
+    expect(spy.mock.calls.length - calls).toBe(2)
+  } finally { spy.mockRestore(); diagnostic.mockRestore() }
 })

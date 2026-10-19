@@ -1,4 +1,5 @@
 import { getCombatActionEffectDefinition } from "@gscombat/content"
+import { AnalysisInputError } from "../core/errors.js"
 import type { ScalingStat } from "@gscombat/calculator"
 import { getBuildFieldPresence } from "../core/field-presence.js"
 import { resolveCombatEffectLifecycle } from "../scenario/effect-lifecycle.js"
@@ -639,7 +640,7 @@ function assertExclusiveActionEffectsAreCompatible(effects: readonly ExclusiveAc
   }
   for (const [group, variants] of variantsByGroup) {
     if (variants.size <= 1) continue
-    throw new Error(`Selected ${group} effects cannot stack: ${[...variants.values()].join(", ")}`)
+    throw new AnalysisInputError("invalid_effect_selection", `Selected ${group} effects cannot stack: ${[...variants.values()].join(", ")}`)
   }
 }
 
@@ -740,7 +741,7 @@ function resolveEligibleActionEffect(
   )
   if (sources.length === 0) {
     if (effect.activation !== "automatic" && isSelectedActiveEffect) {
-      throw new Error(`Active effect ${effect.id} requires its source build in the configured team`)
+      throw new AnalysisInputError("invalid_effect_selection", `Active effect ${effect.id} requires its source build in the configured team`)
     }
     return []
   }
@@ -782,7 +783,7 @@ function resolveEligibleActionEffect(
       const requiredConstellation = effect.source.minimumSourceConstellation
       if (requiredConstellation !== undefined && source.constellation < requiredConstellation) {
         if (effect.activation !== "automatic" && isSelectedActiveEffect) {
-          throw new Error(
+          throw new AnalysisInputError("invalid_effect_selection",
             `Active effect ${effect.id} requires ${effect.source.characterId} constellation ${requiredConstellation}, ` +
               `but source build has constellation ${source.constellation}`
           )
@@ -927,7 +928,7 @@ function matchesEffectCondition(effect: CombatActionEffect, input: ResolveCombat
 function assertActiveEffectSourceSelections(input: ResolveCombatActionEffectCandidatesInput): void {
   for (const effectId of Object.keys(input.activeEffectSourceBuildIds ?? {})) {
     if (!input.activeEffectIds.includes(effectId)) {
-      throw new Error(`Active effect source selection ${effectId} requires the effect to be selected`)
+      throw new AnalysisInputError("invalid_effect_selection", `Active effect source selection ${effectId} requires the effect to be selected`)
     }
   }
 }
@@ -948,7 +949,7 @@ function resolveEffectSources(
       (build) => build.weapon.weaponId === source.weaponId && matchesSourceCondition(build)
     )
     if (source.resolveAllMatchingPartySources === true && selectedSourceBuildId !== undefined) {
-      throw new Error(`Effect ${effect.id} resolves every matching party source and cannot select only ${selectedSourceBuildId}`)
+      throw new AnalysisInputError("invalid_effect_selection", `Effect ${effect.id} resolves every matching party source and cannot select only ${selectedSourceBuildId}`)
     }
     return resolveEffectSourceCandidates(
       effect.id,
@@ -995,14 +996,14 @@ function resolveEffectSourceCandidates(
   if (selectedSourceBuildId !== undefined) {
     const selectedSource = candidates.find((build) => build.buildId === selectedSourceBuildId)
     if (selectedSource) return [selectedSource]
-    throw new Error(`Active effect ${effectId} cannot use selected source build ${selectedSourceBuildId}`)
+    throw new AnalysisInputError("invalid_effect_selection", `Active effect ${effectId} cannot use selected source build ${selectedSourceBuildId}`)
   }
   if (resolveAllMatchingSources) return candidates
   if (resolveOneMatchingSource) return candidates
   const soleCandidate = candidates[0]
   if (candidates.length === 1 && soleCandidate) return [soleCandidate]
-  if (characterId) throw new Error(`Active effect ${effectId} requires exactly one ${characterId} source build`)
-  throw new Error(`Active effect ${effectId} has multiple eligible source builds; select one explicitly`)
+  if (characterId) throw new AnalysisInputError("invalid_effect_selection", `Active effect ${effectId} requires exactly one ${characterId} source build`)
+  throw new AnalysisInputError("invalid_effect_selection", `Active effect ${effectId} has multiple eligible source builds; select one explicitly`)
 }
 
 import {

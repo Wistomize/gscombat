@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { buildApp } from "../../src/app.js"
 import { EnkaShowcaseClient, normalizeEnkaShowcase } from "../../src/services/showcase/client.js"
@@ -11,6 +11,51 @@ const artifactSlots = [
   ["EQUIP_RING", "FIGHT_PROP_ELEC_ADD_HURT", 46.6, 94543],
   ["EQUIP_DRESS", "FIGHT_PROP_CRITICAL", 31.1, 94553]
 ] as const
+
+it("classifies only the external showcase boundary and keeps internal failures private", async () => {
+  const diagnostic = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
+  const timeout = vi.spyOn(AbortSignal, "timeout")
+  const cases = [
+    [async () => new Response(null, { status: 404 }), 404, "showcase_not_found"],
+    [async () => new Response(null, { status: 429 }), 503, "showcase_unavailable"],
+    [async () => new Response(null, { status: 503 }), 503, "showcase_unavailable"],
+    [async () => new Response(null, { status: 500 }), 502, "showcase_upstream_error"],
+    [async () => { throw new TypeError("private-network-url") }, 502, "showcase_upstream_error"],
+    [async () => { throw new DOMException("private-timeout", "TimeoutError") }, 504, "showcase_timeout"],
+    [async () => new Response("<html>private-proxy</html>"), 502, "showcase_upstream_error"],
+    [async () => new Response('{"avatarInfoList":false}'), 502, "showcase_upstream_error"],
+    [async () => new Response('{"ttl":"private-ttl"}'), 502, "showcase_upstream_error"]
+  ] as const
+  try {
+    for (const [fetch, status, code] of cases) {
+      const app = buildApp({ showcaseImporter: new EnkaShowcaseClient({ fetch }) })
+      try {
+        const response = await app.inject({ method: "POST", url: "/v1/showcase/import", body: { uid: "249548209" } })
+        expect(response.statusCode, response.body).toBe(status)
+        expect(response.json()).toMatchObject({ code, message: expect.any(String) })
+        expect(response.body).not.toMatch(/private-|249548209/)
+      } finally { await app.close() }
+    }
+    expect(timeout.mock.calls.every(([duration]) => duration === 12_000)).toBe(true)
+    const empty = new EnkaShowcaseClient({ fetch: async () => new Response('{"avatarInfoList":[],"ttl":60}') })
+    expect(await empty.importBuilds("249548209", "7.1")).toMatchObject({ builds: [], skipped: [], ttl: 60 })
+    const called = vi.fn(async () => new Response("{}"))
+    const configured = buildApp({ showcaseImporter: new EnkaShowcaseClient({ baseUrl: "not-a-url", fetch: called }) })
+    try {
+      const response = await configured.inject({ method: "POST", url: "/v1/showcase/import", body: { uid: "249548209" } })
+      expect(response.statusCode).toBe(500)
+      expect(response.json().code).toBe("internal_error")
+      expect(called).not.toHaveBeenCalled()
+    } finally { await configured.close() }
+    const internal = buildApp({ showcaseImporter: { importBuilds: async () => { throw new Error("private-normalization-program-error") } } })
+    try {
+      const response = await internal.inject({ method: "POST", url: "/v1/showcase/import", body: { uid: "249548209" } })
+      expect(response.statusCode).toBe(500)
+      expect(response.json().code).toBe("internal_error")
+    } finally { await internal.close() }
+    expect(diagnostic.mock.calls.map(call => String(call[0])).join("")).not.toMatch(/private-|249548209/)
+  } finally { diagnostic.mockRestore(); timeout.mockRestore() }
+})
 
 function createArtifactEquips() {
   return artifactSlots.map(([equipType, mainPropId, propValue, itemId]) => ({

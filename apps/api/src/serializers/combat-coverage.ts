@@ -69,11 +69,14 @@ export function serializeCombatAction(
           scenarioParameters: scenarioParameters.map(({
             allowedValues,
             maximumValueByParameter,
+            minimumSourceConstellationByValue,
             rangeBySourceConstellation,
             ...parameter
           }) => ({
             ...parameter,
             ...(allowedValues ? { allowedValues: [...allowedValues] } : {}),
+            ...(minimumSourceConstellationByValue
+              ? { minimumSourceConstellationByValue: minimumSourceConstellationByValue.map(value => ({ ...value })) } : {}),
             ...(maximumValueByParameter
               ? {
                   maximumValueByParameter: {

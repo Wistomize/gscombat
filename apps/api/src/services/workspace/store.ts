@@ -48,8 +48,9 @@ export class WorkspaceStore {
   public constructor(databasePath: string, tokenSecret: string) {
     this.#database = new DatabaseSync(databasePath)
     this.#tokenSecret = tokenSecret
-    this.#database.exec("PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL;")
-    this.#database.exec(`
+    try {
+      this.#database.exec("PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL;")
+      this.#database.exec(`
       CREATE TABLE IF NOT EXISTS workspaces (
         id TEXT PRIMARY KEY,
         schema_version INTEGER NOT NULL,
@@ -68,7 +69,11 @@ export class WorkspaceStore {
         last_used_at TEXT
       );
       CREATE INDEX IF NOT EXISTS invite_codes_workspace_id_idx ON invite_codes(workspace_id);
-    `)
+      `)
+    } catch (error) {
+      try { this.#database.close() } catch { /* Preserve the original SQLite initialization error. */ }
+      throw error
+    }
   }
 
   public [Symbol.dispose](): void {

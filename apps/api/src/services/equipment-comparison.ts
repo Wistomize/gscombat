@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto"
-import { EquipmentComparisonSession, explainArtifactPreparations, rankArtifactLoadouts,
+import { AnalysisInputError, EquipmentComparisonSession, explainArtifactPreparations, rankArtifactLoadouts,
   type ArtifactLoadoutResult, type WeaponComparisonResult } from "@gscombat/analyzer"
 import type { AnalysisRequest, ArtifactComparisonRequest, DeferredComparisonRequest } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 import { ANALYSIS_ENGINE_VERSION } from "./analysis-version.js"
 import { ComparisonScheduler, comparisonLimits } from "./comparison-scheduler.js"
+import { ApiServiceError } from "./http-errors.js"
+import { writeDiagnostic } from "./diagnostics.js"
 
 /** Stable identity includes every input field; object insertion order is not semantic. */
 function canonical(value: unknown): string {
@@ -80,11 +82,12 @@ export class EquipmentComparisonService {
     const selectableFourPieceCandidates = entry.session.artifactCandidates
       .filter(candidate => candidate.kind === "four_piece").map(({ id, label }) => ({ id, label }))
     if (request.selectedCandidateId !== undefined && !selectableFourPieceCandidates.some(candidate => candidate.id === request.selectedCandidateId)) {
-      throw Object.assign(new Error("指定套装必须是已支持的四件套"), { statusCode: 400 })
+      throw new AnalysisInputError("invalid_artifact_choice", "指定套装必须是已支持的四件套")
     }
     if ((request.candidateId && !ids.has(request.candidateId)) || Object.keys(request.choices ?? {}).some(key => !ids.has(key))) {
-      throw Object.assign(new Error("未知套装候选"), { statusCode: 400 })
+      throw new AnalysisInputError("invalid_artifact_choice", "未知套装候选")
     }
+    for (const [candidateId, choices] of Object.entries(request.choices ?? {})) entry.session.validateArtifactChoices(candidateId, choices)
     const service = this
     return this.scheduler.run(`${id}:artifacts:${canonical(request.choices)}:${request.candidateId ?? ""}:${request.selectedCandidateId ?? ""}`, function* () {
       const results: ArtifactLoadoutResult[] = []
@@ -97,7 +100,7 @@ export class EquipmentComparisonService {
           if (!result) { result = entry.session.artifact(candidate.id, choices); entry.artifacts.set(key, result) }
           results.push(result)
         } catch (error) {
-          if ((error as { statusCode?: number }).statusCode === 400) throw error
+          writeDiagnostic("candidate_failure", "internal_error", 500, { computationId: id, candidateId: candidate.id }, error)
           failures.push({ candidateId: candidate.id, message: "该候选计算失败，可重试；排名暂不完整" })
         }
         yield
@@ -125,7 +128,7 @@ export class EquipmentComparisonService {
     const { weaponComparisonChoices: _choices, weaponComparisonRefinements: _refinements, ...scenario } = request
     const id = createHash("sha256").update(canonical([ANALYSIS_ENGINE_VERSION, "artifact-comparison-v4-four-star-main-stats",
       this.gameData.getManifest(), scenario])).digest("hex")
-    if (expectedId && expectedId !== id) throw Object.assign(new Error("场景或计算版本已变化，请重新计算"), { statusCode: 409 })
+    if (expectedId && expectedId !== id) throw new ApiServiceError("computation_conflict")
     this.prune()
     let entry = this.entries.get(id)
     if (!entry) {

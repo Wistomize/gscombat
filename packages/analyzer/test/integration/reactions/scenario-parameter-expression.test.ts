@@ -3,6 +3,8 @@ import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
 import { afterAll, describe, expect, it } from "vitest"
 
 import { evaluateDeclaredDirectScenarioAction } from "../../../src/evaluators/declared-scenario.js"
+import { resolveActionScenarioParameters } from "../../../src/evaluators/scenario-parameters.js"
+import { AnalysisInputError } from "../../../src/core/errors.js"
 
 const gameData = new GameDataRepository(DEFAULT_GAME_DATA_PATH)
 const enemy = { defenseReduction: 0, level: 100, name: "训练木桩", resistance: 0.1 } as const
@@ -102,6 +104,27 @@ const snapshotScaledActionWithoutEventMultiplier = {
 afterAll(() => gameData.close())
 
 describe("manual scenario-parameter expressions", () => {
+  it("separates selected input errors from broken content defaults without HTTP properties", () => {
+    try {
+      resolveActionScenarioParameters(snapshotScaledAction, { "stored-stacks": 3 }, 0)
+      throw new Error("Expected input rejection")
+    } catch (error) {
+      expect(error).toBeInstanceOf(AnalysisInputError)
+      expect(error).toMatchObject({ code: "invalid_action_parameters" })
+      expect(error).not.toHaveProperty("statusCode")
+    }
+    try {
+      resolveActionScenarioParameters({ ...snapshotScaledAction, scenarioParameters: [
+        { ...snapshotScaledAction.scenarioParameters[0]!, defaultValue: 99 }
+      ] }, undefined, 0)
+      throw new Error("Expected content rejection")
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error)
+      expect(error).not.toBeInstanceOf(AnalysisInputError)
+      expect(error).toHaveProperty("message", expect.stringContaining("out-of-range default"))
+    }
+  })
+
   it("evaluates bounded snapshot inputs, talent-linear event multipliers, and repeated hits together", () => {
     const noStacks = evaluateDeclaredDirectScenarioAction({
       action: snapshotScaledAction,

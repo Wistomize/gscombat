@@ -12,6 +12,7 @@ import {
   getShowcaseCharacterMetadata,
   getShowcaseWeaponMetadata
 } from "./metadata.js"
+import { ApiServiceError } from "../http-errors.js"
 
 interface EnkaStat {
   readonly appendPropId?: string
@@ -287,12 +288,32 @@ export class EnkaShowcaseClient implements ShowcaseImporter {
   public async importBuilds(uid: string, gameDataVersion: string): Promise<ShowcaseImportResponse> {
     const cached = this.#cache.get(uid)
     if (cached && cached.expiresAt > Date.now()) return cached.response
-    const response = await this.#fetch(`${this.#baseUrl.replace(/\/$/, "")}/${uid}/`, {
-      headers: { "User-Agent": "gscombat/0.1 showcase-import" },
-      signal: AbortSignal.timeout(12_000)
-    })
-    if (!response.ok) throw new Error(`Enka showcase request failed with HTTP ${response.status}`)
-    const normalized = normalizeEnkaShowcase((await response.json()) as EnkaResponse, uid, gameDataVersion)
+    const url = new URL(`${this.#baseUrl.replace(/\/$/, "")}/${uid}/`)
+    if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("Invalid Enka API protocol")
+    const signal = AbortSignal.timeout(12_000)
+    let response: Response
+    try {
+      response = await this.#fetch(url, { headers: { "User-Agent": "gscombat/0.1 showcase-import" }, signal })
+    } catch (error) {
+      throw new ApiServiceError(signal.aborted || (error instanceof Error && error.name === "TimeoutError")
+        ? "showcase_timeout" : "showcase_upstream_error")
+    }
+    if (!response.ok) throw new ApiServiceError(response.status === 404 ? "showcase_not_found"
+      : response.status === 429 || response.status === 503 ? "showcase_unavailable" : "showcase_upstream_error")
+    let payload: EnkaResponse
+    try {
+      const data: unknown = await response.json()
+      if (!data || typeof data !== "object" || Array.isArray(data) ||
+        ("avatarInfoList" in data && (!Array.isArray(data.avatarInfoList) || data.avatarInfoList.some(
+          avatar => !avatar || typeof avatar !== "object" || Array.isArray(avatar)))) ||
+        ("ttl" in data && (typeof data.ttl !== "number" || !Number.isFinite(data.ttl))) ||
+        ("playerInfo" in data && (!data.playerInfo || typeof data.playerInfo !== "object" || Array.isArray(data.playerInfo) ||
+          ("nickname" in data.playerInfo && typeof data.playerInfo.nickname !== "string")))) throw new Error("Invalid Enka response")
+      payload = data as EnkaResponse
+    } catch {
+      throw new ApiServiceError(signal.aborted ? "showcase_timeout" : "showcase_upstream_error")
+    }
+    const normalized = normalizeEnkaShowcase(payload, uid, gameDataVersion)
     this.#cache.set(uid, { expiresAt: Date.now() + normalized.ttl * 1000, response: normalized })
     return normalized
   }

@@ -4,7 +4,8 @@ import {
   characterCatalogPresentation,
   characterCatalogPresentationVersion
 } from "./catalog-presentation.js"
-import { normalizeProjectedMetricLabel, supportedCharacters, supportedWeapons } from "./catalog.js"
+import { createCatalogResponse, normalizeProjectedMetricLabel, supportedArtifactSets, supportedBuffPresets, supportedCharacters, supportedWeapons } from "./catalog.js"
+import { getArtifactConditionRequirements, getWeaponConditionRequirements } from "./combat-action-effects.js"
 import { listCharacterCombatCoverage, listCombatActions, listCombatMetrics } from "./combat-registry.js"
 import type { CombatDamageMetricDefinition, CombatMetricDefinition } from "./combat/types.js"
 import { requireOfficialWeaponName } from "./weapon-names.js"
@@ -12,6 +13,54 @@ import { requireOfficialWeaponName } from "./weapon-names.js"
 function sortedIds(ids: readonly string[]): string[] {
   return [...ids].sort()
 }
+
+describe("shared catalog response", () => {
+  it("preserves maintained declarations, ordering, and equipment environmental controls", () => {
+    const result = createCatalogResponse()
+    expect(result.characters).toEqual(supportedCharacters)
+    expect(result.buffPresets).toEqual(supportedBuffPresets)
+    expect(result.artifactSets.map(set => set.setId)).toEqual(supportedArtifactSets.map(set => set.setId))
+    expect(result.weapons.map(weapon => weapon.weaponId)).toEqual(supportedWeapons.map(weapon => weapon.weaponId))
+    for (const set of result.artifactSets) {
+      const requirements = getArtifactConditionRequirements(set.setId)
+      expect(set.conditionRequirements).toEqual(requirements.length ? requirements : undefined)
+    }
+    for (const weapon of result.weapons) {
+      const requirements = getWeaponConditionRequirements(weapon.weaponId)
+      expect(weapon.conditionRequirements).toEqual(requirements.length ? requirements : undefined)
+      const { conditionRequirements: _requirements, ...declaration } = weapon
+      expect(declaration).toEqual(supportedWeapons.find(source => source.weaponId === weapon.weaponId))
+    }
+  })
+
+  it("detaches every nested object and keeps mutations out of source declarations and later calls", () => {
+    const source = { characters: supportedCharacters, weapons: supportedWeapons, artifactSets: supportedArtifactSets,
+      buffPresets: supportedBuffPresets }
+    const before = structuredClone(source)
+    const result = createCatalogResponse(), other = createCatalogResponse()
+    const references = new WeakSet<object>()
+    const visit = (value: unknown, callback: (value: object) => void): void => {
+      if (value === null || typeof value !== "object") return
+      callback(value)
+      for (const child of Object.values(value)) visit(child, callback)
+    }
+    visit(source, value => references.add(value))
+    visit(other, value => references.add(value))
+    visit(result, value => expect(references.has(value)).toBe(false))
+    const parameters = result.characters.flatMap(character => [...character.primaryActions, ...character.supportMetrics]
+      .flatMap(metric => metric.scenarioParameters ?? []))
+    parameters.find(parameter => parameter.minimumSourceConstellationByValue)!.minimumSourceConstellationByValue![0]!.minimumSourceConstellation = 1
+    const trace = result.characters.flatMap(character => character.primaryActions).find(action => action.tracePresentation)!.tracePresentation!
+    trace.focusLabel = "changed"
+    const support = result.characters.flatMap(character => character.supportMetrics)
+    support.find(metric => metric.conditionalRecipientRequirements)!.conditionalRecipientRequirements![0]!.requirement.label = "changed"
+    support.find(metric => metric.recipientRequirements)!.recipientRequirements![0]!.label = "changed"
+    result.buffPresets[0]!.buffs[0]!.value = 0
+    result.weapons.find(weapon => weapon.comparison?.refinements)!.comparison!.refinements![0] = 5
+    expect(source).toEqual(before)
+    expect(createCatalogResponse()).toEqual(other)
+  })
+})
 
 function findDuplicateIds(ids: readonly string[]): string[] {
   const seenIds = new Set<string>()

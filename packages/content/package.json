@@ -12,6 +12,10 @@
       "types": "./dist/authoring-catalog.d.ts",
       "import": "./dist/authoring-catalog.js"
     },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "import": "./dist/catalog.js"
+    },
     "./weapon-names": {
       "types": "./dist/weapon-names.d.ts",
       "import": "./dist/weapon-names.js"

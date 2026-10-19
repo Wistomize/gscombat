@@ -17,6 +17,15 @@ openssl rand -base64 48
 
 Place the generated value in `INVITE_TOKEN_SECRET` and confirm `PUBLIC_DOMAIN=gscombat.online`. Never commit `.env`.
 
+These are first-deployment steps. Updates must retain the original secret, workspace file, and mount. Do not overwrite
+the environment file with the example or generate a new secret: that would invalidate existing invites and sessions.
+
+Before opening databases, production API startup requires an explicit `INVITE_TOKEN_SECRET` of at least 32 characters
+that is not the public development/example value, plus a file-backed `WORKSPACE_DATA_PATH`. Compose already sets the
+latter to `/data/workspaces.sqlite` and mounts the host directory. Missing/blank configuration and memory/URI paths
+fail startup instead of creating a temporary store. Initialization or listen failures close acquired database resources,
+exit nonzero, and report an error without secret values. Direct API launches follow the same rules as Compose deployments.
+
 ## Start and inspect
 
 ```bash

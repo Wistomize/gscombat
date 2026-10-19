@@ -21,6 +21,14 @@ openssl rand -base64 48
 将生成结果写入 `INVITE_TOKEN_SECRET`，并确认 `PUBLIC_DOMAIN=gscombat.online`。该文件不能提交到
 版本库。
 
+这是首次部署步骤。更新已有服务时必须保留原密钥、原工作区文件和挂载，不要重新复制示例或生成新密钥；
+自动轮换会使已有邀请码与会话失效。
+
+生产 API 在打开数据库前要求显式有效的 `INVITE_TOKEN_SECRET`（至少 32 字符，不能是公开开发或示例值）
+及文件型 `WORKSPACE_DATA_PATH`。Compose 已将后者设为 `/data/workspaces.sqlite` 并挂载宿主目录。
+缺配、空白或内存/URI 路径会拒绝启动，不退回空库。初始化或监听失败会释放已取得的数据库资源，
+以非零状态退出并输出不含密钥值的错误。直接运行 API 时同样适用，不能只依赖 Compose 检查。
+
 ## 启动
 
 ```bash

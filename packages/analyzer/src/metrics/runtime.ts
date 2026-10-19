@@ -1,3 +1,4 @@
+import { AnalysisInputError } from "../core/errors.js"
 import {
   getCombatActionDefinition, listCharacterTalentLevelConstellationBonuses, listRecipientEquipmentEffects, resolveRecipientEquipmentEffectValue, type CombatDamageMetricDefinition, type CombatHealingAdditionalScalingTerm,
   type CombatHealingConditionalScalingBonus,
@@ -115,15 +116,15 @@ export function assertMetricBuild(
   build: CharacterBuild
 ): void {
   assertValidBuild(build, "source character")
-  if (metric.status !== "verified") throw new Error(`Combat metric ${metric.id} is not verified`)
+  if (metric.status !== "verified") throw new AnalysisInputError("invalid_metric", `Combat metric ${metric.id} is not verified`)
   if (metric.characterId !== build.characterId) {
-    throw new Error(`Combat metric ${metric.id} belongs to ${metric.characterId}, not ${build.characterId}`)
+    throw new AnalysisInputError("invalid_metric", `Combat metric ${metric.id} belongs to ${metric.characterId}, not ${build.characterId}`)
   }
   if (
     metric.minimumSourceConstellation !== undefined &&
     build.constellation < metric.minimumSourceConstellation
   ) {
-    throw new Error(
+    throw new AnalysisInputError("invalid_metric",
       `Combat metric ${metric.id} requires source constellation ${metric.minimumSourceConstellation}, ` +
         `but build has constellation ${build.constellation}`
     )
@@ -137,7 +138,7 @@ export function assertMetricBuild(
 export function assertValidBuild(build: CharacterBuild, description: string): void {
   const validationErrors = validateCharacterBuild(build)
   if (validationErrors.length > 0) {
-    throw new Error(`Invalid ${description} build ${build.buildId}: ${validationErrors.join("; ")}`)
+    throw new AnalysisInputError("invalid_build", `Invalid ${description} build ${build.buildId}: ${validationErrors.join("; ")}`)
   }
 }
 
@@ -147,24 +148,24 @@ export function resolveFriendlyRecipient(
 ): ResolvedFriendlyRecipient {
   const context = input.context
   const recipientContext = context?.recipient
-  if (!recipientContext) throw new Error(`Combat metric ${metric.id} requires a friendly recipient context`)
+  if (!recipientContext) throw new AnalysisInputError("invalid_metric_context", `Combat metric ${metric.id} requires a friendly recipient context`)
 
   const party = [input.build, ...(context?.teammates ?? [])]
   const buildIds = new Set<string>()
   for (const member of party) {
-    if (buildIds.has(member.buildId)) throw new Error(`Metric party contains duplicate build ${member.buildId}`)
+    if (buildIds.has(member.buildId)) throw new AnalysisInputError("invalid_metric_context", `Metric party contains duplicate build ${member.buildId}`)
     buildIds.add(member.buildId)
     if (member.buildId !== input.build.buildId) assertValidBuild(member, "teammate")
   }
 
   const recipientBuild = party.find((member) => member.buildId === recipientContext.buildId)
   if (!recipientBuild) {
-    throw new Error(`Metric recipient ${recipientContext.buildId} is not the source character or a selected teammate`)
+    throw new AnalysisInputError("invalid_metric_context", `Metric recipient ${recipientContext.buildId} is not the source character or a selected teammate`)
   }
 
   const manualIncomingHealingBonus = recipientContext.incomingHealingBonus ?? 0
   if (!Number.isFinite(manualIncomingHealingBonus) || manualIncomingHealingBonus <= -1) {
-    throw new Error(`Metric recipient ${recipientBuild.buildId} has an invalid incoming healing bonus`)
+    throw new AnalysisInputError("invalid_metric_context", `Metric recipient ${recipientBuild.buildId} has an invalid incoming healing bonus`)
   }
   const recipientEquipmentEffects = [
     ...resolveRecipientEquipmentEffects(recipientBuild),
@@ -183,7 +184,7 @@ export function resolveFriendlyRecipient(
     )
   const missingHp = recipientContext.missingHp
   if (missingHp !== undefined && (!Number.isFinite(missingHp) || missingHp < 0)) {
-    throw new Error(`Metric recipient ${recipientBuild.buildId} has an invalid missing HP value`)
+    throw new AnalysisInputError("invalid_metric_context", `Metric recipient ${recipientBuild.buildId} has an invalid missing HP value`)
   }
 
   return {
@@ -230,25 +231,25 @@ export function resolveActiveRecipientEquipmentEffects(
   const activeEffectIdSet = new Set(activeEffectIds)
   const duplicateEffectId = activeEffectIds.find((effectId, index) => activeEffectIds.indexOf(effectId) !== index)
   if (duplicateEffectId !== undefined) {
-    throw new Error(`Metric equipment snapshots contain duplicate active effect ${duplicateEffectId}`)
+    throw new AnalysisInputError("invalid_effect_selection", `Metric equipment snapshots contain duplicate active effect ${duplicateEffectId}`)
   }
   const unmatchedSourceSelectionEffectId = Object.keys(activeEffectSourceBuildIds ?? {}).find(
     (effectId) => !activeEffectIdSet.has(effectId)
   )
   if (unmatchedSourceSelectionEffectId !== undefined) {
-    throw new Error(
+    throw new AnalysisInputError("invalid_effect_selection",
       `Metric equipment source selection ${unmatchedSourceSelectionEffectId} has no matching active effect`
     )
   }
   const allEffects = listRecipientEquipmentEffects()
   const allEffectsById = new Map(allEffects.map((effect) => [effect.id, effect]))
   if (context?.fieldContext.onFieldBuildId && !party.some((build) => build.buildId === context.fieldContext.onFieldBuildId)) {
-    throw new Error("Metric foreground must belong to the configured party")
+    throw new AnalysisInputError("invalid_field_presence", "Metric foreground must belong to the configured party")
   }
   for (const effectId of activeEffectIds) {
     const effect = allEffectsById.get(effectId)
-    if (!effect) throw new Error(`Metric equipment effect ${effectId} is not registered`)
-    if (effect.activation === undefined) throw new Error(`Metric equipment effect ${effectId} is automatic and cannot be selected`)
+    if (!effect) throw new AnalysisInputError("invalid_effect_selection", `Metric equipment effect ${effectId} is not registered`)
+    if (effect.activation === undefined) throw new AnalysisInputError("invalid_effect_selection", `Metric equipment effect ${effectId} is automatic and cannot be selected`)
   }
   return allEffects.flatMap((effect) => {
     if (effect.activation === undefined) return []
@@ -258,7 +259,7 @@ export function resolveActiveRecipientEquipmentEffects(
     if (!selected && !defaultAllowed) return []
     const holders = party.filter((build) => isRecipientEquipmentEffectEquipped(effect, build))
     if (holders.length === 0) {
-      if (selected) throw new Error(`Metric equipment effect ${effect.id} has no eligible party source`)
+      if (selected) throw new AnalysisInputError("invalid_effect_selection", `Metric equipment effect ${effect.id} has no eligible party source`)
       return []
     }
     const sources = holders.filter((source) => resolveCombatEffectLifecycle({
@@ -292,18 +293,18 @@ export function resolveActiveRecipientEquipmentEffectSource(
   selectedSourceBuildId: string | undefined
 ): CharacterBuild {
   if (candidates.length === 0) {
-    throw new Error(`Metric equipment effect ${effect.id} has no eligible party source`)
+    throw new AnalysisInputError("invalid_effect_selection", `Metric equipment effect ${effect.id} has no eligible party source`)
   }
   if (selectedSourceBuildId !== undefined) {
     const selected = candidates.find((build) => build.buildId === selectedSourceBuildId)
     if (!selected) {
-      throw new Error(`Metric equipment effect ${effect.id} cannot use source ${selectedSourceBuildId}`)
+      throw new AnalysisInputError("invalid_effect_selection", `Metric equipment effect ${effect.id} cannot use source ${selectedSourceBuildId}`)
     }
     return selected
   }
   if (candidates.length > 1) {
     if (effect.lifecycle) return [...candidates].sort((a, b) => a.buildId.localeCompare(b.buildId))[0]!
-    throw new Error(`Metric equipment effect ${effect.id} has multiple eligible party sources; select one explicitly`)
+    throw new AnalysisInputError("invalid_effect_selection", `Metric equipment effect ${effect.id} has multiple eligible party sources; select one explicitly`)
   }
   return candidates[0]!
 }
@@ -336,7 +337,7 @@ export function evaluateRecipientRequirement(
 ): CombatMetricConditionEvaluation {
   if (requirement.kind === "recipient_in_source_area") {
     if (typeof recipient.isWithinSourceArea !== "boolean") {
-      throw new Error(`Metric recipient ${recipient.buildId} must declare whether they are within the source area`)
+      throw new AnalysisInputError("invalid_metric_context", `Metric recipient ${recipient.buildId} must declare whether they are within the source area`)
     }
     return { kind: requirement.kind, label: requirement.label, satisfied: recipient.isWithinSourceArea }
   }
@@ -357,7 +358,7 @@ export function evaluateRecipientRequirement(
 
   const currentHpFraction = recipient.currentHpFraction
   if (!Number.isFinite(currentHpFraction) || currentHpFraction === undefined || currentHpFraction < 0 || currentHpFraction > 1) {
-    throw new Error(`Metric recipient ${recipient.buildId} must declare a current HP fraction between zero and one`)
+    throw new AnalysisInputError("invalid_metric_context", `Metric recipient ${recipient.buildId} must declare a current HP fraction between zero and one`)
   }
   const satisfied =
     requirement.comparison === "at_most"
@@ -525,7 +526,7 @@ export function evaluateSourceHpFractionRequirement(
 ): CombatMetricConditionEvaluation {
   const currentHpFraction = sourceContext?.currentHpFraction
   if (!Number.isFinite(currentHpFraction) || currentHpFraction === undefined || currentHpFraction < 0 || currentHpFraction > 1) {
-    throw new Error(`Metric source ${sourceBuild.buildId} must declare a current HP fraction between zero and one`)
+    throw new AnalysisInputError("invalid_metric_context", `Metric source ${sourceBuild.buildId} must declare a current HP fraction between zero and one`)
   }
   const satisfied =
     requirement.comparison === "at_most"

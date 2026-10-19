@@ -1,4 +1,5 @@
 import { AnalysisPreparation } from "../core/analysis-preparation.js"
+import { AnalysisInputError } from "../core/errors.js"
 import { getCombatActionEffectDefinition } from "@gscombat/content"
 import type { Element } from "@gscombat/calculator"
 import {
@@ -402,12 +403,12 @@ export function analyzeWeaponComparison(
   choices?: Readonly<Record<string, string>>
 ): { readonly baselineExpectedDamage: number; readonly weapon: WeaponComparisonResult } {
   if (!Number.isInteger(refinement) || refinement < 1 || refinement > 5) {
-    throw Object.assign(new Error("武器精炼等级必须为 1 至 5 的整数"), { statusCode: 400 })
+    throw new AnalysisInputError("invalid_weapon_choice", "武器精炼等级必须为 1 至 5 的整数")
   }
   const preparation = new AnalysisPreparation(gameData)
   const baseline = evaluateScenario(scenario, gameData, {}, preparation)
   const candidate = prepareWeaponCandidate(scenario, gameData, weaponId, refinement, choices)
-  if (!candidate) throw Object.assign(new Error(`当前场景无法比较武器：${weaponId}`), { statusCode: 400 })
+  if (!candidate) throw new AnalysisInputError("invalid_weapon_choice", `当前场景无法比较武器：${weaponId}`)
   const baselineExpectedDamage = baseline.actionExpectedDamage
   return { baselineExpectedDamage, weapon: evaluateWeaponCandidate(candidate, gameData, baselineExpectedDamage, preparation) }
 }

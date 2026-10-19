@@ -6,6 +6,7 @@ import {
   supportedWeapons
 } from "@gscombat/content"
 import { DEFAULT_GAME_DATA_PATH, GameDataRepository } from "@gscombat/game-data"
+import { createCatalogResponse } from "@gscombat/content/catalog"
 
 import { buildApp, serializeCombatAction, serializeRotationEvent } from "../../src/app.js"
 
@@ -217,6 +218,19 @@ describe("API", () => {
 
   it("keeps the startup catalog lightweight and excludes action effect snapshots", async () => {
     const response = await app.inject({ method: "GET", url: "/v1/catalog" })
+    expect(response.json()).toEqual(createCatalogResponse())
+    const rain = response.json().characters.find((character: { characterId: string }) => character.characterId === "Xingqiu")
+      .primaryActions.find((action: { id: string }) => action.id === "xingqiu.burst.raincutter.rain_sword.single_volley")
+      .scenarioParameters[0]
+    expect(rain).toMatchObject({ defaultValue: 3, allowedValues: [2, 3, 5],
+      minimumSourceConstellationByValue: [{ value: 5, minimumSourceConstellation: 6 }] })
+    const coverage = (await app.inject({ method: "GET", url: "/v1/combat-coverage" })).json()
+    const action = coverage.characters.find((character: { characterId: string }) => character.characterId === "Xingqiu")
+      .actions.find((action: { id: string }) => action.id === "xingqiu.burst.raincutter.rain_sword.single_volley")
+    expect(action.scenarioParameters[0]).toEqual(rain)
+    const ungated = response.json().characters.find((character: { characterId: string }) => character.characterId === "RaidenShogun")
+      .primaryActions[0].scenarioParameters[0]
+    expect(ungated).not.toHaveProperty("minimumSourceConstellationByValue")
     expect(response.json().artifactSets.find((set: { setId: string }) => set.setId === "BlizzardStrayer"))
       .toMatchObject({ conditionRequirements: [{ condition: "targetFrozen", minimumPieces: 4 }] })
 
@@ -544,10 +558,7 @@ describe("API", () => {
         const registryAction = actionById.get(action.id)
 
         expect(action.label.trim()).not.toHaveLength(0)
-        const publicScenarioParameters = registryAction?.scenarioParameters?.map(
-          ({ minimumSourceConstellationByValue: _minimumSourceConstellationByValue, ...parameter }) => parameter
-        )
-        expect(action.scenarioParameters).toEqual(publicScenarioParameters)
+        expect(action.scenarioParameters).toEqual(registryAction?.scenarioParameters)
       }
     }
   })

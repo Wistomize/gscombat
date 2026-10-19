@@ -1,3 +1,5 @@
+import { ApiServiceError } from "./http-errors.js"
+
 interface Job {
   readonly key: string
   readonly iterator: Generator<unknown, unknown>
@@ -16,11 +18,12 @@ export class ComparisonScheduler {
   private closed = false
 
   run<T>(key: string, create: () => Generator<unknown, T>, signal?: AbortSignal): Promise<T> {
-    if (this.closed || signal?.aborted) return Promise.reject(Object.assign(new Error("计算已取消"), { statusCode: 499 }))
+    if (this.closed) return Promise.reject(new ApiServiceError("comparison_unavailable"))
+    if (signal?.aborted) return Promise.reject(new ApiServiceError("comparison_cancelled"))
     let job = this.jobs.get(key)
     if (!job) {
       if (this.jobs.size >= comparisonLimits.queuedTasks) {
-        return Promise.reject(Object.assign(new Error("比较任务繁忙，请稍后重试"), { statusCode: 429 }))
+        return Promise.reject(new ApiServiceError("comparison_busy"))
       }
       job = { key, iterator: create(), started: performance.now(), waiters: new Set() }
       this.jobs.set(key, job)
@@ -33,7 +36,7 @@ export class ComparisonScheduler {
         reject: (error: Error) => finish(() => reject(error)) }
       const abort = () => {
         selected.waiters.delete(waiter)
-        waiter.reject(Object.assign(new Error("计算已取消"), { statusCode: 499 }))
+        waiter.reject(new ApiServiceError("comparison_cancelled"))
       }
       selected.waiters.add(waiter)
       signal?.addEventListener("abort", abort, { once: true })
@@ -43,7 +46,7 @@ export class ComparisonScheduler {
 
   close(): void {
     this.closed = true
-    for (const job of this.jobs.values()) for (const waiter of job.waiters) waiter.reject(new Error("服务正在关闭"))
+    for (const job of this.jobs.values()) for (const waiter of job.waiters) waiter.reject(new ApiServiceError("comparison_unavailable"))
     this.jobs.clear()
     this.queue.length = 0
   }
@@ -65,7 +68,7 @@ export class ComparisonScheduler {
         const started = performance.now()
         for (let count = 0; count < comparisonLimits.batchCandidates; count++) {
           if (performance.now() - job.started >= comparisonLimits.taskMs) {
-            throw Object.assign(new Error("比较计算超时，请重试"), { statusCode: 503 })
+            throw new ApiServiceError("comparison_timeout")
           }
           const next = job.iterator.next()
           if (next.done) {

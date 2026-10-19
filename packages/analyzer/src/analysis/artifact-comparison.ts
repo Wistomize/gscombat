@@ -2,6 +2,7 @@ import { artifactComparisonGroups, getArtifactConditionRequirements, getCombatAc
 import type { ArtifactSlot, EvaluationScenario } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
 import { AnalysisPreparation } from "../core/analysis-preparation.js"
+import { AnalysisInputError } from "../core/errors.js"
 import { countArtifactSet, withArtifactSetCounts } from "../core/artifact-stats.js"
 import { evaluatePreparedScenario } from "../scenario/evaluate.js"
 import type { CriticalStatsSample } from "@gscombat/calculator"
@@ -52,7 +53,8 @@ export function describeArtifactLoadoutChoices(candidate: ArtifactLoadoutCandida
   return [...groups.values()]
 }
 
-function applyArtifactChoices(scenario: EvaluationScenario, candidate: ArtifactLoadoutCandidate,
+/** Validates only explicit choices before generated candidates enter the partial-failure boundary. */
+export function validateArtifactLoadoutChoices(scenario: EvaluationScenario, candidate: ArtifactLoadoutCandidate,
   supplied: Readonly<Record<string, string>> = {}) {
   // Existing party-owned exclusive selections remain fixed; swapping primary gear cannot reassign them.
   const choiceGroups = describeArtifactLoadoutChoices(candidate).filter(group => !group.options.some(option =>
@@ -60,8 +62,19 @@ function applyArtifactChoices(scenario: EvaluationScenario, candidate: ArtifactL
     scenario.conditions.activeEffectSourceBuildIds?.[option.value] !== undefined &&
     scenario.conditions.activeEffectSourceBuildIds[option.value] !== scenario.primary.buildId))
   if (Object.keys(supplied).some(id => !choiceGroups.some(group => group.id === id))) {
-    throw Object.assign(new Error("未知套装条件"), { statusCode: 400 })
+    throw new AnalysisInputError("invalid_artifact_choice", "未知套装条件")
   }
+  for (const [id, value] of Object.entries(supplied)) {
+    if (!choiceGroups.find(group => group.id === id)?.options.some(option => option.value === value)) {
+      throw new AnalysisInputError("invalid_artifact_choice", `非法套装条件：${id}`)
+    }
+  }
+  return choiceGroups
+}
+
+function applyArtifactChoices(scenario: EvaluationScenario, candidate: ArtifactLoadoutCandidate,
+  supplied: Readonly<Record<string, string>> = {}) {
+  const choiceGroups = validateArtifactLoadoutChoices(scenario, candidate, supplied)
   const ids = new Set(scenario.conditions.activeEffectIds)
   const sources = { ...scenario.conditions.activeEffectSourceBuildIds }
   const choices: Record<string, string> = {}
@@ -69,7 +82,7 @@ function applyArtifactChoices(scenario: EvaluationScenario, candidate: ArtifactL
   for (const group of choiceGroups) {
     const inherited = group.id === "targetFrozen" ? String(targetFrozen) : group.options.find(option => ids.has(option.value))?.value ?? "none"
     const value = supplied[group.id] ?? inherited
-    if (!group.options.some(option => option.value === value)) throw Object.assign(new Error(`非法套装条件：${group.id}`), { statusCode: 400 })
+    if (!group.options.some(option => option.value === value)) throw new Error(`非法继承套装条件：${group.id}`)
     choices[group.id] = value
     if (group.id === "targetFrozen") { targetFrozen = value === "true"; continue }
     for (const option of group.options) { ids.delete(option.value); delete sources[option.value] }

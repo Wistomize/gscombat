@@ -1,7 +1,7 @@
 import { Value } from "typebox/value"
 import { describe, expect, it } from "vitest"
 
-import { CombatActionMetadataSchema, CombatElementOverrideEffectSchema } from "./combat-coverage.js"
+import { CombatActionIntegerScenarioParameterSchema, CombatActionMetadataSchema, CombatElementOverrideEffectSchema } from "./combat-coverage.js"
 
 const actionWithTimeline = {
   characterId: "Xingqiu",
@@ -27,6 +27,18 @@ const actionWithTimeline = {
 }
 
 describe("CombatActionMetadataSchema", () => {
+  it("preserves optional per-value constellation metadata without changing legacy parameters", () => {
+    const legacy = { id: "hit-count", label: "命中数量", defaultValue: 3, minimumValue: 2, maximumValue: 5 }
+    expect(Value.Check(CombatActionIntegerScenarioParameterSchema, legacy)).toBe(true)
+    const gated = { ...legacy, minimumSourceConstellationByValue: [{ value: 5, minimumSourceConstellation: 6 }] }
+    expect(Value.Check(CombatActionIntegerScenarioParameterSchema, gated)).toBe(true)
+    for (const minimumSourceConstellationByValue of [[], [{ value: 5, minimumSourceConstellation: 0 }],
+      [{ value: 5, minimumSourceConstellation: 7 }], [{ value: 2.5, minimumSourceConstellation: 6 }],
+      [{ value: "5", minimumSourceConstellation: 6 }]]) {
+      expect(Value.Check(CombatActionIntegerScenarioParameterSchema, { ...legacy, minimumSourceConstellationByValue })).toBe(false)
+    }
+  })
+
   it("serializes a fixed-level passive parameter reference for a support action", () => {
     expect(
       Value.Check(CombatActionMetadataSchema, {

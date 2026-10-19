@@ -311,7 +311,10 @@ export function TeamCalculationWorkspace({ catalog, initialScenario }: TeamCalcu
           headers: { "Content-Type": "application/json" },
           method: "POST"
         })
-        if (!response.ok) throw new Error(`辅助指标接口返回 HTTP ${response.status}`)
+        if (!response.ok) {
+          const body = await response.json().catch(() => null) as { message?: unknown } | null
+          throw new Error(typeof body?.message === "string" && body.message.trim() ? body.message : `辅助指标接口返回 HTTP ${response.status}`)
+        }
         const result = (await response.json()) as SupportMetricEvaluationResponse
         if (!incremental.isCurrent(version)) return
         setSupportMetricResponse(result)

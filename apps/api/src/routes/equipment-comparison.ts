@@ -4,6 +4,7 @@ import { AnalysisRequestSchema, CoreAnalysisResponseSchema, DeferredComparisonRe
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify"
 import type { EquipmentComparisonService } from "../services/equipment-comparison.js"
 import { serializeAnalysisResponse } from "../serializers/analysis.js"
+import { writeDiagnostic } from "../services/diagnostics.js"
 
 /** Cancels only this caller's waiter when the response socket goes away. */
 export async function withComparisonSignal<T>(request: FastifyRequest, reply: FastifyReply,
@@ -31,6 +32,11 @@ export function registerEquipmentComparisonRoutes(app: FastifyInstance, service:
     app.post<{ Body: ArtifactComparisonRequest }>(path, {
       schema: { body: path.endsWith("/candidate") ? ArtifactCandidateComparisonRequestSchema : ArtifactComparisonRequestSchema,
         response: { 200: ArtifactComparisonResponseSchema } }
-    }, (request, reply) => withComparisonSignal(request, reply, signal => service.artifacts(request.body, signal)))
+    }, async (request, reply) => {
+      const result = await withComparisonSignal(request, reply, signal => service.artifacts(request.body, signal))
+      for (const failure of result.failures) writeDiagnostic("partial_response", "internal_error", 200,
+        { requestId: request.id, computationId: result.computationId, candidateId: failure.candidateId })
+      return result
+    })
   }
 }

@@ -1,6 +1,7 @@
 import { getCombatActionDefinition, isCombatActionEffectApplicable, listCombatActionEffects, supportedCharacters, type CombatActionEffect, type CombatActionMetadata } from "@gscombat/content"
 import type { CharacterBuild, EvaluationScenario } from "@gscombat/contracts"
 import type { GameDataRepository } from "@gscombat/game-data"
+import { AnalysisInputError } from "../core/errors.js"
 import { resolveRotationElementOverride } from "@gscombat/calculator"
 import { resolveBuildElement } from "../core/build-variant.js"
 import { resolveActionScenarioParameters } from "../evaluators/scenario-parameters.js"
@@ -67,12 +68,12 @@ export function validateWeaponChoices(scenario: Pick<EvaluationScenario, "primar
   const builds = new Map([scenario.primary, ...scenario.teammates].map((build) => [build.buildId, build]))
   for (const [sourceId, choices] of Object.entries(scenario.conditions.weaponEffectChoices ?? {})) {
     const source = builds.get(sourceId)
-    if (!source) throw Object.assign(new Error(`武器条件来源不在队伍中：${sourceId}`), { statusCode: 400 })
+    if (!source) throw new AnalysisInputError("invalid_weapon_choice", `武器条件来源不在队伍中：${sourceId}`)
     for (const [group, variant] of Object.entries(choices)) {
       const effects = choicesByGroup.get(`${source.weapon.weaponId}:${group}`)
       if (!effects?.some((effect) => effect.weaponChoice?.variant === variant) &&
         !isValidRecipientChoice(source, [...builds.values()], group, variant)) {
-        throw Object.assign(new Error(`武器条件无效：${source.weapon.weaponId} / ${group} / ${variant}`), { statusCode: 400 })
+        throw new AnalysisInputError("invalid_weapon_choice", `武器条件无效：${source.weapon.weaponId} / ${group} / ${variant}`)
       }
     }
   }
@@ -187,7 +188,7 @@ export function applyWeaponChoices(
     const effects = choicesByGroup.get(`${scenario.primary.weapon.weaponId}:${group}`)
     if (!effects?.some((effect) => effect.weaponChoice?.variant === variant) &&
       !isValidRecipientChoice(scenario.primary, [scenario.primary, ...scenario.teammates], group, variant)) {
-      throw Object.assign(new Error(`武器条件无效：${scenario.primary.weapon.weaponId} / ${group} / ${variant}`), { statusCode: 400 })
+      throw new AnalysisInputError("invalid_weapon_choice", `武器条件无效：${scenario.primary.weapon.weaponId} / ${group} / ${variant}`)
     }
   }
   const applicable = new Set(choiceGroups.map((group) => group.id))
@@ -223,7 +224,7 @@ export function isWeaponChoiceSelected(input: {
     const source = input.activeEffectSourceBuildIds?.[candidate.id] ?? input.actionOwnerBuildId
     return source === input.sourceBuildId ? [candidate.weaponChoice!.variant] : []
   }))
-  if (variants.size > 1) throw Object.assign(new Error(`Conflicting weapon choices for ${input.sourceBuildId}: ${choice.group}`), { statusCode: 400 })
+  if (variants.size > 1) throw new AnalysisInputError("invalid_weapon_choice", `Conflicting weapon choices for ${input.sourceBuildId}: ${choice.group}`)
   return choice.variant === (variants.values().next().value ??
     choice.defaultVariantByCharacter?.[input.sourceCharacterId ?? ""] ?? choice.defaultVariant)
 }
