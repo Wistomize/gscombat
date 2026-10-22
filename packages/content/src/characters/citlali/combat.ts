@@ -2,6 +2,7 @@ import { declareHitCapability, declareSkillCastCapability, declareWeaponHitCapab
 import type { CharacterCombatCoverage } from "../../combat/types.js"
 
 import { citlaliDefinition } from "./definition.js"
+import { citlaliCombatEffects } from "./effects.js"
 
 export const citlaliCombatCoverage: CharacterCombatCoverage = {
   capabilities: [
@@ -127,26 +128,7 @@ export const citlaliCombatCoverage: CharacterCombatCoverage = {
       talentSlot: "burst"
     }
   ],
-  actionEffects: [
-    {
-      activation: "maximum_reachable",
-      id: "citlali.constellation.6.teoiztac_secret_pact.maximum_secret_law.pyro_hydro_damage_bonus",
-      label: "原动天的密契 · C6 秘律之数40点时全队火元素与水元素伤害加成60%",
-      source: { characterId: "Citlali", kind: "character", minimumSourceConstellation: 6 },
-      target: "damageBonus",
-      targetFilter: { elements: ["pyro", "hydro"] },
-      value: { kind: "fixed", value: 0.6 }
-    },
-    {
-      activation: "maximum_reachable",
-      id: "citlali.constellation.6.teoiztac_secret_pact.maximum_secret_law.self_damage_bonus",
-      label: "原动天的密契 · C6 秘律之数40点时茜特菈莉造成的伤害提升100%",
-      source: { characterId: "Citlali", kind: "character", minimumSourceConstellation: 6 },
-      target: "damageBonus",
-      targetFilter: { recipientSourceRelation: "source" },
-      value: { kind: "fixed", value: 1 }
-    }
-  ],
+  actionEffects: citlaliCombatEffects,
   characterId: "Citlali",
   metrics: [
     {
@@ -190,7 +172,7 @@ export const citlaliCombatCoverage: CharacterCombatCoverage = {
     }
   ],
   detail:
-    "The selected support metric calculates one Opal Shield's non-Cryo base absorption delivered to one friendly recipient as Citlali's Elemental Mastery × skill[1] plus skill[2], before that recipient's Shield Strength; C3 adds three Skill levels. At C6, the maximum forty Secret-Law points automatically contribute 60% Pyro and Hydro Damage Bonus to all party recipients and 100% all-damage bonus to Citlali herself; neither bonus changes shield absorption. It excludes the 250% Cryo-damage absorption branch, shield duration and transfer timing, Nightsoul consumption timing, Obsidian Tzitzimitl and Frostfall Storm damage, A1 Pyro/Hydro resistance reduction, A4's Elemental Mastery-to-damage bonuses, C2's Elemental Mastery changes, external effects, and character states.",
+    "The selected support metric calculates one Opal Shield's non-Cryo base absorption delivered to one friendly recipient as Citlali's final Elemental Mastery × skill[1] plus skill[2], before that recipient's Shield Strength; C3 adds three Skill levels. Prepared C1 adds 200% of Citlali's final Elemental Mastery to other on-field characters' normal, charged, plunge, Skill and Burst base damage, assuming an available Stellar Blade for the selected core hit rather than simulating charge consumption. C2 grants Citlali 125 Elemental Mastery at either field position and other protected/followed on-field characters 250; her own 125 also contributes to the shield and C1. With party Cryo plus Hydro/Pyro application, A1 prepares 20% Pyro/Hydro resistance reduction after Frozen/Melt, and C2 adds another 20%; these enemy effects also benefit off-field hits and require A1 to be unlocked. At C6, all lower constellations remain active alongside the maximum forty Secret-Law points: 60% Pyro/Hydro Damage Bonus to party recipients and 100% all-damage bonus to Citlali herself. It excludes the 250% Cryo-damage absorption branch, shield duration and transfer timing, Nightsoul consumption timing, Obsidian Tzitzimitl and Frostfall Storm damage, and A4's Elemental Mastery-to-damage bonuses.",
   label: citlaliDefinition.name,
   status: "draft",
   talentLevelConstellationBonuses: [
